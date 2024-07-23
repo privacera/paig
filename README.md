@@ -1,1 +1,1 @@
-# paig-stage
+PAIG is the framework for building Safe and Secure GenAI applications
