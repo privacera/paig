@@ -66,7 +66,12 @@ def load_default_ai_config():
     return ai_app_conf
 
 
-
+@lru_cache
 def get_version():
-    with open(os.path.join(format_to_root_path('VERSION'))) as f:
-        return f.read().strip()
+    with open(os.path.join(format_to_root_path('VERSION'))) as file:
+        for line in file:
+            if line.startswith('__version__'):
+                # Extract the version value from the line
+                version = line.split('=')[1].strip().strip("'\"")
+                return version
+    raise ValueError("Version not found")

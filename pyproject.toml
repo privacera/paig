@@ -97,5 +97,5 @@ include = ["backend/paig/*"]
 exclude = ["backend/paig/tests/"]
 
 [tool.hatch.version]
-path = "privacera_version.txt"
+path = "backend/paig/VERSION"
 
