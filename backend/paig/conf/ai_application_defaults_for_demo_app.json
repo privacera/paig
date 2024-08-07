@@ -1,0 +1,28 @@
+{
+  "aiApplication": {
+    "name": "PAIG Demo",
+    "description": "This is a demo application for PAIG. It will help you understand how to use PAIG to govern your own AI applications.",
+    "status": 1
+  },
+  "configs": {
+    "allowedUsers": [],
+    "allowedGroups": ["public"],
+    "allowedRoles": [],
+    "deniedUsers": [],
+    "deniedGroups": [],
+    "deniedRoles": []
+  },
+  "policies": [
+    {
+      "description": "Personal Identifier Redaction",
+      "status": 1,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["EMAIL_ADDRESS", "PHONE_NUMBER", "PERSON"],
+      "prompt": "ALLOW",
+      "reply": "REDACT",
+      "enrichedPrompt": "ALLOW"
+    }
+  ]
+}

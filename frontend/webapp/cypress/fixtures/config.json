@@ -1,0 +1,18 @@
+{
+  "login": {
+    "email": "cypressuser@bigbiz.us",
+    "password": "Welcome@1"
+  },
+  "register": {
+    "registeredUser": {
+      "firstname": "Cypress",
+      "lastname": "User",
+      "email": "cypressuser@bigbiz.us"
+    },
+    "newuser": {
+      "firstname": "cypress",
+      "lastname": "user",
+      "email": "cypressuser@bigbiz.us"
+    }
+  }
+}

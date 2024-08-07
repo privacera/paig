@@ -1,0 +1,80 @@
+{
+  "configs": {
+    "allowedUsers": [],
+    "allowedGroups": [
+      "public"
+    ],
+    "allowedRoles": [],
+    "deniedUsers": [],
+    "deniedGroups": [],
+    "deniedRoles": []
+  },
+  "policies": [
+    {
+      "description": "Highly Sensitive Information Blocking",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["US_SSN", "CREDIT_CARD"],
+      "prompt": "DENY",
+      "reply": "DENY",
+      "enrichedPrompt": "DENY"
+    },
+    {
+      "description": "Toxic Content Blocking",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["TOXIC"],
+      "prompt": "DENY",
+      "reply": "DENY",
+      "enrichedPrompt": "DENY"
+    },
+    {
+      "description": "Personal Identifier Redaction",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["EMAIL_ADDRESS", "PHONE_NUMBER", "PERSON"],
+      "prompt": "ALLOW",
+      "reply": "REDACT",
+      "enrichedPrompt": "ALLOW"
+    },
+    {
+      "description": "Location Data Redaction",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["LOCATION", "IP_ADDRESS"],
+      "prompt": "ALLOW",
+      "reply": "REDACT",
+      "enrichedPrompt": "ALLOW"
+    },
+    {
+      "description": "GDPR Article 4 Direct Personal Data Redaction",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION", "IP_ADDRESS"],
+      "prompt": "ALLOW",
+      "reply": "REDACT",
+      "enrichedPrompt": "ALLOW"
+    },
+    {
+      "description": "CCPA Personal Information Redaction",
+      "status": 0,
+      "users": [],
+      "groups": ["public"],
+      "roles": [],
+      "tags": ["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "LOCATION"],
+      "prompt": "ALLOW",
+      "reply": "REDACT",
+      "enrichedPrompt": "ALLOW"
+    }
+  ]
+}

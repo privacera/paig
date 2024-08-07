@@ -1,0 +1,28 @@
+database:
+  url: "sqlite+aiosqlite:///db/database.db"
+
+security:
+  expire_minutes: 1440
+  basic_auth:
+    secret: "$2b$12$1ykJ4rnE3yKNa05mPiDTluso17gdFyUux/qSLsCv0tzIBeVqnmMmG"
+
+opensearch:
+  endpoint: ""
+  username: ""
+  secret: ""
+
+authz:
+  rds_authorizer:
+    cache_expiry:
+      get_user_groups: 60
+      get_application_details: 60
+      get_application_config: 60
+      get_application_policies: 3
+      get_vector_db_details: 60
+      get_vector_db_policies: 3
+
+# default_shield_server_url: "<Replace with Shield Server URL>"
+
+# skip_default_user_creation: false
+# skip_default_application_creation: false
+# audit_storage_datasource: "<RDS or OPENSEARCH>"

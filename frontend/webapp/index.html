@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+  <head>
+    <link rel="apple-touch-icon" sizes="152x152" href="static/images/apple-touch-icon.png">
+    <link rel="mask-icon" href="static/images/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="static/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="static/images/favicon.ico" type="image/x-icon">
+    <link rel="mask-icon" src="static/images/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="-1" />
+    <meta name="apple-mobile-web-app-title" content="Privacera">
+    <meta name="application-name" content="Privacera">
+    <meta name="msapplication-config" content="static/images/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
+    <meta charset="utf-8">
+    <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keyword" content="">
+    <title>Privacera PAIG</title>
+  </head>
+  <body class="body-small">
+    <div id="main_region" >
+      <style>
+      /*Main page Loader */
+      .loader-inner {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+      }
+
+      .bg-white {
+          background: #ffffff;
+      }
+
+      .loader-main {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+      }
+
+      .rotate {
+          animation: infinite-rotate 0.8s linear infinite;
+          transform: translate(50px, 100px);
+          transform-origin: 85px 7.60px;
+      }
+
+      @keyframes infinite-rotate {
+          0% {
+              -webkit-transform: rotate(0deg);
+          }
+
+          100% {
+              -webkit-transform: rotate(360deg);
+          }
+      }
+      .m-t-sm {
+          margin-top: 6px;
+      }
+      /*End of Main page Loader*/
+      </style>
+      <style data-jss="" data-meta="MuiLinearProgress">
+          .MuiLinearProgress-root {
+            height: 4px;
+            overflow: hidden;
+            position: relative;
+          }
+          @media print {
+            .MuiLinearProgress-root {
+              -webkit-print-color-adjust: exact;
+            }
+          }
+          .MuiLinearProgress-colorPrimary {
+            background-color: rgb(161, 208, 251);
+          }
+          .MuiLinearProgress-colorSecondary {
+            background-color: rgb(251, 158, 191);
+          }
+          .MuiLinearProgress-buffer {
+            background-color: transparent;
+          }
+          .MuiLinearProgress-query {
+            transform: rotate(180deg);
+          }
+          .MuiLinearProgress-dashed {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            animation: MuiLinearProgress-keyframes-buffer 3s infinite linear;
+            margin-top: 0;
+          }
+          .MuiLinearProgress-dashedColorPrimary {
+            background-size: 10px 10px;
+            background-image: radial-gradient(rgb(161, 208, 251) 0%, rgb(161, 208, 251) 16%, transparent 42%);
+            background-position: 0 -23px;
+          }
+          .MuiLinearProgress-dashedColorSecondary {
+            background-size: 10px 10px;
+            background-image: radial-gradient(rgb(251, 158, 191) 0%, rgb(251, 158, 191) 16%, transparent 42%);
+            background-position: 0 -23px;
+          }
+          .MuiLinearProgress-bar {
+            top: 0;
+            left: 0;
+            width: 100%;
+            bottom: 0;
+            position: absolute;
+            transition: transform 0.2s linear;
+            transform-origin: left;
+          }
+          .MuiLinearProgress-barColorPrimary {
+            background-color: #0A84F7;
+          }
+          .MuiLinearProgress-barColorSecondary {
+            background-color: #f50057;
+          }
+          .MuiLinearProgress-bar1Indeterminate {
+            width: auto;
+            animation: MuiLinearProgress-keyframes-indeterminate1 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite;
+          }
+          .MuiLinearProgress-bar1Determinate {
+            transition: transform .4s linear;
+          }
+          .MuiLinearProgress-bar1Buffer {
+            z-index: 1;
+            transition: transform .4s linear;
+          }
+          .MuiLinearProgress-bar2Indeterminate {
+            width: auto;
+            animation: MuiLinearProgress-keyframes-indeterminate2 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite;
+          }
+          .MuiLinearProgress-bar2Buffer {
+            transition: transform .4s linear;
+          }
+          @-webkit-keyframes MuiLinearProgress-keyframes-indeterminate1 {
+            0% {
+              left: -35%;
+              right: 100%;
+            }
+            60% {
+              left: 100%;
+              right: -90%;
+            }
+            100% {
+              left: 100%;
+              right: -90%;
+            }
+          }
+          @-webkit-keyframes MuiLinearProgress-keyframes-indeterminate2 {
+            0% {
+              left: -200%;
+              right: 100%;
+            }
+            60% {
+              left: 107%;
+              right: -8%;
+            }
+            100% {
+              left: 107%;
+              right: -8%;
+            }
+          }
+          @-webkit-keyframes MuiLinearProgress-keyframes-buffer {
+            0% {
+              opacity: 1;
+              background-position: 0 -23px;
+            }
+            50% {
+              opacity: 0;
+              background-position: 0 -23px;
+            }
+            100% {
+              opacity: 1;
+              background-position: -200px -23px;
+            }
+          }
+      </style>
+
+      <div class="bg-white loader-main">
+        <div class="loader-inner">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="325px" height="60px" viewBox="0 0 324 60" version="1.1">
+            <defs>
+              <clipPath id="clip1">
+                <path d="M 0 29 L 17 29 L 17 59.808594 L 0 59.808594 Z M 0 29 "/>
+              </clipPath>
+              <clipPath id="clip2">
+                <path d="M 259 0 L 261 0 L 261 59.808594 L 259 59.808594 Z M 259 0 "/>
+              </clipPath>
+              <clipPath id="clip3">
+                <path d="M 284 7 L 323.757812 7 L 323.757812 47 L 284 47 Z M 284 7 "/>
+              </clipPath>
+              <linearGradient id="linear0" gradientUnits="userSpaceOnUse" x1="775.57" y1="131.33" x2="867.73" y2="22.64" gradientTransform="matrix(0.376307,0,0,0.377358,0,0)">
+              <stop offset="0" style="stop-color:rgb(0%,98.431373%,60.784314%);stop-opacity:1;"/>
+              <stop offset="0.08" style="stop-color:rgb(0%,94.117647%,66.27451%);stop-opacity:1;"/>
+              <stop offset="0.3" style="stop-color:rgb(0.392157%,72.941176%,93.72549%);stop-opacity:1;"/>
+              <stop offset="0.66" style="stop-color:rgb(17.647059%,29.019608%,85.490196%);stop-opacity:1;"/>
+              </linearGradient>
+              </defs>
+              <g id="surface1">
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 39.230469 21.074219 C 40.515625 18.570312 43.089844 17.050781 45.894531 17.125 C 48.847656 17.125 52.785156 18.722656 52.785156 21.605469 C 52.859375 23.046875 51.796875 24.339844 50.359375 24.492188 L 50.136719 24.492188 C 49.378906 24.492188 48.617188 24.183594 48.011719 23.65625 C 47.101562 22.898438 45.96875 22.441406 44.757812 22.515625 C 41.121094 22.515625 39.230469 25.171875 39.230469 28.59375 L 39.230469 41.277344 C 39.230469 43.855469 38.699219 45.148438 36.425781 45.148438 C 34.304688 45.148438 33.777344 43.855469 33.777344 41.121094 L 33.777344 20.765625 C 33.777344 18.945312 34.535156 17.804688 36.199219 17.804688 C 38.398438 17.804688 38.851562 18.792969 39.230469 21.066406 Z M 39.230469 21.074219 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 63.3125 10.0625 C 63.390625 11.960938 61.875 13.558594 59.980469 13.632812 C 57.855469 13.632812 56.496094 12.34375 56.496094 10.0625 C 56.417969 8.242188 57.855469 6.722656 59.675781 6.644531 L 59.980469 6.644531 C 61.796875 6.796875 63.234375 8.316406 63.3125 10.0625 Z M 62.78125 42.339844 C 62.78125 44.3125 61.871094 45.300781 59.902344 45.300781 C 57.9375 45.300781 57.101562 44.3125 57.101562 42.339844 L 57.101562 20.84375 C 57.101562 18.71875 57.933594 17.730469 59.828125 17.730469 C 61.726562 17.730469 62.707031 18.722656 62.707031 20.84375 L 62.707031 42.339844 Z M 62.78125 42.339844 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 79.746094 37.402344 L 86.714844 19.785156 C 87.320312 18.265625 88.308594 17.65625 89.519531 17.65625 C 90.957031 17.65625 92.167969 18.871094 92.167969 20.3125 C 92.167969 20.84375 92.019531 21.378906 91.789062 21.832031 L 82.925781 43.023438 C 82.246094 44.617188 81.410156 45.378906 79.820312 45.378906 C 78.234375 45.378906 77.398438 44.695312 76.71875 43.023438 L 67.78125 21.910156 C 67.554688 21.453125 67.476562 20.921875 67.398438 20.46875 C 67.324219 18.945312 68.535156 17.730469 69.972656 17.65625 L 70.050781 17.65625 C 71.1875 17.65625 72.171875 18.339844 72.851562 19.859375 L 79.742188 37.402344 Z M 79.746094 37.402344 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 119.585938 17.429688 C 121.402344 17.429688 122.316406 18.417969 122.316406 20.46875 L 122.316406 41.882812 C 122.316406 44.238281 121.707031 45.378906 119.664062 45.378906 C 117.921875 45.378906 117.015625 44.085938 116.785156 41.199219 C 115.425781 43.78125 111.714844 45.527344 108 45.527344 C 100.273438 45.527344 94.898438 39.300781 94.898438 31.324219 C 94.898438 23.347656 100.273438 17.046875 108 17.046875 C 111.785156 17.046875 115.421875 18.640625 116.863281 21.449219 C 117.011719 19.398438 117.542969 17.421875 119.589844 17.421875 Z M 100.5 31.328125 C 100.5 36.1875 103.835938 39.984375 108.601562 39.984375 C 113.371094 39.984375 116.703125 36.1875 116.703125 31.328125 C 116.703125 26.46875 113.371094 22.671875 108.601562 22.671875 C 103.835938 22.671875 100.5 26.699219 100.5 31.328125 Z M 100.5 31.328125 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 140.410156 45.609375 C 132.609375 45.683594 126.246094 39.457031 126.171875 31.632812 L 126.171875 31.328125 C 126.019531 23.582031 132.230469 17.125 140.03125 17.050781 L 140.410156 17.050781 C 143.589844 16.972656 146.695312 17.960938 149.199219 19.859375 C 150.183594 20.46875 150.863281 21.609375 150.863281 22.746094 C 150.863281 24.1875 149.652344 25.402344 148.214844 25.402344 L 148.140625 25.402344 C 147.308594 25.328125 146.550781 25.023438 145.867188 24.492188 C 144.351562 23.351562 142.457031 22.667969 140.492188 22.667969 C 135.71875 22.667969 131.933594 26.539062 131.933594 31.324219 C 131.933594 36.109375 135.792969 39.90625 140.566406 39.90625 C 142.839844 39.90625 144.957031 39.148438 146.625 37.625 C 147.230469 37.019531 148.0625 36.636719 148.972656 36.5625 C 150.410156 36.5625 151.621094 37.777344 151.621094 39.21875 L 151.621094 39.292969 C 151.546875 40.207031 151.167969 41.042969 150.484375 41.722656 C 148.289062 44.15625 144.425781 45.597656 140.410156 45.597656 Z M 140.410156 45.609375 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 160.710938 32.242188 C 161.390625 36.875 164.042969 40.140625 169.339844 40.140625 C 171.613281 40.214844 173.808594 39.382812 175.550781 37.859375 C 176.15625 37.175781 177.066406 36.871094 177.898438 36.871094 C 179.335938 36.871094 180.546875 38.085938 180.546875 39.527344 C 180.546875 42.183594 175.851562 45.605469 169.1875 45.605469 C 161.386719 45.605469 155.101562 39.300781 155.101562 31.554688 L 155.101562 31.402344 C 154.953125 23.65625 161.160156 17.277344 168.886719 17.125 L 169.191406 17.125 C 177.292969 17.125 182.445312 23.425781 182.445312 28.515625 C 182.445312 30.945312 180.929688 32.3125 178.203125 32.3125 L 160.710938 32.3125 L 160.710938 32.238281 Z M 176.765625 27.914062 C 176.085938 24.496094 173.132812 22.445312 169.191406 22.445312 C 165.25 22.445312 162.070312 24.574219 161.011719 27.914062 Z M 176.765625 27.914062 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 192.136719 21.074219 C 193.425781 18.570312 196 17.050781 198.804688 17.125 C 201.757812 17.125 205.691406 18.722656 205.691406 21.605469 C 205.769531 23.046875 204.707031 24.339844 203.269531 24.492188 L 203.042969 24.492188 C 202.289062 24.492188 201.527344 24.183594 200.921875 23.65625 C 200.011719 22.898438 198.878906 22.441406 197.667969 22.515625 C 194.03125 22.515625 192.136719 25.171875 192.136719 28.59375 L 192.136719 41.277344 C 192.136719 43.855469 191.609375 45.148438 189.335938 45.148438 C 187.210938 45.148438 186.6875 43.855469 186.6875 41.121094 L 186.6875 20.765625 C 186.6875 18.945312 187.441406 17.804688 189.109375 17.804688 C 191.230469 17.804688 191.683594 18.792969 192.136719 21.066406 Z M 192.136719 21.074219 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 232.050781 17.429688 C 233.867188 17.429688 234.777344 18.417969 234.777344 20.46875 L 234.777344 41.882812 C 234.777344 44.238281 234.171875 45.378906 232.128906 45.378906 C 230.386719 45.378906 229.480469 44.085938 229.25 41.199219 C 227.886719 43.78125 224.175781 45.527344 220.464844 45.527344 C 212.738281 45.527344 207.359375 39.300781 207.359375 31.324219 C 207.359375 23.347656 212.738281 17.046875 220.464844 17.046875 C 224.25 17.046875 227.882812 18.640625 229.324219 21.449219 C 229.476562 19.398438 230.007812 17.421875 232.054688 17.421875 Z M 212.964844 31.328125 C 212.964844 36.1875 216.296875 39.984375 221.066406 39.984375 C 225.832031 39.984375 229.167969 36.1875 229.167969 31.328125 C 229.167969 26.46875 225.832031 22.671875 221.066406 22.671875 C 216.296875 22.671875 212.964844 26.699219 212.964844 31.328125 Z M 212.964844 31.328125 "/>
+              <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 28.25 31.328125 C 28.25 39.53125 22.871094 45.683594 14.921875 45.683594 L 13.101562 45.683594 C 11.511719 45.683594 10.300781 44.390625 10.300781 42.871094 C 10.300781 41.277344 11.585938 40.058594 13.101562 40.058594 L 14.316406 40.058594 C 19.085938 40.058594 22.496094 36.109375 22.496094 31.402344 C 22.496094 26.699219 19.085938 22.671875 14.316406 22.671875 L 2.804688 22.671875 C 1.367188 22.671875 0.152344 21.609375 0 20.167969 L 0 19.941406 C 0 18.34375 1.285156 17.128906 2.804688 17.128906 L 14.996094 17.128906 C 22.796875 17.054688 28.25 23.277344 28.25 31.332031 Z M 28.25 31.328125 "/>
+              <g clip-path="url(#clip1)" clip-rule="nonzero">
+                <path style=" stroke:none;fill-rule:nonzero;fill:rgb(100%,30.196078%,0.392157%);fill-opacity:1;" d="M 15.070312 29.429688 C 14.691406 29.203125 14.238281 29.125 13.859375 29.125 L 2.804688 29.125 C 1.285156 29.125 0 30.339844 0 31.9375 L 0 57 C 0 58.519531 1.285156 59.8125 2.804688 59.8125 C 4.320312 59.8125 5.605469 58.519531 5.605469 57 L 5.605469 34.824219 L 13.863281 34.824219 C 15.453125 34.824219 16.667969 33.53125 16.667969 32.011719 C 16.667969 30.871094 16.0625 29.882812 15.074219 29.429688 Z M 15.070312 29.429688 "/>
+              </g>
+              <g clip-path="url(#clip2)" clip-rule="nonzero">
+                <path style=" stroke:none;fill-rule:nonzero;fill:rgb(14.509804%,16.862745%,40.392157%);fill-opacity:1;" d="M 260.070312 0 L 259.316406 0 L 259.316406 59.808594 L 260.070312 59.808594 Z M 260.070312 0 "/>
+              </g>
+              <g clip-path="url(#clip3)" clip-rule="nonzero">
+                <path style=" stroke:none;fill-rule:nonzero;fill:url(#linear0);" d="M 323.679688 20.742188 C 323.679688 18.542969 322.660156 17.519531 320.699219 17.519531 C 318.738281 17.519531 317.878906 18.542969 317.878906 20.742188 L 317.878906 42.988281 C 317.878906 45.035156 318.816406 46.054688 320.777344 46.054688 C 322.738281 46.054688 323.757812 45.03125 323.757812 42.988281 L 323.679688 42.988281 Z M 310.164062 17.207031 C 308.046875 17.207031 307.5 19.253906 307.339844 21.375 C 305.851562 18.464844 302.085938 16.816406 298.171875 16.816406 C 290.171875 16.816406 284.609375 23.179688 284.609375 31.59375 C 284.609375 40.003906 290.171875 46.289062 298.171875 46.289062 C 302.011719 46.289062 305.851562 44.484375 307.261719 41.8125 C 307.496094 44.800781 308.4375 46.136719 310.242188 46.136719 C 312.355469 46.136719 312.984375 44.957031 312.984375 42.519531 L 312.984375 20.355469 C 312.984375 18.234375 312.042969 17.210938 310.164062 17.210938 Z M 298.796875 40.554688 C 293.863281 40.554688 290.410156 36.621094 290.410156 31.59375 C 290.410156 26.5625 293.863281 22.628906 298.796875 22.628906 C 303.734375 22.628906 307.1875 26.796875 307.1875 31.59375 C 307.1875 36.621094 303.660156 40.554688 298.796875 40.554688 Z M 323.757812 10.199219 C 323.757812 11.828125 322.441406 13.148438 320.820312 13.148438 C 319.199219 13.148438 317.882812 11.828125 317.882812 10.199219 C 317.882812 8.574219 319.199219 7.253906 320.820312 7.253906 C 322.441406 7.253906 323.757812 8.574219 323.757812 10.199219 Z M 323.757812 10.199219 "/>
+              </g>
+            </g>
+          </svg>
+          <div class="MuiLinearProgress-root MuiLinearProgress-colorPrimary m-t-sm MuiLinearProgress-indeterminate" role="progressbar">
+            <div class="MuiLinearProgress-bar MuiLinearProgress-barColorPrimary MuiLinearProgress-bar1Indeterminate"></div>
+              <div class="MuiLinearProgress-bar MuiLinearProgress-bar2Indeterminate MuiLinearProgress-barColorPrimary">
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>

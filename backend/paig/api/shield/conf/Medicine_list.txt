@@ -1,0 +1,850 @@
+Amoxycillin
+Ambroxol
+Montelukast
+Phenylephrine
+Aceclofenac
+Domperidone
+Amlodipine
+Camylofin
+Chlorpheniramine Maleate
+Guaifenesin
+Lidocaine
+Sacubitril
+Amitriptyline
+Acebrophylline
+Azithromycin
+Isoniazid
+Fluticasone Propionate
+Levosalbutamol
+Cyproheptadine
+Ampicillin
+Furosemide
+Cetirizine
+Atorvastatin
+Empagliflozin
+Paracetamol
+Diosmin
+Glimepiride
+Thiocolchicoside
+Paracetamol/Acetaminophen
+Bromhexine
+Camphor
+Mifepristone
+Alprazolam
+Telmisartan
+Adapalene
+Sitagliptin
+Methylcobalamin
+Ofloxacin
+Loteprednol etabonate
+Levocetirizine
+Cilnidipine
+Bilastine
+Aluminium Hydroxide
+Moxifloxacin
+Ketoconazole
+Caffeine
+Lindane
+Ivermectin
+Alendronic Acid
+Donepezil
+Drotaverine
+Choline Salicylate
+Rifampicin
+Glycopyrrolate
+Calcium Carbonate
+Standard Cobra Venom
+Brimonidine
+Aspirin
+Potassium Citrate
+Ketorolac
+Aprepitant
+Ornidazole
+Metformin
+Losartan
+Etizolam
+Pregabalin
+Benzoyl Peroxide
+L-Leucine
+Clonazepam
+Dicyclomine
+Etofylline
+Glycine
+Torasemide
+Atenolol
+Tranexamic Acid
+Pseudoephedrine
+Clonidine
+Rosuvastatin
+Gabapentin
+Loratadine
+Melatonin
+Formoterol
+S-Amlodipine
+Minoxidil
+Benfotiamine
+Salbutamol
+Silodosin
+Spironolactone
+Naphazoline
+Hydroquinone
+Hydrocortisone
+Dapsone
+Isosorbide Dinitrate
+Nimesulide
+Epalrestat
+Brinzolamide
+Trypsin
+Citric Acid
+Ceftriaxone
+Magaldrate
+Hydroxypropylmethylcellulose
+Gliclazide
+Amorolfine
+Diclofenac
+Bromelain
+Estradiol
+Fenofibrate
+Ibuprofen
+Loperamide
+Clindamycin
+Cefuroxime
+Ciprofloxacin
+Metronidazole
+Atropine
+Eperisone
+Diloxanide
+Timolol
+Salmeterol
+Cefixime
+Miconazole
+Metoprolol Succinate
+Alogliptin
+Flupenthixol
+Levosulpiride
+Doxylamine
+Cefepime
+Terbutaline
+Naproxen
+Doxycycline
+Alfuzosin
+Ginkgo Biloba
+Carboxymethylcellulose
+Azilsartan medoxomil
+Dichlorobenzyl Alcohol
+Ferrous Ascorbate
+Beclometasone
+Glucosamine
+Chondroitin
+Polyethylene Glycol
+Triprolidine
+Chlorzoxazone
+Netupitant
+L-Methyl Folate
+Artesunate
+Clobetasol
+Myo-Inositol
+Alcaftadine
+Furazolidone
+Desloratadine
+Lamivudine
+Ceftazidime
+Fluocinolone acetonide
+Artemether
+Fluconazole
+Dextromethorphan Hydrobromide
+Tricholine Citrate
+Diphtheria Toxoid
+Betamethasone
+Coenzyme Q10
+Tamsulosin
+Alpha Lipoic Acid
+Haloperidol
+Choline
+Oxetacaine
+Calcitriol
+Abacavir
+Reserpine
+Ethinyl Estradiol
+Lysine
+Biotin
+Chlordiazepoxide
+Phenylpropanolamine
+Ephedrine
+Diclofenac diethylamine
+Chlorhexidine Gluconate
+Acetylcysteine
+Olmesartan Medoxomil
+Mefenamic Acid
+Etoricoxib
+Paradichlorobenzene
+Tramadol
+Levofloxacin
+Azelaic Acid
+L-Arginine
+Taurine
+Cefpodoxime Proxetil
+Flupirtine
+Ammonium Chloride
+Pancreatin
+Silver Sulfadiazine
+Terbinafine
+Atazanavir
+Diacerein
+Citicoline
+Clidinium
+Chloramphenicol
+Prilocaine
+Nitrofurantoin
+Theophylline
+Gentamicin
+Tetanus Toxoid
+Diethylcarbamazine
+Benzyl Nicotinate
+Sucralfate
+Mometasone
+Ticagrelor
+Ciclesonide
+Gatifloxacin
+Lornoxicam
+Amiloride
+Cefoperazone
+Clomiphene
+Paroxetine
+Silymarin
+Nebivolol
+Sodium Hyaluronate
+Doxofylline
+Ritonavir
+Neomycin
+Sodium Picosulfate
+Calcium
+Ondansetron
+Benzocaine
+Nadifloxacin
+Glibenclamide
+Apremilast
+Calcium Gluconate
+Calcium Citrate Malate
+Rabeprazole
+Sodium Valproate
+Perindopril erbumine
+Propranolol
+Lactobacillus
+Choline Theophyllinate
+Codeine
+Sulfadiazine
+Lactitol
+Polymyxin B
+Diphenhydramine
+Pioglitazone
+Sulfamethoxazole
+Ferrous Bisglycinate
+Piperacillin
+Dehydroepiandrosterone
+Norfloxacin
+Arteether
+Cinnarizine
+Paclitaxel
+Diazepam
+Polyvinyl Alcohol
+Etodolac
+Roxithromycin
+Milk of Magnesia
+Glipizide
+Povidone Iodine
+Flurbiprofen
+Mephenesin
+Cefdinir
+Nitazoxanide
+Nalidixic Acid
+Simethicone
+Vitamin C
+Tropicamide
+Folic Acid
+Cefotaxime
+Imipenem
+Bambuterol
+Ramipril
+Mebeverine
+Meropenem
+Imipramine
+Halobetasol
+Trifluoperazine
+Pantoprazole
+Acarbose
+Ebastine
+Dorzolamide
+Thiamine(Vitamin B1)
+Isosorbide Mononitrate
+Magnesium Citrate
+Captopril
+Cefalexin
+Risperidone
+Enalapril
+Chlorpromazine
+Sulfamethopyrazine
+Lisinopril
+Racecadotril
+Hydrochlorothiazide
+L-Ornithine L-Aspartate
+Dexamethasone
+Cefadroxil
+Tannic Acid
+Fluticasone Furoate
+Hyoscine butylbromide
+Mirabegron
+Benidipine
+Menthol
+Levo-carnitine
+Mupirocin
+Bimatoprost
+Hepatitis B Vaccine
+Sertaconazole
+Dimethicone
+Eicosapentaenoic Acid
+Calcium citrate
+Silver Nitrate
+Betahistine
+Bisoprolol
+Tadalafil
+Clobetasone
+Bromfenac
+Meclizine
+Cyclobenzaprine
+Albendazole
+Insulin Isophane/NPH
+Clotrimazole
+Chlorthalidone
+Omeprazole
+Sulphacetamide
+Cetrimide
+Fluoxetine
+Cyproterone
+Tobramycin
+Phenobarbitone
+Meningococcal
+Dexibuprofen
+Liquid Paraffin
+Potassium Nitrate
+Benzydamine
+Boric Acid
+Calcium Chloride
+Levodopa
+Cinitapride
+Ciclopirox
+Noscapine
+Voglibose
+Sodium Sulphate
+Piperazine
+Potassium Chloride
+L-Methyl Folate Calcium
+Carisoprodol
+Tetracycline
+Calcipotriol
+Climbazole
+Allantoin
+Promethazine
+Chloroquine
+Carvedilol
+Trimetazidine
+Piracetam
+Potassium Iodide
+Chromium Chloride
+Dolutegravir
+Coral calcium
+Diltiazem
+Valsartan
+Capecitabine
+Ticarcillin
+Alpha-galactosidase
+Cyclopentolate
+Cisapride
+Amylmetacresol
+Calamine
+Cefpirome
+Metoclopramide
+Dill Oil
+Enclomiphene
+Eicosapentaenoic acid
+Itraconazole
+Cerebroprotein Hydrolysate
+Coal Tar
+Glycerin
+Irbesartan
+Sodium Bicarbonate
+Beta-Cyclodextrin
+Dapagliflozin
+Calcium Lactate
+Pyrimethamine
+Candesartan
+Fexofenadine
+Dibasic sodium phosphate
+Chlorpropamide
+Diphtheria Immune Globulin
+Magnesium Carbonate
+Tinidazole
+Tolperisone
+Valdecoxib
+Zinc acetate
+Amikacin
+Permethrin
+Mesna
+Nattokinase
+Ledipasvir
+Ibandronic Acid
+Repaglinide
+Salicylic Acid
+Sildenafil
+Desvenlafaxine
+Eplerenone
+Duloxetine
+Dextrose
+Papain
+Benzthiazide
+Faropenem
+Vitamin D3
+Calcium Dobesilate
+Methdilazine
+Dexrabeprazole
+Hyoscyamine
+Benzoic Acid
+Darunavir
+Clioquinol
+Hydrotalcite
+Dosulepin
+Alginic Acid
+Escitalopram Oxalate
+Teneligliptin
+Heparin
+Ticlopidine
+Meloxicam
+Bromocriptine
+Dexketoprofen
+Flunarizine
+Insulin Lispro
+Ambrisentan
+Nicotinamide
+Eberconazole
+Lactobacillus Salivarius
+Halometasone
+Efonidipine
+Esomeprazole
+Lactulose
+Sulphur
+Ethamsylate
+Adrenaline
+Trypsin Chymotrypsin
+Pitavastatin
+Erythromycin
+Rosiglitazone
+Emtricitabine
+Stavudine
+Famotidine
+Iron
+Sodium Fluoride
+Docosahexanoic acid(DHA)
+L-Carnitine L-Tartrate
+Norgestrel
+Sodium Feredetate
+Favipiravir
+Sumatriptan
+Levonorgestrel
+Rifaximin
+Lafutidine
+Cyanocobalamin
+Capsaicin Based Rubefacients
+Rosehip
+Isopropamide
+Sodium Chloride
+Proanthocyanidin
+Nateglinide
+Difluprednate
+Gemcitabine
+Beta Carotene
+Itopride
+Lanolin
+Human Normal Immunoglobulin
+Allium Cepa
+Phenyl Mercuric Nitrate
+Sofosbuvir
+Metadoxine
+Daclatasvir
+Moxonidine
+Indacaterol
+Indomethacin
+Poliomyelitis Virus Type 1
+Lecithin
+Ivabradine
+Gramicidin
+Ketoprofen
+Proparacaine
+Bacitracin
+Saxagliptin
+Sodium Monofluorophosphate
+Urea
+Aloe Vera
+Diphenoxylate
+Levocloperastine
+Benzoxonium Chloride
+Luliconazole
+Alpha-amylase
+Tegafur
+Mebendazole
+Linezolid
+Vitamin A
+Ergotamine
+Meningococcal Vaccine
+Measles Vaccine
+Methotrexate
+Methoxsalen
+Mosapride
+Tazarotene
+Gamma Linolenic acid
+Ranitidine
+Piroxicam
+Magnesium
+Dextran 40
+Potassium Magnesium Citrate
+Vitamin E
+Trihexyphenidyl
+Sodium aminosalicylate
+Metolazone
+Neisseria Meningitidis Group A
+Rupatadine
+Pyrazinamide
+Insulin Aspart
+Nefopam
+Xylometazoline
+Liver Extract
+Astaxanthin
+Ferrous Fumarate
+Diastase
+Calcium Pantothenate
+Nicergoline
+Tapentadol
+Nimorazole
+Chlormezanone
+Nabumetone
+Haemophilus Influenzae Type B Capsular Polysaccharide
+Chromium
+Olopatadine
+Sodium Cromoglycate
+Celecoxib
+Alpha glycerylphosphorylcholine
+Podophyllum resin
+Chromium Picolinate
+Prasugrel
+Simvastatin
+Thyroxine
+Nirmatrelvir
+Methylpolysiloxane
+Calcium Phosphate
+Sodium Metabisulphite
+Buprenorphine
+Tenofovir disoproxil fumarate
+Quinapril
+Insulin Degludec
+Remogliflozin Etabonate
+Rebamipide
+Butyl Alcohol
+Casirivimab
+Testosterone Propionate
+Risedronate
+Aprotinin
+Aliskiren
+Rofecoxib
+Euphorbia Prostrata Extract
+Satranidazole
+Docusate
+Arterolane
+Centbucridine
+Hyaluronic Acid
+Framycetin
+Adrenochrome Monosemicarbazone
+Light mineral oil
+Recombinant Human Epidermal Growth Factor
+Evening Primrose Oil
+Extractum Cepae-Cepalin
+Secnidazole
+Mono Ammonium Glycyrrhizinate
+Sparfloxacin
+Almagate
+Oxytetracycline
+Fluphenazine
+Hydroxocobalamin
+Freeze-dried Live Attenuated Hepatitis A Vaccine
+Meglumine Diatrizoate
+Aminophylline
+Laropiprant
+Fibrinogen
+Terpin Hydrate
+Gimeracil
+Tipiracil
+Evogliptin
+Hydroxyethyl Starch(HES)
+Canagliflozin
+Pepsin
+Vincristine
+Liraglutide
+Sertraline
+Clavulanic Acid
+Nifedipine
+Azelastine
+Cloxacillin
+Clopidogrel
+Linagliptin
+Hesperidin
+Dicloxacillin
+Misoprostol
+Flavoxate
+Milk Of Magnesia
+Prednisolone
+Zinc pyrithione
+Memantine
+Standard common krait Venom
+Stabilized Oxychloro
+Nortriptyline
+L-Isoleucine
+Indapamide
+Glutathione
+Serratiopeptidase
+Budesonide
+Azelnidipine
+Ezetimibe
+Dutasteride
+Tretinoin
+Acetic acid
+Hydralazine
+Kojic Acid
+Sulbactam
+Zinc Oxide
+Phenoxyethanol
+Isotretinoin
+Finasteride
+Tazobactum
+Tiotropium
+Vildagliptin
+Melitracen
+Aminexil
+Vitamin B6
+Dipyridamole
+n-acetylcarnosine
+Propylene Glycol
+Palonosetron
+Probenecid
+Lumefantrine
+D-Chiro Inositol
+Potassium Clavulanate
+Sorbitol
+Dihydralazine
+Drospirenone
+Travoprost
+Lactic acid bacillus
+Linseed Oil
+Magnesium Trisilicate
+Tizanidine
+Arginine
+Sulphadoxine
+S-Metoprolol Tartrate
+Metaxalone
+Ornithine
+Glucosamine Sulfate Potassium Chloride
+Cranberry Extract
+Sodium Citrate
+Haemophilus Type B Conjugate Vaccine
+Fusidic Acid
+Methylcobalamin/Mecobalamin
+Ursodeoxycholic Acid
+Lopinavir
+Chlorbutol
+Rutoside
+Valproic Acid
+Benazepril
+Ispaghula
+Trimethoprim
+Zinc bisglycinate
+Dimenhydrinate
+Albumin
+Fenpiverinium
+Fluorometholone
+Niacinamide
+Ilaprazole
+Hydroflumethiazide
+Racemethionine
+Methyl Sulfonyl Methane
+Zinc Sulfate
+Pamabrom
+Cilastatin
+Vitamin B3(Nicotinic Acid)
+Zinc Gluconate
+Oxychloro Complex
+Dexpanthenol
+Ketotifen
+Collagen Peptide
+Lansoprazole
+Saccharomyces boulardii
+Vancomycin
+Vilanterol
+Solifenacin
+Vitamin B2
+Vinpocetine
+Dapoxetine
+Econazole
+Levamisole
+Human Insulin/Soluble Insulin
+Lactobacillus Acidophilus
+Belladonna dry extract
+D-Panthenol
+Ammonium Lactate
+Olanzapine
+Phenytoin
+Lactose
+Carbocisteine
+Dextropropoxyphene
+Methyl Salicylate
+Ethambutol
+Benserazide
+Selenium
+Calcium Lactobionate
+Crotamiton
+Potassium Sulphate
+Ipratropium
+Dienogest
+Pyridoxal-5-phosphate
+Piroctone Olamine
+Pholcodine
+Primaquine
+Copper Sulphate
+Thiamine(Vitamin B12)
+Peptone
+Cyclophosphamide
+Dexchlorpheniramine
+Lipase
+Zinc Carnosine
+Magnesium Hydroxide
+Chlorocresol
+Fennel Oil
+Lactic Acid
+Mannitol
+Zinc Sulphate Monohydrate
+Luvistin
+Quiniodochlor
+Zidovudine
+Monobasic sodium phosphate
+Phenformin
+Nitrendipine
+Ifosfamide
+Dithranol
+Disodium edetate
+Levodropropizine
+Deflazacort
+Lacto bacillus Rhamnosus
+Triamterene
+sodium perborate monohydrate
+Desogestrel
+Troxerutin
+Alcohol
+Carbidopa
+Methionine
+Bile constituents
+Triamcinolone
+Potassium Hydrogen Carbonate
+Sodium Tauroglycocholate
+Insulin Lispro Protamine
+Clarithromycin
+Lactobacillus Brevis
+Pentazocine
+Zinc
+Procaine
+Gestodene
+Mefloquine
+Dydrogesterone
+Methocarbamol
+Fructo Oligosaccharide
+Amodiaquine
+Oxyphenbutazone
+Neostigmine
+L Glutathione Reduced
+Sodium Lactate
+Prochlorperazine
+Histamine Dihydrochloride
+Velpatasvir
+Menadione
+Trithioparamethoxy Phenylpropene
+Ursodeoxycholic Acid/Ursodiol
+Pilocarpine
+Poliomyelitis Virus Type 2
+Methylcellulose
+Metoprolol Tartrate
+Triclosan
+Ketamine
+Benzyl Alcohol
+Zolpidem
+Phenazone
+Latanoprost
+Uracil
+Lercanidipine
+Curcuma Longa
+Octinoxate
+Mumps Virus Vaccine
+Aminobenzoic Acid
+Magnesium Oxide
+Rubella vaccine
+Pine bark extract
+Hydroxyzine
+Borax
+Cod liver oil
+Sertindole
+Pyridoxamine dihydrochloride
+Thioridazine
+Miglitol
+Neisseria Meningitidis Group C
+Insulin Aspart Protamine
+Arformoterol
+Peppermint Powder
+Acrivastine
+Etonogestrel
+Thiomersal
+Copper
+Omega-3 fatty acid
+Didanosine
+S-Etodolac
+Benzoin
+Tribasic Calcium Phosphate
+Polypodium leucotomos extract
+Cetalkonium Chloride
+Sodium Iodide
+Chloroform
+Choline fenofibrate
+Naloxone
+Lycopene
+Docosahexanoic Acid
+Tolterodine
+Imdevimab
+Testosterone Phenylpropionate
+Calcium ascorbate
+Piperaquine
+Feracrylum
+Ethylmorphine
+Rutin
+White mineral oil
+Tocoferol
+Papaverine
+Dextran 70
+Umeclidinium
+Tetracaine
+Sodium Diatrizoate
+Pitofenone
+Thrombin
+Potassium Glycerophosphate
+Clinidipine
+Oteracil
+Trifluridine
+Phenazopyridine
+Oxyphenonium
+Mandelic acid
+Liver Fraction 2 Derived From Fresh Liver 01
+Pyrantel Pamoate
+Avibactam
+Zaltoprofen
