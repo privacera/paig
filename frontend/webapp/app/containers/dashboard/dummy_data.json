@@ -1,0 +1,345 @@
+[
+  {
+    "messages": {
+      "counts": {
+        "allowed_messages": 1640,
+        "denied_messages": 397,
+        "masked_messages": 227
+      },
+      "total_count": 2265
+    },
+    "senDataInPrompts": {
+      "conversation_type": "prompt",
+      "counts": {
+        "allowed_messages": 177,
+        "denied_messages": 274,
+        "masked_messages": 3
+      },
+      "pii": true,
+      "total_count": 454
+    },
+    "senDataInReplies": {
+      "conversation_type": "reply",
+      "counts": {
+        "allowed_messages": 389,
+        "denied_messages": 1,
+        "masked_messages": 224
+      },
+      "pii": true,
+      "total_count": 614
+    },
+    "appUsage": {
+      "audits": 6,
+      "permissions": 6,
+      "sales_model": 11,
+      "testModel": 1,
+      "users": 3
+    },
+    "distributionData1": [
+      {
+        "tag": "PERSON",
+        "queries": 885,
+        "graphData": [
+          {
+            "name": "Audits",
+            "data": [9]
+          },
+          {
+            "name": "Hr Confidential",
+            "data": [209]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [14]
+          },
+          {
+            "name": "Permissions",
+            "data": [55]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [41]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [40]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [5]
+          },
+          {
+            "name": "Sales Model",
+            "data": [499]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          },
+          {
+            "name": "Users",
+            "data": [12]
+          }
+        ]
+      },
+      {
+        "tag": "PHONE_NUMBER",
+        "queries": 369,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [10]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [5]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [4]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [18]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [3]
+          },
+          {
+            "name": "Sales Model",
+            "data": [328]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          }
+        ]
+      },
+      {
+        "tag": "URL",
+        "queries": 291,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [9]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [10]
+          },
+          {
+            "name": "Permissions",
+            "data": [3]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [14]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [9]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [1]
+          },
+          {
+            "name": "Sales Model",
+            "data": [238]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          },
+          {
+            "name": "Users",
+            "data": [6]
+          }
+        ]
+      },
+      {
+        "tag": "EMAIL_ADDRESS",
+        "queries": 281,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [9]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [3]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [14]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [9]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [1]
+          },
+          {
+            "name": "Sales Model",
+            "data": [238]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          },
+          {
+            "name": "Users",
+            "data": [6]
+          }
+        ]
+      },
+      {
+        "tag": "LOCATION",
+        "queries": 261,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [10]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [20]
+          },
+          {
+            "name": "Permissions",
+            "data": [4]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [11]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [6]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [1]
+          },
+          {
+            "name": "Sales Model",
+            "data": [208]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          }
+        ]
+      }
+    ],
+    "distributionData2": [
+      {
+        "tag": "DATE_TIME",
+        "queries": 120,
+        "graphData": [
+          {
+            "name": "Audits",
+            "data": [6]
+          },
+          {
+            "name": "Hr Confidential",
+            "data": [22]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [41]
+          },
+          {
+            "name": "Prospects Db",
+            "data": [4]
+          },
+          {
+            "name": "Sage Maker Sales Model",
+            "data": [3]
+          },
+          {
+            "name": "Sagemaker Doc Model",
+            "data": [1]
+          },
+          {
+            "name": "Sales Model",
+            "data": [43]
+          }
+        ]
+      },
+      {
+        "tag": "TOXIC",
+        "queries": 43,
+        "graphData": [
+          {
+            "name": "Hr Employee",
+            "data": [22]
+          },
+          {
+            "name": "Sales Model",
+            "data": [21]
+          }
+        ]
+      },
+      {
+        "tag": "US_DRIVER_LICENSE",
+        "queries": 9,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [4]
+          },
+          {
+            "name": "Hr Employee",
+            "data": [4]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          }
+        ]
+      },
+      {
+        "tag": "NRP",
+        "queries": 5,
+        "graphData": [
+          {
+            "name": "Hr Employee",
+            "data": [4]
+          },
+          {
+            "name": "Sales Model",
+            "data": [1]
+          }
+        ]
+      },
+      {
+        "tag": "US_BANK_NUMBER",
+        "queries": 5,
+        "graphData": [
+          {
+            "name": "Hr Confidential",
+            "data": [4]
+          },
+          {
+            "name": "Test Model",
+            "data": [1]
+          }
+        ]
+      }
+    ],
+    "accessData": [
+      {
+        "name": "Approved Access",
+        "data": [249, 71, 106, 129, 144, 176, 135, 148, 216, 194, 95, 54]
+      },
+      {
+        "name": "Denied Access",
+        "data": [83, 78, 98, 93, 106, 84, 105, 104, 91, 83, 106, 92]
+      }
+    ]
+  }
+]

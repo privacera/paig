@@ -1,0 +1,22 @@
+{
+  "authorized": true,
+  "enforce": true,
+  "requestId": "55ee-91c2-9e05a1ebe151",
+  "requestDateTime": "1970-01-01T00:02:03.455+00:00",
+  "auditId": null,
+  "userId": "jai.patel",
+  "applicationName": "saitama",
+  "maskedTraits": {},
+  "context": null,
+  "statusCode": 0,
+  "statusMessage": "Access is allowed",
+  "rangerAuditIds": [
+    "d5821c40-1ead-4907-94d3-bb6337b746d3-3"
+  ],
+  "rangerPolicyIds": [
+    11
+  ],
+  "paigPolicyIds": [
+    3
+  ]
+}

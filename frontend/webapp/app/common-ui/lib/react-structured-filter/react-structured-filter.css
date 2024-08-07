@@ -1,0 +1,144 @@
+.filter-tokenizer {
+  width:100%;
+
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding:10px;
+  font-size: 90%;
+  display:table;
+}
+
+.filter-tokenizer:first-child {
+  padding-left: 0;
+  padding-top:0;
+  padding-bottom:0;
+}
+
+.filter-tokenizer .token-collection {
+  display: table-cell;
+}
+
+.filter-tokenizer .typeahead {
+  overflow:auto;
+  display:block;
+}
+
+.filter-tokenizer .typeahead-token {
+  float:left;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  margin:3px;
+}
+
+.filter-tokenizer .token-operator {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+.filter-tokenizer .token-value {
+  font-weight: bold;
+}
+
+.filter-tokenizer .typeahead-token-close{
+  float: right;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 14px;
+  color: #000;
+  text-decoration: none;
+  text-shadow: 0 1px 0 #fff;
+  filter: alpha(opacity=30);
+  opacity: .3;
+  margin-left: 0.5em;
+}
+
+.filter-tokenizer .typeahead-token-close:focus,
+.filter-tokenizer .typeahead-token-close:hover {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  filter: alpha(opacity=60);
+  opacity: .6;
+}
+
+.filter-input-group {
+
+  overflow:auto;
+  display:block;
+
+  margin:3px;
+  padding:5px;
+}
+
+.filter-input-group .filter-category,
+.filter-input-group .filter-operator,
+.filter-input-group .filter-value {
+  overflow:auto;
+  display: block;
+  float:left;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.filter-tokenizer .typeahead input {
+  outline:0;
+  border:0px;
+  width:100%;
+}
+
+.filter-tokenizer .typeahead input:focus {outline:0;}
+
+.filter-tokenizer ul.typeahead-selector {
+  z-index:100;
+  position:absolute;
+  list-style: none;
+  margin: 0px;
+  padding: 0px;
+  background-color:#fff;
+  /* border: 1px solid #999; */
+  width:auto;
+  max-height:200px;
+  overflow-y:auto;
+
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.33);
+}
+
+.filter-tokenizer ul.typeahead-selector li {
+  z-index:9999;
+  border-bottom: 1px solid #ccc;
+}
+
+.filter-tokenizer ul.typeahead-selector li.header {
+  font-weight: bold;
+  padding:5px;
+}
+
+
+.filter-tokenizer ul.typeahead-selector li a {
+  color: #000;
+  text-decoration: none;
+  padding:5px;
+  width:100%;
+  display:block;
+  border-bottom: 0;
+}
+
+.filter-tokenizer ul.typeahead-selector li a:hover,
+.filter-tokenizer ul.typeahead-selector .hover a {
+  text-decoration: none;
+  background-color: #eee;
+}
+
+.filter-tokenizer .rdt{
+  position: absolute;
+}
+
+.filter-tokenizer .rdtDay{
+  cursor: pointer;
+}
+
+.filter-tokenizer .rdtDay:hover{
+  background: #eee;
+}
