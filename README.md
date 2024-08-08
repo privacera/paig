@@ -2,7 +2,7 @@
 PAIG offers tools designed to enhance the security and compliance of your AI applications. Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, PAIG ensures that you maintain the highest standards of security and adherence to compliance. It's tailored for businesses that value a robust yet straightforward approach to AI application governance. 
 
 # What is PAIG?
-PAIG is a web application that provides a platform for AI governance and audits that data.
+PAIG provides platform to secure and govern your AI applications.
 
 ![PAIG Demo gif](docs/assets/PAIG_Demo.gif)
 
