@@ -79,7 +79,7 @@ The user can provide the custom configuration in the following ways:
 3. In a custom configuration file, the user should provide new configuration key values or override the existing configuration.
 
 ## How to Setup Database <a name="databsesetup"></a>
-User will have to create/update the tables in the database manually. Please refer to  Database for more details.
+PAIG Opensource supports automatic as well as manual database creation/updation. Please refer to Database for more details.
 [How to setup database](alembic_db/README.md)
 
 ## Logging <a name="logging"></a>
