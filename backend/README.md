@@ -28,6 +28,11 @@ Example:
 ```bash
 paig run --port 4545 --host 0.0.0.0
 ```
+**Note:** *Admin user credentials.*
+   ```bash
+   username: admin
+   password: welcome1
+   ```
 2. **Run as a library:** You can run PAIG in background by importing the library in your Python code. 
 Please run the help command to see all available options you can pass while calling the launch_app method.
 ```python

@@ -13,7 +13,7 @@ PAIG is a web application that provides a platform for AI governance and audits 
 ### Steps to run the development web UI
 1. Clone the repository with submodules
     ```bash
-    git clone --recursive  <git-repo-url>
+    git clone git@github.com:privacera/paig-stage.git
     ```
 2. Change directory to the frontend/webapp repository
 3. Install the dependencies
@@ -22,12 +22,17 @@ PAIG is a web application that provides a platform for AI governance and audits 
     ```
 4. Web UI configuration, including proxy configuration, can be found in the config/path.js file. Proxy should be set to web server url.
     ```js
-    target: 'http://localhost:8080',
+    target: 'http://127.0.0.1:4545',
     ```
 5. Run the web UI
     ```bash
     npm start
     ```
+**Note:** *Admin user credentials.*
+   ```bash
+   username: admin
+   password: welcome1
+   ```
 ### How to Create Build <a name="build"></a>
 You can simply create the build by running the following commands:
 ```bash
