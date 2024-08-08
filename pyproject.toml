@@ -4,7 +4,7 @@ dynamic = ["version"]
 readme = "backend/README.md"
 license = {file = "LICENSE"}
 description = 'PAIG Opensource'
-requires-python = ">= 3.9"
+requires-python = ">= 3.10"
 keywords = [
     "Chatbot",
     "Governance",
