@@ -46,7 +46,7 @@ Before sending your pull requests, make sure you do the following:
   ```bash
   git clone git@github.com:<username>/paig-stage.git
   cd paig-stage
-  git remote add upstream https://github.com/privacera/paig-stage.git
+  git remote add upstream git@github.com:privacera/paig-stage.git
   git fetch upstream
   ```
 
