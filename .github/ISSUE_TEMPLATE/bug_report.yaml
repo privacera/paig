@@ -1,0 +1,92 @@
+name: Bug Report Form
+description: Use this form to report a bug or issue with our web application.
+title: "[BUG]: "
+labels: ["bug", "triage"]
+projects: []
+assignees:
+  - 
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to file a bug report! Providing detailed information will help us resolve the issue more quickly.
+        
+        **Please make sure to fill out all required fields.** If you're unsure about something, feel free to reach out to us via the contact details provided below.
+  - type: input
+    id: contact
+    attributes:
+      label: Contact Details
+      description: How can we get in touch with you if we need more information?
+      placeholder: ex. email@example.com or GitHub username
+    validations:
+      required: false
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What Happened?
+      description: Describe the bug in detail. What did you do? What did you expect to happen? What actually happened?
+      placeholder: "e.g., I clicked on 'Submit' and the page crashed."
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Application Version
+      description: What version of our application were you using when you encountered the bug? (This can usually be found in the app's settings or about section.)
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python Version
+      description: Specify the version of Python you are using. (This can be found by running `python --version` in your terminal.)
+      placeholder: "e.g., 3.10.5"
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform Version
+      description: Specify the operating system and version you are using.
+      placeholder: "e.g., Ubuntu 20.04, Windows 10, macOS 12.3"
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: Affected Browsers
+      description: Which browsers are experiencing the issue? (Select all that apply.)
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
+        - Other
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Provide a step-by-step guide on how to reproduce the bug. This helps us replicate the issue.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Log Output
+      description: Copy and paste any relevant logs here. This will be automatically formatted into code, so there's no need to add backticks.
+      render: shell
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](https://github.com/privacera/paig-stage/blob/main/docs/CODE_OF_CONDUCT.md).
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true
