@@ -1,9 +1,10 @@
-# PAIG Opensource
-PAIG offers tools designed to enhance the security and compliance of your AI applications. Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, PAIG ensures that you maintain the highest standards of security and adherence to compliance. It's tailored for businesses that value a robust yet straight forward approach to AI application governance
+# Quick Start PAIG
+PAIG provides platform to secure and govern your AI applications.
 
 ## Contents
 - [Installation](#Installation)
 - [Usage](#usage)
+- [How To Govern Your LLM Interaction](#govern-your-llm)
 - [Configuration](#configuration)
 
 
@@ -18,29 +19,35 @@ python -m spacy download en_core_web_lg
 ## Usage <a name="usage"></a>
 PAIG  can be used in following ways:
 1. **Run as a service:** 
-    <br>You can simply run the PAIG as a service by running following command:
-
-    ```shell
+   <br>You can simply run the PAIG as a service by running following command:
+    
+   ```shell
     paig run
     ```
    
     To get the help for the command and see all available [OPTIONS], you can run the following command:
-
-    ```shell
+    
+   ```shell
     paig --help
     ```
    
     Example:
-
     ```shell
-    paig run --port 4545 --host 0.0.0.0
+    paig run --port 4545 --host 127.0.0.1
     ```
+   
+    **Note:** *Admin user credentials.*
 
-2. **Run as an Embedded Service:** 
-<br>You can run PAIG in background by importing the library in your Python code. 
+   ```shell
+   PAIG URL: http://127.0.0.1:4545
+   username: admin
+   password: welcome1
+   ```
+   
+2. **Run as an Embedded Service:** You can run PAIG in background by importing the library in your Python code. 
 Please run the help command to see all available options you can pass while calling the launch_app method.
-
-    ```python
+    
+   ```python
     from paig import launcher
     # Start the PIAG
     session = launcher.launch_app()
@@ -55,18 +62,13 @@ Please run the help command to see all available options you can pass while call
     launcher.close_app()
     ```
 
+## How To Govern Your LLM Interaction <a name="govern-your-llm"></a>
+PAIG provides a platform to secure and govern your AI applications. You can use the PAIG to secure and govern your LLM interactions.
+Try out this [code snippet](SNIPPET_USING_PLUGIN.md) to secure and govern your LLM interactions.
+
 ## Configuration <a name="configuration"></a>
 PAIG Opensource provides overlay configuration. You can provide the custom configuration in the following ways:
 1. Create a new directory in the present working directory of the project with the name custom-conf.
-2. Create a new custom configuration file named `<env>_config.yaml`(e.g. dev_config.yaml) in the custom-conf folder which will override default_config.yaml.
+2. Create a new custom configuration file named dev_config.yaml in the custom-conf folder that is provided to the application.
 3. In a custom configuration file, the user should provide new configuration key values or override the existing configuration.
-<br>Example: `custom-conf/dev_config.yaml`
-
-    ```yaml
-    database:
-      url: "sqlite+aiosqlite:///db/database.db"
-    
-    security:
-      basic_auth:
-        secret: "<your_secret>"
-    ```
+<br>Example: [custom-conf/dev_config.yaml](../backend/paig/conf/default_config.yaml)

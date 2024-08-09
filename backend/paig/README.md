@@ -7,7 +7,8 @@
 - [Logging](#logging)
 
 ## Technology Stack <a name="technology-stack"></a>
-PAIG is a web based application. It uses the following technologies:
+PAIG provides a platform for AI governance. It allows users to governance and audits the data on one platform. 
+<br>PAIG uses the following technologies:
 * **Web Application Framework:** ReactJS
 * **Backend:** FastAPI (Python)
 * **Database:** Relational Database (default sqlite)
@@ -54,10 +55,11 @@ PAIG is a web based application. It uses the following technologies:
    ```
    One Such example is:
    ```bash
-   python __main__.py run --paig_deployment dev --config_path conf --host "localhost" --port 9090
+   python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545
    ```
    **Note:** *Admin user credentials.*
    ```bash
+   PAIG URL: http://127.0.0.1:4545
    username: admin
    password: welcome1
    ```
