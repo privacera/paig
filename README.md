@@ -1,5 +1,8 @@
 # PAIG Opensource
-PAIG offers tools designed to enhance the security and compliance of your AI applications. Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, PAIG ensures that you maintain the highest standards of security and adherence to compliance. It's tailored for businesses that value a robust yet straightforward approach to AI application governance. 
+PAIG offers tools designed to enhance the security and compliance of your AI applications. 
+Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, 
+PAIG ensures that you maintain the highest standards of security and adherence to compliance. 
+It's tailored for businesses that value a robust yet straight forward approach to AI application governance. 
 
 # What is PAIG?
 PAIG provides platform to secure and govern your AI applications.
@@ -8,8 +11,8 @@ PAIG provides platform to secure and govern your AI applications.
 
 ## Contents
 - [Overview](#overview)
-- [Quick Start](backend/README.md)
-- [Start Development Server](backend/paig/README.md)
+- [Quick Start](docs/QUICK_START_README.md)
+- [Setting up Development Environment](backend/paig/README.md)
 - [Contributing to PAIG](#contributing)
 
 ## Overview <a name="overview"></a>
