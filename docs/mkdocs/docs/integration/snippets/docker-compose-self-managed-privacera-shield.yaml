@@ -1,0 +1,33 @@
+version: '3.8'
+
+name: privacera
+
+services:
+  paig-shield:
+    image: api.na.privacera.ai/paig/paig-shield:latest
+    volumes:
+      - ./configs/self_managed_privacera_shield_configs.properties:/workdir/paig-shield/cust-conf/self_managed_privacera_shield_configs.properties
+      - ./audit_logs/:/workdir/paig-shield/audit_logs
+    ports:
+      - "8181:8181"
+    networks:
+      - privacera_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  shield-audit:
+    image: api.na.privacera.ai/paig/shield-audit:latest
+    volumes:
+      - ./configs/self_managed_privacera_shield_configs.properties:/workdir/shield-audit/cust-conf/application-custom.properties
+      - ./audit_logs/:/workdir/shield-audit/audit_logs
+    ports:
+      - "8282:8080"
+    networks:
+      - privacera_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+networks:
+  privacera_network:

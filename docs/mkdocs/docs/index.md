@@ -1,5 +1,12 @@
+---
+title: Welcome to PAIG
+icon: material/home
+hide:
+  - navigation
+  - toc
+---
 
-# [PAIG](https://paig.ai)
+# Welcome to PAIG
 
 **PAIG** (Pronounced similar to *paige* or *payj*) is an open-source project designed to protect Generative AI (GenAI)
 applications by ensuring security, safety, and observability. As the technologies and approaches for writing GenAI
@@ -46,20 +53,32 @@ relevance and protection. With comprehensive observability features, PAIG addres
 compliance, and operational transparency, making it an indispensable tool for developers and organizations working with
 GenAI applications.
 
-## Getting Started
+<div class="grid cards" markdown>
 
-To get started with PAIG, please refer to the detailed documentation available [here](https://paig.ai/docs/). The
-documentation provides comprehensive information on setting up, configuring, and using PAIG to secure your GenAI
-applications.
+-   :material-run-fast:{ .lg .middle } __Quick Start__
 
-## Contributing
+    ---
 
-PAIG is an open-source project, and we welcome contributions from the community. Please refer to
-our [contributing guidelines](docs/CONTRIBUTING.md) for more information on how to get involved.
+    Get started quickly with our integration solutions for GenAI applications. Choose between an instantly accessible
+    Google Colab Notebook or a downloadable local sample application to explore the capabilities of PAIG.
 
-## License
+    [:octicons-arrow-right-24: Quick Start](quick-start/index.md)
 
-PAIG is licensed under the Apache License. For more details, please see the [LICENSE](LICENSE) file.
+-   :material-vector-combine:{ .lg .middle } __Integrate with your AI Application__
 
-[TODO: Need to replace the clip with a use case scenario]
-![PAIG Demo gif](docs/assets/PAIG_Demo.gif)
+    ---
+
+    Integrate your own AI application with PAIG. This option necessitates having an AI application ready for
+    configuration with PAIG.
+
+    [:octicons-arrow-right-24: Integration](integration/index.md)
+
+-   :material-book-open-page-variant-outline:{ .lg .middle } __User Guide__
+
+    ---
+
+    If you have already integrated PAIG with your AI applications, then you can use the User Guide to learn more about PAIG
+
+    [:octicons-arrow-right-24: User Guide](user-guide/index.md)
+
+</div>

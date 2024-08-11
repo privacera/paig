@@ -1,0 +1,31 @@
+AI_applications:
+  file_path: "/workdir/custom-configs/AI_applications.json"
+  sales_data:
+    paig_shield_config_file: "/workdir/custom-configs/privacera-shield-config.json"
+    disable_conversation_chain: false
+    conversation_history_k: 5
+    openai:
+      key_file: "custom-configs/openai.key"
+      model: "gpt-3.5-turbo-instruct"
+      temperature: 0.1
+    vectordb:
+      index_name: "sales_index"
+      data_path: "/workdir/securechat/data/sales_data"
+      vector_type: "opensearch"
+# Don't leave this as true in production. This is to force the index to be recreated.
+#      recreate_index: true
+
+opensearch:
+  user: "admin"
+  password: "Update!7Password"
+  hosts: "opensearch-node1:9200"
+
+
+security:
+  okta:
+    enabled: "false"
+    issuer: "OKTA_ISSUER"
+    audience: "api://default"
+    client_id: "OKTA_CLIENT_ID"
+  username_login_enabled: "true"
+  expire_minutes: 1440
