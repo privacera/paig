@@ -331,14 +331,16 @@ def _badge_for_feature_upgrade(text: str, page: Page, files: Files):
 def _badge_for_go_to_google_collab(text: str, page: Page, files: Files):
     uri_index = 1 if text.split(":")[0].startswith("http") else 0
     uri = text.split(":")[uri_index]
-    display = text.split(":")[uri_index+1]
+    display = None
+    if len(text.split(":")) > uri_index + 1:
+        display = text.split(":")[uri_index + 1]
 
     path = f"{uri}"
 
     print(f"################### uri: {uri}, display: {display}, path: {path}")
     # Return badge
-    icon = "privacera-colab-badge"
+    icon = "privacera-google-colab"
     return _badge(
-        icon = f"[:{icon}:]({path})",
+        icon = f"[:{icon}: Open In Colab]({path}){{ .md-button--primary }}",
         text = f'[{display}]({path}){{:target="_blank"}}' if display else ""
     )
