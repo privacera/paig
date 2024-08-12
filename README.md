@@ -1,4 +1,4 @@
-# PAIG Opensource
+# PAIG
 PAIG offers tools designed to enhance the security and compliance of your AI applications. 
 Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, 
 PAIG ensures that you maintain the highest standards of security and adherence to compliance. 

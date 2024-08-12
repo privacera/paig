@@ -1,6 +1,6 @@
 # Paig Database Setup
-Paig Opensource Supports database setup and migration using Alembic. 
-Paig Opensource provides the ability for users to set up various database types like Postgres, MySQL, SQLite, etc.
+Paig Supports database setup and migration using Alembic. 
+Paig provides the ability for users to set up various database types like Postgres, MySQL, SQLite, etc.
 
 ## Contents
 - [How to Setup Database Configuration](#setup_configure)

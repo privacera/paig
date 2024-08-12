@@ -1,17 +1,16 @@
 [project]
-name = 'paig_opensource'
+name = 'paig'
 dynamic = ["version"]
 readme = "backend/README.md"
 license = {file = "LICENSE"}
-description = 'PAIG Opensource'
+description = 'PAIG'
 requires-python = ">= 3.10"
 keywords = [
     "Chatbot",
     "Governance",
     "Privacy",
     "Security",
-    "PAIG",
-    "PAIG-OPENSOURCE"
+    "PAIG"
 ]
 authors = [
   { name = "Privacera ", email = "support@privacera.com" },
@@ -57,8 +56,8 @@ dependencies = [
 allow-direct-references = true
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/privacera_paigopensource"
-"Bug Tracker" = "https://github.com/pypa/privacera_paigopensource/issues"
+"Homepage" = "https://github.com/privacera/paig"
+"Bug Tracker" = "https://github.com/privacera/paig/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -76,8 +75,6 @@ opensearch = [
 
 
 [project.scripts]
-paig_opensource = "paig.__main__:main"
-paig-opensource = "paig.__main__:main"
 paig = "paig.__main__:main"
 
 [build-system]

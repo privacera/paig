@@ -1,4 +1,4 @@
-# PAIG Opensource Web UI
+# PAIG Web UI
 
 PAIG is a web application that provides a platform for AI governance and audits that data.
 
