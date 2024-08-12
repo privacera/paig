@@ -32,3 +32,4 @@ storage
 **/custom-configs
 **/.coverage
 backend/paig/temp
+**/.cache
