@@ -1,0 +1,4 @@
+Field,Mandatory, Description, Example
+Name, Yes, Unique name for the VectorDB instance. Keep it short and simple, SalesDataVectorDB
+Description, No, Brief description of the instance, VectorDB for storing sales data
+Enabled, Yes, Enable or disable your VectorDB , true

@@ -1,0 +1,5 @@
+Library, Versions
+Python, 3.11+
+langchain-community, 0.0.17
+langchain-openai, 0.0.5
+langchain, 0.1.5

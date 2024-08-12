@@ -1,0 +1,5 @@
+Field,Optional, Description, Example
+Name, No, Name of your application. Keep it short and simple. , SecureChat
+Description, Yes, Describe your application in a few words. , This is an internal ChatBot for the company.
+Enabled, No, Enable or disable your application. , true
+Associate VectorDB, Yes, Associate your application with a VectorDB. You need to configure this in PAIG before associated, SecureChat VectorDB

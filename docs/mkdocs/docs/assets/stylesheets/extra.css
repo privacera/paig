@@ -1,0 +1,9 @@
+.md-footer__inner:not([hidden]) {
+    display: none
+}
+
+/*:root {*/
+/*    --md-primary-fg-color:        #122539;*/
+/*    --md-primary-fg-color--light: #122539;*/
+/*    --md-primary-fg-color--dark:  #122539;*/
+/*}*/
