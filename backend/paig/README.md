@@ -21,7 +21,7 @@ PAIG provides a platform for AI governance. It allows users to governance and au
 ### Steps to run the development web Server
 1. Clone the repository.
    ```bash
-   git clone git@github.com:privacera/paig-stage.git
+   git clone git@github.com:privacera/paig.git
    ```
 2. Run the script to build the web UI.
    ```bash

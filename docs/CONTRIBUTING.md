@@ -44,9 +44,9 @@ Before sending your pull requests, make sure you do the following:
   You will need your own copy of paig to work on the code. Go to the paig project page and hit the Fork button. 
   <br>You will want to clone your fork to your machine
   ```bash
-  git clone git@github.com:<username>/paig-stage.git
-  cd paig-stage
-  git remote add upstream git@github.com:privacera/paig-stage.git
+  git clone git@github.com:<username>/paig.git
+  cd paig
+  git remote add upstream git@github.com:privacera/paig.git
   git fetch upstream
   ```
 
@@ -105,10 +105,10 @@ git remote -v
 ```
 If you added the upstream repository as described above you will see something like
 ```bash
-origin  git@github.com:<username>/paig-stage.git (fetch)
-origin  git@github.com:<username>/paig-stage.git (push)
-upstream        https://github.com/privacera/paig-stage.git (fetch)
-upstream        https://github.com/privacera/paig-stage.git (push)
+origin  git@github.com:<username>/paig.git (fetch)
+origin  git@github.com:<username>/paig.git (push)
+upstream        https://github.com/privacera/paig.git (fetch)
+upstream        https://github.com/privacera/paig.git (push)
 ```
 Now your code is on GitHub, but it is not yet a part of the PAIG project. For that to happen, a pull request needs to be submitted on GitHub.
 
