@@ -1,0 +1,6 @@
+Actions/Roles, Owner,Developer, User
+Manage Applications, Y,Y,N
+Manage Policies, Y, Y, N
+"Dashboards, Audits & Reports", Y, Y, N
+Manage Users, Y, N, N
+Manage Account, Y, N, N

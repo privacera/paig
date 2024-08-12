@@ -1,0 +1,246 @@
+site_name: Documentation
+#Without the below setting, the links are generated as / and when you search for something it will be without index.html
+#and S3 bucket will not be able to find it
+use_directory_urls: false
+
+# Copyright
+copyright: Copyright &copy; 2016 - 2024 Privacera, Inc
+
+theme:
+  name: 'material'
+  site_url: https://paig.ai/docs/
+  site_description: PAIG
+  custom_dir: paig_custom/overrides
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    # - content.code.select
+    # - content.tabs.link
+    - content.tooltips
+    # - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.prune
+#    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    # - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+#        name: Switch to light mode
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/images/favicon.ico
+  icon:
+    logo: logo
+#    annotation: privacera/privacera_p
+  logo: assets/images/paig-logo-new-dark.png
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+# https://github.com/chrieke/mkdocs-exclude-search
+  - exclude-search:
+      exclude:
+        - faq/administration/*
+        - attic/*
+        - "**/snippets/"
+  - minify:
+      minify_html: true
+# https://timvink.github.io/mkdocs-table-reader-plugin/
+  - table-reader:
+      csv_options:
+        delimiter: ","
+        doublequote: true
+        escapechar: "\\"
+        lineterminator: "\n"
+        quotechar: "\""
+        quoting: "QUOTE_MINIMAL"
+        skipinitialspace: true
+        strict: false
+  - optimize:
+      #enabled: !ENV [CI, false]
+      enabled: true
+#  - pdf-export:
+#      verbose: true
+#      media_type: print
+#      enabled_if_env: ENABLE_PDF_EXPORT
+#not_in_nav: |
+#  faq/administration/*
+
+exclude_docs: |
+  attic/*
+  faq/administration/*
+
+# Hooks
+hooks:
+  - paig_custom/overrides/hooks/shortcodes.py
+
+# Customization
+extra:
+  annotate:
+    json: [.s2]
+  generator: false
+#  analytics:
+#    provider: google
+#    property: !ENV GOOGLE_ANALYTICS_KEY
+#  social:
+#    - icon: fontawesome/brands/github
+#      link: https://github.com/squidfunk
+#    - icon: fontawesome/brands/gitter
+#      link: https://gitter.im/squidfunk/mkdocs-material
+#    - icon: fontawesome/brands/docker
+#      link: https://hub.docker.com/r/squidfunk/mkdocs-material/
+#    - icon: fontawesome/brands/python
+#      link: https://pypi.org/project/mkdocs-material/
+#    - icon: fontawesome/brands/mastodon
+#      link: https://fosstodon.org/@squidfunk
+#    - icon: fontawesome/brands/twitter
+#      link: https://twitter.com/squidfunk
+#  consent:
+#    title: Cookie consent
+#    description: >-
+#      We use cookies to recognize your repeated visits and preferences, as well
+#      as to measure the effectiveness of our documentation and whether users
+#      find what they're searching for. With your consent, you're helping us to
+#      make our documentation better.
+#    actions:
+#      - accept
+#      - reject
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.blocks.details
+  - pymdownx.blocks.definition
+  - pymdownx.caret
+#  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      options:
+        custom_icons:
+          - paig_custom/overrides/.icons
+  - pymdownx.highlight:
+      anchor_linenums: true
+      linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      auto_title: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+      clickable_checkbox: true
+  - pymdownx.tilde
+
+# Page tree
+nav:
+  - Home: index.md
+  - Quick Start:
+      - quick-start/index.md
+  - Integration:
+      - integration/index.md
+      - LangChain: integration/langchain.md
+      - Python Applications: integration/python-applications.md
+      - Privacera SecureChat:
+        - integration/securechat.md
+        - With ChromaDB and OpenAI: integration/securechat-chromadb-openai.md
+        - With OpenSearch and OpenAI: integration/securechat-opensearch-openai.md
+        - Configure Okta SSO: integration/securechat-okta-sso.md
+      - VectorDB:
+        - integration/vectordb/index.md
+        - Milvus: integration/vectordb/milvus.md
+      - Self Managed Privacera Shield: integration/self-managed-privacera-shield.md
+      - Prerequisites:
+        - integration/prerequisites/index.md
+        - Docker Installation: integration/prerequisites/docker.md
+#      - REST API: integration/rest-api.md
+  - User Guide:
+      - user-guide/index.md
+      - Securing GenAI Applications: user-guide/applications.md
+      - Securing VectorDB: user-guide/securing-vectordb.md
+#      - Security: user-guide/security.md
+#      - Compliance: user-guide/compliance.md
+      - Monitoring: user-guide/monitoring.md
+      - Reporting:
+        - user-guide/reporting/index.md
+        - Reports: user-guide/reporting/reports.md
+      - Users and Groups: user-guide/user-management.md
+      - Account Management: user-guide/account-management.md
+  - How To:
+      - how-to/index.md
+      - Manage Applications:
+        - how-to/manage-applications/index.md
+        - Application Policies: how-to/manage-applications/application-policies.md
+      - Manage VectorDBs:
+          - how-to/manage-vectordbs/index.md
+          - VectorDB Policies: how-to/manage-vectordbs/vectordb-policies.md
+#      - Manage Users: how-to/manage-users.md
+  - FAQ:
+      - faq/index.md
+
+

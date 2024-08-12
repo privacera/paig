@@ -1,0 +1,16 @@
+version: '3'
+services:
+  privacera_secure_chat:
+    platform: linux/amd64
+    image: privacera/privacera-securechat:latest
+    container_name: privacera-securechat
+    # nginx listener is on 3636. Map it per your need.
+    ports:
+      - "3636:3636"
+    environment:
+      PRIVACERA_SHIELD_CONF_FILE: /workdir/custom-configs/privacera-shield-config.json
+    volumes:
+      - ${PWD}/custom-configs:/workdir/custom-configs
+      - ${PWD}/logs:/workdir/securechat/logs
+      - ${PWD}/index:/workdir/securechat/index
+      - ${PWD}/db:/workdir/securechat/db
