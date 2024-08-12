@@ -10,15 +10,10 @@ hide:
 
 **PAIG** (Pronounced similar to *paige* or *payj*) is an open-source project designed to protect Generative AI (GenAI)
 applications by ensuring security, safety, and observability. As the technologies and approaches for writing GenAI
-applications evolve rapidly, PAIG provides a comprehensive framework to integrate and manage best-of-breed solutions
-without the need to rewrite applications.
+applications evolve rapidly, PAIG offers a versatile framework that addresses the latest security and safety challenges
+and enables the integration of point security and safety solutions without requiring applications to be rewritten.
 
 ## Overview
-
-PAIG is an extensible framework designed to implement security and safety in AI applications. It supports and integrates
-seamlessly with a wide range of Large Language Models (LLMs), Vector Databases (VectorDBs), orchestrators, and other AI
-tools. As the usage of GenAI evolves, the need for a robust governance framework becomes increasingly important. PAIG
-addresses this need by providing a comprehensive solution.
 
 The rapid evolution of technologies and approaches for writing GenAI applications is driving the need for robust
 security and safety measures. New use cases are continually emerging, with users experimenting to discover new
@@ -28,7 +23,12 @@ often resulting in a fragmented landscape of point solutions. There is a need fo
 without rewriting applications, customizable solutions to meet specific needs, and future-proofing to ensure long-term
 relevance. Comprehensive observability is essential to address security, compliance, and operational reviews.
 
-## Features
+PAIG is an extensible framework designed to implement security and safety in AI applications. It supports and integrates
+seamlessly with a wide range of Large Language Models (LLMs), Vector Databases (VectorDBs), orchestrators, and other AI
+tools. As the usage of GenAI evolves, the need for a robust governance framework becomes increasingly important. PAIG
+addresses this need by providing a comprehensive solution.
+
+## PAIG's Features
 
 - **Extensibility**: Seamless integration with a wide range of Large Language Models (LLMs), Vector Databases (
   VectorDBs), orchestrators, and other AI tools.
@@ -43,7 +43,7 @@ relevance. Comprehensive observability is essential to address security, complia
 - **User Focus**: Helps users concentrate on their core use cases by providing a robust framework that incorporates the
   best available point solutions.
 
-## Value Proposition
+## Why PAIG
 
 PAIG offers a comprehensive solution for securing and safeguarding GenAI applications in a rapidly evolving
 technological landscape. By providing seamless integration with various AI tools and adhering to industry-leading
