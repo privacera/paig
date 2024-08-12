@@ -13,7 +13,7 @@ PAIG provides platform to secure and govern your AI applications.
 PAIG is a python library which can be installed using pip.
 
 ```shell
-pip install paig_opensource
+pip install paig
 python -m spacy download en_core_web_lg
 ```
 
@@ -68,7 +68,7 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
 Try out this [code snippet](SNIPPET_USING_PLUGIN.md) to secure and govern your LLM interactions.
 
 ## Optional Configuration <a name="configuration"></a>
-PAIG Opensource provides overlay configuration. You can provide the custom configuration in the following ways:
+PAIG provides overlay configuration. You can provide the custom configuration in the following ways:
 1. Create a new directory in the present working directory of the project with the name custom-conf.
 2. Create a new custom configuration file named dev_config.yaml in the custom-conf folder that is provided to the application.
 3. In a custom configuration file, the user should provide new configuration key values or override the existing configuration.
@@ -89,9 +89,9 @@ This repository provides PAIG Notebooks to help you experiment with PAIG and int
    ```shell
       jupyter notebook
    ```
-   Open the notebook named [PAIG_OpenSource_jupyter.ipynb](../notebooks/PAIG_OpenSource_jupyter.ipynb) from the file browser.
+   Open the notebook named [PAIG_jupyter.ipynb](../notebooks/PAIG_jupyter.ipynb) from the file browser.
 
 2. **In Google Colab:-** In Google Colab you can open the notebook named
-[PAIG_OpenSource_colab.ipynb](../notebooks/PAIG_OpenSource_colab.ipynb)
+[PAIG_colab.ipynb](../notebooks/PAIG_colab.ipynb)
    <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
    </a>

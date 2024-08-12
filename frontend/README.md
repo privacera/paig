@@ -1,4 +1,4 @@
-# PAIG Opensource Web UI
+# PAIG Web UI
 
 PAIG is a web application that provides a platform for AI governance and audits that data.
 
@@ -13,7 +13,7 @@ PAIG is a web application that provides a platform for AI governance and audits 
 ### Steps to run the development web UI
 1. Clone the repository with submodules
     ```bash
-    git clone git@github.com:privacera/paig-stage.git
+    git clone git@github.com:privacera/paig.git
     ```
 2. Change directory to the frontend/webapp repository
 3. Install the dependencies

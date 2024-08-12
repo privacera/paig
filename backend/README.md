@@ -1,4 +1,4 @@
-# PAIG Opensource
+# PAIG
 PAIG offers tools designed to enhance the security and compliance of your AI applications. Whether you're using chatbots internally, incorporating AI services into your products, or utilizing automated tools to process tasks like customer support tickets or feedback, PAIG ensures that you maintain the highest standards of security and adherence to compliance. It's tailored for businesses that value a robust yet straight forward approach to AI application governance
 
 ## Contents
@@ -11,7 +11,7 @@ PAIG offers tools designed to enhance the security and compliance of your AI app
 PAIG is a python library which can be installed using pip.
 
 ```shell
-pip install paig_opensource
+pip install paig
 python -m spacy download en_core_web_lg
 ```
 
@@ -56,7 +56,7 @@ Please run the help command to see all available options you can pass while call
     ```
 
 ## Optional Configuration <a name="configuration"></a>
-PAIG Opensource provides overlay configuration. You can provide the custom configuration in the following ways:
+PAIG provides overlay configuration. You can provide the custom configuration in the following ways:
 1. Create a new directory in the present working directory of the project with the name custom-conf.
 2. Create a new custom configuration file named `<env>_config.yaml`(e.g. dev_config.yaml) in the custom-conf folder which will override default_config.yaml.
 3. In a custom configuration file, the user should provide new configuration key values or override the existing configuration.

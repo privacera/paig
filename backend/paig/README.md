@@ -21,7 +21,7 @@ PAIG provides a platform for AI governance. It allows users to governance and au
 ### Steps to run the development web Server
 1. Clone the repository.
    ```bash
-   git clone git@github.com:privacera/paig-stage.git
+   git clone git@github.com:privacera/paig.git
    ```
 2. Run the script to build the web UI.
    ```bash
@@ -82,7 +82,7 @@ The user can provide the custom configuration in the following ways:
 <br>Example: [custom-conf/dev_config.yaml](conf/default_config.yaml)
 
 ## How to Setup Database <a name="databsesetup"></a>
-PAIG Opensource supports automatic as well as manual database creation/updation. Please refer to Database for more details.
+PAIG supports automatic as well as manual database creation/updation. Please refer to Database for more details.
 [How to setup database](alembic_db/README.md)
 
 ## Logging <a name="logging"></a>
