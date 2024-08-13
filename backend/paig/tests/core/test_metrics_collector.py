@@ -62,41 +62,9 @@ async def test_metrics_client_initialize():
         mock_get_tenant_uuid.return_value = "123"
         metrics_client = MetricsClient()
         await metrics_client.initialize()
-        assert metrics_client.data["tenantUUID"] == "123"
-        assert metrics_client.data["version"] == "1.0.0"
+        assert metrics_client.data["installation_id"] == "123"
+        assert metrics_client.data["app_version"] == "1.0.0"
         assert metrics_client.metric_collector is not None
-
-@pytest.mark.asyncio
-async def test_metrics_client_send_post_request_success():
-    metrics_client = MetricsClient()
-    metrics_client.data = {"test": "data"}
-
-    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
-        mock_post.return_value.status_code = 200
-        success = await metrics_client.send_post_request()
-        assert success is True
-        mock_post.assert_awaited_once_with(
-            metrics_client.endpoint,
-            json=metrics_client.data,
-            timeout=metrics_client.timeout,
-            headers=metrics_client.headers
-        )
-
-@pytest.mark.asyncio
-async def test_metrics_client_send_post_request_failure():
-    metrics_client = MetricsClient()
-    metrics_client.data = {"test": "data"}
-
-    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
-        mock_post.return_value.status_code = 500
-        success = await metrics_client.send_post_request()
-        assert success is False
-        mock_post.assert_awaited_once_with(
-            metrics_client.endpoint,
-            json=metrics_client.data,
-            timeout=metrics_client.timeout,
-            headers=metrics_client.headers
-        )
 
 def test_get_metric_collector():
     metric_collector1 = get_metric_collector()

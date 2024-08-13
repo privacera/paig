@@ -202,3 +202,40 @@ def snake_to_camel(snake_str):
     components = snake_str.split('_')
     # Capitalize the first letter of each component except the first one and join them together
     return components[0] + ''.join(x.title() for x in components[1:])
+
+
+def detect_environment():
+    if is_jupyter_notebook():
+        return 'jupyter'
+    elif is_colab():
+        return 'colab'
+    elif is_docker():
+        return 'docker'
+    else:
+        return 'local'
+
+
+def is_jupyter_notebook():
+    try:
+        from IPython import get_ipython
+        # Check if IPython is available and running in a notebook environment
+        ipython = get_ipython()
+        if ipython is None:
+            return False
+        return 'IPKernelApp' in ipython.config.get('IPKernelApp', {})
+    except:
+        return False
+
+def is_colab():
+    try:
+        import google.colab
+    except ImportError:
+        return False
+    try:
+        from IPython.core.getipython import get_ipython
+    except ImportError:
+        return False
+    return True
+
+def is_docker():
+    return os.path.exists('/.dockerenv')
