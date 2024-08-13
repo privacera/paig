@@ -49,7 +49,8 @@ dependencies = [
     "httpx",
     "fasteners",
     "APScheduler",
-    "pydantic[email]"
+    "pydantic[email]",
+    "posthog"
 ]
 
 [tool.hatch.metadata]

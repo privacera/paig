@@ -4,6 +4,11 @@ from httpx import AsyncClient
 from unittest.mock import AsyncMock, patch
 
 from core.middlewares.usage import CustomExporter, register_usage_events
+from core.factory.metrics_collector import get_metric_client
+
+
+metric_client = get_metric_client()
+
 
 @pytest.fixture
 def app():
@@ -22,7 +27,7 @@ def mock_get_field_counts():
 
 @pytest.fixture
 def mock_httpx_post():
-    with patch('core.factory.metrics_collector.MetricsClient.send_post_request', new_callable=AsyncMock) as mock:
+    with patch('core.factory.metrics_collector.MetricsClient.capture', new_callable=AsyncMock) as mock:
         yield mock
 
 @pytest.fixture
@@ -43,7 +48,7 @@ async def test_export_success(mock_httpx_post, mock_get_tenant_uuid):
     mock_httpx_post.return_value = True
     mock_get_tenant_uuid.return_value = "123"
     exporter = CustomExporter()
-    await exporter.initialize()
+    await exporter.initialize(metric_client)
     success = await exporter.export()
     assert success is True
 
@@ -52,7 +57,7 @@ async def test_export_failure(mock_httpx_post, mock_get_tenant_uuid):
     mock_httpx_post.return_value = False
     mock_get_tenant_uuid.return_value = "123"
     exporter = CustomExporter()
-    await exporter.initialize()
+    await exporter.initialize(metric_client)
     success = await exporter.export()
     assert success is False
 
@@ -61,8 +66,8 @@ async def test_collect(mock_get_field_counts, mock_get_tenant_uuid):
     mock_get_field_counts.return_value = [{"count": 10}]
     mock_get_tenant_uuid.return_value = "123"
     exporter = CustomExporter()
-    await exporter.initialize()
+    await exporter.initialize(metric_client)
     await exporter.collect()
-    assert "userCount" in exporter.data
-    assert "AIAppCount" in exporter.data
+    assert "user_count" in exporter.data
+    assert "ai_app_count" in exporter.data
 

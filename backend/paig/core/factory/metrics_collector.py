@@ -1,9 +1,11 @@
 import copy
 import os
+import platform
 import re
-import httpx
 from core.db_session.standalone_session import get_tenant_uuid
 from core.config import get_version
+from core.factory.posthog import get_post_hog_client
+from core.utils import detect_environment
 
 URL_MAPPING = [
     (r"^/shield/authorize/vectordb", "vectordb_authorize_requests"),
@@ -78,31 +80,47 @@ class MetricCollector:
 
 
 class MetricsClient:
-    def __init__(self):
-        self.data = {}
-        self.metric_collector = None
-        self.endpoint = str(os.getenv("EXPORTER_ENDPOINT", "http://localhost:8000/usage"))
-        self.timeout = 30
-        self.headers = {"Authorization": f"Bearer {API_KEY}"}
+
+    _instance = None
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(MetricsClient, cls).__new__(cls)
+            cls._instance.data = dict()
+            cls._instance.metric_collector = None
+            cls._instance.posthog_client = None
+        return cls._instance
 
     async def initialize(self):
         await self._fetch_tenant_uuid()
-        self.data['version'] = get_version()
+        self.data['app_version'] = get_version()
         self.metric_collector = get_metric_collector()
+        self.posthog_client = get_post_hog_client()
+        self.data.update(self._get_system_info())
+        self.posthog_client.set_user_id(self.data.get('installation_id'))
 
     async def _fetch_tenant_uuid(self):
-        self.data["tenantUUID"] = await get_tenant_uuid()
+        self.data["installation_id"] = await get_tenant_uuid()
 
-    async def send_post_request(self):
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(self.endpoint, json=self.data, timeout=self.timeout, headers=self.headers)
-                if response.status_code == 200:
-                    return True
-                return False
-        except:
-            return False
+    @staticmethod
+    def _get_system_info():
+        return {
+            'python_version': platform.python_version(),
+            'os': platform.system(),
+            'env': detect_environment(),
+            'deployment': os.environ.get('PAIG_DEPLOYMENT', 'dev')
+        }
+
+    async def capture(self, event_name, properties=None):
+        self.posthog_client.capture_event(event_name, properties)
+
+    def get_data(self):
+        return self.data
 
 
 def get_metric_collector():
     return MetricCollector()
+
+
+def get_metric_client():
+    return MetricsClient()
+
