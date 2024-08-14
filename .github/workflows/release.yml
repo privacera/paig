@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  test-pypi:
+  release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4  # Ensure the repo is checked out
@@ -66,7 +66,7 @@ jobs:
         virtualenv -p python3 venv && . venv/bin/activate
         pip install dist/*.whl
 
-    - name: Upload to PyPI
+    - name: Release to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PYPI_API_TOKEN }}
