@@ -11,7 +11,7 @@ PAIG offers tools designed to enhance the security and compliance of your AI app
 PAIG is a python library which can be installed using pip.
 
 ```shell
-pip install paig
+pip install paig-server
 python -m spacy download en_core_web_lg
 ```
 
