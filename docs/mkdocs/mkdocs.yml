@@ -8,7 +8,7 @@ copyright: Copyright &copy; 2016 - 2024 Privacera, Inc
 
 theme:
   name: 'material'
-  site_url: https://paig.ai/docs/
+  site_url: https://paig.ai/
   site_description: PAIG
   custom_dir: paig_custom/overrides
   features:
@@ -120,6 +120,13 @@ extra:
 #  analytics:
 #    provider: google
 #    property: !ENV GOOGLE_ANALYTICS_KEY
+  social:
+    - icon: material/web
+      link: https://paig.ai/
+      name: "PAIG Website"
+    - icon: fontawesome/brands/github
+      link: https://github.com/privacera/paig
+
 #  social:
 #    - icon: fontawesome/brands/github
 #      link: https://github.com/squidfunk
@@ -146,6 +153,9 @@ extra:
 
 extra_css:
   - assets/stylesheets/extra.css
+
+extra_javascript:
+  - assets/js/link_download.js
 
 # Extensions
 markdown_extensions:
