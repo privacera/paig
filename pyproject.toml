@@ -1,16 +1,17 @@
 [project]
-name = 'paig'
+name = 'paig-server'
 dynamic = ["version"]
 readme = "backend/README.md"
 license = {file = "LICENSE"}
-description = 'PAIG'
+description = 'PAIG Server'
 requires-python = ">= 3.10"
 keywords = [
     "Chatbot",
     "Governance",
     "Privacy",
     "Security",
-    "PAIG"
+    "PAIG",
+    "PAIG-Server"
 ]
 authors = [
   { name = "Privacera ", email = "support@privacera.com" },
@@ -77,6 +78,8 @@ opensearch = [
 
 [project.scripts]
 paig = "paig.__main__:main"
+paig_server = "paig.__main__:main"
+paig-server = "paig.__main__:main"
 
 [build-system]
 requires = ["hatchling"]
