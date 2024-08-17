@@ -4,6 +4,7 @@ set -x
 PORT=8006
 CONTAINER_NAME=mkdir-${PORT}
 MKDOCS_IMAGE=privacera/paig-mkdocs:latest
+#MKDOCS_IMAGE=privacera-mkdocs-materials-custom
 
 PORT_MAPPING="-p $PORT:$PORT"
 DOCKER_ENV=

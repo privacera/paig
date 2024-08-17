@@ -73,6 +73,9 @@ theme:
 
 # Plugins
 plugins:
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+      type: "datetime"
   - search:
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
 # https://github.com/chrieke/mkdocs-exclude-search
@@ -126,7 +129,6 @@ extra:
       name: "PAIG Website"
     - icon: fontawesome/brands/github
       link: https://github.com/privacera/paig
-
 #  social:
 #    - icon: fontawesome/brands/github
 #      link: https://github.com/squidfunk
