@@ -25,6 +25,8 @@ invalidate-cloudfront-cache:
     name: amazon/aws-cli:latest
     entrypoint: [""]
   script:
-    - echo "Starting CloudFront invalidation script"
+    - echo "Starting CloudFront invalidation steps..."
+    - echo "aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'"
+    - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
   only:
     - PAIG-2116
