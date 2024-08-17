@@ -9,7 +9,7 @@ BRANCH_NAME=$1
 S3_BUCKET=$S3_BUCKET
 S3_BASE_PATH=s3://${S3_BUCKET}/stage
 S3_PATH=${S3_BASE_PATH}/$BRANCH_NAME
-LOCAL_PATH=docs/mkdocs/site
+LOCAL_PATH=mkdocs/site
 # shellcheck disable=SC2164
 cd "$(dirname $0)"
 set -x
