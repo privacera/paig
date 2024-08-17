@@ -23,6 +23,10 @@ invalidate-cloudfront-cache:
   stage: deploy
   image: amazon/aws-cli:latest
   script:
+    - echo "Starting CloudFront invalidation script"
+    - echo "CLOUDFRONT_DISTRIBUTION_ID: $CLOUDFRONT_DISTRIBUTION_ID"
     - echo "aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'"
+    # The actual command is commented out for now
+    # - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
   only:
     - PAIG-2116
