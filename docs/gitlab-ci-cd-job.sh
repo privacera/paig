@@ -13,7 +13,7 @@ LOCAL_PATH=docs/mkdocs/site
 # shellcheck disable=SC2164
 cd "$(dirname $0)"
 set -x
-./docs/mkdocs/run_paig_mkdocs_docker.sh build
+./mkdocs/run_paig_mkdocs_docker.sh build
 aws s3 cp --recursive $LOCAL_PATH "$S3_PATH"
 
 #Unset set -e
