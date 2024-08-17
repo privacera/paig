@@ -1,0 +1,20 @@
+variables:
+  GIT_DEPTH: 0
+
+.default-job-template: &default_job
+  image: $BUILD_IMAGE
+  tags:
+    - $BUILD_TAG
+
+build-job:  # This job runs in the build stage, which runs first.
+  <<: *default_job
+  stage: build
+  script:
+    - echo "Compiling the code pwd=$(pwd) ..."
+    - . /setup_builder_env.sh
+    - service docker start
+    - sleep 5
+    - docker info
+    - docker ps -a
+    - ./docs/gitlab-ci-cd-job.sh $CI_COMMIT_BRANCH
+    - echo "Compile complete. Check $DOCS_STAGE_LOCATION"
