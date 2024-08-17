@@ -151,6 +151,10 @@ aws s3 cp index.html $destination_path --content-type "text/html" --content-disp
 # Optionally delete the index.html file from local after uploading
 # rm index.html
 
+DOCS_STAGE_LOCATION="https://$S3_BUCKET.s3.amazonaws.com/stage/index.html"
+if [ "$BRANCH_NAME" == "main" ]; then
+  aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
+fi
 
 echo "Docs have been deployed to:"
 echo "$DOCS_STAGE_LOCATION"
