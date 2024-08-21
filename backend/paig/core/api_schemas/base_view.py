@@ -20,7 +20,6 @@ class BaseView(BaseModel):
     update_time: Optional[datetime] = Field(None, description="The last update time of the resource", alias="updateTime")
 
     class Config:
-        orm_mode = True
         from_attributes = True
         json_encoders = {
             datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f%z')

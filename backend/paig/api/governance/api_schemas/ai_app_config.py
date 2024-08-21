@@ -38,7 +38,7 @@ class AIApplicationConfigView(BaseView):
     application_id: Optional[int] = Field(None, description="The application ID", alias="applicationId")
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "allowedUsers": ["user1", "user2"],
                 "allowedGroups": ["group1", "group2"],
