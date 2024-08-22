@@ -1,2 +1,7 @@
 database:
     url: "sqlite+aiosqlite:///tests/test.db"
+
+opensearch:
+  endpoint: "https://test:9200"
+  username: "test"
+  secret: "test"

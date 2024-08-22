@@ -32,7 +32,7 @@ class LogMessageInDataService(LogMessageInFile):
             None
         """
         transformed_audit: BaseAccessAuditView = self.transform_log_audit(log_data)
-        await self.data_service.create_access_audit(transformed_audit.dict())
+        await self.data_service.create_access_audit(transformed_audit)
 
     def transform_log_audit(self, log_data: ShieldAudit) -> BaseAccessAuditView:
         """
