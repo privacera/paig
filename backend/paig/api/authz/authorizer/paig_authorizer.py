@@ -45,7 +45,7 @@ class AuthzRequest(BaseModel):
     request_date_time: datetime = Field(current_utc_time(), alias="requestDateTime")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class AuthzResponse(BaseModel):
@@ -81,7 +81,7 @@ class AuthzResponse(BaseModel):
     paig_policy_ids: List[int] = Field([], alias="paigPolicyIds")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class VectorDBAuthzRequest(BaseModel):
@@ -97,7 +97,7 @@ class VectorDBAuthzRequest(BaseModel):
     application_key: str = Field(None, alias="applicationKey")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class VectorDBAuthzResponse(BaseModel):
@@ -125,7 +125,7 @@ class VectorDBAuthzResponse(BaseModel):
     reason: str = Field(None, alias="reason")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
 
 
 class PAIGAuthorizer(ABC):

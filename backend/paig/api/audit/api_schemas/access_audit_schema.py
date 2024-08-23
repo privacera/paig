@@ -36,7 +36,6 @@ class BaseAccessAuditView(BaseModel):
 
     class Config:
         from_attributes = True
-        orm_mode = True
         populate_by_name = True
 
 
