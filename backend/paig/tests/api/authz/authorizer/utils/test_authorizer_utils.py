@@ -70,58 +70,58 @@ def app_policies():
     ]
 
 
-def test_check_explicit_application_access_for_allowed_group(authz_request, app_config):
+def test_allowed_access_for_user(authz_request, app_config):
+    authz_request.user_id = "test_user"
+    user_groups = ["some_other_group"]
+    access_type = "allowed"
+
+    result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
+    assert result is True
+
+
+def test_denied_access_for_user(authz_request, app_config):
+    authz_request.user_id = "denied_user"
+    user_groups = ["some_other_group"]
+    access_type = "denied"
+
+    result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
+    assert result is True
+
+
+def test_allowed_access_for_group(authz_request, app_config):
+    authz_request.user_id = "some_other_user"
     user_groups = ["group1"]
     access_type = "allowed"
-    authz_request.user_id = "some_other_user"
-
 
     result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
 
     assert result is True
 
 
-def test_check_explicit_application_access_for_denied_group(authz_request, app_config):
+def test_denied_access_for_group(authz_request, app_config):
+    authz_request.user_id = "some_other_user"
     user_groups = ["denied_group"]
     access_type = "denied"
-    authz_request.user_id = "some_other_user"
 
     result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
 
     assert result is True
 
 
-def test_check_explicit_application_access_for_allowed_user(authz_request, app_config):
+def test_allowed_access_for_invalid_user_and_group(authz_request, app_config):
+    authz_request.user_id = "some_other_user"
     user_groups = ["some_other_group"]
     access_type = "allowed"
-
-    result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
-    assert result is True
-
-
-def test_check_explicit_application_access_for_denied_user(authz_request, app_config):
-    user_groups = ["some_other_group"]
-    access_type = "denied"
-    authz_request.user_id = "denied_user"
-
-    result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
-    assert result is True
-
-
-def test_check_explicit_application_access_allowed_for_other_user_and_other_group(authz_request, app_config):
-    user_groups = ["some_other_group"]
-    access_type = "allowed"
-    authz_request.user_id = "some_other_user"
 
     result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
 
     assert result is False
 
 
-def test_check_explicit_application_access_denied_for_other_user_and_other_group(authz_request, app_config):
+def test_denied_access_denied_for_invalid_user_and_group(authz_request, app_config):
+    authz_request.user_id = "some_other_user"
     user_groups = ["some_other_group"]
     access_type = "denied"
-    authz_request.user_id = "some_other_user"
 
     result = check_explicit_application_access(authz_request, app_config, user_groups, access_type)
 
