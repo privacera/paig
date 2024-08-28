@@ -11,7 +11,6 @@ import pytest_asyncio
 from core import config
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-import core.db_session.transactional as transactional
 from core.db_session import Base
 import asyncio
 from typing import Generator
@@ -23,11 +22,12 @@ ROOT_DIR = os.path.join(os.path.dirname(__file__), "..")
 os.environ["PAIG_ROOT_DIR"] = ROOT_DIR
 
 
-@pytest.fixture(scope="session")
+@pytest.mark.asyncio(scope="session")
 def event_loop(request) -> Generator:  # noqa: indirect usage
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest.fixture()
 def set_context_session():
@@ -36,7 +36,6 @@ def set_context_session():
 
 
 @pytest_asyncio.fixture(scope="function")
-@pytest.mark.asyncio
 async def db_session():
     database_url = cnf['database']['url']
     async_engine = create_async_engine(database_url)

@@ -66,10 +66,10 @@ class TestAIApplicationPolicyRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
         assert app_response.status_code == 201
         app_id = app_response.json()['id']
@@ -81,7 +81,7 @@ class TestAIApplicationPolicyRouters:
         assert response.json()['content'][0]['groups'] == ['public']
 
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.ai_application_policy_dict)
         )
         assert response.status_code == 200
         assert response.json()['name'] == "test_ssn_policy"
@@ -107,7 +107,7 @@ class TestAIApplicationPolicyRouters:
             "enrichedPrompt": "ALLOW"
         }
         response = await client.put(
-            f"{governance_services_base_route}/application/{app_id}/policy/{policy_id}", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/{app_id}/policy/{policy_id}", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'test_ssn_policy_updated'
@@ -126,10 +126,10 @@ class TestAIApplicationPolicyRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
         assert app_response.status_code == 201
         app_id = app_response.json()['id']
@@ -162,7 +162,7 @@ class TestAIApplicationPolicyRouters:
             "enrichedPrompt": "ALLOW"
         }
         response = await client.put(
-            f"{governance_services_base_route}/application/{app_id}/policy/100", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/{app_id}/policy/100", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -176,7 +176,7 @@ class TestAIApplicationPolicyRouters:
         assert response.json()['message'] == "AI application policy not found with Id: [100]"
 
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -184,7 +184,7 @@ class TestAIApplicationPolicyRouters:
 
         self.invalid_ai_application_policy_dict['prompt'] = "ALLOW"
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -192,7 +192,7 @@ class TestAIApplicationPolicyRouters:
 
         self.invalid_ai_application_policy_dict['reply'] = "DENY"
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -202,7 +202,7 @@ class TestAIApplicationPolicyRouters:
 
         # skip this test case as sensitive data validation is skipped
         # response = await client.post(
-        #     f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+        #     f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         # )
         # assert response.status_code == 400
         # assert response.json()['success'] is False
@@ -210,7 +210,7 @@ class TestAIApplicationPolicyRouters:
 
         self.invalid_ai_application_policy_dict['tags'] = []
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -218,27 +218,27 @@ class TestAIApplicationPolicyRouters:
 
         self.invalid_ai_application_policy_dict['tags'] = ["US_SSN"]
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.invalid_ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "Users, Groups or Roles in AI Application policy must be provided"
 
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.ai_application_policy_dict)
         )
         assert response.status_code == 200
         update_req_id = response.json()['id']
 
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "AI application policy already exists with description: ['test SSN policy']"
 
         response = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(update_req)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -247,7 +247,7 @@ class TestAIApplicationPolicyRouters:
         self.invalid_ai_application_policy_dict['prompt'] = "INVALID"
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(self.invalid_ai_application_policy_dict)
+            content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -257,7 +257,7 @@ class TestAIApplicationPolicyRouters:
         self.invalid_ai_application_policy_dict['reply'] = "INVALID"
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(self.invalid_ai_application_policy_dict)
+            content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -267,7 +267,7 @@ class TestAIApplicationPolicyRouters:
         self.invalid_ai_application_policy_dict['enrichedPrompt'] = "INVALID"
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(self.invalid_ai_application_policy_dict)
+            content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -279,7 +279,7 @@ class TestAIApplicationPolicyRouters:
         # self.invalid_ai_application_policy_dict['tags'] = ["INVALID_DATA"]
         # response = await client.put(
         #     f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-        #     data=json.dumps(self.invalid_ai_application_policy_dict)
+        #     content=json.dumps(self.invalid_ai_application_policy_dict)
         # )
         # assert response.status_code == 400
         # assert response.json()['success'] is False
@@ -288,7 +288,7 @@ class TestAIApplicationPolicyRouters:
         self.invalid_ai_application_policy_dict['tags'] = ["US_SSN"]
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(self.invalid_ai_application_policy_dict)
+            content=json.dumps(self.invalid_ai_application_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -297,12 +297,12 @@ class TestAIApplicationPolicyRouters:
         self.sensitive_data_dict['tags'] = "EMAIL_ADDRESS"
         self.sensitive_data_dict['description'] = "A valid email address"
         await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
         update_req['tags'] = ["EMAIL_ADDRESS"]
         response = await client.post(
             f"{governance_services_base_route}/application/{app_id}/policy",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 200
         update_req_id = response.json()['id']
@@ -310,7 +310,7 @@ class TestAIApplicationPolicyRouters:
         update_req['description'] = "test SSN policy"
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -320,7 +320,7 @@ class TestAIApplicationPolicyRouters:
         update_req['tags'] = ["US_SSN"]
         response = await client.put(
             f"{governance_services_base_route}/application/{app_id}/policy/{update_req_id}",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False

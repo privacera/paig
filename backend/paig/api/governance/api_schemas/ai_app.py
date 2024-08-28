@@ -24,8 +24,7 @@ class AIApplicationView(BaseView):
     application_key: Optional[str] = Field(None, description="The application key", alias="applicationKey")
     vector_dbs: Optional[List[str]] = Field([], description="The vector databases associated with the AI application", alias="vectorDBs")
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class AIApplicationFilter(BaseAPIFilter):

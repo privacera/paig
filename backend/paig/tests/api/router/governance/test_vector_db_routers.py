@@ -47,11 +47,11 @@ class TestVectorDBRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.vector_db_dict)
         )
 
         await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
 
         response = await client.get(
@@ -75,7 +75,7 @@ class TestVectorDBRouters:
             "groupEnforcement": 1
         }
         response = await client.put(
-            f"{governance_services_base_route}/vectordb/1", data=json.dumps(update_req)
+            f"{governance_services_base_route}/vectordb/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'test_vector_db1_updated'
@@ -92,7 +92,7 @@ class TestVectorDBRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.vector_db_dict)
         )
 
         response = await client.get(
@@ -117,7 +117,7 @@ class TestVectorDBRouters:
             "groupEnforcement": 1
         }
         response = await client.put(
-            f"{governance_services_base_route}/vectordb/2", data=json.dumps(update_req)
+            f"{governance_services_base_route}/vectordb/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -131,7 +131,7 @@ class TestVectorDBRouters:
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.invalid_vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.invalid_vector_db_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -139,7 +139,7 @@ class TestVectorDBRouters:
 
         self.invalid_vector_db_dict['type'] = "OPENSEARCH"
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.invalid_vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.invalid_vector_db_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -147,19 +147,19 @@ class TestVectorDBRouters:
 
         self.invalid_vector_db_dict['name'] = "test_vector_db1"
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.invalid_vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.invalid_vector_db_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "Vector DB already exists with name: ['test_vector_db1']"
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(update_req)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(update_req)
         )
         assert response.status_code == 201
         update_req_id = response.json()['id']
         response = await client.put(
-            f"{governance_services_base_route}/vectordb/{update_req_id}", data=json.dumps(self.invalid_vector_db_dict)
+            f"{governance_services_base_route}/vectordb/{update_req_id}", content=json.dumps(self.invalid_vector_db_dict)
         )
         assert response.status_code == 400
         assert response.json()['message'] == "Vector DB already exists with name: ['test_vector_db1']"

@@ -54,7 +54,7 @@ class TestAIApplicationConfigRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
 
         response = await client.get(
@@ -74,7 +74,7 @@ class TestAIApplicationConfigRouters:
         }
         response = await client.put(
             f"{governance_services_base_route}/application/{app_response.json()['id']}/config",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['allowedGroups'] == []
@@ -90,7 +90,7 @@ class TestAIApplicationConfigRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
 
         response = await client.get(
@@ -116,7 +116,7 @@ class TestAIApplicationConfigRouters:
             "deniedRoles": []
         }
         response = await client.put(
-            f"{governance_services_base_route}/application/2/config", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/2/config", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -124,7 +124,7 @@ class TestAIApplicationConfigRouters:
 
         response = await client.put(
             f"{governance_services_base_route}/application/{app_response.json()['id']}/config",
-            data=json.dumps(self.invalid_ai_application_config_dict)
+            content=json.dumps(self.invalid_ai_application_config_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -135,7 +135,7 @@ class TestAIApplicationConfigRouters:
 
         response = await client.put(
             f"{governance_services_base_route}/application/{app_response.json()['id']}/config",
-            data=json.dumps(self.invalid_ai_application_config_dict)
+            content=json.dumps(self.invalid_ai_application_config_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -146,7 +146,7 @@ class TestAIApplicationConfigRouters:
 
         response = await client.put(
             f"{governance_services_base_route}/application/{app_response.json()['id']}/config",
-            data=json.dumps(self.invalid_ai_application_config_dict)
+            content=json.dumps(self.invalid_ai_application_config_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -157,7 +157,7 @@ class TestAIApplicationConfigRouters:
 
         response = await client.put(
             f"{governance_services_base_route}/application/{app_response.json()['id']}/config",
-            data=json.dumps(self.invalid_ai_application_config_dict)
+            content=json.dumps(self.invalid_ai_application_config_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False

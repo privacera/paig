@@ -25,7 +25,7 @@ class RdsService(DataServiceInterface):
         access_audits, total_count = await self.access_audit_repository.get_access_audits_with_filters(include_filters, exclude_filters, page, size, sort, min_time, max_time)
         if access_audits is None:
             raise NotFoundException("No access audits found")
-        access_audit_list = [BaseAccessAuditView.from_orm(access_audit) for access_audit in access_audits]
+        access_audit_list = [BaseAccessAuditView.model_validate(access_audit) for access_audit in access_audits]
         return create_pageable_response(access_audit_list, total_count, page, size, sort)
 
     async def get_usage_counts(self, filters, min_value, max_value):
@@ -40,7 +40,7 @@ class RdsService(DataServiceInterface):
     async def get_trait_counts_by_application(self, filters, min_value, max_value):
         if filters.user_id or filters.app_name:
             filters.exact_match = True
-        results = await self.access_audit_repository.get_access_audits_counts_group_by_traits_and_application(filters.dict(), min_value, max_value)
+        results = await self.access_audit_repository.get_access_audits_counts_group_by_traits_and_application(filters.model_dump(), min_value, max_value)
         result_dict = dict()
         for r in results:
             if r.trait in result_dict:
@@ -55,7 +55,7 @@ class RdsService(DataServiceInterface):
             raise BadRequestException("Invalid date range")
         if filters.user_id or filters.app_name:
             filters.exact_match = True
-        results = await self.access_audit_repository.get_access_audits_counts_group_by_result_interval(filters.dict(), min_value, max_value, interval)
+        results = await self.access_audit_repository.get_access_audits_counts_group_by_result_interval(filters.model_dump(), min_value, max_value, interval)
         result_dict = dict()
         for r in results:
             epoch_ms = r[0]
@@ -122,7 +122,7 @@ class RdsService(DataServiceInterface):
             raise BadRequestException("Invalid date range")
         if filters.user_id or filters.app_name:
             filters.exact_match = True
-        results = await self.access_audit_repository.get_activity_trend_counts(filters.dict(), min_value, max_value, interval)
+        results = await self.access_audit_repository.get_activity_trend_counts(filters.model_dump(), min_value, max_value, interval)
         result_dict = dict()
         for r in results:
             epoch_ms = r[0]

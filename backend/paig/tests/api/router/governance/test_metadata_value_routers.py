@@ -42,7 +42,7 @@ class TestMetaDataValueRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
 
         response = await client.get(
@@ -52,7 +52,7 @@ class TestMetaDataValueRouters:
         assert response.json()['content'][0]['name'] == 'CONFIDENTIAL_METADATA'
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
 
         response = await client.get(
@@ -75,7 +75,7 @@ class TestMetaDataValueRouters:
               "metadataValue": "CONFIDENTIAL_METADATA_VALUE_updated"
         }
         response = await client.put(
-            f"{user_services_base_route}/vectordb/metadata/value/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/vectordb/metadata/value/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['metadataName'] == 'CONFIDENTIAL_METADATA'
@@ -91,7 +91,7 @@ class TestMetaDataValueRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
 
         response = await client.get(
@@ -101,7 +101,7 @@ class TestMetaDataValueRouters:
         assert response.json()['content'][0]['name'] == 'CONFIDENTIAL_METADATA'
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
 
         response = await client.get(
@@ -124,7 +124,7 @@ class TestMetaDataValueRouters:
             "metadataValue": "CONFIDENTIAL_METADATA_VALUE_updated"
         }
         response = await client.put(
-            f"{user_services_base_route}/vectordb/metadata/value/2", data=json.dumps(update_req)
+            f"{user_services_base_route}/vectordb/metadata/value/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -138,14 +138,14 @@ class TestMetaDataValueRouters:
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict_invalid)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict_invalid)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False

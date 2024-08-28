@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import Field
+from pydantic import Field, ConfigDict
 
 from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
@@ -37,8 +37,8 @@ class AIApplicationConfigView(BaseView):
                                               alias="deniedRoles")
     application_id: Optional[int] = Field(None, description="The application ID", alias="applicationId")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "allowedUsers": ["user1", "user2"],
                 "allowedGroups": ["group1", "group2"],
@@ -49,6 +49,7 @@ class AIApplicationConfigView(BaseView):
                 "applicationId": 1
             }
         }
+    )
 
 
 class AIApplicationConfigFilter(BaseAPIFilter):

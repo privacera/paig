@@ -9,6 +9,7 @@ class CommaSeparatedList(TypeDecorator):
         length (int, optional): Maximum length of the stored string. Defaults to 255.
     """
     impl = String
+    cache_ok = True # Add this line to indicate it's safe to cache instances of this type.
 
     def __init__(self, length=255, *args, **kwargs):
         """

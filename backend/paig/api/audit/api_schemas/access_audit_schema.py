@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from core.factory.database_initiator import BaseAPIFilter
-from pydantic import Field
+from pydantic import Field, ConfigDict
 from fastapi import Query
 
 
@@ -34,9 +34,10 @@ class BaseAccessAuditView(BaseModel):
     transaction_sequence_number: Optional[int] = Field(None, description="The Transaction sequence number",
                                                        alias="transactionSequenceNumber")
 
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
+    )
 
 
 class QueryParamsBase(BaseAPIFilter):

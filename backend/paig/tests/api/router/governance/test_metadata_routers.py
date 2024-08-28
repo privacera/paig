@@ -40,7 +40,7 @@ class TestMetaDataRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
 
         response = await client.get(
@@ -62,7 +62,7 @@ class TestMetaDataRouters:
             "valueDataType": "multi_value"
         }
         response = await client.put(
-            f"{user_services_base_route}/vectordb/metadata/key/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/vectordb/metadata/key/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'CONFIDENTIAL_METADATA_UPDATED'
@@ -79,7 +79,7 @@ class TestMetaDataRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
 
         response = await client.get(
@@ -102,7 +102,7 @@ class TestMetaDataRouters:
             "valueDataType": "multi_value"
         }
         response = await client.put(
-            f"{user_services_base_route}/vectordb/metadata/key/2", data=json.dumps(update_req)
+            f"{user_services_base_route}/vectordb/metadata/key/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -116,7 +116,7 @@ class TestMetaDataRouters:
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.invalid_metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.invalid_metadata_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -125,7 +125,7 @@ class TestMetaDataRouters:
 
         self.invalid_metadata_dict['type'] = 'USER_DEFINED'
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.invalid_metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.invalid_metadata_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -133,7 +133,7 @@ class TestMetaDataRouters:
                                               ": ['multi_value']")
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False

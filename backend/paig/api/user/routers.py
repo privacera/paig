@@ -31,7 +31,7 @@ async def create_user(
         user: dict = Depends(get_auth_user),
         user_controller: UserController = user_controller_instance
 ):
-    user_response = await user_controller.create_user(user_params=user_params.dict())
+    user_response = await user_controller.create_user(user_params=user_params.model_dump())
     response.status_code = 201
     return user_response
 
@@ -43,7 +43,7 @@ async def user_login(
         body_params: UserLoginRequest,
         user_controller: UserController = user_controller_instance,
 ) -> UserLoginResponse:
-    return await user_controller.login_user(body_params.dict())
+    return await user_controller.login_user(body_params.model_dump())
 
 
 @user_router.get("/api/users/tenant", response_model=dict)
@@ -90,7 +90,7 @@ async def update_user(
         user: dict = Depends(get_auth_user),
         user_controller: UserController = user_controller_instance
 ):
-    return await user_controller.update_user(id=id, user=user, user_params=body_params.dict())
+    return await user_controller.update_user(id=id, user=user, user_params=body_params.model_dump())
 
 
 @user_router.delete("/api/users/{id}", response_model=dict)

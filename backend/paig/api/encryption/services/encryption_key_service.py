@@ -157,7 +157,7 @@ class EncryptionKeyService(BaseController[EncryptionKeyModel, EncryptionKeyView]
             # Set existing active key to passive
             existing_encryption_key: EncryptionKeyModel = await repository.get_active_encryption_key_by_type(key_type)
 
-            existing_encryption_key_updated_request = EncryptionKeyView.from_orm(existing_encryption_key)
+            existing_encryption_key_updated_request = EncryptionKeyView.model_validate(existing_encryption_key)
             existing_encryption_key_updated_request.key_status = EncryptionKeyStatus.PASSIVE
 
             await self.update_record(existing_encryption_key.id, existing_encryption_key_updated_request)
@@ -275,7 +275,7 @@ class EncryptionKeyService(BaseController[EncryptionKeyModel, EncryptionKeyView]
         existing_encryption_key: EncryptionKeyModel = await repository.get_encryption_key_by_id(
             id, EncryptionKeyStatus.DISABLED)
 
-        updated_encryption_key_request = EncryptionKeyView.from_orm(existing_encryption_key)
+        updated_encryption_key_request = EncryptionKeyView.model_validate(existing_encryption_key)
         updated_encryption_key_request.key_status = EncryptionKeyStatus.DELETED
 
         result: EncryptionKeyView = await self.update_record(id, updated_encryption_key_request)
@@ -306,7 +306,7 @@ class EncryptionKeyService(BaseController[EncryptionKeyModel, EncryptionKeyView]
         existing_encryption_key: EncryptionKeyModel = await repository.get_encryption_key_by_id(
             id, EncryptionKeyStatus.PASSIVE)
 
-        updated_encryption_key_request = EncryptionKeyView.from_orm(existing_encryption_key)
+        updated_encryption_key_request = EncryptionKeyView.model_validate(existing_encryption_key)
         updated_encryption_key_request.key_status = EncryptionKeyStatus.DISABLED
 
         result: EncryptionKeyView = await self.update_record(id, updated_encryption_key_request)

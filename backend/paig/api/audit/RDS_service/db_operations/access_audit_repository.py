@@ -54,14 +54,14 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
         query = select(AccessAuditModel)
         if exclude_filters:
             exclude_list = ''
-            for key, value in exclude_filters.dict().items():
+            for key, value in exclude_filters.model_dump().items():
                 if value:
                     exclude_list = exclude_list + ',' + key
             if exclude_list:
                 exclude_filters.exclude_match = True
                 exclude_filters.exclude_list = exclude_list
-                query = self.create_filter(query, exclude_filters.dict())
-        query = self.create_filter(query, include_filters.dict())
+                query = self.create_filter(query, exclude_filters.model_dump())
+        query = self.create_filter(query, include_filters.model_dump())
         if min_value:
             all_filters.append(AccessAuditModel.event_time >= min_value)
         if max_value:
@@ -81,7 +81,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
                 query = self.order_by(query, sort_column_name, sort_type)
         query = query.limit(size).offset(skip)
         results = (await session.execute(query)).scalars().all()
-        count = (await self.get_count_with_filter(include_filters.dict()))
+        count = (await self.get_count_with_filter(include_filters.model_dump()))
         return results, count
 
     async def get_access_audits_counts_group_by_result(self, filters, min_value, max_value):
@@ -91,7 +91,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
 
         query = query.group_by(AccessAuditModel.result)
 
-        filters = self._get_filter(filters.dict())
+        filters = self._get_filter(filters.model_dump())
 
         query = query.filter(
             and_(
@@ -182,7 +182,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
             func.count(AccessAuditModel.user_id).label('user_id_count')
         )
         query = query.group_by(AccessAuditModel.app_name, AccessAuditModel.user_id)
-        query = self.create_filter(query, filters.dict())
+        query = self.create_filter(query, filters.model_dump())
         query = query.filter(
             and_(
                 AccessAuditModel.event_time >= min_value,
@@ -198,7 +198,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
             func.count().label('count')
         )
         query = query.group_by(AccessAuditModel.user_id)
-        query = self.create_filter(query, filters.dict())
+        query = self.create_filter(query, filters.model_dump())
         query = query.filter(
             and_(
                 AccessAuditModel.event_time >= min_time,
@@ -215,7 +215,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
             func.count(AccessAuditModel.user_id).label('count')
         )
         query = query.group_by(AccessAuditModel.user_id)
-        query = self.create_filter(query, filters.dict())
+        query = self.create_filter(query, filters.model_dump())
         query = query.filter(
             and_(
                 AccessAuditModel.event_time >= min_time,
@@ -236,7 +236,7 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
             .join(json_each, true())
             .group_by(json_each.c.value)
         )
-        query = self.create_filter(query, filters.dict())
+        query = self.create_filter(query, filters.model_dump())
         query = query.filter(
             and_(
                 AccessAuditModel.event_time >= min_time,

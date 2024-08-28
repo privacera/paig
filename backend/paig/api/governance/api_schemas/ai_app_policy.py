@@ -37,8 +37,7 @@ class AIApplicationPolicyView(BaseView):
     enriched_prompt: PermissionType = Field(description="The enriched prompt associated with the AI application policy", alias="enrichedPrompt")
     application_id: int = Field(description="The application id associated with the AI application policy", alias="applicationId", default=0)
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class AIApplicationPolicyFilter(BaseAPIFilter):

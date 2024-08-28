@@ -48,14 +48,14 @@ class TestUserRouters:
 
         # Create tenant user
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.tenet_user)
+            f"{user_services_base_route}/users", content=json.dumps(self.tenet_user)
         )
         assert response.status_code == 201
         assert response.json()["username"] == 'admin'
 
         # Create user
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.user)
+            f"{user_services_base_route}/users", content=json.dumps(self.user)
         )
 
         assert response.status_code == 201
@@ -67,7 +67,7 @@ class TestUserRouters:
             "password": "password1"
         }
         response = await client.post(
-            f"{user_services_base_route}/login", data=json.dumps(user_dict)
+            f"{user_services_base_route}/login", content=json.dumps(user_dict)
         )
         assert response.status_code == 303
 
@@ -77,7 +77,7 @@ class TestUserRouters:
             "password": "invalid_password_1"
         }
         response = await client.post(
-            f"{user_services_base_route}/login", data=json.dumps(user_dict)
+            f"{user_services_base_route}/login", content=json.dumps(user_dict)
         )
         assert response.status_code == 401
 
@@ -87,7 +87,7 @@ class TestUserRouters:
             "password": "password1"
         }
         response = await client.post(
-            f"{user_services_base_route}/login", data=json.dumps(user_dict)
+            f"{user_services_base_route}/login", content=json.dumps(user_dict)
         )
         assert response.status_code == 400
 
@@ -97,7 +97,7 @@ class TestUserRouters:
             "password": ""
         }
         response = await client.post(
-            f"{user_services_base_route}/login", data=json.dumps(user_dict)
+            f"{user_services_base_route}/login", content=json.dumps(user_dict)
         )
         assert response.status_code == 500
 
@@ -135,7 +135,7 @@ class TestUserRouters:
             "groups": []
         }
         response = await client.put(
-            f"{user_services_base_route}/users/2", data=json.dumps(update_req)
+            f"{user_services_base_route}/users/2", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['firstName'] == 'first_user_updated'
@@ -158,7 +158,7 @@ class TestUserRouters:
             "groups": []
         }
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(user_obj)
         )
         assert response.status_code == 201
         assert response.json()["username"] == 'test_user3'
@@ -173,7 +173,7 @@ class TestUserRouters:
             "groups": []
         }
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(user_obj)
         )
         assert response.status_code == 201
         assert response.json()["username"] == 'test_user4'
@@ -216,7 +216,7 @@ class TestUserFirstNameLastNameValidations:
 
         # created user with first name and last name with underscore
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.user)
+            f"{user_services_base_route}/users", content=json.dumps(self.user)
         )
         assert response.status_code == 201
         assert response.json()["firstName"] == 'first_user'
@@ -238,7 +238,7 @@ class TestUserFirstNameLastNameValidations:
             "groups": []
         }
         response = await client.put(
-            f"{user_services_base_route}/users/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/users/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['firstName'] == 'first.name'
@@ -253,7 +253,7 @@ class TestUserFirstNameLastNameValidations:
             "groups": []
         }
         response = await client.put(
-            f"{user_services_base_route}/users/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/users/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['firstName'] == "first'1"
@@ -268,7 +268,7 @@ class TestUserFirstNameLastNameValidations:
             "groups": []
         }
         response = await client.put(
-            f"{user_services_base_route}/users/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/users/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['firstName'] == "first-1"
@@ -285,7 +285,7 @@ class TestUserFirstNameLastNameValidations:
             "groups": []
         }
         response = await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(user_obj)
         )
         assert response.status_code == 201
         assert response.json()["firstName"] == "first.-user's-1"

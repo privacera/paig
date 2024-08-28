@@ -19,8 +19,7 @@ class TagView(BaseView):
     type: str = Field(default=None, description="The type of the Tag")
     description: Optional[str] = Field(default=None, description="The Description of Tag")
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class TagFilter(BaseAPIFilter):

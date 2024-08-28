@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -44,8 +44,9 @@ class AuthzRequest(BaseModel):
     context: Optional[Dict[str, Any]] = Field(None)
     request_date_time: datetime = Field(current_utc_time(), alias="requestDateTime")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
 
 
 class AuthzResponse(BaseModel):
@@ -80,8 +81,9 @@ class AuthzResponse(BaseModel):
     reason: str = Field(None, alias="reason")
     paig_policy_ids: List[int] = Field([], alias="paigPolicyIds")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
 
 
 class VectorDBAuthzRequest(BaseModel):
@@ -96,8 +98,9 @@ class VectorDBAuthzRequest(BaseModel):
     user_id: str = Field(None, alias="userId")
     application_key: str = Field(None, alias="applicationKey")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
 
 
 class VectorDBAuthzResponse(BaseModel):
@@ -124,8 +127,9 @@ class VectorDBAuthzResponse(BaseModel):
     filter_expression: str = Field(None, alias="filterExpression")
     reason: str = Field(None, alias="reason")
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(
+        populate_by_name=True
+    )
 
 
 class PAIGAuthorizer(ABC):
