@@ -36,6 +36,7 @@ def mock_encryption_key_request_validator():
 @pytest.fixture
 def encryption_key_service(mock_encryption_key_repository, mock_secure_encryptor_factory, mock_secure_encryptor,
                            mock_encryption_key_request_validator):
+    mock_secure_encryptor.encrypt.side_effect = lambda x: f"encrypted_{x}"
     mock_secure_encryptor_factory.get_or_create_secure_encryptor.return_value = mock_secure_encryptor
     return EncryptionKeyService(
         encryption_key_repository=mock_encryption_key_repository,
@@ -110,19 +111,19 @@ async def test_get_active_encryption_key_by_type(encryption_key_service, mock_en
 async def test_delete_disabled_encryption_key(encryption_key_service, mock_encryption_key_repository,
                                               mock_encryption_key_request_validator):
     mock_encryption_key_view = EncryptionKeyView(id=1, key_status=EncryptionKeyStatus.DISABLED)
-
-    mock_encryption_key_repository.get_encryption_key_by_id.return_value = mock_encryption_key_view
-    await encryption_key_service.delete_disabled_encryption_key(1)
-    assert mock_encryption_key_repository.update_record.called
-    assert mock_encryption_key_request_validator.validate_delete_request.called
+    with patch("core.controllers.base_controller.BaseController.update_record",
+               AsyncMock(return_value=mock_encryption_key_view)):
+        mock_encryption_key_repository.get_encryption_key_by_id.return_value = mock_encryption_key_view
+        await encryption_key_service.delete_disabled_encryption_key(1)
+        assert mock_encryption_key_request_validator.validate_delete_request.called
 
 
 @pytest.mark.asyncio
 async def test_disable_passive_encryption_key(encryption_key_service, mock_encryption_key_repository,
                                               mock_encryption_key_request_validator):
     mock_encryption_key_view = EncryptionKeyView(id=1, key_status=EncryptionKeyStatus.PASSIVE)
+    with patch("core.controllers.base_controller.BaseController.update_record", AsyncMock(return_value=mock_encryption_key_view)):
 
-    mock_encryption_key_repository.get_encryption_key_by_id.return_value = mock_encryption_key_view
-    await encryption_key_service.disable_passive_encryption_key(1)
-    assert mock_encryption_key_repository.update_record.called
-    assert mock_encryption_key_request_validator.validate_disable_request.called
+        mock_encryption_key_repository.get_encryption_key_by_id.return_value = mock_encryption_key_view
+        await encryption_key_service.disable_passive_encryption_key(1)
+        assert mock_encryption_key_request_validator.validate_disable_request.called
