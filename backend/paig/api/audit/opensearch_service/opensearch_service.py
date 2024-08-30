@@ -1,4 +1,3 @@
-from fastapi import Depends
 from fastapi import HTTPException
 from opensearchpy.exceptions import NotFoundError, OpenSearchException
 import logging
@@ -6,14 +5,9 @@ import logging
 from api.audit.opensearch_service.opensearch_client import OpenSearchClient
 from api.audit.factory.service_interface import DataServiceInterface
 from core.controllers.paginated_response import create_pageable_response
-from api.audit.opensearch_service.util.opensearch_util import build_query, convert_to_sorted_dict, \
+from api.audit.opensearch_service.opensearch_util import build_query, convert_to_sorted_dict, \
     build_search_request_with_aggregations, extract_search_response_aggregations
-
-from api.audit.opensearch_service.opensearch_client import (
-    TENANT_ID,
-    OPEN_SEARCH_INDEX_PAIG_SHIELD_AUDITS,
-    OPEN_SEARCH_INDEX_PAIG_ADMIN_AUDITS
-)
+from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +17,20 @@ class OpenSearchService(DataServiceInterface):
         self.opensearch_client = opensearch_client
 
     async def create_access_audit(self, access_audit_params):
-        pass
+        if not isinstance(access_audit_params, dict):
+            access_audit_params = access_audit_params.dict(by_alias=True)
+        await self._insert_access_audit(access_audit_params, is_admin_audits=None)
+
+    async def _insert_access_audit(self, access_audit_params, is_admin_audits):
+        index_name = self.opensearch_client.get_index_name(is_admin_audits)
+        try:
+            response = self.opensearch_client.get_client().index(index=index_name, body=access_audit_params)
+        except OpenSearchException as e:
+            logger.error(f'OpenSearch exception occurred: {str(e)}')
+            raise HTTPException(status_code=500, detail="OpenSearch exception occurred")
+        except Exception as e:
+            logger.error(f'Exception occurred: {str(e)}')
+            raise HTTPException(status_code=500, detail=str(e))
 
     async def get_access_audits(self, include_query, exclude_query, page, size, sort, from_time, to_time):
         return self.get_audits(include_query, exclude_query, page, size, sort, from_time, to_time, None)
@@ -31,8 +38,7 @@ class OpenSearchService(DataServiceInterface):
     def get_audits(self, include_query, exclude_query, page, size, sort, from_time, to_time,
                          is_admin_audits):
 
-        index_prefix = OPEN_SEARCH_INDEX_PAIG_ADMIN_AUDITS if is_admin_audits else OPEN_SEARCH_INDEX_PAIG_SHIELD_AUDITS
-        index_name = f"{index_prefix}_{TENANT_ID}"
+        index_name = self.opensearch_client.get_index_name(is_admin_audits)
         offset = page * size
 
         query_body = {
@@ -43,18 +49,15 @@ class OpenSearchService(DataServiceInterface):
         }
 
         try:
-            logger.info(f'Searching for audits in index: {index_name} with query: {query_body}')
-
             response = self.opensearch_client.get_client().search(body=query_body, index=index_name)
-
         except NotFoundError:
-            logger.error(f'Custom config directory provided does not exist: {index_name}')
-            return []
+            logger.error(f'Audit index does not exist: {index_name}')
+            return create_pageable_response([], 0, 0, size, [])
         except OpenSearchException as e:
-            logger.error(f'OpenSearch exception occurred: {str(e)}')
+            logger.error(f'OpenSearch exception occurred while getting audits: {str(e)}')
             raise HTTPException(status_code=500, detail="OpenSearch exception occurred")
         except Exception as e:
-            logger.error(f'Exception occurred: {str(e)}')
+            logger.error(f'Exception occurred while getting audits: {str(e)}')
             raise HTTPException(status_code=500, detail=str(e))
 
         hits = response['hits']['hits']
@@ -101,38 +104,31 @@ class OpenSearchService(DataServiceInterface):
 
     def get_counts(self, group_by, include_query, from_time, to_time, interval, size, cardinality,
                    is_admin_audits):
-        index_prefix = OPEN_SEARCH_INDEX_PAIG_ADMIN_AUDITS if is_admin_audits else OPEN_SEARCH_INDEX_PAIG_SHIELD_AUDITS
-        index_name = f"{index_prefix}_{TENANT_ID}"
+        index_name = self.opensearch_client.get_index_name(is_admin_audits)
 
         query_body = {
             "size": 0,
             "query": build_query(include_query, None, from_time, to_time, is_admin_audits)
         }
 
-        build_search_request_with_aggregations(group_by, interval, size, cardinality, is_admin_audits, query_body)
+        query_body = build_search_request_with_aggregations(group_by, interval, size, cardinality, is_admin_audits, query_body)
 
         aggregations = {}
         try:
-            logger.info(f'Searching for audits in index: {index_name} with query: {query_body}')
-
             response = self.opensearch_client.get_client().search(body=query_body, index=index_name)
-
             aggregations = response.get('aggregations', {})
-
-            logger.info(f'Aggregations: {aggregations}')
-
         except NotFoundError:
-            logger.error(f'Custom config directory provided does not exist: {index_name}')
+            logger.error(f'Index does not exist: {index_name}')
             return {}
         except OpenSearchException as e:
-            logger.error(f'OpenSearch exception occurred: {str(e)}')
+            logger.error(f'OpenSearch exception occurred while getting counts: {str(e)}')
             raise HTTPException(status_code=500, detail="OpenSearch exception occurred")
         except Exception as e:
-            logger.error(f'Exception occurred: {str(e)}')
+            logger.error(f'Exception occurred while getting counts: {str(e)}')
             raise HTTPException(status_code=500, detail=str(e))
 
         return extract_search_response_aggregations(interval, aggregations)
 
 
-def get_opensearch_service(opensearch_client: OpenSearchClient = Depends(OpenSearchClient)):
+def get_opensearch_service(opensearch_client: OpenSearchClient = SingletonDepends(OpenSearchClient)):
     return OpenSearchService(opensearch_client=opensearch_client)

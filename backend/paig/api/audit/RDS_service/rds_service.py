@@ -6,11 +6,12 @@ from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
 from core.utils import SingletonDepends
 
 
+
 class RdsService(DataServiceInterface):
     def __init__(self, access_audit_repository):
         self.access_audit_repository = access_audit_repository
 
-    async def create_access_audit(self, access_audit_params):
+    async def create_access_audit(self, access_audit_params: BaseAccessAuditView):
         return await self.access_audit_repository.create_access_audit(access_audit_params)
 
     async def get_access_audits(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):
@@ -135,6 +136,7 @@ class RdsService(DataServiceInterface):
                 if r[1]:
                     result_dict[epoch_ms]["tenantId"]['1'] = {"count": r[1]}
         return {interval: result_dict}
+
 
 def get_rds_service(access_audit_repository: AccessAuditRepository = SingletonDepends(AccessAuditRepository)):
     return RdsService(access_audit_repository=access_audit_repository)

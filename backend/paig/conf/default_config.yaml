@@ -7,9 +7,9 @@ security:
     secret: "$2b$12$1ykJ4rnE3yKNa05mPiDTluso17gdFyUux/qSLsCv0tzIBeVqnmMmG"
 
 opensearch:
-  endpoint: ""
-  username: ""
-  secret: ""
+  endpoint: "https://localhost:9200"
+  username: "admin"
+  secret: "<Replace with OpenSearch Password>"
 
 authz:
   rds_authorizer:

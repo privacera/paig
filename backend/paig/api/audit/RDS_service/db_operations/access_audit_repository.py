@@ -23,7 +23,9 @@ class AccessAuditRepository(BaseOperations[AccessAuditModel]):
         super().__init__(AccessAuditModel)
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def create_access_audit(self, access_audit_params):
+    async def create_access_audit(self, access_audit_params: BaseAccessAuditView):
+        if not isinstance(access_audit_params, dict):
+            access_audit_params = access_audit_params.dict()
         model = self.model_class()
         model.set_attribute(access_audit_params)
         session.add(model)

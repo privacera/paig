@@ -1,0 +1,58 @@
+{
+  "index_patterns": [
+    "paig_admin_audits_*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "actedByUserId": {
+          "type": "long"
+        },
+        "actedByUsername": {
+          "type": "keyword"
+        },
+        "action": {
+          "type": "keyword"
+        },
+        "logId": {
+          "type": "keyword"
+        },
+        "logTime": {
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "objectId": {
+          "type": "keyword"
+        },
+        "objectName": {
+          "type": "keyword"
+        },
+        "objectState": {
+          "type": "object",
+          "dynamic": true
+        },
+        "objectStatePrevious": {
+          "type": "object",
+          "dynamic": true
+        },
+        "objectType": {
+          "type": "keyword"
+        },
+        "tenantId": {
+          "type": "keyword"
+        },
+        "transactionId": {
+          "type": "keyword"
+        },
+        "transactionSequenceNumber": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}
