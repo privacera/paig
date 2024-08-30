@@ -5,3 +5,5 @@ opensearch:
   endpoint: "https://test:9200"
   username: "test"
   secret: "test"
+
+audit_storage_datasource: "RDS"

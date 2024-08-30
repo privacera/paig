@@ -1,6 +1,8 @@
 import json
 import os
 import logging
+import sys
+
 from opensearchpy import OpenSearch, RequestsHttpConnection, exceptions
 from core import constants
 from core.utils import format_to_root_path
@@ -61,12 +63,12 @@ class OpenSearchClient:
 
     def _init_admin_audit_template(self):
         template_name = self.opensearch_conf.get('admin_audit_template', f"{OPEN_SEARCH_INDEX_PAIG_ADMIN_AUDITS}_template")
-        template_file_path = self.opensearch_conf.get('admin_audit_template_file', 'api/audit/opensearch_service/util/admin_audit_template.json')
+        template_file_path = self.opensearch_conf.get('admin_audit_template_file', 'api/audit/opensearch_service/resources/admin_audit_template.json')
         self.check_and_create_template(template_name, template_file_path, self.admin_audit_index)
 
     def _init_access_audit_template(self):
         template_name = self.opensearch_conf.get('access_audit_template', f"{OPEN_SEARCH_INDEX_PAIG_SHIELD_AUDITS}_template")
-        template_file_path = self.opensearch_conf.get('access_audit_template_file', 'api/audit/opensearch_service/util/access_audit_template.json')
+        template_file_path = self.opensearch_conf.get('access_audit_template_file', 'api/audit/opensearch_service/resources/access_audit_template.json')
         self.check_and_create_template(template_name, template_file_path, self.access_audit_index)
 
     def get_client(self):
@@ -90,6 +92,8 @@ class OpenSearchClient:
             return self.opensearch_client.indices.get_index_template(name=template_name)
         except exceptions.NotFoundError:
             return None
+        except exceptions.AuthenticationException:
+            sys.exit("Authentication failed. Please check the opesearch credentials provided in config file")
 
     def create_template(self, template_name, template_body):
         try:

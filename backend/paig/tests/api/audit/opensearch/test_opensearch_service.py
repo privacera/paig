@@ -58,7 +58,7 @@ async def test_insert_access_audit(opensearch_service, mock_opensearch_client):
     access_audit_params = {"param1": "value1"}  # Replace with actual parameters
     mock_opensearch_client.get_client().index.return_value={"result": "created"}
 
-    await opensearch_service.insert_access_audit(access_audit_params, None)
+    await opensearch_service.create_access_audit(access_audit_params)
 
     mock_opensearch_client.get_client().index.assert_called_once()
 

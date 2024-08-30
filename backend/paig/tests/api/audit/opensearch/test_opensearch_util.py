@@ -1,13 +1,9 @@
-import pytest
-from api.audit.opensearch_service.util.opensearch_util import (
+from api.audit.opensearch_service.opensearch_util import (
     add_equal_query,
     add_equal_in_list_query,
     build_query,
     build_wildcard_query,
     add_range_query,
-    add_message_match_query,
-    build_conditions,
-    get_aggregation_builder_with_date_histogram,
     build_search_request_with_aggregations,
     extract_search_response_aggregations,
     extract_group_by_aggregations

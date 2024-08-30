@@ -1,4 +1,3 @@
-from fastapi import Depends
 from fastapi import HTTPException
 from opensearchpy.exceptions import NotFoundError, OpenSearchException
 import logging
@@ -6,7 +5,7 @@ import logging
 from api.audit.opensearch_service.opensearch_client import OpenSearchClient
 from api.audit.factory.service_interface import DataServiceInterface
 from core.controllers.paginated_response import create_pageable_response
-from api.audit.opensearch_service.util.opensearch_util import build_query, convert_to_sorted_dict, \
+from api.audit.opensearch_service.opensearch_util import build_query, convert_to_sorted_dict, \
     build_search_request_with_aggregations, extract_search_response_aggregations
 from core.utils import SingletonDepends
 
@@ -20,14 +19,12 @@ class OpenSearchService(DataServiceInterface):
     async def create_access_audit(self, access_audit_params):
         if not isinstance(access_audit_params, dict):
             access_audit_params = access_audit_params.dict(by_alias=True)
-        await self.insert_access_audit(access_audit_params, is_admin_audits=None)
+        await self._insert_access_audit(access_audit_params, is_admin_audits=None)
 
-    async def insert_access_audit(self, access_audit_params, is_admin_audits):
+    async def _insert_access_audit(self, access_audit_params, is_admin_audits):
         index_name = self.opensearch_client.get_index_name(is_admin_audits)
         try:
             response = self.opensearch_client.get_client().index(index=index_name, body=access_audit_params)
-        except NotFoundError:
-            logger.error(f'Index does not exist: {index_name}')
         except OpenSearchException as e:
             logger.error(f'OpenSearch exception occurred: {str(e)}')
             raise HTTPException(status_code=500, detail="OpenSearch exception occurred")
