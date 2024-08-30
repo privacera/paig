@@ -1,0 +1,95 @@
+{
+  "index_patterns": [
+    "paig_shield_audits_*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 2,
+      "number_of_replicas": 1
+    },
+    "mappings": {
+      "dynamic": "true",
+      "properties": {
+        "applicationKey": {
+          "type": "keyword"
+        },
+        "applicationName": {
+          "type": "keyword"
+        },
+        "clientApplicationKey": {
+          "type": "keyword"
+        },
+        "clientApplicationName": {
+          "type": "keyword"
+        },
+        "clientHostname": {
+          "type": "keyword"
+        },
+        "clientIp": {
+          "type": "ip"
+        },
+        "context": {
+          "type": "object",
+          "dynamic": true
+        },
+        "conversationId": {
+          "type": "keyword"
+        },
+        "eventId": {
+          "type": "keyword"
+        },
+        "eventTime": {
+          "type": "date",
+          "format": "epoch_millis"
+        },
+        "maskedTraits": {
+          "type": "object",
+          "dynamic": true
+        },
+        "messages": {
+          "type": "object",
+          "dynamic": true
+        },
+        "numberOfTokens": {
+          "type": "integer"
+        },
+        "paigPolicyIds": {
+          "type": "keyword"
+        },
+        "rangerAuditIds": {
+          "type": "keyword"
+        },
+        "rangerPolicyIds": {
+          "type": "keyword"
+        },
+        "requestId": {
+          "type": "keyword"
+        },
+        "requestType": {
+          "type": "keyword"
+        },
+        "result": {
+          "type": "keyword"
+        },
+        "tenantId": {
+          "type": "keyword"
+        },
+        "threadId": {
+          "type": "keyword"
+        },
+        "threadSequenceNumber": {
+          "type": "integer"
+        },
+        "traits": {
+          "type": "keyword"
+        },
+        "userId": {
+          "type": "keyword"
+        },
+        "encryptionKeyId": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import copy
 from typing import List, Dict, Any, Union, Optional
 from collections import defaultdict
 import logging
@@ -215,6 +216,8 @@ def build_query_field_value(field: str, value: str) -> List[Dict]:
 
 
 def convert_to_sorted_dict(data):
+    if len(data) == 0:
+        return []
     # Split the string by commas to get individual elements
     elements = data[0].split(',')
 
@@ -290,27 +293,19 @@ def get_aggregation_builder_with_date_histogram(interval, is_admin_audits) -> Di
 
 
 # Method to build the search request with aggregations
-def build_search_request_with_aggregations(group_by, interval, size, cardinality, is_admin_audits, search_request: Dict[str, Any]) -> None:
+def build_search_request_with_aggregations(group_by, interval, size, cardinality, is_admin_audits, search_request: Dict[str, Any]):
+    updated_search_request = copy.deepcopy(search_request)
     if group_by:
         group_by_list = get_list_from_comma_separated_string(group_by)
         if group_by_list:
             # Get group by aggregation
             group_by_aggregation = get_group_by_aggregation(group_by_list, size, cardinality, is_admin_audits)
-
-            logger.info(f'Group by aggregation: {group_by_aggregation}')
-
             aggregation = {}
             if interval:
                 # Get date histogram aggregation builder
                 aggregation_builder = get_aggregation_builder_with_date_histogram(interval, is_admin_audits)
-
-                logger.info(f'Aggregation builder: {aggregation_builder}')
-
                 # Add group by aggregation to date histogram aggregation builder
                 aggregation_builder["aggs"] = group_by_aggregation
-
-                logger.info(f'Aggregation builder: {aggregation_builder}')
-
                 # Build the aggregation
                 aggregation["date_histogram"] = aggregation_builder
             else:
@@ -318,7 +313,8 @@ def build_search_request_with_aggregations(group_by, interval, size, cardinality
                 aggregation = group_by_aggregation
 
             # Add aggregation to search request
-            search_request["aggs"] = aggregation
+            updated_search_request["aggs"] = aggregation
+    return updated_search_request
 
 
 def extract_search_response_aggregations(interval, aggregations: Dict[str, Any]) -> Dict[str, Any]:
