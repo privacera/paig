@@ -22,8 +22,7 @@ class MetadataValueView(BaseView):
     metadata_name: Optional[str] = Field(default=None, description="The name of the Metadata Key", alias="metadataName")
     metadata_value: str = Field(default=None, description="The value of the Metadata", alias="metadataValue")
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class MetadataValueFilter(BaseAPIFilter):

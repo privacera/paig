@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, field_serializer
 
 
 class BaseView(BaseModel):
@@ -19,9 +19,12 @@ class BaseView(BaseModel):
     create_time: Optional[datetime] = Field(None, description="The creation time of the resource", alias="createTime")
     update_time: Optional[datetime] = Field(None, description="The last update time of the resource", alias="updateTime")
 
-    class Config:
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-        }
-        populate_by_name = True
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
+    )
+
+    @field_serializer('create_time', 'update_time')
+    def serialize_timestamp(self, value: datetime) -> str:
+        if value:
+            return value.strftime('%Y-%m-%dT%H:%M:%S.%f%z')

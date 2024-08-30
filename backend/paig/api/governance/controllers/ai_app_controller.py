@@ -32,8 +32,8 @@ class AIAppController:
         application_defaults = self.get_application_defaults(ai_app_defaults_file_path)
 
         # Parse the data into Pydantic models
-        self.ai_app_default_config = AIApplicationConfigView.parse_obj(application_defaults['configs'])
-        self.ai_app_default_policies = [AIApplicationPolicyView.parse_obj(policy) for policy in
+        self.ai_app_default_config = AIApplicationConfigView.model_validate(application_defaults['configs'])
+        self.ai_app_default_policies = [AIApplicationPolicyView.model_validate(policy) for policy in
                                         application_defaults['policies']]
 
     def get_application_defaults(self, application_defaults_file_path) -> dict:
@@ -76,11 +76,11 @@ class AIAppController:
         """
         created_app = await self.ai_app_service.create_ai_application(request)
 
-        app_config_create_model = AIApplicationConfigView(**self.ai_app_default_config.dict())
+        app_config_create_model = AIApplicationConfigView(**self.ai_app_default_config.model_dump())
         await self.ai_app_config_service.update_ai_app_config(created_app.id, app_config_create_model)
 
         for policy in self.ai_app_default_policies:
-            policy_create_view = AIApplicationPolicyView(**policy.dict())
+            policy_create_view = AIApplicationPolicyView(**policy.model_dump())
             await self.ai_app_policy_service.create_ai_application_policy(created_app.id, policy_create_view)
 
         return created_app

@@ -37,7 +37,7 @@ class TestSensitiveDataRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
 
         response = await client.get(
@@ -58,7 +58,7 @@ class TestSensitiveDataRouters:
             "description": "US_SSN_UPDATED desc",
         }
         response = await client.put(
-            f"{user_services_base_route}/tags/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/tags/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'US_SSN_UPDATED'
@@ -74,7 +74,7 @@ class TestSensitiveDataRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
 
         response = await client.get(
@@ -96,7 +96,7 @@ class TestSensitiveDataRouters:
             "description": "US_SSN_UPDATED desc"
         }
         response = await client.put(
-            f"{user_services_base_route}/tags/2", data=json.dumps(update_req)
+            f"{user_services_base_route}/tags/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -110,26 +110,26 @@ class TestSensitiveDataRouters:
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.invalid_sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.invalid_sensitive_data_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "Tag Type value ['INVALID_TYPE'] is invalid. Allowed values are: ['USER_DEFINED']"
 
         response = await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags", content=json.dumps(self.sensitive_data_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "Tag already exists with name: ['US_SSN']"
 
         response = await client.post(
-            f"{user_services_base_route}/tags", data=json.dumps(update_req)
+            f"{user_services_base_route}/tags", content=json.dumps(update_req)
         )
         assert response.status_code == 201
         update_req_id = response.json()['id']
         response = await client.put(
-            f"{user_services_base_route}/tags/{update_req_id}", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/tags/{update_req_id}", content=json.dumps(self.sensitive_data_dict)
         )
         assert response.status_code == 400
         assert response.json()['message'] == "Tag already exists with name: ['US_SSN']"

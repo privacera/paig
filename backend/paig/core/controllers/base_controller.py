@@ -50,7 +50,7 @@ class BaseController(Generic[ModelType, ViewType]):
         """
         records, total_count = await self.repository.list_records(filter=filter, page_number=page_number, size=size,
                                                                   sort=sort)
-        v_records = [self.view_type.from_orm(record) for record in records]
+        v_records = [self.view_type.model_validate(record) for record in records]
         return create_pageable_response(v_records, total_count, page_number, size, sort)
 
     async def create_record(self, v_request: ViewType) -> ViewType:

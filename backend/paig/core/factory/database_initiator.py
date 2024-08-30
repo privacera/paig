@@ -3,7 +3,7 @@ from typing import Generic, Type, TypeVar, Tuple, List, Optional
 from pydantic import BaseModel, Field
 from sqlalchemy import Select, asc, literal, text
 from sqlalchemy.sql.expression import select
-from sqlalchemy.sql.expression import func
+from sqlalchemy.sql.expression import func, false
 from core.db_session.session import Base, session
 from typing import Union
 
@@ -283,7 +283,7 @@ class BaseOperations(Generic[ModelType]):
         skip = 0 if page_number is None else (page_number * size)
 
         # check if the filter has model fields and if model field has json_schema_extra lookup_columns then fill filter_dict with those fields
-        filter_dict = filter.dict()
+        filter_dict = filter.model_dump()
         lookup_columns_dict = {}
 
         for field in filter.model_fields:
@@ -391,11 +391,6 @@ class BaseOperations(Generic[ModelType]):
 
     async def delete(self, model: ModelType) -> None:
         await session.delete(model)
-
-    async def get_by_or_filter(self, filters) -> ModelType:
-        query = await self._query()
-        query = query.filter(or_(*self._get_filter(filters)))
-        return await self._all(query)
 
     async def generate_datetime_series(self, start_time, end_time, interval):
         # Generate a series of datetime

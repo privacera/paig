@@ -33,8 +33,7 @@ class VectorDBView(BaseView):
                                                  description="The AI applications associated with the Vector DB",
                                                  alias="aiApplications")
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class VectorDBFilter(BaseAPIFilter):

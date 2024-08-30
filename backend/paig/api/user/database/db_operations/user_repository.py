@@ -49,14 +49,6 @@ class UserRepository(BaseOperations[User]):
     async def get_all_users(self, **args):
         return await self.get_all(**args)
 
-    async def get_user_by_email_or_username(self, username: [str, None], email: [str, None]):
-        filters = dict()
-        if username:
-            filters["username"] = username
-        if email:
-            filters["email"] = email
-        return await self.get_by_or_filter(filters)
-
     async def get_users_with_groups(self, search_filters, page, size, sort):
         results, count = await self.list_records(search_filters, page, size, sort, relation_load_options=[selectinload(self.model_class.groups)])
         return results, count

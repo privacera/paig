@@ -36,7 +36,7 @@ class TestAIApplicationRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
 
         response = await client.get(
@@ -59,7 +59,7 @@ class TestAIApplicationRouters:
             "vector_dbs": []
         }
         response = await client.put(
-            f"{governance_services_base_route}/application/1", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/1", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'test_app1_updated'
@@ -75,7 +75,7 @@ class TestAIApplicationRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
 
         response = await client.get(
@@ -101,7 +101,7 @@ class TestAIApplicationRouters:
             "vector_dbs": []
         }
         response = await client.put(
-            f"{governance_services_base_route}/application/2", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -115,7 +115,7 @@ class TestAIApplicationRouters:
         assert response.json()['message'] == 'Resource not found with id: [2]'
 
         response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.invalid_ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.invalid_ai_application_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -124,34 +124,34 @@ class TestAIApplicationRouters:
         self.invalid_ai_application_dict['name'] = "test_app2"
         self.invalid_ai_application_dict['vector_dbs'] = ["invalid_vector_db"]
         response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.invalid_ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.invalid_ai_application_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "Vector DB not found with names: ['invalid_vector_db']"
 
         response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
         assert response.json()['message'] == "AI application already exists with name: ['test_app1']"
 
         response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(update_req)
+            f"{governance_services_base_route}/application", content=json.dumps(update_req)
         )
         assert response.status_code == 201
         update_req_id = response.json()['id']
         self.ai_application_dict['applicationKey'] = response.json()['applicationKey']
         response = await client.put(
-            f"{governance_services_base_route}/application/{update_req_id}", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application/{update_req_id}", content=json.dumps(self.ai_application_dict)
         )
         assert response.status_code == 400
         assert response.json()['message'] == "AI application already exists with name: ['test_app1']"
 
         self.invalid_ai_application_dict['applicationKey'] = self.ai_application_dict['applicationKey']
         response = await client.put(
-            f"{governance_services_base_route}/application/{update_req_id}", data=json.dumps(self.invalid_ai_application_dict)
+            f"{governance_services_base_route}/application/{update_req_id}", content=json.dumps(self.invalid_ai_application_dict)
         )
         assert response.status_code == 400
         assert response.json()['message'] == "Vector DB not found with names: ['invalid_vector_db']"

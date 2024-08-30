@@ -54,15 +54,17 @@ class UserService:
         return await self.user_repository.get_user(username=username)
 
     async def create_user(self, user_params):
+        user = await self.user_repository.get_user_by_field(field="username", value=user_params.get("username"))
+        if user:
+            raise ConflictException(f"User with username {user_params['username']} already exists")
+
         email = user_params.get("email")
         if email:
             email = email.strip()
-        users = await self.user_repository.get_user_by_email_or_username(username=user_params["username"], email=email)
-        for user in users:
-            if user.username == user_params["username"]:
-                raise ConflictException(f"User with username {user_params['username']} already exists")
-            if user.email == email:
+            user = await self.user_repository.get_user_by_field(field="email", value=email)
+            if user:
                 raise ConflictException(f"User with email {email} already exists")
+
         user_params['password'] = _format_password(roles=user_params['roles'], secret=user_params['password'])
         user_model_params = _create_user_model_dict(user_params)
         groups = user_model_params.pop('groups', [])
@@ -98,12 +100,14 @@ class UserService:
         user_model = await self.user_repository.get_user_with_related_data(user_id=id)
         if user_model is None:
             raise NotFoundException("User not found")
-        if user_params.get('email'):
-            email = user_params.get('email')
-            users = await self.user_repository.get_user_by_email_or_username(username=None, email=email)
-            for user in users:
-                if user.email == email and user.id != id:
-                    raise ConflictException(f"User with email {email} already exists")
+
+        email = user_params.get('email')
+        if email:
+            email = email.strip()
+            user = await self.user_repository.get_user_by_field(field="email", value=email)
+            if user:
+                raise ConflictException(f"User with email {email} already exists")
+
         user_params['password'] = _format_password(roles=user_params['roles'], secret=user_params['password'])
         user_new_params = _update_user_model_dict(user_model, user_params)
         new_groups = user_new_params.pop('groups', [])
@@ -111,7 +115,6 @@ class UserService:
         user_model.groups = target_groups
         updated_user = await self.user_repository.update_user(user_new_params, user_model)
         return updated_user.to_ui_dict()
-
 
     async def delete_user(self, id: int, user: dict):
         # Only allow owners to delete and user/owner cant delete himself

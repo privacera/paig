@@ -19,22 +19,22 @@ async def test_log_message_in_data_service():
         "clientApplicationName": "test_client_app_name",
         "clientHostname": "test_client_hostname",
         "clientIp": "test_client_ip",
-        "context": "test_context",
+        "context": {"test_context": "test_context"},
         "eventId": "test_event_id",
-        "maskedTraits": "test_masked_traits",
-        "messages": "test_messages",
+        "maskedTraits": {"test_masked_traits": "test_masked_traits"},
+        "messages": [{"test_messages": "test_messages"}],
         "numberOfTokens": 1,
-        "paigPolicyIds": "test_paig_policy_ids",
+        "paigPolicyIds": [1],
         "requestId": "test_request_id",
         "requestType": "test_request_type",
         "result": "test_result",
         "tenantId": "test_tenant_id",
         "threadId": "test_thread_id",
         "threadSequenceNumber": 1,
-        "traits": "test_traits",
+        "traits": ["test_traits"],
         "userId": "test_user_id",
-        "encryptionKeyId": "test_encryption_key_id",
-        "eventTime": "test_event_time"
+        "encryptionKeyId": 1,
+        "eventTime": 1111111111
     }
     log_data = ShieldAudit.from_payload_dict(log_data)
 

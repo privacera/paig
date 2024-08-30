@@ -6,6 +6,8 @@ from core.exceptions import NotFoundException
 from api.governance.database.db_models.vector_db_model import VectorDBModel
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from api.governance.database.db_operations.vector_db_repository import VectorDBRepository
+from api.governance.database.db_models.ai_app_config_model import AIApplicationConfigModel
+from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
 
 
 @pytest.fixture

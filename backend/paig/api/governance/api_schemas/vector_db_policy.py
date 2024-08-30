@@ -43,8 +43,7 @@ class VectorDBPolicyView(BaseView):
     operator: str = Field(default=None, description="The operator for the policy")
     vector_db_id: int = Field(default=None, description="The vector db id for the policy", alias="vectorDBId")
 
-    class Config(BaseView.Config):
-        pass
+    model_config = BaseView.model_config
 
 
 class VectorDBPolicyFilter(BaseAPIFilter):

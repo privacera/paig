@@ -137,6 +137,7 @@ def create_app() -> FastAPI:
         docs_url="/docs",
         redoc_url=None,
         middleware=make_middleware(),
+        lifespan=register_usage_events
     )
 
     init_routers(app_=app_)
@@ -152,7 +153,6 @@ def create_app() -> FastAPI:
             logger.info(f"Please open browser and navigate to: http://{constants.HOST}:{constants.PORT}")
 
     # Add startup events
-    register_usage_events(app_)
     return app_
 
 

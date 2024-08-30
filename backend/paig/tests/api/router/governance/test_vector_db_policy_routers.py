@@ -70,25 +70,25 @@ class TestVectorDBPolicyRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
         assert response.status_code == 201
         assert response.json()['name'] == 'CONFIDENTIAL_METADATA'
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
         assert response.status_code == 201
         assert response.json()['metadataValue'] == 'CONFIDENTIAL_METADATA_VALUE'
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.vector_db_dict)
         )
         assert response.status_code == 201
         vector_db_id = response.json()['id']
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", data=json.dumps(self.vector_db_policy_dict)
+            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", content=json.dumps(self.vector_db_policy_dict)
         )
         assert response.status_code == 201
         assert response.json()['name'] == 'vector_db_policy_1'
@@ -128,7 +128,7 @@ class TestVectorDBPolicyRouters:
             "operator": "eq"
         }
         response = await client.put(
-            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy/{vector_db_policy_id}", data=json.dumps(update_req)
+            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy/{vector_db_policy_id}", content=json.dumps(update_req)
         )
         assert response.status_code == 200
         assert response.json()['name'] == 'vector_db_policy_1_updated'
@@ -144,26 +144,26 @@ class TestVectorDBPolicyRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
         assert response.status_code == 201
         assert response.json()['name'] == 'CONFIDENTIAL_METADATA'
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
         assert response.status_code == 201
         assert response.json()['metadataValue'] == 'CONFIDENTIAL_METADATA_VALUE'
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.vector_db_dict)
         )
         assert response.status_code == 201
         vector_db_id = response.json()['id']
 
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.vector_db_policy_dict)
+            content=json.dumps(self.vector_db_policy_dict)
         )
         assert response.status_code == 201
 
@@ -195,7 +195,7 @@ class TestVectorDBPolicyRouters:
             "operator": "eq"
         }
         response = await client.put(
-            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy/2", data=json.dumps(update_req)
+            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy/2", content=json.dumps(update_req)
         )
         assert response.status_code == 404
         assert response.json()['success'] is False
@@ -210,7 +210,7 @@ class TestVectorDBPolicyRouters:
 
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -219,7 +219,7 @@ class TestVectorDBPolicyRouters:
         # Skip this test case as metadata key validation is skipped
         # self.invalid_vector_db_policy_dict['metadataKey'] = "INVALID_METADATA"
         # response = await client.post(
-        #     f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", data=json.dumps(self.invalid_vector_db_policy_dict)
+        #     f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", content=json.dumps(self.invalid_vector_db_policy_dict)
         # )
         # assert response.status_code == 400
         # assert response.json()['success'] is False
@@ -228,7 +228,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['metadataKey'] = "CONFIDENTIAL_METADATA"
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -237,7 +237,7 @@ class TestVectorDBPolicyRouters:
         # Skip this test case as metadata value validation is skipped
         # self.invalid_vector_db_policy_dict['metadataValue'] = "INVALID_METADATA_VALUE"
         # response = await client.post(
-        #     f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", data=json.dumps(self.invalid_vector_db_policy_dict)
+        #     f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", content=json.dumps(self.invalid_vector_db_policy_dict)
         # )
         # assert response.status_code == 400
         # assert response.json()['success'] is False
@@ -246,7 +246,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['metadataValue'] = "CONFIDENTIAL_METADATA_VALUE"
         self.invalid_vector_db_policy_dict['allowedUsers'] = ['invalid_user']
         response = await client.post(
-            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", data=json.dumps(self.invalid_vector_db_policy_dict)
+            f"{governance_services_base_route}/vectordb/{vector_db_id}/policy", content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -255,7 +255,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['allowedUsers'] = []
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -264,7 +264,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['operator'] = 'eq'
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -273,7 +273,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['allowedGroups'] = []
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -283,7 +283,7 @@ class TestVectorDBPolicyRouters:
         self.invalid_vector_db_policy_dict['deniedGroups'] = ['public']
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.invalid_vector_db_policy_dict)
+            content=json.dumps(self.invalid_vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
@@ -291,7 +291,7 @@ class TestVectorDBPolicyRouters:
 
         self.metadata_attr_dict['metadataValue'] = 'RESTRICTED_METADATA_VALUE'
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
         assert response.status_code == 201
         assert response.json()['metadataValue'] == 'RESTRICTED_METADATA_VALUE'
@@ -299,14 +299,14 @@ class TestVectorDBPolicyRouters:
         update_req['metadataValue'] = 'RESTRICTED_METADATA_VALUE'
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 201
         update_req_id = response.json()['id']
 
         response = await client.put(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy/{update_req_id}",
-            data=json.dumps(self.vector_db_policy_dict)
+            content=json.dumps(self.vector_db_policy_dict)
         )
         assert response.status_code == 400
         assert response.json()['message'] == "Vector DB policy already exists with same meta data key and value: CONFIDENTIAL_METADATA and CONFIDENTIAL_METADATA_VALUE"
@@ -314,7 +314,7 @@ class TestVectorDBPolicyRouters:
         update_req['status'] = 0
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(update_req)
+            content=json.dumps(update_req)
         )
         assert response.status_code == 201
         assert response.json()['status'] == 0

@@ -1,7 +1,9 @@
 import pytest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
+from api.governance.database.db_models.ai_app_config_model import AIApplicationConfigModel
 from api.governance.database.db_operations.ai_app_policy_repository import AIAppPolicyRepository
+from api.governance.database.db_models.ai_app_model import AIApplicationModel
 
 
 @pytest.fixture
@@ -24,16 +26,11 @@ async def test_list_policies_for_authorization(ai_app_policy_repository):
         groups="group1,group2"
     )
 
-    query_mock = AsyncMock()
-    query_mock.filter.return_value = query_mock
-    ai_app_policy_repository._query = AsyncMock(return_value=query_mock)
-    ai_app_policy_repository._all = AsyncMock(return_value=[policy])
+    with patch("api.governance.database.db_operations.ai_app_policy_repository.AIAppPolicyRepository._all",
+               new_callable=AsyncMock, return_value=[policy]):
+        result = await ai_app_policy_repository.list_policies_for_authorization(application_id, tags, user, groups)
 
-    result = await ai_app_policy_repository.list_policies_for_authorization(application_id, tags, user, groups)
-
-    assert result == [policy]
-    ai_app_policy_repository._query.assert_called_once()
-    query_mock.filter.assert_called_once()
+        assert result == [policy]
 
 
 @pytest.mark.asyncio
@@ -43,13 +40,8 @@ async def test_list_policies_for_authorization_no_policies(ai_app_policy_reposit
     user = "user1"
     groups = ["group1", "group2"]
 
-    query_mock = AsyncMock()
-    query_mock.filter.return_value = query_mock
-    ai_app_policy_repository._query = AsyncMock(return_value=query_mock)
-    ai_app_policy_repository._all = AsyncMock(return_value=[])
+    with patch("api.governance.database.db_operations.ai_app_policy_repository.AIAppPolicyRepository._all",
+               new_callable=AsyncMock, return_value=[]):
+        result = await ai_app_policy_repository.list_policies_for_authorization(application_id, tags, user, groups)
 
-    result = await ai_app_policy_repository.list_policies_for_authorization(application_id, tags, user, groups)
-
-    assert result == []
-    ai_app_policy_repository._query.assert_called_once()
-    query_mock.filter.assert_called_once()
+        assert result == []

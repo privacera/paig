@@ -116,7 +116,7 @@ class TestGroupRouters:
         assert response.status_code == 200
 
         response = await client.post(
-            f"{user_services_base_route}/groups", data=json.dumps(self.group)
+            f"{user_services_base_route}/groups", content=json.dumps(self.group)
         )
         assert response.status_code == 201
 
@@ -130,7 +130,7 @@ class TestGroupRouters:
             "description": "test second"
         }
         response = await client.put(
-            f"{user_services_base_route}/groups/1", data=json.dumps(update_req)
+            f"{user_services_base_route}/groups/1", content=json.dumps(update_req)
         )
         assert response.json()['description'] == 'test second'
         assert response.status_code == 200
@@ -146,24 +146,24 @@ class TestGroupRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.auth_user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(self.auth_user_obj)
         )
         group_resp = await client.post(
-            f"{user_services_base_route}/groups", data=json.dumps(self.group)
+            f"{user_services_base_route}/groups", content=json.dumps(self.group)
         )
         assert group_resp.status_code == 201
         group_id = group_resp.json()['id']
         await client.post(
-            f"{user_services_base_route}/sensitive-data", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/sensitive-data", content=json.dumps(self.sensitive_data_dict)
         )
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
         assert app_response.status_code == 201
         app_id = app_response.json()['id']
 
         policy_resp = await client.post(
-            f"{governance_services_base_route}/application/{app_id}/policy", data=json.dumps(self.ai_application_policy_dict)
+            f"{governance_services_base_route}/application/{app_id}/policy", content=json.dumps(self.ai_application_policy_dict)
         )
         assert policy_resp.status_code == 200
         policy_id = policy_resp.json()['id']
@@ -188,24 +188,24 @@ class TestGroupRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.auth_user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(self.auth_user_obj)
         )
         group_resp = await client.post(
-            f"{user_services_base_route}/groups", data=json.dumps(self.group)
+            f"{user_services_base_route}/groups", content=json.dumps(self.group)
         )
         assert group_resp.status_code == 201
         group_id = group_resp.json()['id']
         await client.post(
-            f"{user_services_base_route}/sensitive-data", data=json.dumps(self.sensitive_data_dict)
+            f"{user_services_base_route}/sensitive-data", content=json.dumps(self.sensitive_data_dict)
         )
         app_response = await client.post(
-            f"{governance_services_base_route}/application", data=json.dumps(self.ai_application_dict)
+            f"{governance_services_base_route}/application", content=json.dumps(self.ai_application_dict)
         )
         assert app_response.status_code == 201
         app_id = app_response.json()['id']
 
         policy_resp = await client.put(
-            f"{governance_services_base_route}/application/{app_id}/config", data=json.dumps(self.ai_application_config_dict)
+            f"{governance_services_base_route}/application/{app_id}/config", content=json.dumps(self.ai_application_config_dict)
         )
         assert policy_resp.status_code == 200
 
@@ -217,7 +217,7 @@ class TestGroupRouters:
 
         self.ai_application_config_dict["allowedGroups"] = []
         await client.put(
-            f"{governance_services_base_route}/application/{app_id}/config", data=json.dumps(self.ai_application_config_dict)
+            f"{governance_services_base_route}/application/{app_id}/config", content=json.dumps(self.ai_application_config_dict)
         )
 
         response = await client.delete(
@@ -230,32 +230,32 @@ class TestGroupRouters:
         app.dependency_overrides[get_auth_user] = self.auth_user
 
         await client.post(
-            f"{user_services_base_route}/users", data=json.dumps(self.auth_user_obj)
+            f"{user_services_base_route}/users", content=json.dumps(self.auth_user_obj)
         )
         group_resp = await client.post(
-            f"{user_services_base_route}/groups", data=json.dumps(self.group)
+            f"{user_services_base_route}/groups", content=json.dumps(self.group)
         )
         assert group_resp.status_code == 201
         group_id = group_resp.json()['id']
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/key", data=json.dumps(self.metadata_dict)
+            f"{user_services_base_route}/vectordb/metadata/key", content=json.dumps(self.metadata_dict)
         )
         assert response.status_code == 201
 
         response = await client.post(
-            f"{user_services_base_route}/vectordb/metadata/value", data=json.dumps(self.metadata_attr_dict)
+            f"{user_services_base_route}/vectordb/metadata/value", content=json.dumps(self.metadata_attr_dict)
         )
         assert response.status_code == 201
 
         response = await client.post(
-            f"{governance_services_base_route}/vectordb", data=json.dumps(self.vector_db_dict)
+            f"{governance_services_base_route}/vectordb", content=json.dumps(self.vector_db_dict)
         )
         assert response.status_code == 201
         vector_db_id = response.json()['id']
 
         response = await client.post(
             f"{governance_services_base_route}/vectordb/{vector_db_id}/policy",
-            data=json.dumps(self.vector_db_policy_dict)
+            content=json.dumps(self.vector_db_policy_dict)
         )
         assert response.status_code == 201
         policy_id = response.json()['id']

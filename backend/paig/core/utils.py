@@ -70,7 +70,7 @@ def generate_unique_identifier_key():
 
 
 def get_field_name_by_alias(model: BaseModel, alias: str) -> str:
-    for field_name, field in model.__fields__.items():
+    for field_name, field in model.model_fields.items():
         if field.alias == alias:
             return field_name
     return alias

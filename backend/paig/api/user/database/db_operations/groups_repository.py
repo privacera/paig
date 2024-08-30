@@ -38,7 +38,7 @@ class GroupRepository(BaseOperations[Groups]):
                     Groups.update_time,
                     subquery.c.usersCount,
                 )
-        query = self.create_filter(query, search_filters.dict())
+        query = self.create_filter(query, search_filters.model_dump())
         query = self.apply_order_by_field(query, sort)
         skip = 0 if page_number is None else (page_number * size)
         query = query.limit(size)
@@ -48,7 +48,7 @@ class GroupRepository(BaseOperations[Groups]):
                 query.outerjoin(subquery, Groups.id == subquery.c.group_id)
             )
         ).all()
-        total_count = await self.get_count_with_filter(filters=search_filters.dict())
+        total_count = await self.get_count_with_filter(filters=search_filters.model_dump())
         return results, total_count
 
     async def get_group(self, id: [int, None] = None, filters: [dict, None] = None, unique: bool = True):

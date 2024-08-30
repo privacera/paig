@@ -2,12 +2,13 @@ import copy
 import logging
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from core.utils import format_to_root_path, acquire_lock, snake_to_camel
+from core.utils import format_to_root_path, acquire_lock
 from apscheduler.triggers.interval import IntervalTrigger
 import os
 from core import constants
 from core.db_session.standalone_session import get_field_counts, get_counts_group_by
 from core.factory.metrics_collector import MetricsClient, get_metric_client
+from contextlib import asynccontextmanager
 
 # set up logging
 logger = logging.getLogger(__name__)
@@ -54,8 +55,8 @@ class CustomExporter:
             self.data[key] = value
 
 
-def register_usage_events(app: FastAPI):
-    @app.on_event("startup")
+@asynccontextmanager
+async def register_usage_events(application: FastAPI):
     async def init_usage_collector():
         metric_client = get_metric_client()
         await metric_client.initialize()
@@ -64,16 +65,19 @@ def register_usage_events(app: FastAPI):
             await exporter.initialize(metric_client)
             await collect_usage()
             scheduler.start()
-            app.state.lock = lock
+            application.state.lock = lock
         else:
             logger.info("Scheduler is already running in another worker.")
 
-    @app.on_event("shutdown")
     async def shutdown_usage_collector():
-        if hasattr(app.state, 'lock'):
+        if hasattr(application.state, 'lock'):
             scheduler.shutdown()
-            app.state.lock.release()
+            application.state.lock.release()
             logger.info("Scheduler shutdown and lock released.")
+
+    await init_usage_collector()  # called on startup
+    yield
+    await shutdown_usage_collector()  # called on shutdown
 
 
 # Create an instance of the exporter
