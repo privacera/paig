@@ -392,11 +392,6 @@ class BaseOperations(Generic[ModelType]):
     async def delete(self, model: ModelType) -> None:
         await session.delete(model)
 
-    async def get_by_or_filter(self, filters) -> ModelType:
-        query = await self._query()
-        query = query.filter(or_(false(), *self._get_filter(filters)))
-        return await self._all(query)
-
     async def generate_datetime_series(self, start_time, end_time, interval):
         # Generate a series of datetime
         # Base case: select the start time
