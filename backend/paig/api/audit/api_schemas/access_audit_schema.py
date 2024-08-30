@@ -100,7 +100,7 @@ def exclude_query_params(
 
 
 def extract_include_query_params(params):
-    params_dict = params.dict(exclude=BaseAPIFilter.model_fields.keys(), by_alias=False, exclude_none=True)
+    params_dict = params.model_dump(exclude=BaseAPIFilter.model_fields.keys(), by_alias=False, exclude_none=True)
 
     # Extract only the required fields
     filtered_params = {params.model_fields[field].alias: value for field, value in params_dict.items() if

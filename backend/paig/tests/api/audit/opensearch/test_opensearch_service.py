@@ -20,12 +20,13 @@ def opensearch_service(mock_opensearch_client):
 @pytest.mark.asyncio
 async def test_create_access_audit(opensearch_service, mock_opensearch_client):
     access_audit_params = {"param1": "value1"}  # Replace with actual parameters
-    mock_opensearch_client.get_client().index = AsyncMock(return_value={"result": "created"})
-    mock_opensearch_client.get_client().get_index_name = AsyncMock(return_value='your_index_name')
+    with patch('api.audit.opensearch_service.opensearch_client.OpenSearchClient') as mock_client:
+        mock_instance = mock_client.return_value
+        mock_instance.get_client().index.return_value = {"result": "created"}
+        mock_instance.get_client().get_index_name = 'your_index_name'
+        await opensearch_service.create_access_audit(access_audit_params)
 
-    await opensearch_service.create_access_audit(access_audit_params)
-
-    mock_opensearch_client.get_client().index.assert_called_once()
+        mock_opensearch_client.get_client().index.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -48,7 +49,7 @@ async def test_get_access_audits(opensearch_service, mock_opensearch_client):
     response = await opensearch_service.get_access_audits(include_query, exclude_query, page, size, sort, from_time,
                                                           to_time)
 
-    response = response.dict()
+    response = response.model_dump()
     assert len(response['content']) == 1
     assert response['content'][0]['param1'] == 'value1'
 
@@ -98,4 +99,4 @@ async def test_get_audits_raises_not_found(opensearch_service, mock_opensearch_c
 
     resp = opensearch_service.get_audits(include_query, exclude_query, page, size, sort, from_time, to_time, None)
 
-    assert resp.dict()['content'] == []
+    assert resp.model_dump()['content'] == []
