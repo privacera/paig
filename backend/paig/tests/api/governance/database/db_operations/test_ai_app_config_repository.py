@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import AsyncMock
 
 from api.governance.database.db_models.ai_app_config_model import AIApplicationConfigModel
+from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
 from api.governance.database.db_operations.ai_app_config_repository import AIAppConfigRepository
 
 

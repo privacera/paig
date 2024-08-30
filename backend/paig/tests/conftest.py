@@ -16,10 +16,14 @@ import asyncio
 from typing import Generator
 import shutil
 from core.db_session.session import set_session_context
+from core import constants
 
 cnf = config.load_config_file()
 ROOT_DIR = os.path.join(os.path.dirname(__file__), "..")
 os.environ["PAIG_ROOT_DIR"] = ROOT_DIR
+
+# setting MODE as test
+constants.MODE = "test"
 
 
 @pytest.mark.asyncio(scope="session")
