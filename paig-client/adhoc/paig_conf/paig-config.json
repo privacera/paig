@@ -1,0 +1,12 @@
+{
+  "applicationId" : 78,
+  "applicationKey" : "4ccf5cb0a8d1d511a88832783ce11e2b",
+  "tenantId" : "16977805950075",
+  "apiServerUrl" : "https://main-paig-shield.privacera.me",
+  "apiKey" : "dummy-api-key",
+  "shieldServerKeyId" : 25,
+  "shieldServerPublicKey" : "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQD4qVRQU+Qz4n5VLgD1Zqcvx5R9pDTfIEwQ+fr/B5w5R7Tu4ZytJlPLcf/KiUDXo+DZyF1A4S3gEAh39BOf4Q2WXtAsTVYz61IjsHUhgbIoVXpnjNwlYVNa5jLqgKQ4s/Oi5+bNpm6TA9EM4vF8r0Dlf8BD94RikkjD+/bsRfBXCQIDAQAB",
+  "shieldPluginKeyId" : 26,
+  "shieldPluginPrivateKey" : "MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBAJAv1y7DwNHylKtCobAz9nch9eFWjM/lNZmDp70cqgR0SrhbzVQm/g//0nQi7EcoLbrEBRhl21Wf7jWOG5y/byynrczZx/37YApI9D6wXDbqWkttBzjmcuIlCHA4edKh0wdgqOYXxFEAuQdKHnqPR2iDKXCsLDqh1F6CBkkK4WsfAgMBAAECgYAEgapHvjs0P1EMOpc+dZv6Gef1ygm5Twr/faZBeo2JzsStwcNyIjcwnX32E/KvP/87O3iD9wha7cEOkB7RewjoyrXdK4ZyP8JP5VBy3xRQtGsL8kVHfKu516QaUpIfa4bmoaslSZneEiYBdyvTcceOYPRPcEXD7trdqGd0kkzg0QJBAMOfo6QBKjwZGrUKzi4ZHO0URy0PtMLR/kWMur+MmYSltFK/KhBsrDyqideIvEB/9krO9j7J8beXq7sPdN44e0cCQQC8sCZJckkpJeaq6B/0uFwDDbruM7QN5aXrp595nvIAruiVdeJDMDDoX9u+U+1ZcaYQhha0OM67emp2q+K+ic1pAkAS29r8vpgBvzHR7j6+NvGQ8XmDIJZ+iZwHvG9sc/OA1DC0IXW+q5tXJeGwA6CSX0OxJo6aswE4f8iweeb8XVmVAkAiJ6SWkOhrWV/6uc/nBWQqbVbT/WnvRg2VrZ7xbfMSapbRTyhozxVbStbFCf4hva+4t/zuHIZXa15QIucFZH5ZAkBmZzrn4q7DVAy4XlBQjdHvndgWeQS6HQTjUIft6jSON8dCQNmAcicw4yDCSf0d2QvOJRaQNHwXnDq1oBvebPLu",
+  "dateOfDownload" : "2023-10-30T10:42:17.312Z"
+}

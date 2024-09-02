@@ -1,0 +1,15 @@
+build 
+twine 
+virtualenv 
+pip
+pytest
+pytest-cov
+pytest-html
+flake8
+
+langchain
+
+urllib3
+cryptography
+
+privacera_shield_common==1.5.0.dev1+main.20240829.132316.1724937796

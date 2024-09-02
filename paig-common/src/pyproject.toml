@@ -1,0 +1,30 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "privacera_shield_common"
+dynamic = ["version"]
+authors = [
+    { name = "PAIG Shield", email = "paig@privacera.com" },
+]
+description = "Privacera AI Governance (PAIG) Shield Common Library"
+readme = "README.md"
+requires-python = ">=3.8.1"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "urllib3>=2.0.6",
+    "cryptography>=41.0.4",
+    "jproperties>=2.1.1"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/pypa/privacera_shield_common"
+"Bug Tracker" = "https://github.com/pypa/privacera_shield_common/issues"
+
+[tool.hatch.version]
+path = "privacera_version.txt"

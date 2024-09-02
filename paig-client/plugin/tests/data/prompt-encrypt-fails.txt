@@ -1,0 +1,59 @@
+Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
+
+Without clearly defined data owners and stewards, organizations end up
+spending more time on data storage and processing and replicating the same
+work in multiple business units (a common complaint among users, such as data
+scientists and analysts, is that they spend more time looking for data than on
+analyzing it to find embedded insights). This leads to missed opportunities to
+share data, inconsistent data quality standards, and increased risk of
+compliance violations, as the data is scattered across the organization.
+
+![](image/164671144c9829.png)
+
+##### Access control
+
+Access control is the set of rules or framework used to ensure only the
+intended users have permission to access data. For example, permission to
+access a resource such as data in a database or a table, and perform an
+operation like read, write, edit, or delete. There are two prevalent
+approaches to managing access:
+
+* Role-based access control (RBAC) - certain organizational roles are defined then permissions are granted to those roles.
+
+  * Attribute-based access control (ABAC) - provides access to data objects by enforcing policies that are defined based on the attributes of subject and object, operations, and the environment conditions. Environment conditions are dynamic factors that are independent of user or object (for example, the time and location of the subject). Some attributes may include: author, creation date, version, effective date, last update, etc.
+
+![](image/164671144d2aca.png)
+
+Understanding basic access control is important to understanding Apache
+Ranger, the open source data access control framework that Privacera builds
+upon.
+
+##### Apache Ranger: Fine-Grained Access Control
+
+Controlled access datasets are subsets of connected data repositories and
+databases, defined by any combination of database, table, and column access (
+_wildcards supported_ ) or for filesystem/object stores based on object, file,
+folder names (with _wildcard support_ for paths).
+
+For Resource Policies, the scope of control is data accessible through the
+connected data repositories as defined by resource paths.
+
+  * For databases structured resources, scope is specified in terms of database, table, and column access. The type of access is defined based on the actions that can be performed on that particular type of database, such as “Select”, “Update”, “Create”, “Drop”, “Alter”, etc.
+
+  * For filesystem/object stores, the scope is defined in terms of access to entities such as a blob, object, file, or folder. Permission rules will be in the form of file actions such as "Read”, “Write”, and "Delete".
+
+An access management policy is a set of rules you write that determine whether
+an attempt to access data is allowed or denied. The requested data can also be
+transformed via filtering, masking, or encryption, based on the context of the
+request and the desired results of the policy.
+
+A policy consists of _datasources_ , _principals_ , and _conditions_ :
+
+  * _Datasource_ objects (also called _resources_ ) such as namespaces, databases, tables, columns, and rows are what your policy protects. Examples of datasources include PostgreSQL, Google BigQuery, and Microsoft SQL Server. The examples and discussion here focus on databases, but there are many other kinds of datasources.
+
+  * A _principal_ is a user, group, or role whose access to the resource you want to allow, deny, or otherwise manage.
+
+  * The exact rules you write, called _conditions_ , define how the policy allows, denies, or otherwise operates on the datasource to produce the managed results seen by the principal.
+
+Question: what is access control
+Helpful Answer:

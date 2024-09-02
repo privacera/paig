@@ -1,0 +1,4 @@
+X_USER_ROLE_HEADER = 'x-user-role'
+X_TENANT_ID_HEADER = 'x-tenant-id'
+DEFAULT_OWNER_ROLE = "OWNER"
+DEFAULT_API_URL_PATTERN = '/api/.*'
