@@ -24,11 +24,11 @@ jobs:
         python3 -m pip install virtualenv
         virtualenv -p python3 venv && . venv/bin/activate
         pip install pytest pytest-cov
-        pip install -r backend/requirements.txt
+        pip install -r paig-server/backend/requirements.txt
     - name: Test with pytest
       run: |
         filepath=$PWD
-        . venv/bin/activate && cd backend/paig 
+        . venv/bin/activate && cd paig-server/backend/paig 
         python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
         cd $filepath
 

@@ -2,7 +2,7 @@
 - [Technology Stack](#technology-stack)
 - [How to Start Development Server](#developmentserver)
 - [Optional Configuration](#configuration)
-- [How to Start/Build Web UI](../../frontend/README.md)
+- [How to Start/Build Web UI](../../paig-server/frontend/README.md)
 - [How to Setup Database](#databsesetup)
 - [Logging](#logging)
 
