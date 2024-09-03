@@ -12,4 +12,4 @@ langchain
 urllib3
 cryptography
 
-privacera_shield_common==1.5.0.dev1+main.20240829.132316.1724937796
+privacera_shield_common

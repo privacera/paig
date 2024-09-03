@@ -3,8 +3,8 @@ import threading
 
 import pytest
 
-from privacera_shield.backend import ShieldRestHttpClient, ShieldAccessRequest
-from privacera_shield.model import ConversationType
+from paig_client.backend import ShieldRestHttpClient, ShieldAccessRequest
+from paig_client.model import ConversationType
 
 SHIELD_SERVER_URL = "http://localhost:8000"
 

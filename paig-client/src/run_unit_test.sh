@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # NOTE- you should run the mock service in a separate terminal before running these tests
 # clone the plugin-tests repo and run the mock service
@@ -18,7 +18,7 @@ COV_OPTIONS="--cov --cov-report=html:coverage_report --html=pytest_report.html -
 
 #pytest ${COV_OPTIONS} plugin/tests -m 'e2e_test or not e2e_test or interceptor_test or not interceptor_test'
 
-pytest ${COV_OPTIONS} plugin/tests
+python -m pytest ${COV_OPTIONS} tests
 
 # e2e_tests - run these if you have a dummy service running to test against
 #pytest ${COV_OPTIONS} plugin/tests/test_backend.py -m 'e2e_test or not e2e_test'

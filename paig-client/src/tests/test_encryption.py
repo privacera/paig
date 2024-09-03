@@ -1,15 +1,15 @@
 import pytest
 
-import privacera_shield.encryption
+import paig_client.encryption
 
 
-# test the privacera_shield.encryption.RSAKeyUtil class
+# test the paig_client.encryption.RSAKeyUtil class
 def test_RSAKeyUtil(setup_curr_dir):
-    rsa_key_util = privacera_shield.encryption.RSAKeyUtil()
+    rsa_key_util = paig_client.encryption.RSAKeyUtil()
     rsa_key_info = rsa_key_util.generate_key_pair()
     assert rsa_key_info is not None
 
-    data_encryptor = privacera_shield.encryption.DataEncryptor(
+    data_encryptor = paig_client.encryption.DataEncryptor(
         public_key=rsa_key_info.public_key_encoded_str,
         private_key=rsa_key_info.private_key_encoded_str
     )
@@ -30,10 +30,10 @@ def test_data_encryptor_non_ascii(setup_curr_dir):
     with open(curr_dir + "/data/prompt-with-non-ascii-chars.txt", "r") as f:
         original_data = f.read()
 
-    rsa_key_util = privacera_shield.encryption.RSAKeyUtil()
+    rsa_key_util = paig_client.encryption.RSAKeyUtil()
     rsa_key_info = rsa_key_util.generate_key_pair()
 
-    data_encryptor = privacera_shield.encryption.DataEncryptor(
+    data_encryptor = paig_client.encryption.DataEncryptor(
         public_key=rsa_key_info.public_key_encoded_str,
         private_key=rsa_key_info.private_key_encoded_str
     )

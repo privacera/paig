@@ -2,10 +2,10 @@ import logging
 from unittest.mock import Mock, patch
 import pytest
 
-from privacera_shield.backend import StreamAccessAuditRequest
-from privacera_shield.core import LLMStreamAccessChecker, ConversationType, PAIGPlugin
-from privacera_shield.exception import AccessControlException, PAIGException
-from privacera_shield.message import ErrorMessage
+from paig_client.backend import StreamAccessAuditRequest
+from paig_client.core import LLMStreamAccessChecker, ConversationType, PAIGPlugin
+from paig_client.exception import AccessControlException, PAIGException
+from paig_client.message import ErrorMessage
 
 # Mock the logger
 _logger = logging.getLogger(__name__)

@@ -3,8 +3,8 @@ from unittest.mock import Mock
 import pytest
 
 import privacera_shield
-from privacera_shield.exception import AccessControlException
-from privacera_shield.langchain_streaming_interceptor import LangChainStreamingInterceptor, LangchainStreamingCallback
+from paig_client.exception import AccessControlException
+from paig_client.langchain_streaming_interceptor import LangChainStreamingInterceptor, LangchainStreamingCallback
 
 
 @pytest.mark.interceptor_test
@@ -17,7 +17,7 @@ def test_langchain_streaming_get_all_methods_to_intercept():
     and lists all the methods that need interception. It sets up the interceptor,
     verifies the list of intercepted methods, and then undoes the setup of interceptors.
     """
-    langchain_streaming_setup = privacera_shield.langchain_streaming_interceptor.LangChainStreamingInterceptor()
+    langchain_streaming_setup = paig_client.langchain_streaming_interceptor.LangChainStreamingInterceptor()
 
     # Find all methods to intercept
     langchain_streaming_setup.find_all_methods_to_intercept()

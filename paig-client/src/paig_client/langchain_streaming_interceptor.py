@@ -3,9 +3,9 @@ import inspect
 import logging
 import time
 
-from privacera_shield.exception import AccessControlException
+from paig_client.exception import AccessControlException
 
-from privacera_shield.interceptor import wrap_method, MethodIOCallback
+from paig_client.interceptor import wrap_method, MethodIOCallback
 
 _logger = logging.getLogger(__name__)
 TRACE_LEVEL = 5

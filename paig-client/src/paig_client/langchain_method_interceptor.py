@@ -2,11 +2,11 @@ import inspect
 import logging
 import time
 
-from privacera_shield.backend import ShieldAccessRequest
-from privacera_shield.exception import AccessControlException
+from paig_client.backend import ShieldAccessRequest
+from paig_client.exception import AccessControlException
 
-from privacera_shield.interceptor import wrap_method, MethodIOCallback
-from privacera_shield.model import ConversationType
+from paig_client.interceptor import wrap_method, MethodIOCallback
+from paig_client.model import ConversationType
 
 _logger = logging.getLogger(__name__)
 TRACE_LEVEL = 5

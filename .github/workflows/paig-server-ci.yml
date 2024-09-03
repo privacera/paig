@@ -3,8 +3,12 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'paig-server/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'paig-server/**'
 
 permissions:
   contents: read

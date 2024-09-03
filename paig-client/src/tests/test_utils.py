@@ -1,4 +1,4 @@
-from privacera_shield.util import AtomicCounter
+from paig_client.util import AtomicCounter
 
 
 def test_atomic_counter():
