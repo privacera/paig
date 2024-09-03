@@ -1,20 +1,13 @@
-name: CI
+name: Upload Wheel to PyPI
 
 on:
-  push:
-    branches: [ "main" ]
-    paths:
-      - 'paig-server/**'
-  pull_request:
-    branches: [ "main" ]
-    paths:
-      - 'paig-server/**'
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: read
 
 jobs:
-  build_and_test:
+  release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4  # Ensure the repo is checked out
@@ -29,12 +22,12 @@ jobs:
         python3 -m pip install virtualenv
         virtualenv -p python3 venv && . venv/bin/activate
         pip install twine build pytest pytest-cov
-        pip install -r paig-server/backend/requirements.txt
+        pip install -r paig-client/requirements.txt
 
     - name: Test with pytest
       run: |
         filepath=$PWD
-        . venv/bin/activate && cd paig-server/backend/paig
+        . venv/bin/activate && cd paig-client/src
         python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
 
     - name: Upload coverage report
@@ -49,26 +42,24 @@ jobs:
         name: junit-results
         path: junit.xml
 
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        registry-url: https://registry.npmjs.org/
-
-    - name: Install Node.js dependencies and build UI
-      run: |
-        cd paig-server/scripts
-        sh build_ui.sh
-
     - name: Build the wheel
       run: |
         . venv/bin/activate
-        cd paig-server
+        cd paig-client
         python3 -m build -w
 
     - name: Install created package
       run: |
-          rm -rf venv
-          virtualenv -p python3 venv && . venv/bin/activate
-          cd paig-server
-          pip install dist/*.whl
+        rm -rf venv
+        virtualenv -p python3 venv && . venv/bin/activate
+        cd paig-client
+        pip install dist/*.whl
+
+    - name: Release to PyPI
+      env:
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PYPI_API_TOKEN }}
+      run: |
+        . venv/bin/activate
+        pip install twine
+        twine upload paig-client/dist/*

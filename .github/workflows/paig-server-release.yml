@@ -29,7 +29,6 @@ jobs:
         filepath=$PWD
         . venv/bin/activate && cd paig-server/backend/paig
         python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
-        cd $filepath
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
@@ -53,7 +52,6 @@ jobs:
       run: |
         cd paig-server/scripts
         sh build_ui.sh
-        cd ..
 
     - name: Build the wheel
       run: |
