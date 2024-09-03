@@ -4,7 +4,7 @@ from datetime import datetime
 from api.shield.model.shield_audit import ShieldAudit
 from api.shield.utils import config_utils
 from api.shield.utils.custom_exceptions import ShieldException
-from privacera_shield_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 
 
 class LogMessageInFile:

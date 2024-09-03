@@ -1,7 +1,7 @@
 import pytest
 from flask import Response as FlaskResponse
 from fastapi.responses import Response as FastApiResponse
-from src.privacera_shield_common.response import Response
+from src.paig_common.response import Response
 
 
 def test_response_initialization():

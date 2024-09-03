@@ -4,9 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from src.privacera_shield_common.audit_spooler import AuditSpooler, AuditEvent
-from src.privacera_shield_common.file_utils import FileUtils
-from src.privacera_shield_common.paig_exception import DiskFullException
+from src.paig_common.audit_spooler import AuditSpooler, AuditEvent
+from src.paig_common.file_utils import FileUtils
+from src.paig_common.paig_exception import DiskFullException
 
 
 class TestAuditEvent:
@@ -129,8 +129,8 @@ class MockAuditEvent(AuditEvent):
         return cls()
 
 
-@patch('src.privacera_shield_common.audit_spooler.FileUtils.append_json_to_file')
-@patch('src.privacera_shield_common.audit_spooler.AuditSpooler.get_file_path_for_event_time')
+@patch('src.paig_common.audit_spooler.FileUtils.append_json_to_file')
+@patch('src.paig_common.audit_spooler.AuditSpooler.get_file_path_for_event_time')
 def test_add_audit_event_exception(mock_get_file_path_for_event_time, mock_append_json_to_file, temp_directory):
     # Create a temporary directory for spooling
     audit_spool_dir = str(temp_directory.join("spool"))

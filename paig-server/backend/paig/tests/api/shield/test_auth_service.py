@@ -13,7 +13,7 @@ from api.shield.model.authz_service_response import AuthzServiceResponse
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
 from api.shield.services.auth_service import AuthService
 from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
-from privacera_shield_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 
 
 def authorize_req_data():

@@ -9,7 +9,7 @@ from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.shield_audit import ShieldAudit
 from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.utils.custom_exceptions import ShieldException
-from privacera_shield_common.paig_exception import AuditEventQueueFullException, DiskFullException
+from paig_common.paig_exception import AuditEventQueueFullException, DiskFullException
 
 
 class TestLogMessageInS3File:

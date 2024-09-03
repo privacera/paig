@@ -25,7 +25,7 @@ pytest-html==4.1.1
 pytest-mock==3.12.0
 opentelemetry-distro==0.45b0
 opentelemetry-exporter-otlp==1.24.0
-privacera_shield_common==1.4.0
+paig_common
 alt-profanity-check==1.4.2
 numpy==1.26.4
 starlette-request-id==0.7.0

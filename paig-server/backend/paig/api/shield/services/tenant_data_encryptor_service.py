@@ -10,7 +10,7 @@ from pathlib import Path
 
 from api.shield.model.shield_audit import ShieldAuditViaApi
 from api.shield.utils.custom_exceptions import ShieldException
-from privacera_shield_common.encryption import DataEncryptor
+from paig_common.encryption import DataEncryptor
 from api.shield.model.encryption_key_info import EncryptionKeyInfo
 from api.shield.model.authorize_response import AuthorizeResponse
 from api.shield.utils import config_utils

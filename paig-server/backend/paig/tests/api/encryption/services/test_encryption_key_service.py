@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, patch, MagicMock
 
-from privacera_shield_common.encryption import RSAKeyInfo
+from paig_common.encryption import RSAKeyInfo
 
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import NotFoundException
@@ -65,7 +65,7 @@ async def test_create_encryption_key(encryption_key_service, mock_encryption_key
     rsa_key_info = RSAKeyInfo(public_key_encoded_str="pub_key", private_key_encoded_str="priv_key")
 
     mock_encryption_key_repository.get_active_encryption_key_by_type.side_effect = NotFoundException
-    with patch('privacera_shield_common.encryption.RSAKeyUtil.generate_key_pair', return_value=rsa_key_info):
+    with patch('paig_common.encryption.RSAKeyUtil.generate_key_pair', return_value=rsa_key_info):
         result = await encryption_key_service.create_encryption_key(key_type)
         assert result.key_type == key_type
         assert mock_secure_encryptor.encrypt.call_count == 2

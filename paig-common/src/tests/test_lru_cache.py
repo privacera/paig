@@ -3,7 +3,7 @@ from threading import Thread
 
 import pytest
 from unittest.mock import Mock
-from src.privacera_shield_common.lru_cache import LRUCache, LRUCacheEvictCallback
+from src.paig_common.lru_cache import LRUCache, LRUCacheEvictCallback
 
 
 @pytest.fixture

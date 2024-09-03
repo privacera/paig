@@ -1,6 +1,6 @@
 from api.shield.model.shield_audit import ShieldAuditViaApi
 from api.shield.services.tenant_data_encryptor_service import ShieldDataEncryptor, EncryptionKeyRefresher,TenantDataEncryptorService
-from privacera_shield_common.encryption import DataEncryptor, RSAKeyUtil
+from paig_common.encryption import DataEncryptor, RSAKeyUtil
 from api.shield.utils.custom_exceptions import ShieldException
 import pytest
 

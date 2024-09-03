@@ -17,7 +17,7 @@ exclude = ["src/paig_client/tests/"]
 name = "paig-client"
 dynamic = ["version"]
 authors = [
-    { name = "PAIG Client", email = "paig@privacera.com" },
+  { name = "Privacera ", email = "support@privacera.com" },
 ]
 description = "PAIG Shield Client Library"
 readme = "README.md"
@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "urllib3>=2.0.6",
     "cryptography>=41.0.4",
-    "privacera_shield_common"
+    "paig_common"
 ]
 
 [project.urls]

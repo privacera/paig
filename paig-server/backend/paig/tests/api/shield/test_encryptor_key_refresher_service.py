@@ -10,7 +10,7 @@ from api.shield.client.http_account_service_client import HttpAccountServiceClie
 from api.shield.services.tenant_data_encryptor_service import EncryptionKeyRefresher, ShieldDataEncryptor
 from api.shield.utils import config_utils
 from api.shield.model.encryption_key_info import EncryptionKeyInfo
-from privacera_shield_common.encryption import RSAKeyUtil, RSAKeyInfo
+from paig_common.encryption import RSAKeyUtil, RSAKeyInfo
 
 
 class TestEncryptionKeyRefresher:

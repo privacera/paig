@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from privacera_shield_common.encryption import RSAKeyInfo, RSAKeyUtil
+from paig_common.encryption import RSAKeyInfo, RSAKeyUtil
 
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable

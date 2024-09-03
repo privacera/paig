@@ -1,6 +1,6 @@
 from typing import Collection
 
-from privacera_shield_common.http_transport import HttpTransport
+from paig_common.http_transport import HttpTransport
 from api.shield.utils import config_utils
 from urllib3.response import HTTPResponse
 import json

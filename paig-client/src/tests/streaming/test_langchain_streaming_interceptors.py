@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-import privacera_shield
+import paig_client
 from paig_client.exception import AccessControlException
 from paig_client.langchain_streaming_interceptor import LangChainStreamingInterceptor, LangchainStreamingCallback
 

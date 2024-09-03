@@ -1,4 +1,4 @@
-from privacera_shield_common.encryption import DataEncryptor
+from paig_common.encryption import DataEncryptor
 import base64
 
 

@@ -26,7 +26,7 @@ from api.shield.utils.custom_exceptions import ShieldException
 from api.shield.utils import json_utils
 from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
-from privacera_shield_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 
 from core.utils import SingletonDepends
 

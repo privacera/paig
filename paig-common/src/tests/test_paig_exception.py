@@ -1,5 +1,5 @@
 import pytest
-from src.privacera_shield_common.paig_exception import PAIGException
+from src.paig_common.paig_exception import PAIGException
 
 
 def test_paig_exception():

@@ -8,7 +8,7 @@ from queue import Queue
 import contextvars
 
 from . import interceptor_setup, util
-from privacera_shield_common.audit_spooler import AuditLogger
+from paig_common.audit_spooler import AuditLogger
 from .backend import ShieldRestHttpClient, ShieldAccessRequest, HttpTransport, VectorDBAccessRequest, \
     ShieldAccessResult, StreamAccessAuditRequest
 from .exception import PAIGException, AccessControlException

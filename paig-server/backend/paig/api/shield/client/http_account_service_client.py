@@ -1,7 +1,7 @@
 import logging
 
 
-from privacera_shield_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
+from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils

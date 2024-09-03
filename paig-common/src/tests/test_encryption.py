@@ -3,7 +3,7 @@ import pytest
 
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from src.privacera_shield_common.encryption import DataEncryptor, RSAKeyUtil
+from src.paig_common.encryption import DataEncryptor, RSAKeyUtil
 
 rsa_key_info = RSAKeyUtil().generate_key_pair()
 data_encryptor = DataEncryptor(public_key=rsa_key_info.public_key_encoded_str,
