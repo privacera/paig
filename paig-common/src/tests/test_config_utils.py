@@ -2,11 +2,11 @@ from unittest import mock
 from io import BytesIO
 from jproperties import Properties
 
-from src.paig_common import config_utils
+from paig_common import config_utils
 
 
 # Mock logger
-@mock.patch('src.paig_common.config_utils.logger')
+@mock.patch('paig_common.config_utils.logger')
 def test_load_config_file(mock_logger):
     # Mock open to simulate reading a config file
     with mock.patch('builtins.open', mock.mock_open(read_data=b'key1=value1\nkey2=value2')):

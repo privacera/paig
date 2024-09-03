@@ -1,7 +1,7 @@
 import pytest
 from flask import Response as FlaskResponse
 from fastapi.responses import Response as FastApiResponse
-from src.paig_common.response import Response
+from paig_common.response import Response
 
 
 def test_response_initialization():

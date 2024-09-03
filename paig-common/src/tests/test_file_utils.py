@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from src.paig_common.file_utils import FileUtils
+from paig_common.file_utils import FileUtils
 
 
 @pytest.fixture(scope="module")

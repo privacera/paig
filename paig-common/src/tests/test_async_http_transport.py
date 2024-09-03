@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from src.paig_common.async_http_transport import AsyncHttpTransport
+from paig_common.async_http_transport import AsyncHttpTransport
 
 @pytest.mark.asyncio
-@patch('src.paig_common.async_http_transport.AsyncHttpTransport.create_default_client')
+@patch('paig_common.async_http_transport.AsyncHttpTransport.create_default_client')
 async def test_setup(mock_create_default_client):
     await AsyncHttpTransport.setup(connect_timeout_sec=5.0, read_timeout_sec=10.0)
     assert AsyncHttpTransport._connect_timeout_sec == 5.0
@@ -11,7 +11,7 @@ async def test_setup(mock_create_default_client):
     mock_create_default_client.assert_called_once()
 
 @pytest.mark.asyncio
-@patch('src.paig_common.async_http_transport.AsyncHttpTransport.create_default_client')
+@patch('paig_common.async_http_transport.AsyncHttpTransport.create_default_client')
 async def test_get_client(mock_create_default_client):
     AsyncHttpTransport._client = None
     await AsyncHttpTransport.get_client()

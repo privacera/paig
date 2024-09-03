@@ -1,6 +1,6 @@
 import urllib3
 
-from src.paig_common.http_transport import HttpTransport
+from paig_common.http_transport import HttpTransport
 
 
 class TestHttpTransport:

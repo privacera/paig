@@ -1,13 +1,13 @@
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
-from src.paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient, AsyncReturnValue
+from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient, AsyncReturnValue
 
 
 @pytest.mark.asyncio
-@patch('src.paig_common.async_http_transport.AsyncHttpTransport.setup')
-@patch('src.paig_common.config_utils.get_property_value_int')
-@patch('src.paig_common.config_utils.get_property_value')
-@patch('src.paig_common.config_utils.get_property_value_float')
+@patch('paig_common.async_http_transport.AsyncHttpTransport.setup')
+@patch('paig_common.config_utils.get_property_value_int')
+@patch('paig_common.config_utils.get_property_value')
+@patch('paig_common.config_utils.get_property_value_float')
 async def test_setup(mock_get_property_value_float, mock_get_property_value, mock_get_property_value_int, mock_setup):
     mock_get_property_value_int.side_effect = [4, 1]
     mock_get_property_value.side_effect = ['["GET", "POST", "PUT", "DELETE"]', '[500, 502, 503, 504]']
@@ -34,7 +34,7 @@ def test_get_default_headers():
 
 
 @pytest.mark.asyncio
-@patch('src.paig_common.async_http_transport.AsyncHttpTransport.get_client')
+@patch('paig_common.async_http_transport.AsyncHttpTransport.get_client')
 @patch('httpx.Response')
 async def test_request(mock_response, mock_get_client):
     mock_client = AsyncMock()
@@ -52,7 +52,7 @@ async def test_request(mock_response, mock_get_client):
 
 
 @pytest.mark.asyncio
-@patch('src.paig_common.async_base_rest_http_client.AsyncBaseRESTHttpClient.request')
+@patch('paig_common.async_base_rest_http_client.AsyncBaseRESTHttpClient.request')
 async def test_http_methods(mock_request):
     client = AsyncBaseRESTHttpClient("http://example.com")
 

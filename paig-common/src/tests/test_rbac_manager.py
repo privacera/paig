@@ -1,11 +1,11 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from src.paig_common.paig_exception import PAIGException
-from src.paig_common.rbac_manager import RBACManager, check_user_role_permission
+from paig_common.paig_exception import PAIGException
+from paig_common.rbac_manager import RBACManager, check_user_role_permission
 
 
-@patch('src.paig_common.rbac_manager.FileUtils.read_json_file')
+@patch('paig_common.rbac_manager.FileUtils.read_json_file')
 def test_rbac_manager(mock_load_from_file):
     mock_load_from_file.return_value = [
         {
@@ -22,7 +22,7 @@ def test_rbac_manager(mock_load_from_file):
     assert rbac_manager.default_roles == ['OWNER']
 
 
-@patch('src.paig_common.rbac_manager.RBACManager.get_instance')
+@patch('paig_common.rbac_manager.RBACManager.get_instance')
 def test_check_user_role_permission(mock_get_instance):
     mock_instance = MagicMock()
     mock_instance.rbac_enabled = True
@@ -44,7 +44,7 @@ def test_check_user_role_permission(mock_get_instance):
     assert "Missing 'x-user-role' header" in response.content
 
 
-@patch('src.paig_common.rbac_manager.FileUtils.read_json_file')
+@patch('paig_common.rbac_manager.FileUtils.read_json_file')
 def test_get_roles_with_permission(mock_load_from_file):
     mock_load_from_file.return_value = [
         {
@@ -65,7 +65,7 @@ def test_get_roles_with_permission(mock_load_from_file):
     assert roles == []
 
 
-@patch('src.paig_common.rbac_manager.FileUtils.read_json_file')
+@patch('paig_common.rbac_manager.FileUtils.read_json_file')
 def test_load_permissions_exception(mock_load_from_file):
     mock_load_from_file.side_effect = Exception("File not found")
 
