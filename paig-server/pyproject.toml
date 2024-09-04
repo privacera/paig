@@ -2,7 +2,7 @@
 name = 'paig-server'
 dynamic = ["version"]
 readme = "backend/README.md"
-license = {file = "LICENSE"}
+license = {file = "../LICENSE"}
 description = 'PAIG Server'
 requires-python = ">= 3.10"
 keywords = [

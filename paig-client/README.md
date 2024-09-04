@@ -1,4 +1,4 @@
-# Privacera AI Goverance Shield Library
+# PAIG Client Library
 
 The `paig_client` library allows you to seamlessly integrate Privacera AI Governance into your Langchain projects. 
 
@@ -13,8 +13,8 @@ pip3 install paig_client
 ```
 
 ## Initialization
-Register an account with Privacera AI Governance at https://privacera.ai. Register your AI application and 
-download the Privacera Shield Configuration file. Place the file in a folder called `privacera` relative to 
+Start your PAIG-Server. Create your AI application and 
+download the Shield Configuration file. Place the file in a folder called `privacera` relative to 
 where you are running the app.
 
 ```python
@@ -84,8 +84,8 @@ except paig_client.exception.AccessControlException as e:
 
 ### Additional ways of passing the application config file to set up Privacera Shield
 - Place the file in ```privacera``` folder relative to where you are running the app
-- Set the environment variable ```paig_client_CONFIG_FILE``` to the path of the file
-- Set the environment variable ```paig_client_CONFIG_DIR``` to a folder that contains the file. Only one
+- Set the environment variable ```PRIVACERA_SHEILD_CONFIG_FILE``` to the path of the file
+- Set the environment variable ```PRIVACERA_SHEILD_CONFIG_DIR``` to a folder that contains the file. Only one
   application config file should be present in the folder.
 - Pass the file path as ```application_config_file``` parameter to the setup function
 - Pass the string contents of the file to the setup function as ```application_config``` parameter
