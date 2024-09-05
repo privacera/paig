@@ -1,9 +1,9 @@
 ```python title="sample_python_integration.py" hl_lines="3 4 5 22 24 28 29 30 55 56 57 60 61 62"
 import json
 
-import privacera_shield
-from privacera_shield import client as privacera_shield_client
-from privacera_shield.model import ConversationType
+import paig_client
+from paig_client import client as paig_shield_client
+from paig_client.model import ConversationType
 import boto3
 
 # If needed, pdate the below 2 variables with your model name and region
@@ -17,16 +17,16 @@ bedrock_runtime = boto3.client(
 accept = "application/json"
 contentType = "application/json"
 
-privacera_shield_client.setup(frameworks=[])
+paig_shield_client.setup(frameworks=[])
 
 # Replace "testuser" with the user who is using the application. Or you can use the service username
 user = "testuser"
 try:
-    with privacera_shield_client.create_shield_context(username=user):
+    with paig_shield_client.create_shield_context(username=user):
         prompt_text = "Who was the first President of USA and where did they live?"
         print(f"User Prompt: {prompt_text}")
         # Validate prompt with Privacera Shield
-        updated_prompt_text = privacera_shield_client.check_access(
+        updated_prompt_text = paig_shield_client.check_access(
             text=prompt_text,
             conversation_type=ConversationType.PROMPT
         )
@@ -53,12 +53,12 @@ try:
         for result in results:
             reply_text = result.get('outputText')
             # Validate LLM response with Privacera Shield
-            update_reply_text = privacera_shield_client.check_access(
+            update_reply_text = paig_shield_client.check_access(
                 text=reply_text,
                 conversation_type=ConversationType.REPLY
             )
             print(f"LLM Response (After Privacera Shield): {update_reply_text}")
-except privacera_shield.exception.AccessControlException as e:
+except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")
 ```

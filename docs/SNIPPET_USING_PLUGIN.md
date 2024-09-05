@@ -5,7 +5,7 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
 - PAIG web application should be up. You can refer to [Quick Start](QUICK_START_README.md)
 - Dependency should be installed . You can install them by
    ```shell
-   pip install privacera_shield openai
+   pip install paig_client openai
    ```
 
 
@@ -54,16 +54,16 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
 
    
    ```Python
-   from privacera_shield import client as privacera_shield_client
+   from paig_client import client as paig_shield_client
    from openai import OpenAI
-   from privacera_shield.model import ConversationType
-   import privacera_shield.exception
+   from paig_client.model import ConversationType
+   import paig_client.exception
    import uuid
    
    # Set the OPENAI_API_KEY environment variable or set it here
    openai_client = OpenAI()
    
-   privacera_shield_client.setup(frameworks=[])
+   paig_shield_client.setup(frameworks=[])
 
    # Replace "testuser" with the user who is using the application. Or you can use the service username
    user = "testuser"
@@ -72,11 +72,11 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
    privacera_thread_id = str(uuid.uuid4())
    
    try:
-      with privacera_shield_client.create_shield_context(username=user):
+      with paig_shield_client.create_shield_context(username=user):
          prompt_text = "Who was the first President of USA and where did they live?"
          print(f"User Prompt: {prompt_text}")
          # Validate prompt with Privacera Shield
-         updated_prompt_text = privacera_shield_client.check_access(
+         updated_prompt_text = paig_shield_client.check_access(
             text=prompt_text,
             conversation_type=ConversationType.PROMPT,
             thread_id=privacera_thread_id
@@ -97,14 +97,14 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
          llm_response = response.choices[0].message.content
          print(f"LLM Response: {llm_response}")
          # Validate LLM response with Privacera Shield
-         updated_reply_text = privacera_shield_client.check_access(
+         updated_reply_text = paig_shield_client.check_access(
             text=llm_response,
             conversation_type=ConversationType.REPLY,
             thread_id=privacera_thread_id
          )
          updated_reply_text = updated_reply_text[0].response_text
          print(f"LLM Response (After Privacera Shield): {updated_reply_text}")
-   except privacera_shield.exception.AccessControlException as e:
+   except paig_client.exception.AccessControlException as e:
       # If access is denied, then this exception will be thrown. You can handle it accordingly.
       print(f"AccessControlException: {e}")
 ```

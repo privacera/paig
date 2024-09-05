@@ -148,20 +148,20 @@ betweens agents and chains. The following code snippet shows how to initialize t
 
 Create a folder called `privacera` in your application and copy the Privacera Shield Application configuration file
 
-### **Install privacera_shield**
+### **Install paig_client**
 
 Privacera's Shield library needs to be first installed. This can be done by running the following command:
 
 ```shell
-pip install privacera_shield
+pip install paig_client
 ```
 
 ### **Importing the PAIG Libraries**
 Add the following imports to your application
 
 ```python
-import privacera_shield
-from privacera_shield import client as privacera_shield_client
+import paig_client
+from paig_client import client as paig_shield_client
 ```
 
 ### **Initializing the PAIG Library**
@@ -169,7 +169,7 @@ from privacera_shield import client as privacera_shield_client
 Call the setup method to initialize the Privacera Shield library.
 
 ```python
-privacera_shield_client.setup(frameworks=["langchain"])
+paig_shield_client.setup(frameworks=["langchain"])
 ```
 
 ### **Setting Privacera Shield Context**
@@ -181,10 +181,10 @@ Before calling Langchain, the Privacera Shield context needs to be set. This is 
 
 ```python
 try:
-    with privacera_shield_client.create_shield_context(username=user):
+    with paig_shield_client.create_shield_context(username=user):
         response = llm_chain.invoke(prompt_text)
         print(f"LLM Response: {response.get('text')}")
-except privacera_shield.exception.AccessControlException as e:
+except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")
 ```

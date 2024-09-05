@@ -1,14 +1,14 @@
 ```python title="sample_python_integration.py" hl_lines="1 2 3 4 10 13 16 19 23 24 25 26 27 28 43 44 45 46 47 48 49 51 52 53"
-from privacera_shield import client as privacera_shield_client
-from privacera_shield.model import ConversationType
-import privacera_shield.exception
+from paig_client import client as paig_shield_client
+from paig_client.model import ConversationType
+import paig_client.exception
 import uuid
 from openai import OpenAI
 
 # Set the OPENAI_API_KEY environment variable or set it here
 openai_client = OpenAI()
 
-privacera_shield_client.setup(frameworks=[])
+paig_shield_client.setup(frameworks=[])
 
 # Replace "testuser" with the user who is using the application. Or you can use the service username
 user = "testuser"
@@ -17,11 +17,11 @@ user = "testuser"
 privacera_thread_id = str(uuid.uuid4())
 
 try:
-   with privacera_shield_client.create_shield_context(username=user):
+   with paig_shield_client.create_shield_context(username=user):
       prompt_text = "Who was the first President of USA and where did they live?"
       print(f"User Prompt: {prompt_text}")
       # Validate prompt with Privacera Shield
-      updated_prompt_text = privacera_shield_client.check_access(
+      updated_prompt_text = paig_shield_client.check_access(
          text=prompt_text,
          conversation_type=ConversationType.PROMPT,
          thread_id=privacera_thread_id
@@ -42,14 +42,14 @@ try:
       llm_response = response.choices[0].message.content
       print(f"LLM Response: {llm_response}")
       # Validate LLM response with Privacera Shield
-      updated_reply_text = privacera_shield_client.check_access(
+      updated_reply_text = paig_shield_client.check_access(
          text=llm_response,
          conversation_type=ConversationType.REPLY,
          thread_id=privacera_thread_id
       )
       updated_reply_text = updated_reply_text[0].response_text
       print(f"LLM Response (After Privacera Shield): {updated_reply_text")
-except privacera_shield.exception.AccessControlException as e:
+except paig_client.exception.AccessControlException as e:
    # If access is denied, then this exception will be thrown. You can handle it accordingly.
    print(f"AccessControlException: {e}")
 ```
