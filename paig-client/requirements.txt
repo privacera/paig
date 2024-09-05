@@ -1,0 +1,15 @@
+build 
+twine 
+virtualenv 
+pip
+pytest
+pytest-cov
+pytest-html
+flake8
+
+langchain
+
+urllib3
+cryptography
+
+paig_common
