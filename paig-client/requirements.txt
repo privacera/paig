@@ -13,3 +13,4 @@ urllib3
 cryptography
 
 paig_common
+langchain_community

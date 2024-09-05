@@ -38,7 +38,9 @@ def test_post2(setup_paig_plugin_with_app_config_file_name):
     client = ShieldRestHttpClient(base_url=SHIELD_SERVER_URL, tenant_id=app_config_file['tenantId'],
                                   api_key=app_config_file['apiKey'],
                                   encryption_keys_info=encryption_keys_info)
-    do_post(client)
+    thread = threading.Thread(target=do_post, args=(client,))
+    thread.start()
+    thread.join()
 
 
 @pytest.mark.e2e_test
