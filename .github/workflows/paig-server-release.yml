@@ -1,4 +1,4 @@
-name: Upload Wheel to Test PyPI
+name: paig-server upload to PyPI
 
 on:
   workflow_dispatch: # Allows manual trigger
@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 jobs:
-  test-pypi:
+  release:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4  # Ensure the repo is checked out
@@ -29,7 +29,6 @@ jobs:
         filepath=$PWD
         . venv/bin/activate && cd paig-server/backend/paig
         python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
-        cd $filepath
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
@@ -53,7 +52,6 @@ jobs:
       run: |
         cd paig-server/scripts
         sh build_ui.sh
-        cd ..
 
     - name: Build the wheel
       run: |
@@ -65,13 +63,14 @@ jobs:
       run: |
         rm -rf venv
         virtualenv -p python3 venv && . venv/bin/activate
-        pip install paig-server/dist/*.whl
+        cd paig-server
+        pip install dist/*.whl
 
-    - name: Upload to Test PyPI
+    - name: Release to PyPI
       env:
-        TWINE_USERNAME: ${{ secrets.TWINE_TEST_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.TWINE_TEST_PYPI_API_TOKEN }}
+        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.TWINE_PYPI_API_TOKEN }}
       run: |
         . venv/bin/activate
         pip install twine
-        twine upload --repository-url https://test.pypi.org/legacy/ paig-server/dist/*
+        twine upload paig-server/dist/*

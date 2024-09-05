@@ -1,0 +1,46 @@
+name: paig-server test
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install virtualenv
+        virtualenv -p python3 venv && . venv/bin/activate
+        pip install pytest pytest-cov
+        pip install -r paig-server/backend/requirements.txt
+    - name: Test with pytest
+      run: |
+        filepath=$PWD
+        . venv/bin/activate && cd paig-server/backend/paig 
+        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
+        cd $filepath
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.xml
+  
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: junit-results
+        path: junit.xml
+

@@ -284,7 +284,7 @@ def test_flush_audits_with_logs():
 
     # Assertions
     llm_stream_access_checker.create_stream_access_audit_request.assert_called_once()
-    mock_shield_client.log_stream_access_audit.assert_called_once_with(
+    mock_paig_plugin.log_stream_access_audit.assert_called_once_with(
         llm_stream_access_checker.create_stream_access_audit_request.return_value)
 
 def test_flush_audits_without_logs():

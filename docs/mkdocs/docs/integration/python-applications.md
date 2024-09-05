@@ -8,12 +8,12 @@ If your AI application is developed in Python and not using LangChain, you can i
 using the PAIG Python library. With this option you also have an option to customize the flow and decide when to invoke
 PAIG.
 
-## **Install privacera_shield**
+## **Install paig_client**
 
 Privacera's plugin library needs to be first installed. This can be done by running the following command:
 
 ```shell
-pip install privacera_shield
+pip install paig_client
 ```
 
 ## **Adding AI Application in PAIG**
@@ -95,9 +95,9 @@ call the APIs:
 
 **Importing the PAIG Libraries**
 ```python
-from privacera_shield import client as privacera_shield_client
-from privacera_shield.model import ConversationType
-import privacera_shield.exception
+from paig_client import client as paig_shield_client
+from paig_client.model import ConversationType
+import paig_client.exception
 import uuid
 ```
 
@@ -107,7 +107,7 @@ Call the setup method to initialize the Privacera Shield library. Since you are 
 an empty list to the setup method.
 
 ```python
-privacera_shield_client.setup(frameworks=[])
+paig_shield_client.setup(frameworks=[])
 ```
 
 Generate a random UUID which will be used to bind a prompt with a response
@@ -120,16 +120,16 @@ privacera_thread_id = str(uuid.uuid4())
 
 ```python
 try:
-    with privacera_shield_client.create_shield_context(username=user):
+    with paig_shield_client.create_shield_context(username=user):
         # Validate prompt with Privacera Shield
-        updated_prompt_text = privacera_shield_client.check_access(
+        updated_prompt_text = paig_shield_client.check_access(
             text=prompt_text,
             conversation_type=ConversationType.PROMPT,
             thread_id=privacera_thread_id
         )
         updated_prompt_text = updated_prompt_text[0].response_text
         print(f"User Prompt (After Privacera Shield): {updated_prompt_text}")
-except privacera_shield.exception.AccessControlException as e:
+except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")
 ```
@@ -137,15 +137,15 @@ except privacera_shield.exception.AccessControlException as e:
 **Checking Access After Receiving Response from LLM**
 ```python
 try:
-    with privacera_shield_client.create_shield_context(username=user):
+    with paig_shield_client.create_shield_context(username=user):
         # Validate LLM response with Privacera Shield
-        updated_reply_text = privacera_shield_client.check_access(
+        updated_reply_text = paig_shield_client.check_access(
             text=llm_response,
             conversation_type=ConversationType.REPLY,
             thread_id=privacera_thread_id
         )
         updated_reply_text = updated_reply_text[0].response_text
-except privacera_shield.exception.AccessControlException as e:
+except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")
 ```

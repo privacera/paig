@@ -27,12 +27,12 @@ The below line of the code shows how we have enabled milvus data governance by a
 setting up privacera shield client.
 
 ```python
-privacera_shield_client.setup(frameworks=["milvus"])
+paig_shield_client.setup(frameworks=["milvus"])
 ```
 
 !!! info "Multiple Frameworks"
     This can also be utilized in conjunction with AI application policies by incorporating it within the Langchain 
     framework as shown below: 
     ```python
-    privacera_shield_client.setup(frameworks=["langchain", "milvus"])
+    paig_shield_client.setup(frameworks=["langchain", "milvus"])
     ```
