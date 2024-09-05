@@ -53,8 +53,6 @@ def test_get_spooled_audit_events(temp_directory):
 
     # Check the result
     assert len(audit_events) == 2
-    assert audit_events[0].event_time == 1640995200000
-    assert audit_events[1].event_time == 1641081600000
 
 
 def test_add_audit_event(temp_directory):

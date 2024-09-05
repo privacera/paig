@@ -1,4 +1,4 @@
-name: Upload Wheel to PyPI
+name: paig-common upload to PyPI
 
 on:
   workflow_dispatch: # Allows manual trigger

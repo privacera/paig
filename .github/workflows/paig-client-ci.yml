@@ -1,4 +1,4 @@
-name: CI
+name: paig-client-ci
 
 on:
   push:

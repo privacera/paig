@@ -1,4 +1,4 @@
-name: Test
+name: paig-server test
 
 on:
   workflow_call:

@@ -1,4 +1,4 @@
-name: CI
+name: paig-common-ci
 
 on:
   push:
