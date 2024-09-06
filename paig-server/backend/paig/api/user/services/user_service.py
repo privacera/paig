@@ -105,7 +105,7 @@ class UserService:
         if email:
             email = email.strip()
             user = await self.user_repository.get_user_by_field(field="email", value=email)
-            if user:
+            if user and user.id != id:
                 raise ConflictException(f"User with email {email} already exists")
 
         user_params['password'] = _format_password(roles=user_params['roles'], secret=user_params['password'])
