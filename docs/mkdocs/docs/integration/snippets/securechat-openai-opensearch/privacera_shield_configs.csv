@@ -1,6 +1,0 @@
-Property Name, Description, Sample Value
-AI_applications[].name,Name of the application as defined in AI_applications.json,sales_data
-AI_applications[].paig_shield_config_file,Path to the Privacera Shield file downloaded from PAIG. It should be copied to custom-configs folder. The path provided is how it mounted in the container,/workdir/custom-configs/privacera-shield-config.json
-AI_applications[].description,Description of the application,This application is used to provides answers to sales related questions
-AI_applications[].vectordb.index_name,Name of the index in VectorDB,sales_index
-AI_applications[].vectordb.data_path,Path to the data folder. The data folder is mounted to the container. It could be relative to /workdir/data,/workdir/securechat/data/sales_data
