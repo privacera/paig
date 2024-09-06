@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import logging
 from fastapi import FastAPI
@@ -9,7 +10,7 @@ from core import constants
 from core.db_session.standalone_session import get_field_counts, get_counts_group_by
 from core.factory.metrics_collector import MetricsClient, get_metric_client
 from contextlib import asynccontextmanager
-
+from api.shield.services.application_manager_service import ApplicationManager
 # set up logging
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,22 @@ class CustomExporter:
             self.data[key] = value
 
 
+def threaded_load_scanners():
+    logger.info("Starting load scanners in a thread..")
+    app_manager = ApplicationManager()
+    app_manager.load_scanners("application_key")
+    logger.info("Load scanners completed.")
+
+
+async def background_init_load_scanners():
+    """
+    Run init_load_scanners as a background task without blocking the main thread.
+    """
+    logger.info("Scheduling load scanners in a separate thread...")
+    # Running the blocking function in the background using asyncio.to_thread
+    asyncio.create_task(asyncio.to_thread(threaded_load_scanners))  # Run the blocking code in a background thread
+
+
 @asynccontextmanager
 async def register_usage_events(application: FastAPI):
     async def init_usage_collector():
@@ -62,6 +79,7 @@ async def register_usage_events(application: FastAPI):
         await metric_client.initialize()
         lock = acquire_lock(format_to_root_path(constants.SCHEDULER_LOCK))
         if lock:
+            await background_init_load_scanners()
             await exporter.initialize(metric_client)
             await collect_usage()
             scheduler.start()
