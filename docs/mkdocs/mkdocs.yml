@@ -70,7 +70,7 @@ theme:
   icon:
     logo: logo
 #    annotation: privacera/privacera_p
-  logo: assets/images/paig-logo-new-dark.png
+  logo: assets/images/paig-os-header-logo.webp
 
 # Plugins
 plugins:
