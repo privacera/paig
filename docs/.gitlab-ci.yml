@@ -1,5 +1,6 @@
 variables:
   GIT_DEPTH: 0
+  OPS_ENV: 'true'
 
 .default-job-template: &default_job
   image: $BUILD_IMAGE
