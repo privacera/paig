@@ -12,7 +12,7 @@ PAIG easily integrates with any AI application (1), offering a variety of flexib
 functionality:
 { .annotate }
 
-1.  :privacera-privacera_p: Read more about AI applications in the [User Guide](../user-guide/applications.md) section.
+1.  :privacera-privacera_p: Read more about AI applications in the [User Guide](../user-guide/manage-applications/applications.md) section.
 
 
 <div class="grid cards" markdown>
@@ -68,5 +68,5 @@ functionality:
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Applications](../how-to/manage-applications/index)
+    [Manage Applications](../user-guide/manage-applications/index)
 </div>

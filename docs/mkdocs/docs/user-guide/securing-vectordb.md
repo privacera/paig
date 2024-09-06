@@ -4,8 +4,6 @@ title: Securing VectorDB
 
 # Securing VectorDB
 
-<!-- md:feature_upgrade ../faq/index.md#enterprise_plan_only: Enterprise Plan Only -->
-
 The Dynamic Content Filter feature in PAIG provides robust security and governance for VectorDB, which is crucial in the
 context of GenAI and Retrieval-Augmented Generation (RAG) systems. VectorDB aggregates data from various sources such as
 Confluence Wiki pages, Databases, Documents, Support Tickets, etc. This guide details how to utilize PAIG to enforce
@@ -114,7 +112,7 @@ Here are some use cases that demonstrate the application of Dynamic Content Filt
 These use cases provide practical examples of how Dynamic Content Filter in VectorDB can be utilized in various
 scenarios, demonstrating its versatility and effectiveness in managing data access and ensuring compliance.
 
-You can also refer to more detailed use cases in the [VectorDB Use Cases](../how-to/manage-vectordbs/vectordb-policies.md#use-cases-for-vectordb-policy-management-in-paig) section.
+You can also refer to more detailed use cases in the [VectorDB Use Cases](manage-vectordbs/vectordb-policies.md#use-cases-for-vectordb-policy-management-in-paig) section.
 
 ## Utilizing Dynamic Content Filter
 

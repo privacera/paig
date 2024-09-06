@@ -234,25 +234,21 @@ nav:
 #      - REST API: integration/rest-api.md
   - User Guide:
       - user-guide/index.md
-      - Securing GenAI Applications: user-guide/applications.md
-      - Securing VectorDB: user-guide/securing-vectordb.md
-#      - Security: user-guide/security.md
-#      - Compliance: user-guide/compliance.md
+      - Securing GenAI Applications:
+        - user-guide/manage-applications/applications.md
+        - Manage Applications:
+            - user-guide/manage-applications/index.md
+            - Application Policies: user-guide/manage-applications/application-policies.md
+      - Securing VectorDB:
+        - user-guide/securing-vectordb.md
+        - Manage VectorDBs:
+            - user-guide/manage-vectordbs/index.md
+            - VectorDB Policies: user-guide/manage-vectordbs/vectordb-policies.md
       - Monitoring: user-guide/monitoring.md
       - Reporting:
         - user-guide/reporting/index.md
         - Reports: user-guide/reporting/reports.md
       - Users and Groups: user-guide/user-management.md
-      - Account Management: user-guide/account-management.md
-  - How To:
-      - how-to/index.md
-      - Manage Applications:
-        - how-to/manage-applications/index.md
-        - Application Policies: how-to/manage-applications/application-policies.md
-      - Manage VectorDBs:
-          - how-to/manage-vectordbs/index.md
-          - VectorDB Policies: how-to/manage-vectordbs/vectordb-policies.md
-#      - Manage Users: how-to/manage-users.md
   - FAQ:
       - faq/index.md
 

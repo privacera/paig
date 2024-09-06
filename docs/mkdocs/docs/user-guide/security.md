@@ -114,6 +114,6 @@ responsibly.
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Policies](../how-to/manage-applications/application-policies.md)
+    [Manage Policies](manage-applications/application-policies.md)
 
 </div>

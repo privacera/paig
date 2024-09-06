@@ -21,8 +21,3 @@ hide:
 
 ---
 
-## Account
---8<-- "docs/faq/snippets/account.md"
-
----
-

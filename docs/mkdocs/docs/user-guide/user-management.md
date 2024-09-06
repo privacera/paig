@@ -47,7 +47,6 @@ To ensure a secure and tailored user experience within PAIG, we employ a role-ba
     - Set application policies
     - Access reports, including usage, audits, and dashboards
     - Manage user groups
-    - Oversee account and subscription details
 
 - **Security Team:** Members focused on organizational security. They can:
     - Manage and view user profiles
@@ -67,7 +66,6 @@ To ensure a secure and tailored user experience within PAIG, we employ a role-ba
     - Set application policies
     - Access reports
     - Manage and view user and group details
-    - Manage account and subscription information
 
 - **Governance:** Oversees data handling and policy adherence. Governance team members can:
     - Manage and view user profiles
@@ -84,7 +82,7 @@ To ensure a secure and tailored user experience within PAIG, we employ a role-ba
 
 **Below is a simplified version of what each User Role can do within PAIG**
 
-{{ read_csv('../how-to/snippets/roles_permissions.csv') }}
+{{ read_csv('snippets/roles_permissions.csv') }}
 
 ### Key Features of Role-Based Access:
 
@@ -97,16 +95,3 @@ To ensure a secure and tailored user experience within PAIG, we employ a role-ba
 - Regularly review and update role assignments. This ensures that users have the correct permissions aligned with their responsibilities.
 
 - Maintain open communication with users about their role-based experience. This feedback can be instrumental in refining and enhancing the system.
-
----
-:octicons-tasklist-16: **What Next?**
-
-<div class="grid cards" markdown>
-
--   :material-book-open-page-variant-outline: __Read More__
-
-    [About Account](account-management.md)
-
--   :material-lightning-bolt-outline: __How To__
-
-    [Manage Users](../how-to/manage-users.md)

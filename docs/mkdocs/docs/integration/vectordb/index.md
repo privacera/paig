@@ -65,4 +65,4 @@ Below is an update on how these columns are utilized:
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage VectorDB Policies](../../how-to/manage-vectordbs/vectordb-policies.md)
+    [Manage VectorDB Policies](../../user-guide/manage-vectordbs/vectordb-policies.md)
