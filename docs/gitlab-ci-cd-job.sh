@@ -10,6 +10,9 @@ S3_BUCKET=$S3_BUCKET
 S3_BASE_PATH=s3://${S3_BUCKET}/stage
 S3_PATH=${S3_BASE_PATH}/$BRANCH_NAME
 LOCAL_PATH=mkdocs/site
+
+AWS_ACCOUNT=$AWS_ACCOUNT
+AWS_ASSUME_ROLE=$AWS_ASSUME_ROLE
 # shellcheck disable=SC2164
 cd "$(dirname $0)"
 set -x
@@ -153,6 +156,14 @@ aws s3 cp index.html $destination_path --content-type "text/html" --content-disp
 
 DOCS_STAGE_LOCATION="https://$S3_BUCKET.s3.amazonaws.com/stage/index.html"
 if [ "$BRANCH_NAME" == "main" ]; then
+    # Assume the role and get temporary credentials
+  TEMP_ROLE=$(aws sts assume-role --role-arn "arn:aws:iam::$AWS_ACCOUNT:role/$AWS_ASSUME_ROLE" --role-session-name "AssumedRoleSession")
+  
+  # Export the temporary credentials
+  export AWS_ACCESS_KEY_ID=$(echo $TEMP_ROLE | jq -r '.Credentials.AccessKeyId')
+  export AWS_SECRET_ACCESS_KEY=$(echo $TEMP_ROLE | jq -r '.Credentials.SecretAccessKey')
+  export AWS_SESSION_TOKEN=$(echo $TEMP_ROLE | jq -r '.Credentials.SessionToken')
+
   aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
 fi
 
