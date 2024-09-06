@@ -132,6 +132,7 @@ class TestUserRouters:
             "firstName": "first_user_updated",
             "lastName": "user_1_updated",
             "roles": ["USER"],
+            "email": "user1@test.com",
             "groups": []
         }
         response = await client.put(
@@ -140,6 +141,62 @@ class TestUserRouters:
         assert response.status_code == 200
         assert response.json()['firstName'] == 'first_user_updated'
         assert response.json()['lastName'] == 'user_1_updated'
+
+        # Create Test user2
+        test_user2_dict = {
+            "username": "test_user2",
+            "status": 1,
+            "firstName": "User2_fistName",
+            "lastName": "User2_LastName",
+            "password": "TestUser@2",
+            "roles": ["OWNER"],
+            "email": "user2@test.com",
+            "groups": []
+        }
+
+        response = await client.post(
+            f"{user_services_base_route}/users", content=json.dumps(test_user2_dict)
+        )
+        assert response.status_code == 201
+        assert response.json()["username"] == 'test_user2'
+
+        # Test update user email
+        test_user2_dict['email'] = 'test_user2@test.com'
+        response = await client.put(
+            f"{user_services_base_route}/users/3", content=json.dumps(test_user2_dict)
+        )
+        assert response.status_code == 200
+        assert response.json()["username"] == 'test_user2'
+        assert response.json()["email"] == 'test_user2@test.com'
+
+        # Test conflict to update user email with existing other user email
+        update_req = {
+            "status": 1,
+            "firstName": "User2_firstName_updated",
+            "lastName": "User2_lastName_updated",
+            "roles": ["OWNER"],
+            "email": "user1@test.com"
+        }
+        response = await client.put(
+            f"{user_services_base_route}/users/3", content=json.dumps(update_req)
+        )
+        assert response.status_code == 409
+
+        # Test conflict to create user with existing username
+        response = await client.post(
+            f"{user_services_base_route}/users", content=json.dumps(test_user2_dict)
+        )
+
+        assert response.status_code == 409
+
+        # Test conflict to create user with existing email
+        test_user2_dict['username'] = 'test_user3'
+        response = await client.post(
+            f"{user_services_base_route}/users", content=json.dumps(test_user2_dict)
+        )
+
+        assert response.status_code == 409
+
 
         # Delete user
         response = await client.delete(
