@@ -232,6 +232,8 @@ nav:
         - integration/prerequisites/index.md
         - Docker Installation: integration/prerequisites/docker.md
 #      - REST API: integration/rest-api.md
+  - Developers:
+      - developers/index.md
   - User Guide:
       - user-guide/index.md
       - Securing GenAI Applications:
