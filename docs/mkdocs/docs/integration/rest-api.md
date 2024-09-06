@@ -17,4 +17,4 @@ you also have an option to customize the flow and decide when to invoke PAIG.
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Applications](../how-to/manage-applications/index)
+    [Manage Applications](../user-guide/manage-applications/index)

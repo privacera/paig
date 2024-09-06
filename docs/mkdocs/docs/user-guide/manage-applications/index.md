@@ -9,7 +9,7 @@ portal. In this page you can view all the applications that are registered with 
 an application to view and manage or create a new application.
 { .annotate }
 
-1.  :privacera-privacera_p: Read more about AI applications in the [User Guide](../../user-guide/applications.md) section.
+1.  :privacera-privacera_p: Read more about AI applications in the [User Guide](applications.md) section.
 
 ## Creating a New Application
 

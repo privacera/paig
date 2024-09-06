@@ -72,14 +72,3 @@ processes but also ensure they adhere to the strictest of compliance standards.
 By intertwining detailed monitoring with its core functionalities, PAIG promises not only robust security and stringent
 compliance but also transparency in every GenAI application. Through active oversight, PAIG assures users that the GenAI
 ecosystem is not just powerful but also steadfastly secure and compliant.
-
----
-:octicons-tasklist-16: **What Next?**
-
-<div class="grid cards" markdown>
-
--   :material-lightning-bolt-outline: __How To__
-
-    [Manage PAIG](../how-to/index.md)
-
-</div>

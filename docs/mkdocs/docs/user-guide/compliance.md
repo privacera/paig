@@ -77,4 +77,4 @@ and compliant framework. With PAIG, embrace the future of AI, both responsibly a
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Policies](../how-to/manage-applications/application-policies.md)
+    [Manage Policies](manage-applications/application-policies.md)

@@ -40,6 +40,6 @@ introduce a new AI application to fully utilize PAIG's capabilities.
 
 -   :material-book-open-page-variant-outline: __Read More__
 
-    [About AI Applications](applications.md)
+    [About AI Applications](manage-applications/applications.md)
 
 </div>

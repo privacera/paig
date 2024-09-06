@@ -200,4 +200,4 @@ except paig_client.exception.AccessControlException as e:
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Applications](../how-to/manage-applications/index)
+    [Manage Applications](../user-guide/manage-applications/index)

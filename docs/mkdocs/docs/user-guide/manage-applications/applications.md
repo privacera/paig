@@ -54,7 +54,7 @@ applications is managed with the utmost care, aligning with your organization's 
 By combining the security features of PAIG for GenAI applications with Securing VectorDB, organizations can achieve a 
 holistic security framework. This integrated approach not only secures the AI models and their inputs/outputs but also 
 ensures the underlying data in VectorDB is governed and protected effectively. For more information on this integration,
-please refer to our [Securing VectorDB](securing-vectordb.md) section.
+please refer to our [Securing VectorDB](../securing-vectordb.md) section.
 
 
 ## Use Case Descriptions for Securing GenAI Applications with PAIG
@@ -180,12 +180,12 @@ offering a nuanced approach to data privacy and access management.
 
 -   :material-book-open-page-variant-outline: __Read More__
 
-    [Securing VectorDB](securing-vectordb.md)
+    [Securing VectorDB](../securing-vectordb.md)
 
-    [Reporting](reporting/)
+    [Reporting](../reporting/)
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Appications](../how-to/manage-applications/index)
+    [Manage Appications](index.md)
 
 </div>
