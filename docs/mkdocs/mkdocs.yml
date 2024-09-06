@@ -11,6 +11,7 @@ theme:
   site_url: https://paig.ai/
   site_description: PAIG
   custom_dir: paig_custom/overrides
+  homepage_url: 'https://paig.ai/'
   features:
     - announce.dismiss
     - content.action.edit
