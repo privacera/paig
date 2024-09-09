@@ -65,5 +65,4 @@ PAIG is licensed under the Apache License. For more details, please see the [LIC
 
 Detailed documentation is available at [PAIG Documentation](https://paig-os-docs.privacera.me/index.html).
 
-[TODO: Need to replace the clip with a use case scenario]
 ![PAIG Demo gif](docs/assets/PAIG_Demo.gif)
