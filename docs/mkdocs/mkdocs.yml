@@ -228,6 +228,16 @@ nav:
 #      - REST API: integration/rest-api.md
   - Developers:
       - developers/index.md
+      - Design:
+        - Design Overview: developers/architectural-overview.md
+        - Database Overview: developers/database-overview.md
+        - API Documentation: developers/api/api-docs.md
+      - PAIG Server:
+        - Installation and Usage: developers/paig-server/installation.md
+        - How to Start Development Server: developers/paig-server/start-dev-server.md
+        - How to Setup Database: developers/paig-server/setup-database.md
+      - PAIG Client:
+        - Installation and Usage: developers/paig-client/installation.md
   - User Guide:
       - user-guide/index.md
       - Securing GenAI Applications:
