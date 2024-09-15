@@ -221,13 +221,20 @@ nav:
       - Python Applications: integration/python-applications.md
       - VectorDB:
         - integration/vectordb/index.md
-        - Milvus: integration/vectordb/milvus.md
       - Prerequisites:
         - integration/prerequisites/index.md
         - Docker Installation: integration/prerequisites/docker.md
 #      - REST API: integration/rest-api.md
   - Developers:
       - developers/index.md
+      - PAIG Client:
+          - Quick Start: developers/paig-client/quick-start.md
+          - Code Examples:
+              - developers/paig-client/code-examples/index.md
+              - Milvus Integration:
+                - developers/paig-client/code-examples/milvus-integration/index.md
+                - A Sample Tutorial: developers/paig-client/code-examples/milvus-integration/a-sample-tutorial.md
+                - Integration Guide: developers/paig-client/code-examples/milvus-integration/integration-guide.md
   - User Guide:
       - user-guide/index.md
       - Securing GenAI Applications:

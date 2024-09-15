@@ -1,8 +1,8 @@
 ---
-title: Integrating PAIG with Milvus
+title: Milvus Integration Guide
 ---
 
-# Integrating PAIG with Milvus
+# Milvus Integration Guide
 
 ## Prerequisites:
 

@@ -1,0 +1,3 @@
+openai
+pymilvus
+paig_client
