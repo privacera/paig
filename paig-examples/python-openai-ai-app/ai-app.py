@@ -9,6 +9,9 @@ openai_client = OpenAI()
 
 paig_shield_client.setup(frameworks=[])
 
+# Model
+MODEL = "gpt-4o"
+
 # Replace "testuser" with the user who is using the application. Or you can use the service username
 user = "testuser"
 
@@ -33,7 +36,7 @@ try:
       {updated_prompt_text}    
       ANSWER:
       """
-        response = openai_client.chat.completions.create(model="gpt-4", messages=[{"role": "user", "content": PROMPT}],
+        response = openai_client.chat.completions.create(model=MODEL, messages=[{"role": "user", "content": PROMPT}],
                                                          temperature=0)
         llm_response = response.choices[0].message.content
         print(f"LLM Response: {llm_response}")

@@ -1,8 +1,24 @@
 # Simple AI Application demonstration using PAIG
 
+## Step 0: Create Virtual Environment(Optional)
+```shell
+python3 -m venv venv
+sh ./venv/bin/activate
+```
 
 ## Step 1: Start the PAIG server
-If you have not started the PAIG server, please follow the instructions in the [PAIG Quick Start Guide](https://docs.paig.ai/index.html) to start the PAIG server.
+If you have not started the PAIG server, please follow instructions as given below:-
+
+#### Install dependencies
+```shell
+pip install paig-server
+python -m spacy download en_core_web_lg
+```
+
+#### Start Server
+```shell
+paig run
+```
 
 ## Step 2: Install the PAIG client and dependencies
 To install the PAIG client, run the following command:
@@ -15,6 +31,8 @@ Download the PAIG configuration file from the PAIG server and save it under dire
 ```shell
 mkdir privacera
 ```
+
+***Note*** - If you have started server on 4545 port , PAIG default config can be downloaded using url http://127.0.0.1:4545/governance-service/api/ai/application/1/config/json/download
 
 ## Step 4: Set the OPENAI_API_KEY environment variable
 Set the OPENAI_API_KEY environment variable to your OpenAI API key.
