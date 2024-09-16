@@ -23,13 +23,18 @@ Download below files and place them in new directory where you want to run the t
  - <a href="files/query_milvus_collection.py" download="query_milvus_collection.py">query_milvus_collection.py</a>
 
 ### Start Milvus and Attu server
+!!! note "Note"
+    If you have your own Milvus server running and you want to use that, you can skip this step.
+
 Run the following command in the directory where you placed the files.
     ```bash
     docker-compose up -d
     ```
 
 ### Install the required Python packages
-Run the following command to install the required Python packages.
+Run the following command to install the required Python packages. 
+
+For this tutorial, we will be installing the `milvus`, `openai` and `paig_client` packages.
 
 - Create a virtual environment and activate it.
   ```bash
@@ -49,6 +54,9 @@ Export your OpenAI API key as an environment variable to use ir further in the c
 
 ### Create Milvus collection
 Run the following command to create a Milvus collection with sample data.
+!!! note "Note"
+    If you are using your own Milvus server, make sure to update the `MILVUS_HOST` and `MILVUS_PORT` in the `create_milvus_collection.py` script.
+
    ```bash
    python3 create_milvus_collection.py
    ```
@@ -88,6 +96,9 @@ Save the downloaded configuration file in a folder named `privacera` within the 
 
 ### Query the Milvus collection
 Run the following command to query the Milvus collection.
+!!! note "Note"
+    If you are using your own Milvus server, make sure to update the `MILVUS_HOST` and `MILVUS_PORT` in the `query_milvus_collection.py` script.
+
    ```bash
    python3 query_milvus_collection.py
    ```
