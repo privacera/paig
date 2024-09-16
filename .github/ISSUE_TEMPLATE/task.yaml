@@ -11,15 +11,6 @@ body:
       value: |
         Please fill out the details below to create a new task.
 
-  - type: input
-    id: task-title
-    attributes:
-      label: Task Title
-      description: Brief title for the task.
-      placeholder: "Enter a title for the task"
-    validations:
-      required: true
-
   - type: textarea
     id: task-details
     attributes:
