@@ -7,6 +7,9 @@ from api.governance.api_schemas.vector_db_policy import VectorDBPolicyFilter, Ve
 from api.governance.services.vector_db_policy_service import VectorDBPolicyService
 from api.governance.utils.gov_service_validation_util import GovServiceValidationUtil
 from core.utils import SingletonDepends
+from core.middlewares.usage import capture_event_on_action
+from core.factory.events import CreateVectorDBPolicyEvent, UpdateVectorDBPolicyEvent
+import asyncio
 
 
 class VectorDBPolicyController:
@@ -49,7 +52,9 @@ class VectorDBPolicyController:
         # await self.gov_service_validation_util.validate_metadata_exists(request)
         await self.validate_users(request)
         await self.validate_groups(request)
-        return await self.vector_db_policy_service.create_vector_db_policy(vector_db_id, request)
+        created_vector_db_policy = await self.vector_db_policy_service.create_vector_db_policy(vector_db_id, request)
+        asyncio.create_task(capture_event_on_action(event=CreateVectorDBPolicyEvent(metadata={created_vector_db_policy.metadata_key: created_vector_db_policy.metadata_value})))
+        return created_vector_db_policy
 
     async def get_vector_db_policy_by_id(self, vector_db_id: int, id: int) -> VectorDBPolicyView:
         """
@@ -92,7 +97,9 @@ class VectorDBPolicyController:
         # await self.gov_service_validation_util.validate_metadata_exists(request)
         await self.validate_users(request)
         await self.validate_groups(request)
-        return await self.vector_db_policy_service.update_vector_db_policy(vector_db_id, id, request)
+        updated_vector_db_policy = await self.vector_db_policy_service.update_vector_db_policy(vector_db_id, id, request)
+        asyncio.create_task(capture_event_on_action(event=UpdateVectorDBPolicyEvent(metadata={updated_vector_db_policy.metadata_key: updated_vector_db_policy.metadata_value})))
+        return updated_vector_db_policy
 
     async def validate_users(self, request):
         users = request.allowed_users.copy()

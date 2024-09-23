@@ -8,6 +8,9 @@ from api.governance.api_schemas.vector_db import VectorDBView, VectorDBFilter
 from api.governance.services.ai_app_service import AIAppService
 from api.governance.services.vector_db_service import VectorDBService
 from core.utils import SingletonDepends
+from core.middlewares.usage import capture_event_on_action
+from core.factory.events import CreateVectorDBEvent, UpdateVectorDBEvent, DeleteVectorDBEvent
+import asyncio
 
 
 class VectorDBController:
@@ -51,7 +54,9 @@ class VectorDBController:
         Returns:
             VectorDBView: The created Vector DB view object.
         """
-        return await self.vector_db_service.create_vector_db(request)
+        created_vector_db = await self.vector_db_service.create_vector_db(request)
+        asyncio.create_task(capture_event_on_action(event=CreateVectorDBEvent(vector_db_type=created_vector_db.type.value)))
+        return created_vector_db
 
     async def get_vector_db_by_id(self, id: int) -> VectorDBView:
         """
@@ -83,6 +88,7 @@ class VectorDBController:
             raise BadRequestException(
                 get_error_message(ERROR_RESOURCE_IN_USE, "Vector DB", "AI Applications", ai_application_names))
         await self.vector_db_service.delete_vector_db(id)
+        asyncio.create_task(capture_event_on_action(event=DeleteVectorDBEvent(vector_db_type=result.type.value)))
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update_vector_db(self, id: int, request: VectorDBView) -> VectorDBView:
@@ -96,4 +102,6 @@ class VectorDBController:
         Returns:
             VectorDBView: The updated Vector DB view object.
         """
-        return await self.vector_db_service.update_vector_db(id, request)
+        updated_vector_db = await self.vector_db_service.update_vector_db(id, request)
+        asyncio.create_task(capture_event_on_action(event=UpdateVectorDBEvent(vector_db_type=updated_vector_db.type.value)))
+        return updated_vector_db
