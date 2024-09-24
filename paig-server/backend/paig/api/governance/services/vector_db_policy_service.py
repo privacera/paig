@@ -12,6 +12,9 @@ from api.governance.api_schemas.vector_db_policy import VectorDBPolicyFilter, Ve
 from api.governance.database.db_models.vector_db_policy_model import VectorDBPolicyModel
 from api.governance.database.db_operations.vector_db_policy_repository import VectorDBPolicyRepository
 from api.governance.database.db_operations.vector_db_repository import VectorDBRepository
+from core.middlewares.usage import background_capture_event
+from core.factory.events import DeleteVectorDBPolicyEvent
+import asyncio
 
 
 class VectorDBPolicyRequestValidator:
@@ -320,8 +323,9 @@ class VectorDBPolicyService(BaseController[VectorDBPolicyModel, VectorDBPolicyVi
         """
         self.vector_db_policy_request_validator.validate_delete_request(vector_db_id, id)
         # get the policy by id and vector db id to check if it exists
-        await self.get_vector_db_policy_by_id_and_vector_db_id(vector_db_id, id)
+        vector_db_policy = await self.get_vector_db_policy_by_id_and_vector_db_id(vector_db_id, id)
         await self.delete_record(id)
+        await background_capture_event(event=DeleteVectorDBPolicyEvent(metadata={vector_db_policy.metadata_key: vector_db_policy.metadata_value}))
 
     async def update_vector_db_policy(self, vector_db_id: int, id: int, request: VectorDBPolicyView) -> VectorDBPolicyView:
         """
