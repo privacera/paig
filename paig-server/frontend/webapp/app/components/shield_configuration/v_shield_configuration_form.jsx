@@ -47,7 +47,7 @@ class VShieldConfigForm extends Component {
                                                 icon={<BookIcon />}
                                             />
                                         </Typography>
-                                        <Typography>Default configuration for audit logs storage to Privacera.</Typography>
+                                        <Typography>Default configuration for audit logs storage to PAIG.</Typography>
                                     </Grid>
                                 </Grid>
                                 <Typography className="m-t-md m-b-md" variant="body1">Why application configuration:</Typography>
