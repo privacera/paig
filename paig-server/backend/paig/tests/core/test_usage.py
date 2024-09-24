@@ -1,7 +1,7 @@
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, Mock
 
 from core.middlewares.usage import CustomExporter, register_usage_events
 from core.factory.metrics_collector import get_metric_client
@@ -27,7 +27,7 @@ def mock_get_field_counts():
 
 @pytest.fixture
 def mock_httpx_post():
-    with patch('core.factory.metrics_collector.MetricsClient.capture', new_callable=AsyncMock) as mock:
+    with patch('core.factory.posthog.PostHogClient.capture', new_callable=Mock) as mock:
         yield mock
 
 @pytest.fixture

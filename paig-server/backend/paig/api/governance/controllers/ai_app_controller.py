@@ -10,9 +10,8 @@ from api.governance.services.ai_app_config_service import AIAppConfigService
 from api.governance.services.ai_app_policy_service import AIAppPolicyService
 from api.governance.services.ai_app_service import AIAppService
 from core.utils import format_to_root_path, SingletonDepends
-from core.middlewares.usage import capture_event_on_action
+from core.middlewares.usage import background_capture_event
 from core.factory.events import CreateAIApplicationEvent, UpdateAIApplicationEvent, DeleteAIApplicationEvent
-import asyncio
 
 
 class AIAppController:
@@ -85,7 +84,7 @@ class AIAppController:
         for policy in self.ai_app_default_policies:
             policy_create_view = AIApplicationPolicyView(**policy.model_dump())
             await self.ai_app_policy_service.create_ai_application_policy(created_app.id, policy_create_view)
-        asyncio.create_task(capture_event_on_action(event=CreateAIApplicationEvent()))
+        await background_capture_event(event=CreateAIApplicationEvent())
         return created_app
 
     async def get_ai_application_by_id(self, id: int) -> AIApplicationView:
@@ -113,7 +112,7 @@ class AIAppController:
             AIApplicationView: The updated AI application view object.
         """
         updated_app = await self.ai_app_service.update_ai_application(id, request)
-        asyncio.create_task(capture_event_on_action(event=UpdateAIApplicationEvent()))
+        await background_capture_event(event=UpdateAIApplicationEvent())
         return updated_app
 
     @Transactional(propagation=Propagation.REQUIRED)
@@ -125,4 +124,4 @@ class AIAppController:
             id (int): The ID of the AI application to delete.
         """
         await self.ai_app_service.delete_ai_application(id)
-        asyncio.create_task(capture_event_on_action(event=DeleteAIApplicationEvent()))
+        await background_capture_event(event=DeleteAIApplicationEvent())

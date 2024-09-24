@@ -15,7 +15,7 @@ class ProductTelemetryEvent:
                 self.properties[key] = value
 
 
-class ClientSchedulerEvent(ProductTelemetryEvent):
+class ScheduledEvent(ProductTelemetryEvent):
     def __init__(
             self,
             data: dict

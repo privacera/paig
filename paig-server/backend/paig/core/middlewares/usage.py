@@ -10,7 +10,7 @@ from core.db_session.standalone_session import get_field_counts, get_counts_grou
 from core.factory.metrics_collector import MetricsClient, get_metric_client
 from contextlib import asynccontextmanager
 from api.shield.services.application_manager_service import ApplicationManager
-from core.factory.events import ClientSchedulerEvent
+from core.factory.events import ScheduledEvent
 from core.factory.posthog import get_post_hog_client
 
 # set up logging
@@ -43,7 +43,7 @@ class CustomExporter:
         self.posthog_client = get_post_hog_client()
 
     async def export(self):
-        event = ClientSchedulerEvent(data=self.data)
+        event = ScheduledEvent(data=self.data)
         return self.posthog_client.capture(event=event)
 
     async def collect(self):
@@ -102,13 +102,20 @@ async def register_usage_events(application: FastAPI):
     await shutdown_usage_collector()  # called on shutdown
 
 
-async def capture_event_on_action(event):
-    posthog_client = get_post_hog_client()
+def capture_event_on_action(event):
     return posthog_client.capture(event=event)
+
+
+async def background_capture_event(event):
+    asyncio.create_task(asyncio.to_thread(capture_event_on_action, event))
+
 
 
 # Create an instance of the exporter
 exporter = CustomExporter()
+
+# Create an instance of the posthog client
+posthog_client = get_post_hog_client()
 
 
 async def collect_usage():

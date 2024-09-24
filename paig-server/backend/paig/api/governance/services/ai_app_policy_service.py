@@ -10,9 +10,8 @@ from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView, AI
 from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
 from api.governance.database.db_operations.ai_app_policy_repository import AIAppPolicyRepository
 from api.governance.database.db_operations.ai_app_repository import AIAppRepository
-from core.middlewares.usage import capture_event_on_action
+from core.middlewares.usage import background_capture_event
 from core.factory.events import DeleteAIApplicationPolicyEvent
-import asyncio
 
 
 class AIAppPolicyRequestValidator:
@@ -354,7 +353,7 @@ class AIAppPolicyService(BaseController[AIApplicationPolicyModel, AIApplicationP
         # get the policy by id and application id to check if it exists
         ai_app_policy = await self.get_policy_by_id_and_application_id(app_id, id)
         await self.delete_record(id)
-        asyncio.create_task(capture_event_on_action(event=DeleteAIApplicationPolicyEvent(tags=ai_app_policy.tags, prompt=ai_app_policy.prompt.value, reply=ai_app_policy.reply.value)))
+        await background_capture_event(event=DeleteAIApplicationPolicyEvent(tags=ai_app_policy.tags, prompt=ai_app_policy.prompt.value, reply=ai_app_policy.reply.value))
 
     async def list_ai_application_authorization_policies(self, app_id: int, traits: List[str], user: str, groups: List[str]) -> List[AIApplicationPolicyView]:
         """

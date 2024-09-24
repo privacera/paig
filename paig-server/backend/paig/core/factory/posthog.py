@@ -29,7 +29,7 @@ class PostHogClient:
                     event.name,
                     event.properties
                 )
-        except Exception as e:
+        except:
             pass
 
 
