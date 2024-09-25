@@ -1,11 +1,13 @@
 import pytest
 from datetime import datetime
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzRequest, VectorDBAuthzResponse
-from api.authz.authorizer.utils.authorizer_response_utils import create_authorize_response, \
+
+from paig_authorizer_core.constants import VectorDBType
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
+from paig_authorizer_core.utils.authorizer_response_utils import create_authorize_response, \
     create_authorize_vector_db_response
-from api.governance.api_schemas.vector_db import VectorDBView
-from api.governance.api_schemas.vector_db_policy import VectorDBPolicyView
-from api.governance.database.db_models.vector_db_model import VectorDBType
+from paig_authorizer_core.models.data_models import VectorDBData
+from paig_authorizer_core.models.data_models import VectorDBPolicyData
 
 
 @pytest.fixture
@@ -30,7 +32,7 @@ def vector_db_authz_request():
 
 @pytest.fixture
 def vector_db_view():
-    return VectorDBView(
+    return VectorDBData(
         id=1,
         name="test_vector_db",
         type=VectorDBType.MILVUS,
@@ -41,7 +43,7 @@ def vector_db_view():
 
 @pytest.fixture
 def vector_db_policy_view():
-    return VectorDBPolicyView(
+    return VectorDBPolicyData(
         id=1,
         policy_name="policy1",
         rules=[]
@@ -110,7 +112,7 @@ def test_create_authorize_vector_db_response(vector_db_authz_request, vector_db_
     assert response.vector_db_policy_info == [{"id": vector_db_policy_view.id, "version": ""}]
     assert response.vector_db_id == vector_db_view.id
     assert response.vector_db_name == vector_db_view.name
-    assert response.vector_db_type == vector_db_view.type.name
+    assert response.vector_db_type == vector_db_view.type
     assert response.user_enforcement == vector_db_view.user_enforcement
     assert response.group_enforcement == vector_db_view.group_enforcement
     assert response.filter_expression == filter_expression
@@ -129,7 +131,7 @@ def test_create_authorize_vector_db_response_no_policies(vector_db_authz_request
     assert response.vector_db_policy_info == []
     assert response.vector_db_id == vector_db_view.id
     assert response.vector_db_name == vector_db_view.name
-    assert response.vector_db_type == vector_db_view.type.name
+    assert response.vector_db_type == vector_db_view.type
     assert response.user_enforcement == vector_db_view.user_enforcement
     assert response.group_enforcement == vector_db_view.group_enforcement
     assert response.filter_expression == filter_expression

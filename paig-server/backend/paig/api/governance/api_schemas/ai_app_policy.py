@@ -39,6 +39,26 @@ class AIApplicationPolicyView(BaseView):
 
     model_config = BaseView.model_config
 
+    def to_ai_application_policy_data(self):
+        from paig_authorizer_core.models.data_models import AIApplicationPolicyData
+
+        return AIApplicationPolicyData(
+            id=self.id,
+            status=self.status,
+            create_time=self.create_time,
+            update_time=self.update_time,
+            name=self.name,
+            description=self.description,
+            users=self.users,
+            groups=self.groups,
+            roles=self.roles,
+            tags=self.tags,
+            prompt=self.prompt.name,
+            reply=self.reply.name,
+            enriched_prompt=self.enriched_prompt.name,
+            application_id=self.application_id
+        )
+
 
 class AIApplicationPolicyFilter(BaseAPIFilter):
     """

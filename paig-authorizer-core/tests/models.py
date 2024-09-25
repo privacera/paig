@@ -2,8 +2,8 @@ import pytest
 from pydantic import ValidationError
 from datetime import datetime
 
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzRequest, VectorDBAuthzResponse
-from core.utils import current_utc_time
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 
 
 def test_authz_request_valid():
@@ -19,7 +19,7 @@ def test_authz_request_valid():
         requestType="prompt",
         traits=["trait1", "trait2"],
         context={"key1": "value1"},
-        requestDateTime=current_utc_time()
+        requestDateTime=datetime.now()
     )
     assert request.conversation_id == "conv123"
     assert request.request_id == "req123"
@@ -66,7 +66,7 @@ def test_authz_response_valid():
         authorized=True,
         enforce=True,
         requestId="req123",
-        requestDateTime=current_utc_time(),
+        requestDateTime=datetime.now(),
         userId="user123",
         applicationName="appName",
         maskedTraits={"trait1": "masked1"},

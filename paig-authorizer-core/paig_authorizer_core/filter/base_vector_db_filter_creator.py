@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 
-from api.authz.authorizer.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
-from api.governance.api_schemas.vector_db import VectorDBView
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
+from paig_authorizer_core.models.data_models import VectorDBData
 
 
 class BaseVectorDBFilterCreator(ABC):
@@ -11,7 +11,7 @@ class BaseVectorDBFilterCreator(ABC):
     """
 
     @abstractmethod
-    def create_filter_expression(self, vector_db: VectorDBView, user: str, groups: List[str], filters: Dict[str, List[MetadataFilterCriteria]]) -> str | dict:
+    def create_filter_expression(self, vector_db: VectorDBData, user: str, groups: List[str], filters: Dict[str, List[MetadataFilterCriteria]]) -> str | dict:
         """
         Create a filter expression for a vector DB.
 

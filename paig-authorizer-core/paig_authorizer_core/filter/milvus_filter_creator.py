@@ -1,9 +1,9 @@
 import json
 from typing import List, Dict
 
-from api.authz.authorizer.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
-from api.authz.authorizer.filter.base_vector_db_filter_creator import BaseVectorDBFilterCreator
-from api.governance.api_schemas.vector_db import VectorDBView
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
+from paig_authorizer_core.filter.base_vector_db_filter_creator import BaseVectorDBFilterCreator
+from paig_authorizer_core.models.data_models import VectorDBData
 
 
 class MilvusFilterCreator(BaseVectorDBFilterCreator):
@@ -11,7 +11,7 @@ class MilvusFilterCreator(BaseVectorDBFilterCreator):
     Creates filter expressions for Milvus based on policies, user, and group information.
     """
 
-    def create_filter_expression(self, vector_db: VectorDBView, user: str, groups: List[str],
+    def create_filter_expression(self, vector_db: VectorDBData, user: str, groups: List[str],
                                  filters: Dict[str, List[MetadataFilterCriteria]]) -> str | dict | None:
         """
         Create a filter expression for a vector DB.
@@ -44,7 +44,7 @@ class MilvusFilterCreator(BaseVectorDBFilterCreator):
             return ""
 
     # noinspection PyMethodMayBeStatic
-    def get_user_group_enforcement_expression(self, vector_db: VectorDBView, user: str, groups: List[str]) \
+    def get_user_group_enforcement_expression(self, vector_db: VectorDBData, user: str, groups: List[str]) \
             -> str | None:
         """
         Get the user and group enforcement expression for a vector DB.

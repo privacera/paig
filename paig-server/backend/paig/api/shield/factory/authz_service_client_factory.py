@@ -1,5 +1,3 @@
-from api.authz.authorizer.paig_authorizer import PAIGAuthorizer
-from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
 from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
 from api.shield.client.local_authz_service_client import LocalAuthzClient
 from api.shield.utils import config_utils

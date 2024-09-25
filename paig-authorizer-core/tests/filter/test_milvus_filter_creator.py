@@ -1,7 +1,7 @@
 import pytest
-from api.authz.authorizer.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
-from api.governance.api_schemas.vector_db import VectorDBView
-from api.authz.authorizer.filter.milvus_filter_creator import MilvusFilterCreator
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
+from paig_authorizer_core.models.data_models import VectorDBData
+from paig_authorizer_core.filter.milvus_filter_creator import MilvusFilterCreator
 
 
 @pytest.fixture
@@ -10,7 +10,7 @@ def milvus_filter_creator():
 
 
 def create_vector_db(user_enforcement, group_enforcement):
-    return VectorDBView(
+    return VectorDBData(
         name="vector_db_name",
         description="vector_db_description",
         type="MILVUS",

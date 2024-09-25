@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzRequest, VectorDBAuthzResponse
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
 from api.authz.controllers.paig_authorizer_controller import PAIGAuthorizerController
 from datetime import datetime

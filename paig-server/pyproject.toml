@@ -51,7 +51,8 @@ dependencies = [
     "fasteners",
     "APScheduler",
     "pydantic[email]",
-    "posthog"
+    "posthog",
+    "paig-authorizer-core==0.0.1"
 ]
 
 [tool.hatch.metadata]

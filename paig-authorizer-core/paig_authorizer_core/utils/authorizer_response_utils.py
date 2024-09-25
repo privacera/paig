@@ -1,8 +1,9 @@
 from typing import Dict, List, Optional
 
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzRequest, VectorDBAuthzResponse
-from api.governance.api_schemas.vector_db import VectorDBView
-from api.governance.api_schemas.vector_db_policy import VectorDBPolicyView
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
+from paig_authorizer_core.models.data_models import VectorDBData
+from paig_authorizer_core.models.data_models import VectorDBPolicyData
 
 
 def create_authorize_response(request: AuthzRequest, application_name: str, authorized: bool,
@@ -40,8 +41,8 @@ def create_authorize_response(request: AuthzRequest, application_name: str, auth
     return response
 
 
-def create_authorize_vector_db_response(request: VectorDBAuthzRequest, vector_db: Optional[VectorDBView],
-                                        policies: List[VectorDBPolicyView], filter_expression: str, reason: str = None)\
+def create_authorize_vector_db_response(request: VectorDBAuthzRequest, vector_db: Optional[VectorDBData],
+                                        policies: List[VectorDBPolicyData], filter_expression: str, reason: str = None)\
         -> VectorDBAuthzResponse:
     response = VectorDBAuthzResponse()
 
@@ -51,12 +52,11 @@ def create_authorize_vector_db_response(request: VectorDBAuthzRequest, vector_db
     if vector_db:
         response.vector_db_id = vector_db.id
         response.vector_db_name = vector_db.name
-        response.vector_db_type = vector_db.type.name
+        response.vector_db_type = vector_db.type.name if hasattr(vector_db.type, "name") else vector_db.type
         response.user_enforcement = vector_db.user_enforcement
         response.group_enforcement = vector_db.group_enforcement
 
-    if filter_expression:
-        response.filter_expression = filter_expression
+    response.filter_expression = filter_expression
 
     response.reason = reason
 

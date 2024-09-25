@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict
-from api.governance.api_schemas.vector_db_policy import VectorDBPolicyView
+from paig_authorizer_core.models.data_models import VectorDBPolicyData
 
 
 class MetadataFilterCriteria:
@@ -61,7 +61,7 @@ class BaseMetadataFilterCriteriaCreator:
             "ne": "eq",
         }.get(operator, "ne")
 
-    def create_metadata_filters(self, policies: List[VectorDBPolicyView], request_user: str,
+    def create_metadata_filters(self, policies: List[VectorDBPolicyData], request_user: str,
                                 request_groups: List[str]) -> Dict[str, List[MetadataFilterCriteria]]:
         """
         Creates a list of MetadataFilterCriteria based on the given policies and user information.
@@ -77,14 +77,17 @@ class BaseMetadataFilterCriteriaCreator:
         metadata_wise_filters: Dict[str, List[MetadataFilterCriteria]] = {}
         filters: List[MetadataFilterCriteria] = []
 
-        for policy in policies:
+        sorted_policies = sorted(policies, key=lambda x: (x.metadata_key.lower(), x.metadata_value.lower()))
+
+        for policy in sorted_policies:
             allowed_filter = self.get_metadata_filter(policy, True, request_user, request_groups)
             if allowed_filter:
                 filters.append(allowed_filter)
 
-            denied_filter = self.get_metadata_filter(policy, False, request_user, request_groups)
-            if denied_filter:
-                filters.append(denied_filter)
+            if not allowed_filter:
+                denied_filter = self.get_metadata_filter(policy, False, request_user, request_groups)
+                if denied_filter:
+                    filters.append(denied_filter)
 
         for filter_item in filters:
             if metadata_wise_filters.get(filter_item.metadata_key):
@@ -94,7 +97,7 @@ class BaseMetadataFilterCriteriaCreator:
 
         return metadata_wise_filters
 
-    def get_metadata_filter(self, policy: VectorDBPolicyView, is_allowed: bool, request_user: str,
+    def get_metadata_filter(self, policy: VectorDBPolicyData, is_allowed: bool, request_user: str,
                             request_groups: List[str]) -> Optional[MetadataFilterCriteria]:
         """
         Gets a MetadataFilterCriteria based on a policy, user information, and whether the filter is for allowed or

@@ -1,19 +1,19 @@
 from typing import Set, Dict, List, Optional
 
-from api.authz.authorizer.paig_authorizer import AuthzRequest
-from api.governance.api_schemas.ai_app_config import AIApplicationConfigView
-from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
-from api.governance.database.db_models.ai_app_policy_model import PermissionType
+from paig_authorizer_core.constants import PermissionType
+from paig_authorizer_core.models.request_models import AuthzRequest
+from paig_authorizer_core.models.data_models import AIApplicationConfigData
+from paig_authorizer_core.models.data_models import AIApplicationPolicyData
 
 
-def check_explicit_application_access(request: AuthzRequest, app_config: AIApplicationConfigView,
+def check_explicit_application_access(request: AuthzRequest, app_config: AIApplicationConfigData,
                                       user_groups: List[str], accessType: str) -> bool:
     """
     Checks if the request is explicitly allowed or denied based on application configuration.
 
     Args:
         request (AuthzRequest): The authorization request object.
-        app_config (AIApplicationConfigView): The application configuration object.
+        app_config (AIApplicationConfigData): The application configuration object.
         user_groups (List[str]): The user groups associated with the request.
         accessType (str): The access type to check for (allowed or denied).
 
@@ -29,17 +29,17 @@ def check_explicit_application_access(request: AuthzRequest, app_config: AIAppli
     return False
 
 
-def find_first_deny_policy(application_policies: List[AIApplicationPolicyView], request: AuthzRequest) -> \
-        Optional[AIApplicationPolicyView]:
+def find_first_deny_policy(application_policies: List[AIApplicationPolicyData], request: AuthzRequest) -> \
+        Optional[AIApplicationPolicyData]:
     """
     Finds the first policy that denies the request type in the list of application policies.
 
     Args:
-        application_policies (List[AIApplicationPolicyView]): The list of application policies.
+        application_policies (List[AIApplicationPolicyData]): The list of application policies.
         request (AuthzRequest): The authorization request object.
 
     Returns:
-        Optional[AIApplicationPolicyView]: The first policy that denies the request type,
+        Optional[AIApplicationPolicyData]: The first policy that denies the request type,
                                            or None if no such policy is found.
     """
     return next(
@@ -47,14 +47,14 @@ def find_first_deny_policy(application_policies: List[AIApplicationPolicyView], 
         None)
 
 
-def get_authorization_and_masked_traits(application_policies: List[AIApplicationPolicyView],
+def get_authorization_and_masked_traits(application_policies: List[AIApplicationPolicyData],
                                         request: AuthzRequest) \
         -> tuple[bool, Dict[str, str], Set[int]]:
     """
     Authorizes a request based on application policies and redacts traits if necessary.
 
     Args:
-        application_policies (List[AIApplicationPolicyView]): The list of application policies.
+        application_policies (List[AIApplicationPolicyData]): The list of application policies.
         request (AuthzRequest): The authorization request object.
 
     Returns:

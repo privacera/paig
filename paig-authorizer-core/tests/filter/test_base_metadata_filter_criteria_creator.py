@@ -1,9 +1,9 @@
 import pytest
 from unittest.mock import Mock
 
-from api.authz.authorizer.filter.base_metadata_filter_criteria_creator import BaseMetadataFilterCriteriaCreator, \
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import BaseMetadataFilterCriteriaCreator, \
     MetadataFilterCriteria
-from api.governance.api_schemas.vector_db_policy import VectorDBPolicyView
+from paig_authorizer_core.models.data_models import VectorDBPolicyData
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def test_prepare_metadata_value(metadata_filter_creator):
 
 
 def test_get_metadata_filter(metadata_filter_creator):
-    policy = Mock(spec=VectorDBPolicyView)
+    policy = Mock(spec=VectorDBPolicyData)
     policy.allowed_users = ["user1"]
     policy.denied_users = []
     policy.allowed_groups = ["group1"]
@@ -64,7 +64,7 @@ def test_get_metadata_filter(metadata_filter_creator):
 
 
 def test_create_metadata_filters(metadata_filter_creator):
-    policy = Mock(spec=VectorDBPolicyView)
+    policy = Mock(spec=VectorDBPolicyData)
     policy.allowed_users = ["user1"]
     policy.denied_users = []
     policy.allowed_groups = ["group1"]
@@ -80,7 +80,7 @@ def test_create_metadata_filters(metadata_filter_creator):
 
 
 def test_create_metadata_filters_with_multiple_policies(metadata_filter_creator):
-    policy1 = Mock(spec=VectorDBPolicyView)
+    policy1 = Mock(spec=VectorDBPolicyData)
     policy1.allowed_users = ["user1"]
     policy1.denied_users = []
     policy1.allowed_groups = ["group1"]
@@ -89,7 +89,7 @@ def test_create_metadata_filters_with_multiple_policies(metadata_filter_creator)
     policy1.metadata_key = "key1"
     policy1.metadata_value = "value1"
 
-    policy2 = Mock(spec=VectorDBPolicyView)
+    policy2 = Mock(spec=VectorDBPolicyData)
     policy2.allowed_users = []
     policy2.denied_users = ["user2"]
     policy2.allowed_groups = []

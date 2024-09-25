@@ -1,10 +1,11 @@
 import pytest
-from api.authz.authorizer.paig_authorizer import AuthzRequest
-from api.authz.authorizer.utils.authorizer_utils import check_explicit_application_access, find_first_deny_policy, \
+
+from paig_authorizer_core.constants import PermissionType
+from paig_authorizer_core.models.request_models import AuthzRequest
+from paig_authorizer_core.utils.authorizer_utils import check_explicit_application_access, find_first_deny_policy, \
     get_authorization_and_masked_traits
-from api.governance.api_schemas.ai_app_config import AIApplicationConfigView
-from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
-from api.governance.database.db_models.ai_app_policy_model import PermissionType
+from paig_authorizer_core.models.data_models import AIApplicationConfigData
+from paig_authorizer_core.models.data_models import AIApplicationPolicyData
 
 
 @pytest.fixture
@@ -21,7 +22,7 @@ def authz_request():
 
 @pytest.fixture
 def app_config():
-    return AIApplicationConfigView(
+    return AIApplicationConfigData(
         allowed_users={"test_user"},
         allowed_groups={"group1"},
         denied_users={"denied_user"},
@@ -32,7 +33,7 @@ def app_config():
 @pytest.fixture
 def app_policies():
     return [
-        AIApplicationPolicyView(
+        AIApplicationPolicyData(
             id=1,
             tags=["trait1"],
             description="Policy 1",
@@ -43,7 +44,7 @@ def app_policies():
             reply=PermissionType.ALLOW,
             enriched_prompt=PermissionType.ALLOW,
         ),
-        AIApplicationPolicyView(
+        AIApplicationPolicyData(
             id=2,
             read=PermissionType.DENY,
             tags=["trait2"],
@@ -55,7 +56,7 @@ def app_policies():
             reply=PermissionType.ALLOW,
             enriched_prompt=PermissionType.ALLOW,
         ),
-        AIApplicationPolicyView(
+        AIApplicationPolicyData(
             id=3,
             read=PermissionType.REDACT,
             tags=["trait2"],
@@ -138,7 +139,7 @@ def test_find_first_deny_policy(authz_request, app_policies):
 
 def test_find_first_deny_policy_none(authz_request):
     app_policies = [
-        AIApplicationPolicyView(
+        AIApplicationPolicyData(
             id=1,
             tags=["trait1"],
             description="Policy 1",
@@ -168,7 +169,7 @@ def test_get_authorization_and_masked_traits(authz_request, app_policies):
 
 def test_get_authorization_and_masked_traits_no_redactions(authz_request):
     app_policies = [
-        AIApplicationPolicyView(
+        AIApplicationPolicyData(
             id=1,
             tags=["trait1"],
             description="Policy 1",

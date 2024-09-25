@@ -1,6 +1,6 @@
 import logging
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzResponse, \
-    VectorDBAuthzRequest
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
 from api.shield.interfaces.authz_service_interface import IAuthzClient
 from api.shield.model.authz_service_request import AuthzServiceRequest

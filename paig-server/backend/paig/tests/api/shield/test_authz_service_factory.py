@@ -1,5 +1,5 @@
 import pytest
-from api.authz.authorizer.paig_authorizer import PAIGAuthorizer
+from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
 from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
 from api.shield.client.local_authz_service_client import LocalAuthzClient
 from api.shield.utils import config_utils
@@ -11,7 +11,7 @@ class TestAuthzServiceClientFactory:
     @pytest.fixture(autouse=True)
     def setup_method(self, mocker):
         # Mock the PAIGAuthorizerService dependency
-        self.mock_paig_authorizer = mocker.Mock(spec=PAIGAuthorizer)
+        self.mock_paig_authorizer = mocker.Mock(spec=AsyncPAIGAuthorizer)
         # Create an instance of the factory with the mocked PAIGAuthorizerService
         self.factory = AuthzServiceClientFactory()
 

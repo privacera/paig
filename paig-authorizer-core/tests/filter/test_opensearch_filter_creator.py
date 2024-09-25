@@ -2,9 +2,9 @@ import json
 
 import pytest
 from unittest.mock import Mock
-from api.authz.authorizer.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
-from api.governance.api_schemas.vector_db import VectorDBView
-from api.authz.authorizer.filter.opensearch_filter_creator import OpenSearchFilterCreator
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import MetadataFilterCriteria
+from paig_authorizer_core.models.data_models import VectorDBData
+from paig_authorizer_core.filter.opensearch_filter_creator import OpenSearchFilterCreator
 
 
 @pytest.fixture
@@ -13,7 +13,7 @@ def opensearch_filter_creator():
 
 
 def test_create_filter_expression_no_filters(opensearch_filter_creator):
-    vector_db = Mock(spec=VectorDBView)
+    vector_db = Mock(spec=VectorDBData)
     vector_db.user_enforcement = 0
     vector_db.group_enforcement = 0
 
@@ -22,11 +22,11 @@ def test_create_filter_expression_no_filters(opensearch_filter_creator):
     filters = {}
 
     result = opensearch_filter_creator.create_filter_expression(vector_db, user, groups, filters)
-    assert result is None
+    assert result == ""
 
 
 def test_create_filter_expression_with_filters(opensearch_filter_creator):
-    vector_db = Mock(spec=VectorDBView)
+    vector_db = Mock(spec=VectorDBData)
     vector_db.user_enforcement = 0
     vector_db.group_enforcement = 0
 
@@ -84,7 +84,7 @@ def test_create_filter_expression_with_filters(opensearch_filter_creator):
 
 
 def test_get_user_group_enforcement_expression_user_only(opensearch_filter_creator):
-    vector_db = Mock(spec=VectorDBView)
+    vector_db = Mock(spec=VectorDBData)
     vector_db.user_enforcement = 1
     vector_db.group_enforcement = 0
     user = "testuser"
@@ -96,7 +96,7 @@ def test_get_user_group_enforcement_expression_user_only(opensearch_filter_creat
 
 
 def test_get_user_group_enforcement_expression_group_only(opensearch_filter_creator):
-    vector_db = Mock(spec=VectorDBView)
+    vector_db = Mock(spec=VectorDBData)
     vector_db.user_enforcement = 0
     vector_db.group_enforcement = 1
     user = "testuser"

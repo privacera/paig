@@ -3,30 +3,32 @@ import pytest_asyncio
 from unittest.mock import AsyncMock
 from typing import List
 
-from api.authz.authorizer.base_paig_authorizer import BasePAIGAuthorizer
-from api.authz.authorizer.paig_authorizer import AuthzRequest, VectorDBAuthzRequest
-from api.governance.api_schemas.ai_app import AIApplicationView
-from api.governance.api_schemas.ai_app_config import AIApplicationConfigView
-from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
-from api.governance.api_schemas.vector_db import VectorDBView
-from api.governance.api_schemas.vector_db_policy import VectorDBPolicyView
-from api.governance.database.db_models.ai_app_policy_model import PermissionType
-from api.governance.database.db_models.vector_db_model import VectorDBType
+from paig_authorizer_core.async_base_paig_authorizer import AsyncBasePAIGAuthorizer
+from paig_authorizer_core.constants import PermissionType, VectorDBType
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.data_models import AIApplicationData
+from paig_authorizer_core.models.data_models import AIApplicationConfigData
+from paig_authorizer_core.models.data_models import AIApplicationPolicyData
+from paig_authorizer_core.models.data_models import VectorDBData
+from paig_authorizer_core.models.data_models import VectorDBPolicyData
 
 
-class MockPAIGAuthorizer(BasePAIGAuthorizer):
+class AsyncMockPAIGAuthorizer(AsyncBasePAIGAuthorizer):
+    async def get_user_id_by_email(self, email: str) -> str | None:
+        return "test_user"
+
     async def get_user_groups(self, user: str) -> List[str]:
         return ["group1"]
 
-    async def get_application_details(self, application_key: str, **kwargs) -> AIApplicationView:
-        return AIApplicationView(id=1, name="TestApp", status=1, vector_dbs=["TestDB"])
+    async def get_application_details(self, application_key: str, **kwargs) -> AIApplicationData:
+        return AIApplicationData(id=1, name="TestApp", status=1, vector_dbs=["TestDB"], vector_db_id=1, vector_db_name="TestDB")
 
-    async def get_application_config(self, application_key: str, **kwargs) -> AIApplicationConfigView:
-        return AIApplicationConfigView(id=1, allowed_users=["test_user"], allowed_groups=["group1"])
+    async def get_application_config(self, application_key: str, **kwargs) -> AIApplicationConfigData:
+        return AIApplicationConfigData(id=1, allowed_users=["test_user"], allowed_groups=["group1"])
 
     async def get_application_policies(self, application_key: str, traits: List[str], user: str, groups: List[str],
-                                       request_type: str, **kwargs) -> List[AIApplicationPolicyView]:
-        trait1_policy = AIApplicationPolicyView(
+                                       request_type: str, **kwargs) -> List[AIApplicationPolicyData]:
+        trait1_policy = AIApplicationPolicyData(
             id=1,
             tags=["trait1"],
             description="Policy 1",
@@ -38,7 +40,7 @@ class MockPAIGAuthorizer(BasePAIGAuthorizer):
             enriched_prompt=PermissionType.ALLOW,
         )
 
-        trait2_policy = AIApplicationPolicyView(
+        trait2_policy = AIApplicationPolicyData(
             id=2,
             read=PermissionType.DENY,
             tags=["tag2"],
@@ -59,12 +61,12 @@ class MockPAIGAuthorizer(BasePAIGAuthorizer):
 
         return policies
 
-    async def get_vector_db_details(self, vector_db_name: str, **kwargs) -> VectorDBView:
-        return VectorDBView(id=1, name="TestDB", type=VectorDBType.MILVUS, status=1)
+    async def get_vector_db_details(self, vector_db_id: int, **kwargs) -> VectorDBData:
+        return VectorDBData(id=1, name="TestDB", type=VectorDBType.MILVUS, status=1)
 
     async def get_vector_db_policies(self, vector_db_id: int, user: str, groups: List[str], **kwargs) \
-            -> List[VectorDBPolicyView]:
-        return [VectorDBPolicyView(
+            -> List[VectorDBPolicyData]:
+        return [VectorDBPolicyData(
             id=1,
             name="TestPolicy",
             description="Test policy",
@@ -105,12 +107,12 @@ def vector_db_authz_request():
 
 @pytest_asyncio.fixture
 async def authorizer():
-    authorizer = MockPAIGAuthorizer()
+    authorizer = AsyncMockPAIGAuthorizer()
     return authorizer
 
 
 @pytest.mark.asyncio
-async def test_authorize_success(authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_success(authz_request, authorizer: AsyncBasePAIGAuthorizer):
     authz_request.traits = ["trait1"]
     response = await authorizer.authorize(authz_request)
 
@@ -120,9 +122,9 @@ async def test_authorize_success(authz_request, authorizer: BasePAIGAuthorizer):
 
 
 @pytest.mark.asyncio
-async def test_authorize_app_disabled(authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_app_disabled(authz_request, authorizer: AsyncBasePAIGAuthorizer):
     authorizer.get_application_details = AsyncMock(
-        return_value=AIApplicationView(id=1, name="TestApp", status=0, vector_dbs=["TestDB"]))
+        return_value=AIApplicationData(id=1, name="TestApp", status=0, vector_dbs=["TestDB"]))
     response = await authorizer.authorize(authz_request)
 
     assert response.authorized is False
@@ -131,7 +133,7 @@ async def test_authorize_app_disabled(authz_request, authorizer: BasePAIGAuthori
 
 
 @pytest.mark.asyncio
-async def test_authorize_vector_db_success(vector_db_authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_vector_db_success(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
     response = await authorizer.authorize_vector_db(vector_db_authz_request)
 
     assert response.vector_db_id == 1
@@ -140,9 +142,9 @@ async def test_authorize_vector_db_success(vector_db_authz_request, authorizer: 
 
 
 @pytest.mark.asyncio
-async def test_authorize_vector_db_disabled(vector_db_authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_vector_db_disabled(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
     authorizer.get_vector_db_details = AsyncMock(
-        return_value=VectorDBView(id=1, name="TestDB", type=VectorDBType.MILVUS, status=0))
+        return_value=VectorDBData(id=1, name="TestDB", type=VectorDBType.MILVUS, status=0))
     response = await authorizer.authorize_vector_db(vector_db_authz_request)
 
     assert response.vector_db_id == 1
@@ -151,7 +153,7 @@ async def test_authorize_vector_db_disabled(vector_db_authz_request, authorizer:
 
 
 @pytest.mark.asyncio
-async def test_authorize_no_matching_policies(authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_no_matching_policies(authz_request, authorizer: AsyncBasePAIGAuthorizer):
     authorizer.get_application_policies = AsyncMock(return_value=[])
     response = await authorizer.authorize(authz_request)
 
@@ -160,7 +162,7 @@ async def test_authorize_no_matching_policies(authz_request, authorizer: BasePAI
 
 
 @pytest.mark.asyncio
-async def test_authorize_explicit_deny(authz_request, authorizer: BasePAIGAuthorizer):
+async def test_authorize_explicit_deny(authz_request, authorizer: AsyncBasePAIGAuthorizer):
     authz_request.traits = ["trait2"]
     response = await authorizer.authorize(authz_request)
 
