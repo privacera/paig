@@ -79,14 +79,22 @@ The data in the collection contains the following fields:
 ### Create the users
 In this tutorial, we will be using **rebecca** and **aaron** as users. Please create these users in the PAIG portal following the steps below.
 
+<a href="images/create_user.gif">![Create User Image](images/create_user.gif){ loading=lazy }</a>
+
 - Log in to the PAIG portal and Navigate to **Account > User Management** and click on the **ADD USER** button in the top right corner. 
 - Fill in the required details, keep the usernames in lowercase, select the role as **USER**.
 - Click on **SAVE**.
 
 ### Create Vector DB
+
+<a href="images/create_milvus_vector_db.gif">![Create Vector DB Image](images/create_milvus_vector_db.gif){ loading=lazy }</a>
+
 Log in to the PAIG portal and navigate to **Application > VectorDB**. Click the **CREATE VECTOR DB** button in the top right corner. Select **Milvus** as the type and complete the required details to create a new VectorDB.
 
 ### Create AI Application
+
+<a href="images/create_milvus_ai_app.gif">![Create AI Application Image](images/create_milvus_ai_app.gif){ loading=lazy }</a>
+
 Navigate to **Application > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
 select the VectorDB created in the previous step to link the application with the VectorDB.
 
@@ -184,6 +192,9 @@ In this example we will be setting our user as `aaron`. Aaron is sales analyst w
 The metadata column is in JSON format and contains the country information.
 
 #### Create Metadata Fields  
+
+<a href="images/create_metadata.gif">![Create Metadata Image](images/create_metadata.gif){ loading=lazy }</a>
+
 We need to create the necessary metadata fields for filtering. In the PAIG portal, go to **Account > Vector DB Metadata**. 
 Click the plus icon to add the metadata fields you want to use for data filtering. 
 
@@ -197,11 +208,17 @@ After creating the metadata fields, select the "**country**" field and click on 
 These fields and values can later be referenced in your policies.
 
 #### Adjust Permissions for the Vector Database
+
+<a href="images/disable_user_retrieval.gif">![Disable User Retrieval Image](images/disable_user_retrieval.gif){ loading=lazy }</a>
+
 - Now, navigate to the Vector Database you created. In the PAIG portal, go to **Application > VectorDB**, select the VectorDB, and navigate to the Permissions tab.
 - First, **disable** the **User/Group Access-Limited Retrieval** toggle, as we are focusing on filtering based on metadata in this use case. 
 While these two features can be used together if needed, we will keep them separate for clarity.
 
 #### Create a New Policy for Metadata Filtering
+
+<a href="images/create_vector_db_policy.gif">![Create Vector DB Policy Image](images/create_vector_db_policy.gif){ loading=lazy }</a>
+
 - Under the RAG Contextual Data Filtering section, click the **ADD DATA FILTERING** button to create a new policy. Select the metadata key as **country** and the value as **US**. In the "Granted Access" dropdown, select the user **aaron**, since we want this filter to be applied to him. For "Denied Access," keep it set to "Others," as we do not need this filter for other users. 
 - Click **SAVE**.
 
