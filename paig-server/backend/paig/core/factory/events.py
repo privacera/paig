@@ -93,24 +93,6 @@ class DeleteAIApplicationPolicyEvent(ProductTelemetryEvent):
         self.name = "delete_ai_app_policy_event"
 
 
-class CreateVectorDBPolicyEvent(ProductTelemetryEvent):
-    def __init__(self, metadata: dict):
-        super().__init__(data={"metadata": metadata})
-        self.name = "create_vector_db_policy_event"
-
-
-class UpdateVectorDBPolicyEvent(ProductTelemetryEvent):
-    def __init__(self, metadata: dict):
-        super().__init__(data={"metadata": metadata})
-        self.name = "update_vector_db_policy_event"
-
-
-class DeleteVectorDBPolicyEvent(ProductTelemetryEvent):
-    def __init__(self, metadata: dict):
-        super().__init__(data={"metadata": metadata})
-        self.name = "delete_vector_db_policy_event"
-
-
 class DownloadAIApplicationConfigEvent(ProductTelemetryEvent):
     def __init__(self):
         super().__init__()
