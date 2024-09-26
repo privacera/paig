@@ -7,6 +7,8 @@ from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView, AI
 from api.governance.services.ai_app_policy_service import AIAppPolicyService
 from api.governance.utils.gov_service_validation_util import GovServiceValidationUtil
 from core.utils import SingletonDepends
+from core.factory.events import CreateAIApplicationPolicyEvent, UpdateAIApplicationPolicyEvent
+from core.middlewares.usage import background_capture_event
 
 
 class AIAppPolicyController:
@@ -74,7 +76,9 @@ class AIAppPolicyController:
         # await self.gov_service_validation_util.validate_tag_exists(request.traits)
         await self.acc_service_validation_util.validate_users_exists(request.users)
         await self.acc_service_validation_util.validate_groups_exists(request.groups)
-        return await self.ai_app_policy_service.create_ai_application_policy(app_id, request)
+        created_ai_app_policy = await self.ai_app_policy_service.create_ai_application_policy(app_id, request)
+        await background_capture_event(event=CreateAIApplicationPolicyEvent(tags=created_ai_app_policy.tags, prompt=created_ai_app_policy.prompt.value, reply=created_ai_app_policy.reply.value))
+        return created_ai_app_policy
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update_ai_application_policy(self, app_id: int, id: int, request: AIApplicationPolicyView) -> AIApplicationPolicyView:
@@ -94,7 +98,9 @@ class AIAppPolicyController:
         # await self.gov_service_validation_util.validate_tag_exists(request.traits)
         await self.acc_service_validation_util.validate_users_exists(request.users)
         await self.acc_service_validation_util.validate_groups_exists(request.groups)
-        return await self.ai_app_policy_service.update_ai_application_policy(app_id, id, request)
+        updated_ai_app_policy = await self.ai_app_policy_service.update_ai_application_policy(app_id, id, request)
+        await background_capture_event(event=UpdateAIApplicationPolicyEvent(tags=updated_ai_app_policy.tags, prompt=updated_ai_app_policy.prompt.value, reply=updated_ai_app_policy.reply.value))
+        return updated_ai_app_policy
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete_ai_application_policy(self, app_id: int, id: int):

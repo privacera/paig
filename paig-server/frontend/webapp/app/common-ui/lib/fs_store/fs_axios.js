@@ -210,7 +210,7 @@ class FSAxios {
   catchError(response={}) {
     let err = null;
     if (response && response.message && response.message.includes('777')) {
-      f.notifyError('Privacera support session has beed expired.');
+      f.notifyError('PAIG support session has beed expired.');
       err = new Error();
       err.message = response.message;
       err.data = response.data;

@@ -84,16 +84,16 @@ class CShieldConfig extends Component {
 
     handleOnSaveClick = async () => {
         f._confirm.show({
-            title: `Attention: Privacera Shield Service Endpoint Update`,
+            title: `Attention: PAIG Shield Service Endpoint Update`,
             children: (
                 <Fragment>
                     <Typography>
-                        You are about to change the Privacera Shield Service Endpoint URL. This update is a significant configuration change for the Self Managed Privacera Shield. Please take note of the following critical steps:
+                        You are about to change the PAIG Shield Service Endpoint URL. This update is a significant configuration change for the Self Managed PAIG Shield. Please take note of the following critical steps:
                     </Typography>
                     <ol>
                         <li>
                             <Typography className="m-t-md">
-                                Download New Configuration File: Post-update, it is mandatory to download the new application configuration files. This is essential for aligning your applications with the updated Privacera Shield Service Endpoint.
+                                Download New Configuration File: Post-update, it is mandatory to download the new application configuration files. This is essential for aligning your applications with the updated PAIG Shield Service Endpoint.
                             </Typography>
                         </li>
                         <li>

@@ -17,7 +17,7 @@ import {Routes} from 'routers/routes';
 import UiState from 'data/ui_state'
 import UISidebarTabsUtil from 'utils/ui_sidebar_tabs_util';
 import AccountJobStatus from 'containers/account/account_job_status';
-import {PrivaceraLoader} from 'components/site/privacera_logo';
+import {PaigLoader} from 'components/site/paig_logo';
 import {FailedTenantSetup} from 'containers/base_container';
 import f from 'common-ui/utils/f';
 import {createRoutes} from 'common-ui/lib/RouteUtils';
@@ -176,7 +176,7 @@ class Root extends Component {
             )}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
           >
-            { state.loaded ? renderComponent : <PrivaceraLoader /> }
+            { state.loaded ? renderComponent : <PaigLoader /> }
             {
               state.pendoApiKey &&
               <PendoInitializer apiKey={state.pendoApiKey} host={state.pendoHost} />
