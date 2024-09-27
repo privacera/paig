@@ -125,9 +125,6 @@ class LocalAuthzClient(IAuthzClient):
             "applicationName": authz_response.application_name,
             "maskedTraits": authz_response.masked_traits,
             "context": authz_response.context,
-            "rangerAuditIds": None,  # Assuming rangerAuditIds is not present in AuthzResponse and needs a default value
-            "rangerPolicyIds": None,
-            # Assuming rangerPolicyIds is not present in AuthzResponse and needs a default value
             "paigPolicyIds": authz_response.paig_policy_ids,
             "statusCode": authz_response.status_code,
             "statusMessage": authz_response.status_message,
