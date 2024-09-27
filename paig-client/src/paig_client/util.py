@@ -4,8 +4,6 @@ import threading
 
 from datetime import datetime, timezone
 from functools import lru_cache
-import platform
-import uuid
 
 _logger = logging.getLogger(__name__)
 
@@ -89,16 +87,3 @@ def process_nested_input(input, output_list, extract=True):
                     input[index] = output_list.pop()
             elif isinstance(item, dict):
                 process_nested_input(item, output_list)
-
-
-def get_system_unique_id():
-    system_name = platform.system()
-    node_name = platform.node()
-    machine = platform.machine()
-    processor = platform.processor()
-    mac_address = uuid.getnode()
-
-    unique_id = f"{system_name}-{node_name}-{machine}-{processor}-{mac_address}"
-
-    # Generate a unique hash based on the above info
-    return uuid.uuid5(uuid.NAMESPACE_DNS, unique_id)

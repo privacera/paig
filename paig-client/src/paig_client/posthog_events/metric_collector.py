@@ -3,13 +3,15 @@ import platform
 
 
 def get_version():
-    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../VERSION')) as file:
-        for line in file:
-            if line.startswith('__version__'):
-                # Extract the version value from the line
-                version = line.split('=')[1].strip().strip("'\"")
-                return version
-    raise ValueError("Version not found")
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../VERSION')) as file:
+            for line in file:
+                if line.startswith('__version__'):
+                    # Extract the version value from the line
+                    version = line.split('=')[1].strip().strip("'\"")
+                    return version
+    except Exception:
+        return 'unknown'
 
 
 class MetricsClient:
