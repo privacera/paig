@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 import pytest
 import paig_client.core
+import os
+
+os.environ["PAIG_CLIENT_DEPLOYMENT"] = "test"
 
 application_config_file = f"{Path(__file__).parent}/plugin_config.json"
 curr_dir = f"{Path(__file__).parent}"

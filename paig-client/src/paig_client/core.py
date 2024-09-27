@@ -14,6 +14,7 @@ from .backend import ShieldRestHttpClient, ShieldAccessRequest, HttpTransport, V
 from .exception import PAIGException, AccessControlException
 from .message import ErrorMessage, InfoMessage, WarningMessage
 from .model import ConversationType
+from .posthog_events.posthog import capture_setup_event
 
 _logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ class PAIGPlugin:
         self.frameworks = None
         if "frameworks" in kwargs:
             self.frameworks = kwargs["frameworks"]
+            capture_setup_event(frameworks=self.frameworks)
         else:
             raise PAIGException(ErrorMessage.FRAMEWORKS_NOT_PROVIDED)
 
