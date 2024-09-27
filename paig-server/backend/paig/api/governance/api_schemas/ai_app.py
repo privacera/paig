@@ -22,6 +22,7 @@ class AIApplicationView(BaseView):
     name: str = Field(default=None, description="The name of the AI application")
     description: Optional[str] = Field(default=None, description="The description of the AI application")
     application_key: Optional[str] = Field(None, description="The application key", alias="applicationKey")
+    application_api_key: Optional[str] = Field(None, description="The application key", alias="applicationAPIKey")
     vector_dbs: Optional[List[str]] = Field([], description="The vector databases associated with the AI application", alias="vectorDBs")
 
     model_config = BaseView.model_config

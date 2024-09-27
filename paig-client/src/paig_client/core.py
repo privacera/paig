@@ -60,6 +60,10 @@ class PAIGPlugin:
                 connection_timeout (float): The connection timeout for the access request.
 
                 read_timeout (float): The read timeout for the access request.
+
+                application_api_key (str): The API key for the application. This is optional.
+
+                server_url (str): The URL of the Shield server. This is optional.
         """
 
         try:
@@ -484,47 +488,62 @@ class PAIGApplication:
                 you want to override the values that are in the application config file.
         """
 
-        plugin_app_config_dict = self.get_plugin_app_config(kwargs)
+        self.application_api_key = None
+        if "application_api_key" in kwargs and kwargs["application_api_key"]:
+            self.application_api_key = kwargs["application_api_key"]
+
 
         # Init from the loaded file
-        self.client_application_key = plugin_app_config_dict.get("clientApplicationKey", "*")
-        self.application_id = plugin_app_config_dict.get("applicationId")
-        self.application_key = plugin_app_config_dict.get("applicationKey")
-        self.tenant_id = plugin_app_config_dict.get("tenantId")
+        self.client_application_key = None
+        self.application_id = None
+        self.application_key = None
+        self.tenant_id = None
+        self.shield_base_url = "http://127.0.0.1:4545"
+        self.is_self_hosted_shield_server = True
+        self.api_key = None
+        self.shield_server_key_id = None
+        self.shield_server_public_key = None
+        self.shield_plugin_key_id = None
+        self.shield_plugin_private_key = None
+        self.audit_spool_dir = None
+        encryption_keys_info = None
 
-        is_self_hosted_shield_server = False
-        shield_server_url = plugin_app_config_dict.get("shieldServerUrl")
-        if shield_server_url is not None:
-            self.shield_base_url = shield_server_url
-            is_self_hosted_shield_server = True
-        else:
-            self.shield_base_url = plugin_app_config_dict.get("apiServerUrl")
+        if 'server_url' in kwargs and kwargs['server_url']:
+            self.shield_base_url = kwargs['server_url']
 
-        self.api_key = plugin_app_config_dict.get("apiKey")
-        self.shield_server_key_id = plugin_app_config_dict.get("shieldServerKeyId")
-        self.shield_server_public_key = plugin_app_config_dict.get("shieldServerPublicKey")
-        self.shield_plugin_key_id = plugin_app_config_dict.get("shieldPluginKeyId")
-        self.shield_plugin_private_key = plugin_app_config_dict.get("shieldPluginPrivateKey")
-        self.audit_spool_dir = plugin_app_config_dict.get("auditSpoolDir", "spool/audits/")
-
-        # Allow override from kwargs
-        for key, value in kwargs.items():
-            if key in self.__dict__:
-                self.__dict__[key] = value
-
-        encryption_keys_info = {
-            "shield_server_key_id": self.shield_server_key_id,
-            "shield_server_public_key": self.shield_server_public_key,
-            "shield_plugin_key_id": self.shield_plugin_key_id,
-            "shield_plugin_private_key": self.shield_plugin_private_key
-        }
-
+        if not self.application_api_key:
+            plugin_app_config_dict = self.get_plugin_app_config(kwargs)
+            self._load_application_config(plugin_app_config_dict)
+            # Allow override from kwargs
+            for key, value in kwargs.items():
+                if key in self.__dict__:
+                    self.__dict__[key] = value
+            encryption_keys_info = {
+                "shield_server_key_id": self.shield_server_key_id,
+                "shield_server_public_key": self.shield_server_public_key,
+                "shield_plugin_key_id": self.shield_plugin_key_id,
+                "shield_plugin_private_key": self.shield_plugin_private_key
+            }
         self.shield_client = ShieldRestHttpClient(base_url=self.shield_base_url, tenant_id=self.tenant_id,
-                                                  api_key=self.api_key, encryption_keys_info=encryption_keys_info,
-                                                  request_kwargs=kwargs.get("request_kwargs", {}),
-                                                  is_self_hosted_shield_server=is_self_hosted_shield_server)
+                                                      api_key=self.api_key, encryption_keys_info=encryption_keys_info,
+                                                      request_kwargs=kwargs.get("request_kwargs", {}),
+                                                      is_self_hosted_shield_server=self.is_self_hosted_shield_server
+                                                      )
 
-        self.shield_client.init_shield_server(self.application_key)
+        resp = self.shield_client.init_shield_server(self.application_key, self.application_api_key)
+        if self.application_api_key:
+            self._load_application_config(resp)
+            for key, value in kwargs.items():
+                if key in self.__dict__:
+                    self.__dict__[key] = value
+            encryption_keys_info = {
+                "shield_server_key_id": self.shield_server_key_id,
+                "shield_server_public_key": self.shield_server_public_key,
+                "shield_plugin_key_id": self.shield_plugin_key_id,
+                "shield_plugin_private_key": self.shield_plugin_private_key
+            }
+            resp['encryptionKeysInfo'] = encryption_keys_info
+            self.shield_client.load_config_from_json(resp)
 
         self.llm_stream_audit_logger = None
 
@@ -552,6 +571,33 @@ class PAIGApplication:
         else:
             plugin_app_config_dict = self.read_options_from_app_config(kwargs.get("application_config_file"))
         return plugin_app_config_dict
+
+    def _load_application_config(self, application_config_data):
+        # Init from the loaded file
+        self.client_application_key = application_config_data.get("clientApplicationKey", "*")
+        self.application_id = application_config_data.get("applicationId")
+        self.application_key = application_config_data.get("applicationKey")
+        self.tenant_id = application_config_data.get("tenantId")
+
+        shield_server_url = application_config_data.get("shieldServerUrl")
+        if shield_server_url is not None:
+            self.shield_base_url = shield_server_url
+            self.is_self_hosted_shield_server = True
+        else:
+            self.is_self_hosted_shield_server = False
+            self.shield_base_url = application_config_data.get("apiServerUrl")
+
+        self.api_key = application_config_data.get("apiKey")
+        self.shield_server_key_id = application_config_data.get("shieldServerKeyId")
+        self.shield_server_public_key = application_config_data.get("shieldServerPublicKey")
+        self.shield_plugin_key_id = application_config_data.get("shieldPluginKeyId")
+        self.shield_plugin_private_key = application_config_data.get("shieldPluginPrivateKey")
+        self.audit_spool_dir = application_config_data.get("auditSpoolDir", "spool/audits/")
+
+
+
+
+
 
     def read_options_from_app_config(self, application_config_file=None):
         """
