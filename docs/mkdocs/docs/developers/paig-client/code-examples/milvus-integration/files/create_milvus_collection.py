@@ -10,9 +10,11 @@ import os
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
+MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 
 # Connect to Milvus
-connections.connect("default", host='localhost', port='19530')
+connections.connect("default", host=MILVUS_HOST, port=MILVUS_PORT)
 
 # Define the schema for the collection
 fields = [

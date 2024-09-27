@@ -239,10 +239,11 @@ nav:
         - Installation and Usage: developers/paig-client/installation.md
         - Code Examples:
             - developers/paig-client/code-examples/index.md
-            - Milvus Integration:
-                - developers/paig-client/code-examples/milvus-integration/index.md
-                - A Sample Tutorial: developers/paig-client/code-examples/milvus-integration/a-sample-tutorial.md
-                - Integration Guide: developers/paig-client/code-examples/milvus-integration/integration-guide.md
+            - Vector DB Integration:
+              - developers/paig-client/code-examples/vector-db-integration/index.md
+              - Milvus Integration:
+                  - A Sample Tutorial: developers/paig-client/code-examples/milvus-integration/a-sample-tutorial.md
+                  - Integration Guide: developers/paig-client/code-examples/milvus-integration/integration-guide.md
   - User Guide:
       - user-guide/index.md
       - Securing GenAI Applications:

@@ -11,25 +11,32 @@ This tutorial shows you how to prevent unauthorized access to your data by:
 
 ## Prerequisite tasks
 
+### Install PAIG Server
+Make sure you have PAIG Server up and running. If you don't have one, you can follow the [PAIG Server Installation Guide](../../../paig-server/installation.md){target="_blank"} to set up your own PAIG Server.
+
 ### Install Docker 
-Make sure you have Docker installed on your system. You can download it from the [Docker website](https://www.docker.com/products/docker-desktop/).
-
-### Set up the tutorial directory
-Download below files and place them in new directory where you want to run the tutorial.
-
- - <a href="files/docker-compose.yml" download="docker-compose.yml">docker-compose.yml</a>
- - <a href="files/requirements.txt" download="requirements.txt">requirements.txt</a>
- - <a href="files/create_milvus_collection.py" download="create_milvus_collection.py">create_milvus_collection.py</a>
- - <a href="files/query_milvus_collection.py" download="query_milvus_collection.py">query_milvus_collection.py</a>
-
-### Start Milvus and Attu server
 !!! note "Note"
     If you have your own Milvus server running and you want to use that, you can skip this step.
+Make sure you have Docker installed on your system. You can download it from the [Docker website](https://www.docker.com/products/docker-desktop/){target="_blank"}.
+
+#### Start Milvus and Attu server
+Download below docker-compose file and place them in new directory where you want to run the tutorial.
+
+ - <a href="files/docker-compose.yml" download="docker-compose.yml">docker-compose.yml</a>
 
 Run the following command in the directory where you placed the files.
     ```bash
     docker-compose up -d
     ```
+
+### Set up the tutorial directory
+Download below files and place them in new directory where you want to run the tutorial.
+
+ - <a href="files/requirements.txt" download="requirements.txt">requirements.txt</a>
+ - <a href="files/create_milvus_collection.py" download="create_milvus_collection.py">create_milvus_collection.py</a>
+ - <a href="files/query_milvus_collection.py" download="query_milvus_collection.py">query_milvus_collection.py</a>
+
+
 
 ### Install the required Python packages
 Run the following command to install the required Python packages. 
@@ -52,11 +59,15 @@ Export your OpenAI API key as an environment variable to use ir further in the c
    export OPENAI_API_KEY=<your_openapi_key>
    ```
 
+### Export milvus host and port
+Export your Milvus host and port as an environment variable to use it further in the code. Please update host and port as per your setup if you are using your own Milvus server.
+   ```bash
+   export MILVUS_HOST=localhost
+   export MILVUS_PORT=19530
+   ```
+
 ### Create Milvus collection
 Run the following command to create a Milvus collection with sample data.
-!!! note "Note"
-    If you are using your own Milvus server, make sure to update the `MILVUS_HOST` and `MILVUS_PORT` in the `create_milvus_collection.py` script.
-
    ```bash
    python3 create_milvus_collection.py
    ```
@@ -104,9 +115,6 @@ Save the downloaded configuration file in a folder named `privacera` within the 
 
 ### Query the Milvus collection
 Run the following command to query the Milvus collection.
-!!! note "Note"
-    If you are using your own Milvus server, make sure to update the `MILVUS_HOST` and `MILVUS_PORT` in the `query_milvus_collection.py` script.
-
    ```bash
    python3 query_milvus_collection.py
    ```

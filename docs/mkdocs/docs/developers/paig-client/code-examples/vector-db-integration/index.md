@@ -1,5 +1,5 @@
 ---
-title: Milvus Integration
+title: Vector DB Integration
 ---
 
 ## Securing Vector DB Searches with Metadata Filtering
@@ -59,7 +59,7 @@ By applying these filters:
 - **Authorized users** will receive results limited to the USA, keeping access secure and region-specific.
 - **Unauthorized users** (those who shouldn’t see USA-based products) are restricted by default, ensuring that sensitive product data isn't exposed to unintended individuals.
 
-## Benefits on Integrating Milvus with PAIG
+## Benefits on Integrating Vector DB with PAIG
 
 By leveraging PAIG, we can eliminate the manual process of managing which users or groups have access to specific records and determining which filters should be applied during searches. In traditional systems, developers often have to build and maintain complex access control mechanisms, which can be cumbersome and error-prone. With PAIG, this burden is removed, as the platform automatically enforces access control policies and applies the correct filters based on each user’s role, permissions, and contextual data.
 
@@ -72,6 +72,6 @@ PAIG provides an intuitive interface and powerful filtering capabilities, ensuri
 
 -   :material-book-open-page-variant-outline: __Read More__
 
-    [Mivus Integration Sample Tutorial](a-sample-tutorial.md)
+    [Mivus Integration Sample Tutorial](../milvus-integration/a-sample-tutorial.md)
 
 </div>

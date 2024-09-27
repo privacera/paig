@@ -5,6 +5,8 @@ from pymilvus import Collection, connections
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+MILVUS_HOST = os.getenv("MILVUS_HOST", "localhost")
+MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 
 
 ###################################
@@ -88,10 +90,6 @@ def search_and_query(text, expression=None):
 # MAIN CODE
 ###################################
 
-# Set the OpenAI API key
-
-MILVUS_HOST = 'localhost'
-MILVUS_PORT = '19530'
 MILVUS_COLLECTION_NAME = 'sales_data'
 
 # Establish connection to Milvus
