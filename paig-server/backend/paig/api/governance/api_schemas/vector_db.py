@@ -35,6 +35,21 @@ class VectorDBView(BaseView):
 
     model_config = BaseView.model_config
 
+    def to_vector_db_data(self):
+        from paig_authorizer_core.models.data_models import VectorDBData
+
+        return VectorDBData(
+            id=self.id,
+            status=self.status,
+            create_time=self.create_time,
+            update_time=self.update_time,
+            name=self.name,
+            description=self.description,
+            type=self.type.name,
+            user_enforcement=self.user_enforcement,
+            group_enforcement=self.group_enforcement
+        )
+
 
 class VectorDBFilter(BaseAPIFilter):
     """

@@ -45,6 +45,28 @@ class VectorDBPolicyView(BaseView):
 
     model_config = BaseView.model_config
 
+    def to_vector_db_policy_data(self):
+        from paig_authorizer_core.models.data_models import VectorDBPolicyData
+
+        return VectorDBPolicyData(
+            id=self.id,
+            status=self.status,
+            create_time=self.create_time,
+            update_time=self.update_time,
+            name=self.name,
+            description=self.description,
+            allowed_users=self.allowed_users,
+            allowed_groups=self.allowed_groups,
+            allowed_roles=self.allowed_roles,
+            denied_users=self.denied_users,
+            denied_groups=self.denied_groups,
+            denied_roles=self.denied_roles,
+            metadata_key=self.metadata_key,
+            metadata_value=self.metadata_value,
+            operator=self.operator,
+            vector_db_id=self.vector_db_id
+        )
+
 
 class VectorDBPolicyFilter(BaseAPIFilter):
     """

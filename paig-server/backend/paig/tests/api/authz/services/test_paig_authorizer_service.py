@@ -3,8 +3,9 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from api.authz.authorizer.paig_authorizer import PAIGAuthorizer, AuthzRequest, AuthzResponse, VectorDBAuthzRequest, \
-    VectorDBAuthzResponse
+from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.authz.services.paig_authorizer_service import AuthorizeRequestValidator, PAIGAuthorizerService
 
 
@@ -24,7 +25,7 @@ def mock_utils(monkeypatch):
 
 @pytest.fixture
 def mock_paig_authorizer():
-    return AsyncMock(spec=PAIGAuthorizer)
+    return AsyncMock(spec=AsyncPAIGAuthorizer)
 
 
 @pytest.fixture

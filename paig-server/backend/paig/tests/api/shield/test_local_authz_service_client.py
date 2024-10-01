@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from api.shield.client.local_authz_service_client import LocalAuthzClient
-from api.authz.authorizer.paig_authorizer import PAIGAuthorizer, AuthzResponse, VectorDBAuthzResponse
+from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
@@ -57,7 +58,7 @@ def create_mock_vectordb_response(mock_vectordb_response):
 class TestLocalAuthzClient:
     @pytest.fixture
     def mock_paig_authorizer(self):
-        return MagicMock(spec=PAIGAuthorizer)
+        return MagicMock(spec=AsyncPAIGAuthorizer)
 
     @pytest.fixture
     def client(self, mock_paig_authorizer):
