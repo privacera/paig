@@ -51,6 +51,23 @@ class AIApplicationConfigView(BaseView):
         }
     )
 
+    def to_ai_application_config_data(self):
+        from paig_authorizer_core.models.data_models import AIApplicationConfigData
+
+        return AIApplicationConfigData(
+            id=self.id,
+            status=self.status,
+            create_time=self.create_time,
+            update_time=self.update_time,
+            allowed_users=self.allowed_users,
+            allowed_groups=self.allowed_groups,
+            allowed_roles=self.allowed_roles,
+            denied_users=self.denied_users,
+            denied_groups=self.denied_groups,
+            denied_roles=self.denied_roles,
+            application_id=self.application_id
+        )
+
 
 class AIApplicationConfigFilter(BaseAPIFilter):
     """
