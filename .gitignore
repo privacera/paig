@@ -33,3 +33,4 @@ storage
 **/.coverage
 backend/paig/temp
 **/.cache
+**/.env
