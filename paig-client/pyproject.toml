@@ -31,7 +31,8 @@ classifiers = [
 dependencies = [
     "urllib3>=2.0.6",
     "cryptography>=41.0.4",
-    "paig_common"
+    "paig_common",
+    "posthog"
 ]
 
 [project.urls]
