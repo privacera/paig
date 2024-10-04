@@ -13,7 +13,7 @@ class PostHogClient:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(PostHogClient, cls).__new__(cls)
-            posthog.project_api_key = 'phc_Xf9IPAksnaN0YB4HwRang5lE5jzZgZpVvMEqz0gKi4'
+            posthog.project_api_key = 'phc_Xf9IPAksnaN0YB4HwRang5lE5jzZgZpVvMEqz0gKi4E'
             posthog.host = 'https://us.i.posthog.com'
             posthog.debug = False
         return cls._instance
