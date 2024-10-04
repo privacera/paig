@@ -12,7 +12,7 @@ class DataProtectController:
         resp['status'] = 0
         decrypted_data = list()
         for i in messages:
-            encoded_data = base64.b64encode((encryptor.decrypt_data(i)).encode("ascii"))
+            encoded_data = base64.b64encode((encryptor.decrypt_data(i)).encode("utf-8"))
             decrypted_data.append(encoded_data)
         resp['decryptedDataList'] = decrypted_data
         return resp
