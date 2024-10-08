@@ -35,4 +35,4 @@ Detailed documentation is available at [PAIG Documentation](https://docs.paig.ai
 PAIG is licensed under the Apache License v2. For more details, please see the [LICENSE](LICENSE) file.
 
 
-![PAIG Demo gif](docs/assets/PAIG_Demo.gif)
+![PAIG Demo gif](docs/assets/paig_plant_ops_guardrails.gif)
