@@ -1,6 +1,6 @@
 import logging
-from api.authz.authorizer.paig_authorizer import AuthzRequest, AuthzResponse, VectorDBAuthzResponse, \
-    VectorDBAuthzRequest
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
 from api.shield.interfaces.authz_service_interface import IAuthzClient
 from api.shield.model.authz_service_request import AuthzServiceRequest
@@ -125,9 +125,6 @@ class LocalAuthzClient(IAuthzClient):
             "applicationName": authz_response.application_name,
             "maskedTraits": authz_response.masked_traits,
             "context": authz_response.context,
-            "rangerAuditIds": None,  # Assuming rangerAuditIds is not present in AuthzResponse and needs a default value
-            "rangerPolicyIds": None,
-            # Assuming rangerPolicyIds is not present in AuthzResponse and needs a default value
             "paigPolicyIds": authz_response.paig_policy_ids,
             "statusCode": authz_response.status_code,
             "statusMessage": authz_response.status_message,

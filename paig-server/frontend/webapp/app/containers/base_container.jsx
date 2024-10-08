@@ -132,7 +132,7 @@ const JobProgressContainer = ({status}) => {
                   (
                     <Fragment>
                       <Typography variant="h5" className="m-b-sm">
-                        Privacera AI Signup Rush!
+                        PAIG AI Signup Rush!
                       </Typography>
                       <Typography variant="body2" className="m-b-sm">
                         We are currently experiencing a higher-than-usual volume of sign-ups, which may result in a slight delay in setting up your account.

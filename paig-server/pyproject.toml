@@ -46,12 +46,14 @@ dependencies = [
     "paig_common",
     "alt-profanity-check==1.5.0",
     "numpy==1.26.4",
+    "scipy==1.14.1",
     "starlette-request-id",
     "httpx",
     "fasteners",
     "APScheduler",
     "pydantic[email]",
-    "posthog"
+    "posthog",
+    "paig-authorizer-core==0.0.1"
 ]
 
 [tool.hatch.metadata]

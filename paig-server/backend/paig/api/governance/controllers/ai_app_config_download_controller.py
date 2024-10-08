@@ -6,6 +6,8 @@ from api.encryption.api_schemas.encryption_key import EncryptionKeyView
 from api.encryption.database.db_models.encryption_key_model import EncryptionKeyType
 from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.governance.services.ai_app_service import AIAppService
+from core.middlewares.usage import background_capture_event
+from core.factory.events import DownloadAIApplicationConfigEvent
 
 
 class AIAppConfigDownloadController:
@@ -30,6 +32,7 @@ class AIAppConfigDownloadController:
         shield_server_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(EncryptionKeyType.MSG_PROTECT_SHIELD)
         shield_plugin_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(EncryptionKeyType.MSG_PROTECT_PLUGIN)
         shield_server_url = await self.ai_app_service.get_shield_server_url()
+        await background_capture_event(event=DownloadAIApplicationConfigEvent())
         # Simulating retrieval of data from a database or other source
         return ai_application.name, {
             "applicationId": ai_application.id,

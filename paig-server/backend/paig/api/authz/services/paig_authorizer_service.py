@@ -1,7 +1,8 @@
 
-from api.authz.authorizer.backend.rds_based_paig_authorizer import RDSBasedPaigAuthorizer
-from api.authz.authorizer.paig_authorizer import PAIGAuthorizer, AuthzRequest, AuthzResponse, VectorDBAuthzResponse, \
-    VectorDBAuthzRequest
+from api.authz.authorizer.backend.rds_based_paig_authorizer import AsyncRDSBasedPaigAuthorizer
+from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from core.utils import SingletonDepends
 
 
@@ -13,7 +14,7 @@ class AuthorizeRequestValidator:
         paig_authorizer (PAIGAuthorizer): The authorizer used to authorize requests.
     """
 
-    def __init__(self, paig_authorizer: PAIGAuthorizer = SingletonDepends(RDSBasedPaigAuthorizer)):
+    def __init__(self, paig_authorizer: AsyncPAIGAuthorizer = SingletonDepends(AsyncRDSBasedPaigAuthorizer)):
         self.paig_authorizer = paig_authorizer
 
     # noinspection PyMethodMayBeStatic
@@ -61,7 +62,7 @@ class PAIGAuthorizerService:
         authorize_request_validator (AuthorizeRequestValidator): The validator used to validate authorize requests.
     """
 
-    def __init__(self, paig_authorizer: PAIGAuthorizer = SingletonDepends(RDSBasedPaigAuthorizer),
+    def __init__(self, paig_authorizer: AsyncPAIGAuthorizer = SingletonDepends(AsyncRDSBasedPaigAuthorizer),
                  authorize_request_validator: AuthorizeRequestValidator = SingletonDepends(AuthorizeRequestValidator)):
         self.paig_authorizer = paig_authorizer
         self.authorize_request_validator = authorize_request_validator

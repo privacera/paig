@@ -4,7 +4,6 @@ import platform
 import re
 from core.db_session.standalone_session import get_tenant_uuid
 from core.config import get_version
-from core.factory.posthog import get_post_hog_client
 from core.utils import detect_environment
 
 URL_MAPPING = [
@@ -87,16 +86,13 @@ class MetricsClient:
             cls._instance = super(MetricsClient, cls).__new__(cls)
             cls._instance.data = dict()
             cls._instance.metric_collector = None
-            cls._instance.posthog_client = None
         return cls._instance
 
     async def initialize(self):
         await self._fetch_tenant_uuid()
         self.data['app_version'] = get_version()
         self.metric_collector = get_metric_collector()
-        self.posthog_client = get_post_hog_client()
         self.data.update(self._get_system_info())
-        self.posthog_client.set_user_id(self.data.get('installation_id'))
 
     async def _fetch_tenant_uuid(self):
         self.data["installation_id"] = await get_tenant_uuid()
@@ -110,9 +106,6 @@ class MetricsClient:
             'deployment': os.environ.get('PAIG_DEPLOYMENT', 'dev')
         }
 
-    async def capture(self, event_name, properties=None):
-        self.posthog_client.capture_event(event_name, properties)
-
     def get_data(self):
         return self.data
 
@@ -123,4 +116,3 @@ def get_metric_collector():
 
 def get_metric_client():
     return MetricsClient()
-

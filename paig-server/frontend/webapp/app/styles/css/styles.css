@@ -743,3 +743,30 @@ span.diff-danger>span {
   padding: 0 16px 0 0 !important;
   min-height: 54px !important;
 }
+
+.paig-loader {
+  /* Animation for the dots */
+  .dot1 {
+    animation: bounce 1s infinite ease-in-out;
+  }
+
+  .dot2 {
+    animation: bounce2 1s infinite ease-in-out;         
+  }
+  @keyframes bounce {
+      0%, 100% {
+          transform: translateY(0);
+      }
+      50% {
+          transform: translateY(-10px);
+      }
+  }
+  @keyframes bounce2 {
+      0%, 100% {
+          transform: translateY(-10px);
+      }
+      50% {
+          transform: translateY(0px);
+      }
+  }
+}

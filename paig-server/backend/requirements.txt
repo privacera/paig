@@ -28,9 +28,11 @@ opentelemetry-exporter-otlp==1.24.0
 paig_common
 alt-profanity-check==1.5.0
 numpy==1.26.4
+scipy==1.14.1
 starlette-request-id==0.7.0
 httpx==0.27.0
 fasteners
 APScheduler==3.10.4
 pydantic[email]
 posthog
+paig-authorizer-core==0.0.1

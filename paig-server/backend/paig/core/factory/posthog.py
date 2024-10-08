@@ -1,11 +1,12 @@
 import posthog
 import logging
+from core.factory.events import ProductTelemetryEvent
+import os
 
 logger = logging.getLogger(__name__)
 
 
 class PostHogClient:
-
     _instance = None
 
     def __new__(cls):
@@ -17,14 +18,17 @@ class PostHogClient:
             cls._instance.user_id = None
         return cls._instance
 
-    def set_user_id(self, user_id):
-        self.user_id = user_id
+    def capture(self, event: ProductTelemetryEvent) -> None:
+        self._direct_capture(event)
 
-    def capture_event(self, event_name, properties=None):
-        if properties is None:
-            properties = {}
+    def _direct_capture(self, event: ProductTelemetryEvent) -> None:
         try:
-            posthog.capture(self.user_id, event_name, properties)
+            if os.environ.get('PAIG_DEPLOYMENT') != "test":
+                posthog.capture(
+                    event.user_id,
+                    event.name,
+                    event.properties
+                )
         except:
             pass
 
