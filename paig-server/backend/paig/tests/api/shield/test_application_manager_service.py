@@ -32,10 +32,8 @@ class TestApplicationManager:
         manager.get_scanners('app_key', True)
         mock_load_scanners.assert_called_once_with('app_key')
 
-    @patch('api.shield.services.application_manager_service.parse_properties')
     @patch.object(ApplicationManager, 'load_scanners')
-    def test_get_scanners_with_cache_hit(self, mock_load_scanners, mock_parse_properties):
-        mock_parse_properties.return_value = ['scanner1', 'scanner2']
+    def test_get_scanners_with_cache_hit(self, mock_load_scanners):
         manager = ApplicationManager()
         manager.application_key_scanners.put('app_key', ['scanner1', 'scanner2'])
         manager.get_scanners('app_key', True)
@@ -86,7 +84,7 @@ def test_scan_messages_success(app_manager, mock_scanners):
         "traits": [],
         "analyzer_result": ["result2"]
     }):
-        scan_results, access_control_traits, scan_timings = app_manager.scan_messages(application_key, message)
+        scan_results, access_control_traits, scan_timings = app_manager.scan_messages(application_key, message, True)
 
     # Verify the results
     assert len(scan_results) == 2
@@ -102,7 +100,7 @@ def test_scan_messages_with_exception(app_manager, mock_scanners):
     with patch.object(mock_scanners[0], 'scan', side_effect=Exception("Scanner failed")):
         with patch.object(mock_scanners[1], 'scan', return_value={"traits": [], "analyzer_result": ["result1"]}):
             with pytest.raises(ShieldException) as e:
-                scan_results, access_control_traits = app_manager.scan_messages(application_key, message)
+                scan_results, access_control_traits = app_manager.scan_messages(application_key, message, True)
 
                 # Verify the results
                 assert len(scan_results) == 1  # scanner1 failed, so only one result

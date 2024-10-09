@@ -175,7 +175,8 @@ def test_get_scanner_info():
         'model_entity_type_keyword': 'label',
         'scanner_type': 'NoCodeScanner',
         'model_input_max_length': 512,
-        'model_input_truncation': True
+        'model_input_truncation': True,
+        'skip_authz_enforcement': False
     }
 
 
