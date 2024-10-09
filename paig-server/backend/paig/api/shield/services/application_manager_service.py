@@ -64,7 +64,6 @@ class ApplicationManager(Singleton):
             if getattr(scanner, 'skip_authz_enforcement', False) != is_authz_scan
         ]
 
-        logger.info(f"QUINDECIM: Found {scanners_list} scanners for application key: {application_key}")
         return scanners_list
 
     def scan_messages(self, application_key, message, is_authz_scan):
@@ -99,7 +98,6 @@ class ApplicationManager(Singleton):
                 except Exception as e:
                     logger.error(f"Scanner {scanner.name} failed with exception: {e}")
                     raise ShieldException(f"Scanner {scanner.name} failed with exception: {e}")
-        logger.info(f"QUINDECIM: Scanned scan_results : {scan_results} access_control_traits: {access_control_traits} scan_timings: {scan_timings}")
         return scan_results, access_control_traits, scan_timings
 
 
