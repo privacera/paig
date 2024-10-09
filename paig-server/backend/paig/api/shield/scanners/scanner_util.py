@@ -258,7 +258,6 @@ FALLBACK_VALUES = {
     'model_entity_type_keyword': '',
     'model_input_max_length': 512,
     'model_input_truncation': True,
-    'skip_authz_enforcement': False,
 }
 
 

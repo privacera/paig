@@ -110,8 +110,8 @@ class AuthService:
         # authorize traits
         authz_start_time = time.perf_counter()
         logger.debug(f"Calling authz service with request: {auth_req} "
-                     f"with traits for access control: {access_control_traits}")
-        authz_service_res = await self.do_authz_authorize(auth_req, list(access_control_traits))
+                     f"with traits for access control: {all_result_traits}")
+        authz_service_res = await self.do_authz_authorize(auth_req, list(all_result_traits))
         authz_time = f"{((time.perf_counter() - authz_start_time) * 1000):.3f}"
         logger.debug(f"Received authz service response: {authz_service_res.__dict__}")
         is_allowed = authz_service_res.authorized
@@ -203,7 +203,7 @@ class AuthService:
         scan_timings_per_message = []
         for request_text in auth_req.messages:
             # Analyze traits
-            scanners_result, access_control_result, message_scan_timings = self.application_manager.scan_messages(
+            scanners_result, message_scan_timings = self.application_manager.scan_messages(
                 auth_req.application_key, request_text, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
@@ -217,13 +217,11 @@ class AuthService:
                     scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
 
                 analyzer_result_map[request_text] = scanner_analyzer_results
-                access_control_traits.update(access_control_result)
                 original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
             else:
                 for scanner_data in scanners_result.values():
                     all_result_traits.update(scanner_data.get("traits", []))
                     access_control_traits.update(scanner_data.get("actions", []))
-                # original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
 
         return scan_timings_per_message
 

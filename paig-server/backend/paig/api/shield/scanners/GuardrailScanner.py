@@ -2,7 +2,6 @@ import logging
 import boto3
 import os
 
-from api.shield.utils import config_utils
 from api.shield.scanners.BaseScanner import Scanner
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ class GuardrailScanner(Scanner):
             region_name="us-east-1"
         )
 
-    def scan(self, message: str):
+    def scan(self, message: str) -> dict:
         """
         Scan the input prompt through the Bedrock guardrail.
 
@@ -42,7 +41,7 @@ class GuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
-        guardrail_id, guardrail_version = get_guardrail_details()
+        guardrail_id, guardrail_version = self.get_guardrail_details()
 
         response = self.bedrock_client.apply_guardrail(
             guardrailIdentifier=guardrail_id,
@@ -67,8 +66,23 @@ class GuardrailScanner(Scanner):
         logger.debug("GuardrailService: No action required.")
         return {}
 
+    def get_guardrail_details(self) -> (str, str):
+        """
+        Fetch guardrail details
+        """
+        default_guardrail_id = self.get_property('guardrail_id')
+        default_guardrail_version = self.get_property('guardrail_version')
+        guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
+        guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
 
-def _extract_assessment_info(assessment, tag_set, action_set):
+        if not guardrail_id or not guardrail_version:
+            logger.error("Guardrail ID or Guardrail Version not found in environment variables.")
+            raise ValueError("Guardrail ID or Guardrail Version not found in environment variables.")
+
+        return guardrail_id, guardrail_version
+
+
+def _extract_assessment_info(assessment, tag_set, action_set) -> None:
     """
         Extract relevant information from the assessment data.
         """
@@ -79,26 +93,10 @@ def _extract_assessment_info(assessment, tag_set, action_set):
             extract_info(entities, tag_set, action_set)
 
 
-def extract_info(entities, tag_set: set, action_set: set):
+def extract_info(entities, tag_set: set, action_set: set) -> None:
     """
     Extract tag and action info from entities.
     """
     for entity in entities:
         tag_set.add((entity.get('type') or entity.get('name') or entity.get('match', '')).upper())
         action_set.add(entity.get('action'))
-
-
-def get_guardrail_details():
-    """
-    Fetch guardrail details
-    """
-    default_guardrail_id = config_utils.get_property_value('bedrock_guardrail_id')
-    default_guardrail_version = config_utils.get_property_value('bedrock_guardrail_version')
-    guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
-    guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
-
-    if not guardrail_id or not guardrail_version:
-        logger.error("Guardrail ID or Guardrail Version not found in environment variables.")
-        raise ValueError("Guardrail ID or Guardrail Version not found in environment variables.")
-
-    return guardrail_id, guardrail_version

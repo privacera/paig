@@ -61,7 +61,7 @@ class ApplicationManager(Singleton):
 
         scanners_list = [
             scanner for scanner in all_scanners
-            if getattr(scanner, 'skip_authz_enforcement', False) != is_authz_scan
+            if getattr(scanner, 'enforce_access_control', False) == is_authz_scan
         ]
 
         return scanners_list
@@ -82,9 +82,7 @@ class ApplicationManager(Singleton):
         scanners = self.get_scanners(application_key, is_authz_scan)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
-        scan_results = {}
-        scan_timings = {}
-        access_control_traits = []
+        scan_results, scan_timings = {}, {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.shield_scanner_max_workers) as executor:
             future_to_scanner = {executor.submit(scan_with_scanner, scanner, message): scanner for scanner in scanners}
             for future in concurrent.futures.as_completed(future_to_scanner):
@@ -93,12 +91,10 @@ class ApplicationManager(Singleton):
                     scanner_name, result, message_scan_time = future.result()
                     scan_results[scanner_name] = result
                     scan_timings[scanner_name] = message_scan_time
-                    if scanner.enforce_access_control:
-                        access_control_traits.extend(result.get("traits", []))
                 except Exception as e:
                     logger.error(f"Scanner {scanner.name} failed with exception: {e}")
                     raise ShieldException(f"Scanner {scanner.name} failed with exception: {e}")
-        return scan_results, access_control_traits, scan_timings
+        return scan_results, scan_timings
 
 
 def scan_with_scanner(scanner, message):

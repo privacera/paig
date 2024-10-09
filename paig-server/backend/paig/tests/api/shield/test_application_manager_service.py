@@ -8,8 +8,10 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 @pytest.fixture
 def mock_scanners():
-    scanner1 = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
-    scanner2 = Scanner(name='scanner2', request_types=['prompt'], enforce_access_control=False, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
+    scanner1 = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path',
+                       model_score_threshold=0.5, entity_type='entity_type', enable=True)
+    scanner2 = Scanner(name='scanner2', request_types=['prompt'], enforce_access_control=False, model_path='model_path',
+                       model_score_threshold=0.5, entity_type='entity_type', enable=True)
     return [scanner1, scanner2]
 
 
@@ -31,11 +33,12 @@ class TestApplicationManager:
         mock_load_scanners.assert_not_called()
 
     @patch('api.shield.services.application_manager_service.parse_properties')
-    def test_load_scanners(self, mock_parse_properties):
-        mock_parse_properties.return_value = ['scanner1', 'scanner2']
+    def test_load_scanners(self, mock_parse_properties, mock_scanners):
+        mock_parse_properties.return_value = mock_scanners
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        assert manager.get_scanners('app_key', True) == ['scanner1', 'scanner2']
+        assert manager.get_scanners('app_key', True)[0] == mock_scanners[0]
+        assert manager.get_scanners('app_key', False)[0] == mock_scanners[1]
 
     @patch('api.shield.services.application_manager_service.parse_properties')
     def test_scan_messages(self, mock_parse_properties):
@@ -46,12 +49,14 @@ class TestApplicationManager:
         mock_parse_properties.return_value = [scanner1, scanner2]
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        scan_results, access_control_traits, scan_timing = manager.scan_messages('app_key', 'message', True)
-        assert len(scan_results) == 2
-        assert access_control_traits == ['trait1', 'trait2']
+        scan_results, scan_timing = manager.scan_messages('app_key', 'message', True)
+        assert len(scan_results) == 1
+        for key, value in scan_results.items():
+            assert value == {'traits': ['trait1', 'trait2']}
 
     def test_scan_with_scanner(self):
-        scanner = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
+        scanner = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True,
+                          model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
         message = "test message"
 
         # Mock the scan method of the scanner
@@ -75,13 +80,13 @@ def test_scan_messages_success(app_manager, mock_scanners):
         "traits": [],
         "analyzer_result": ["result2"]
     }):
-        scan_results, access_control_traits, scan_timings = app_manager.scan_messages(application_key, message, True)
+        scan_results, scan_timings = app_manager.scan_messages(application_key, message, True)
 
     # Verify the results
     assert len(scan_results) == 2
     assert "scanner1" in scan_results
     assert "scanner2" in scan_results
-    assert access_control_traits == ["trait1"]
+    assert scan_results["scanner1"] == {"traits": ["trait1"], "analyzer_result": ["result1"]}
 
 
 def test_scan_messages_with_exception(app_manager, mock_scanners):
