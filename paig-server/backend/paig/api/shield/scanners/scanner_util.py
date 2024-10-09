@@ -286,7 +286,7 @@ def get_scanner_info(config, section):
                     try:
                         scanner_info[key] = config.getfloat(section, key)
                     except ValueError:
-                        scanner_info[key] = value
+                        scanner_info[key] = value.split(',') if ',' in value else value
 
             # Handle fallback values for missing keys
             for key, fallback_value in FALLBACK_VALUES.items():
