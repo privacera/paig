@@ -28,7 +28,7 @@ class TestApplicationManager:
     def test_get_scanners_with_cache_miss(self, mock_load_scanners, mock_parse_properties):
         mock_parse_properties.return_value = ['scanner1', 'scanner2']
         manager = ApplicationManager()
-        manager.get_scanners('app_key')
+        manager.get_scanners('app_key', True)
         mock_load_scanners.assert_called_once_with('app_key')
 
     @patch('api.shield.services.application_manager_service.parse_properties')
@@ -37,7 +37,7 @@ class TestApplicationManager:
         mock_parse_properties.return_value = ['scanner1', 'scanner2']
         manager = ApplicationManager()
         manager.application_key_scanners.put('app_key', ['scanner1', 'scanner2'])
-        manager.get_scanners('app_key')
+        manager.get_scanners('app_key', True)
         mock_load_scanners.assert_not_called()
 
     @patch('api.shield.services.application_manager_service.parse_properties')
@@ -45,7 +45,7 @@ class TestApplicationManager:
         mock_parse_properties.return_value = ['scanner1', 'scanner2']
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        assert manager.get_scanners('app_key') == ['scanner1', 'scanner2']
+        assert manager.get_scanners('app_key', True) == ['scanner1', 'scanner2']
 
     @patch('api.shield.services.application_manager_service.parse_properties')
     def test_scan_messages(self, mock_parse_properties):
@@ -56,12 +56,12 @@ class TestApplicationManager:
         mock_parse_properties.return_value = [scanner1, scanner2]
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        scan_results, access_control_traits, scan_timing = manager.scan_messages('app_key', 'message')
+        scan_results, access_control_traits, scan_timing = manager.scan_messages('app_key', 'message', True)
         assert len(scan_results) == 2
         assert access_control_traits == ['trait1', 'trait2']
 
     def test_scan_with_scanner(self):
-        scanner = Scanner('scanner1', ['prompt'], True, 'model_path', 0.5, 'entity_type', True)
+        scanner = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
         message = "test message"
 
         # Mock the scan method of the scanner
