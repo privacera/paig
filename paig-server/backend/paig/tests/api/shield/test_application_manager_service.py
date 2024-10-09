@@ -24,15 +24,6 @@ def app_manager(mock_scanners):
 class TestApplicationManager:
 
     @patch.object(ApplicationManager, 'load_scanners')
-    def test_get_scanners_with_cache_miss(self, mock_load_scanners):
-        manager = ApplicationManager()  # Create an instance of ApplicationManager
-        # Patch the instance attribute after the object has been created
-        manager.application_key_scanners = MagicMock()
-        manager.application_key_scanners.get.return_value = ['scanner1', 'scanner2']
-        manager.get_scanners('app_key', True)
-        mock_load_scanners.assert_called_once_with('app_key')
-
-    @patch.object(ApplicationManager, 'load_scanners')
     def test_get_scanners_with_cache_hit(self, mock_load_scanners):
         manager = ApplicationManager()
         manager.application_key_scanners.put('app_key', ['scanner1', 'scanner2'])
@@ -106,3 +97,12 @@ def test_scan_messages_with_exception(app_manager, mock_scanners):
                 assert len(scan_results) == 1  # scanner1 failed, so only one result
                 assert "scanner2" in scan_results
                 assert access_control_traits == []
+
+    @patch.object(ApplicationManager, 'load_scanners')
+    def test_get_scanners_with_cache_miss(self, mock_load_scanners):
+        manager = ApplicationManager()  # Create an instance of ApplicationManager
+        # Patch the instance attribute after the object has been created
+        manager.application_key_scanners = MagicMock()
+        manager.application_key_scanners.get.return_value = ['scanner1', 'scanner2']
+        manager.get_scanners('app_key', True)
+        mock_load_scanners.assert_called_once_with('app_key')
