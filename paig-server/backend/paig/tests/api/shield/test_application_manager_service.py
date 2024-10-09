@@ -8,8 +8,8 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 @pytest.fixture
 def mock_scanners():
-    scanner1 = Scanner('scanner1', ['prompt'], True, 'model_path', 0.5, 'entity_type', True)
-    scanner2 = Scanner('scanner2', ['prompt'], False, 'model_path', 0.5, 'entity_type', True)
+    scanner1 = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
+    scanner2 = Scanner(name='scanner2', request_types=['prompt'], enforce_access_control=False, model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
     return [scanner1, scanner2]
 
 
@@ -23,11 +23,12 @@ def app_manager(mock_scanners):
 
 class TestApplicationManager:
 
-    @patch('api.shield.services.application_manager_service.parse_properties')
     @patch.object(ApplicationManager, 'load_scanners')
-    def test_get_scanners_with_cache_miss(self, mock_load_scanners, mock_parse_properties):
-        mock_parse_properties.return_value = ['scanner1', 'scanner2']
-        manager = ApplicationManager()
+    def test_get_scanners_with_cache_miss(self, mock_load_scanners):
+        manager = ApplicationManager()  # Create an instance of ApplicationManager
+        # Patch the instance attribute after the object has been created
+        manager.application_key_scanners = MagicMock()
+        manager.application_key_scanners.get.return_value = ['scanner1', 'scanner2']
         manager.get_scanners('app_key', True)
         mock_load_scanners.assert_called_once_with('app_key')
 
