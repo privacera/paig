@@ -249,6 +249,19 @@ def create_scanner(default_predefined_properties, scanner_index, scanner_info, s
         logger.info(f"Loaded scanner: {scanner_objects[scanner_index].name}")
 
 
+# Define the fallback values in a dictionary
+FALLBACK_VALUES = {
+    'model_path': '',
+    'model_score_threshold': 0.5,
+    'scanner_type': '',
+    'entity_type': '',
+    'model_entity_type_keyword': '',
+    'model_input_max_length': 512,
+    'model_input_truncation': True,
+    'skip_authz_enforcement': False,
+}
+
+
 def get_scanner_info(config, section):
     """
     Extract scanner information from configuration.
@@ -262,19 +275,33 @@ def get_scanner_info(config, section):
     """
     scanner_info = {}
     try:
-        scanner_info = {
-            'name': config.get(section, 'name'),
-            'enable': config.getboolean(section, 'enable'),
-            'request_types': config.get(section, 'request_types').split(","),
-            'enforce_access_control': config.getboolean(section, 'enforce.access.control'),
-            'model_path': config.get(section, 'model.path', fallback=''),
-            'model_score_threshold': config.getfloat(section, 'model.score.threshold', fallback=0.5),
-            'scanner_type': config.get(section, 'scanner_type', fallback=''),
-            'entity_type': config.get(section, 'entity_type', fallback=''),
-            'model_entity_type_keyword': config.get(section, 'model.entity.type.keyword', fallback=''),
-            'model_input_max_length': config.getint(section, 'model.input.max.length', fallback=512),
-            'model_input_truncation': config.getboolean(section, 'model.input.truncation', fallback=True),
-        }
+        if config.has_section(section):
+            for key, value in config.items(section):
+                # Convert boolean, integer, or float types as needed
+                if value.lower() in ('true', 'false'):
+                    scanner_info[key] = config.getboolean(section, key)
+                elif value.isdigit():
+                    scanner_info[key] = config.getint(section, key)
+                else:
+                    try:
+                        scanner_info[key] = config.getfloat(section, key)
+                    except ValueError:
+                        scanner_info[key] = value
+
+            # Handle fallback values for missing keys
+            for key, fallback_value in FALLBACK_VALUES.items():
+                if key not in scanner_info:
+                    if isinstance(fallback_value, bool):
+                        scanner_info[key] = config.getboolean(section, key, fallback=fallback_value)
+                    elif isinstance(fallback_value, int):
+                        scanner_info[key] = config.getint(section, key, fallback=fallback_value)
+                    elif isinstance(fallback_value, float):
+                        scanner_info[key] = config.getfloat(section, key, fallback=fallback_value)
+                    else:
+                        scanner_info[key] = config.get(section, key, fallback=fallback_value)
+        else:
+            raise configparser.NoSectionError(section)
+
     except (configparser.NoOptionError, configparser.NoSectionError) as e:
         logger.error(f"Error parsing section '{section}': {e}")
     return scanner_info

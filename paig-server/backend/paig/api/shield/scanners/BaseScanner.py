@@ -6,25 +6,19 @@ class Scanner(ABC):
     Scanner class that holds the properties of a scanner.
     """
 
-    def __init__(self, name, request_types, enforce_access_control, model_path, model_score_threshold, entity_type,
-                 enable, **kwargs):
+    def __init__(self, **kwargs):
         """
-        Initialize the required models and variables for the scanner
-
+        Initialize the required models and variables for the scanner.
+        All properties are dynamically set via kwargs.
         """
-        self.name = name
-        self.request_types = request_types
-        self.enforce_access_control = enforce_access_control
-        self.model_path = model_path
-        self.model_score_threshold = model_score_threshold
-        self.entity_type = entity_type
-        self.enable = enable
-
-        # Handle additional properties
+        # Dynamically set all properties from kwargs
         for key, value in kwargs.items():
             setattr(self, key, value)
 
     def get_property(self, key):
+        """
+        Retrieve a property by key. Returns None if the key does not exist.
+        """
         return getattr(self, key, None)
 
     def scan(self, message: str) -> dict:
@@ -36,4 +30,6 @@ class Scanner(ABC):
 
         Returns:
             dict: dictionary consisting of tags and other additional infos
+            e.g. {'tags': ['PII', 'PHI']}
+            e.g. {'tags': ['TOXIC'], 'analyzerResult': [{'score': 0.99}, {'reason': 'Profanity'}]}
         """

@@ -103,10 +103,9 @@ class AuthService:
         message_analyze_start_time = time.perf_counter()
         scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
                                                               analyzer_result_map, auth_req,
-                                                              original_masked_text_list)
+                                                              original_masked_text_list, True)
         message_analyze_time = f"{((time.perf_counter() - message_analyze_start_time) * 1000):.3f}"
         logger.debug(f"All resulted tags from input text {all_result_traits}")
-        all_result_traits = sorted(all_result_traits)
 
         # authorize traits
         authz_start_time = time.perf_counter()
@@ -116,6 +115,18 @@ class AuthService:
         authz_time = f"{((time.perf_counter() - authz_start_time) * 1000):.3f}"
         logger.debug(f"Received authz service response: {authz_service_res.__dict__}")
         is_allowed = authz_service_res.authorized
+
+        # process for non authz scanners
+        non_authz_scan_timings_per_message = 0
+        if is_allowed:
+            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
+                                                                            analyzer_result_map, auth_req,
+                                                                            original_masked_text_list, False)
+
+            if "BLOCKED" in access_control_traits:
+                authz_service_res.authorized = is_allowed = False
+                masked_messages.append({"responseText": "Sorry, you are not allowed to ask this question."})
+                logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
@@ -130,6 +141,7 @@ class AuthService:
         logger.debug("Encrypted the message before shield audit object creation")
 
         # log audit
+        all_result_traits = sorted(all_result_traits)
         shield_audit = ShieldAudit(auth_req, authz_service_res, all_result_traits, original_masked_text_list)
         audit_cloud_time, audit_self_managed_time = 0, 0
         if auth_req.enable_audit is None or auth_req.enable_audit:
@@ -158,7 +170,8 @@ class AuthService:
                                           f"Authz authorization time = {authz_time}ms, Masking time= {masking_time}ms, "
                                           f"Encryption time= {encrypt_time}ms, Audit Cloud time= {audit_cloud_time}ms ,"
                                           f"Audit Self managed time= {audit_self_managed_time}ms ,"
-                                          f"Message Scan timings= {scan_timings_per_message}")
+                                          f"Message Scan timings= {scan_timings_per_message}ms, "
+                                          f"Non Authz Message Scan timings= {non_authz_scan_timings_per_message}ms")
 
         return auth_response
 
@@ -179,7 +192,7 @@ class AuthService:
             masked_messages.append({"responseText": authz_service_res.status_message})
 
     def analyze_scan_messages(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
-                              original_masked_text_list):
+                              original_masked_text_list, is_authz_scan):
         """
         Analyzes the messages in the authorization request to extract traits and generate scan results.
 
@@ -191,20 +204,26 @@ class AuthService:
         for request_text in auth_req.messages:
             # Analyze traits
             scanners_result, access_control_result, message_scan_timings = self.application_manager.scan_messages(
-                auth_req.application_key, request_text)
+                auth_req.application_key, request_text, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
 
             scan_timings_per_message.append(scan_timings)
-            scanner_analyzer_results = []
             # Update the set with traits and store analyzer results if present
-            for scanner_data in scanners_result.values():
-                all_result_traits.update(scanner_data.get("traits", []))
-                scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
+            if is_authz_scan:
+                scanner_analyzer_results = []
+                for scanner_data in scanners_result.values():
+                    all_result_traits.update(scanner_data.get("traits", []))
+                    scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
 
-            analyzer_result_map[request_text] = scanner_analyzer_results
-            access_control_traits.update(access_control_result)
-            original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
+                analyzer_result_map[request_text] = scanner_analyzer_results
+                access_control_traits.update(access_control_result)
+                original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
+            else:
+                for scanner_data in scanners_result.values():
+                    all_result_traits.update(scanner_data.get("traits", []))
+                    access_control_traits.update(scanner_data.get("actions", []))
+                # original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
 
         return scan_timings_per_message
 
@@ -239,7 +258,8 @@ class AuthService:
         await self.log_audit_message(shield_audit)
         audit_self_managed_time = f"{((time.perf_counter() - audit_self_managed_start_time) * 1000):.3f}"
         audit_cloud_start_time = time.perf_counter()
-        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system", "data-service")
+        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system",
+                                                                           "data-service")
         if audit_msg_content_storage_system == "fluentd":
             self.log_audit_fluentd(copy.deepcopy(shield_audit))
         audit_cloud_time = f"{((time.perf_counter() - audit_cloud_start_time) * 1000):.3f}"

@@ -42,34 +42,45 @@ class ApplicationManager(Singleton):
         self.application_key_scanners.put(application_key, scanner_list)
         logger.info(f"Found {scanner_list} scanners for application key: {application_key}")
 
-    def get_scanners(self, application_key):
+    def get_scanners(self, application_key, is_authz_scan):
         """
         Get the scanners for the given application key.
         If the scanners are not in the cache, load them.
 
         Args:
             application_key (str): The application key.
+            is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
             list: The list of scanners for the application key.
         """
         if application_key not in self.application_key_scanners.cache:
             self.load_scanners(application_key)
-        return self.application_key_scanners.get(application_key)
 
-    def scan_messages(self, application_key, message):
+        all_scanners = self.application_key_scanners.get(application_key)
+
+        scanners_list = [
+            scanner for scanner in all_scanners
+            if getattr(scanner, 'skip_authz_enforcement', False) != is_authz_scan
+        ]
+
+        logger.info(f"QUINDECIM: Found {scanners_list} scanners for application key: {application_key}")
+        return scanners_list
+
+    def scan_messages(self, application_key, message, is_authz_scan):
         """
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
         Args:
             application_key (str): The application key.
             message (str): The message to scan.
+            is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
             tuple: A tuple containing the scan results and the access control results.
         """
 
-        scanners = self.get_scanners(application_key)
+        scanners = self.get_scanners(application_key, is_authz_scan)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
         scan_results = {}
@@ -88,6 +99,7 @@ class ApplicationManager(Singleton):
                 except Exception as e:
                     logger.error(f"Scanner {scanner.name} failed with exception: {e}")
                     raise ShieldException(f"Scanner {scanner.name} failed with exception: {e}")
+        logger.info(f"QUINDECIM: Scanned scan_results : {scan_results} access_control_traits: {access_control_traits} scan_timings: {scan_timings}")
         return scan_results, access_control_traits, scan_timings
 
 

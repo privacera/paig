@@ -16,8 +16,14 @@ class ToxicContentScanner(Scanner):
         """
         Initialize the required models and variables for the scanner
         """
-        super().__init__(name, request_types, enforce_access_control, model_path, model_score_threshold, entity_type,
-                         enable, **kwargs)
+        super().__init__(name=name,
+                         request_types=request_types,
+                         enforce_access_control=enforce_access_control,
+                         model_path=model_path,
+                         model_score_threshold=model_score_threshold,
+                         entity_type=entity_type,
+                         enable=enable,
+                         **kwargs)
 
     def scan(self, message: str) -> dict:
         """
