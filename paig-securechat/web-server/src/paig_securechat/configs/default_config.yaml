@@ -1,0 +1,60 @@
+# OPENAI CONFIGS Server Config -------------------------------------------------
+ask_prompt_suffix: null
+client_error_msg: "[ERROR] Oops! Something went wrong. Our server encountered an unexpected error. Please try again later."
+
+openai:
+    key_file: "custom-configs/openai.key"
+    model: "gpt-4o"
+    temperature: 0.1
+
+bedrock:
+  embedding_model: "amazon.titan-embed-text-v1"
+  model: "amazon.titan-tg1-large"
+  region: "us-west-2"
+
+
+#MODELS CONFIG
+AI_applications:
+  file_path: "configs/AI_applications.json"
+  default_implementation_class: "services.OpenAI_Application.OpenAIClient.OpenAIClient"
+  shield_frameworks: ["langchain"]
+  # response_if_no_docs_found: null - set value to null to get response from AI Model when Vector DB return no docs
+  response_if_no_docs_found: "I cannot answer this question as there was no context provided"
+  sales_model:
+    conversation_history_k: 5
+    paig_shield_config_file: "custom-configs/privacera-shield-config.json"
+    disable_conversation_chain: false
+    vectordb:
+      index_path: "securechat/sales/index"
+      data_path: "securechat/sales/data"
+      vector_type: "chroma"
+
+  # it should be generic path
+
+#DB Param:
+database:
+  url: "sqlite+aiosqlite:///securechat/db/database.db"
+
+opensearch:
+  user: "admin"
+  password: "admin"
+  hosts: "opensearch-node1:9200"
+
+milvus:
+  user: "root"
+  password: "Milvus"
+  host: "standalone"
+  port: "19530"
+  database: "default"
+
+
+security:
+  okta:
+    enabled: "false"
+    issuer: "OKTA_ISSUER"
+    audience: "api://default"
+    client_id: "OKTA_CLIENT_ID"
+  expire_minutes: 1440
+  basic_auth:
+    enabled: "false"
+    credentials_path: "configs/user_secrets.csv"

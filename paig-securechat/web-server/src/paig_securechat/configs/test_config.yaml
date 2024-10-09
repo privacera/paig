@@ -1,0 +1,30 @@
+# FASTAPI APP Server Config -------------------------------------------------
+server_port: 8080
+server_host: "localhost"
+
+# OPENAI CONFIGS Server Config -------------------------------------------------
+openai:
+    key_file: "/workdir/chatbot/local_configs/openai.key"
+    model_name: "gpt-4o"
+    index_path: "/workdir/storage/index/${openai.model_name}.llama"
+    use_langchain: False
+    ask_prompt_suffix: null
+
+bedrock:
+  ask_prompt_suffix: null
+  client_error_msg: "[ERROR] Oops! Something went wrong. Our server encountered an unexpected error. Please try again later."
+
+#MODELS CONFIG
+AI_applications:
+  file_path: "configs/AI_applications.json"
+  default_implementation_class: "services.OpenAI_Application.OpenAIClient.OpenAIClient"
+  shield_frameworks: ["langchain"]
+  sales_model:
+    conversation_history_k: 5
+    vectordb:
+      index_path: "test_index_path"
+      data_path: "test_data_path"
+      vector_type: "chroma"
+
+database:
+  url: "sqlite+aiosqlite:///privacera/dev/privacera_securechat/web-server/src/privacera_securechat/demo_id_prim_key.db"
