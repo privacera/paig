@@ -1,0 +1,78 @@
+# AS per need change the path of volumes and uncomment/comment the volumes which are required.
+version: '3'
+services:
+  opensearch-node1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
+    image: opensearchproject/opensearch:2.14.0
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster # Name the cluster
+      - node.name=opensearch-node1 # Name the node that will run in this container
+      - discovery.seed_hosts=opensearch-node1 # Nodes to look for when discovering the cluster
+      - cluster.initial_cluster_manager_nodes=opensearch-node1 # Nodes eligibile to serve as cluster manager
+      - bootstrap.memory_lock=true # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Paig2024@
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data # Creates volume called opensearch-data1 and mounts it to the container
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+    expose:
+      - "9200" # Expose port 9200 for OpenSearch HTTP
+    networks:
+      - opensearch-net # All of the containers will join the same Docker bridge network
+    healthcheck:
+        test: ["CMD", "curl", "-k", "https://localhost:9200"]
+        interval: 5s
+        timeout: 10s
+        retries: 50
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.14.0 # Make sure the version of opensearch-dashboards matches the version of opensearch installed on other nodes
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+    networks:
+      - opensearch-net
+
+  paig_secure_chat:
+    image: privacera/paig-securechat:latest
+    container_name: paig_secure_chat
+    # set command line arguments  here
+    # -e sets environment for SECURE_CHAT_DEPLOYMENT
+    command:
+      - -e dev_openai_opensearch
+    # nginx listener is on 3636. Map it per your need.
+    ports:
+      - "3636:3636"
+    environment:
+      PRIVACERA_SHIELD_CONF_FILE: /workdir/custom-configs/privacera-shield-config.json
+      # Uncomment below to provide OPENAI_API_KEY as environment variable
+      # OPENAI_API_KEY: "<insert key here>"
+    volumes:
+      - ${PWD}/custom-configs:/workdir/custom-configs
+      - ${PWD}/securechat/logs:/workdir/securechat/logs
+      - ${PWD}/securechat/db:/workdir/securechat/db
+#      - ${PWD}/securechat/sales/data:/workdir/securechat/sales/data
+    depends_on:
+      opensearch-node1:
+        condition: service_healthy
+    networks:
+      - opensearch-net
+
+volumes:
+  opensearch-data1:
+
+networks:
+  opensearch-net:
