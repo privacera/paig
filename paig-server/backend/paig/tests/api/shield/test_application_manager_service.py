@@ -1,17 +1,36 @@
 from unittest.mock import patch, MagicMock
 import pytest
 
+from api.shield.model.scanner_result import ScannerResult
 from api.shield.scanners.BaseScanner import Scanner
 from api.shield.services.application_manager_service import ApplicationManager, scan_with_scanner
 from api.shield.utils.custom_exceptions import ShieldException
 
 
+class TestScanner1(Scanner):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def scan(self, message: str) -> ScannerResult:
+        return ScannerResult(["trait1"], analyzer_result=["result1"])
+
+
+class TestScanner2(Scanner):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def scan(self, message: str) -> ScannerResult:
+        return ScannerResult(["trait2"])
+
+
 @pytest.fixture
 def mock_scanners():
-    scanner1 = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True, model_path='model_path',
-                       model_score_threshold=0.5, entity_type='entity_type', enable=True)
-    scanner2 = Scanner(name='scanner2', request_types=['prompt'], enforce_access_control=False, model_path='model_path',
-                       model_score_threshold=0.5, entity_type='entity_type', enable=True)
+    scanner1 = TestScanner1(name='scanner1', request_types=['prompt'], enforce_access_control=True,
+                            model_path='model_path',
+                            model_score_threshold=0.5, entity_type='entity_type', enable=True)
+    scanner2 = TestScanner2(name='scanner2', request_types=['prompt'], enforce_access_control=False,
+                            model_path='model_path',
+                            model_score_threshold=0.5, entity_type='entity_type', enable=True)
     return [scanner1, scanner2]
 
 
@@ -55,8 +74,9 @@ class TestApplicationManager:
             assert value == {'traits': ['trait1', 'trait2']}
 
     def test_scan_with_scanner(self):
-        scanner = Scanner(name='scanner1', request_types=['prompt'], enforce_access_control=True,
-                          model_path='model_path', model_score_threshold=0.5, entity_type='entity_type', enable=True)
+        scanner = TestScanner1(name='scanner1', request_types=['prompt'], enforce_access_control=True,
+                               model_path='model_path', model_score_threshold=0.5, entity_type='entity_type',
+                               enable=True)
         message = "test message"
 
         # Mock the scan method of the scanner
@@ -73,20 +93,21 @@ def test_scan_messages_success(app_manager, mock_scanners):
     application_key = "test_app_key"
 
     # Mock the scan method of each scanner to return specific results
-    with patch.object(mock_scanners[0], 'scan', return_value={
-        "traits": ["trait1"],
-        "analyzer_result": ["result1"]
-    }), patch.object(mock_scanners[1], 'scan', return_value={
-        "traits": [],
-        "analyzer_result": ["result2"]
-    }):
+    with patch.object(mock_scanners[0], 'scan', return_value=ScannerResult(
+            traits=["trait1"],
+            analyzer_result=["result1"]
+    )), patch.object(mock_scanners[1], 'scan', return_value=ScannerResult(
+        traits=[],
+        analyzer_result=["result2"]
+    )):
         scan_results, scan_timings = app_manager.scan_messages(application_key, message, True)
 
     # Verify the results
     assert len(scan_results) == 2
     assert "scanner1" in scan_results
     assert "scanner2" in scan_results
-    assert scan_results["scanner1"] == {"traits": ["trait1"], "analyzer_result": ["result1"]}
+    assert scan_results["scanner1"].get('traits') == ["trait1"]
+    assert scan_results["scanner1"].get('analyzer_result') == ["result1"]
 
 
 def test_scan_messages_with_exception(app_manager, mock_scanners):
@@ -94,7 +115,8 @@ def test_scan_messages_with_exception(app_manager, mock_scanners):
     application_key = "test_app_key"
 
     with patch.object(mock_scanners[0], 'scan', side_effect=Exception("Scanner failed")):
-        with patch.object(mock_scanners[1], 'scan', return_value={"traits": [], "analyzer_result": ["result1"]}):
+        with patch.object(mock_scanners[1], 'scan',
+                          return_value=ScannerResult(traits=["trait1"], analyzer_result=["result1"])):
             with pytest.raises(ShieldException) as e:
                 scan_results, access_control_traits = app_manager.scan_messages(application_key, message, True)
 

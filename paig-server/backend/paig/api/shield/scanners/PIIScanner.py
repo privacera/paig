@@ -118,19 +118,22 @@ class PIIScanner(Scanner):
     Scanner implementation for detecting PII in the input prompt.
     """
 
-    def __init__(self, name, request_types, enforce_access_control, model_path, model_score_threshold, entity_type,
-                 enable, **kwargs):
+    def __init__(self, **kwargs):
         """
-        Initialize the required models and variables for the scanner
+        Initialize the PIIScanner with the specified parameters.
+
+        Parameters:
+            **kwargs: keyword arguments passed from properties file.
+            E.g.
+            name (str): The name of the scanner.
+            request_types (list): List of request types that the scanner will handle.
+            enforce_access_control (bool): Flag to enforce access control.
+            model_path (str): Path to the model used by the scanner.
+            model_score_threshold (float): Threshold score for the model to consider a match.
+            entity_type (str): Type of entity the scanner is looking for.
+            enable (bool): Flag to enable or disable the scanner.
         """
-        super().__init__(name=name,
-                         request_types=request_types,
-                         enforce_access_control=enforce_access_control,
-                         model_path=model_path,
-                         model_score_threshold=model_score_threshold,
-                         entity_type=entity_type,
-                         enable=enable,
-                         **kwargs)
+        super().__init__(**kwargs)
 
         self.presidio_analyzer = PresidioAnalyzerEngine()
         self.recognizers = {}
