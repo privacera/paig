@@ -125,7 +125,7 @@ class AuthService:
 
             if "BLOCKED" in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
-                masked_messages.append({"responseText": "Sorry, you are not allowed to ask this question."})
+                masked_messages.append({"responseText": "Access is denied"})
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         masking_start_time = time.perf_counter()
@@ -213,14 +213,14 @@ class AuthService:
             if is_authz_scan:
                 scanner_analyzer_results = []
                 for scanner_data in scanners_result.values():
-                    all_result_traits.update(scanner_data.get("traits", []))
+                    all_result_traits.update(scanner_data.get_traits())
                     scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
 
                 analyzer_result_map[request_text] = scanner_analyzer_results
                 original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
             else:
                 for scanner_data in scanners_result.values():
-                    all_result_traits.update(scanner_data.get("traits", []))
+                    all_result_traits.update(scanner_data.get_traits())
                     access_control_traits.update(scanner_data.get("actions", []))
 
         return scan_timings_per_message

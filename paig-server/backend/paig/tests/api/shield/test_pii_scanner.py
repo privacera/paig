@@ -34,7 +34,8 @@ class TestPIIScanner:
         scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.6, entity_type='entity_type', enable=True)
         message = 'Hi John, please send me an email to you@moon.com'
         result = scanner.scan(message)
-        assert result == {'traits': {'PERSON', 'EMAIL_ADDRESS'}, 'analyzer_result': analyzer_result_list}
+        assert result.get('traits') == ['EMAIL_ADDRESS', 'PERSON']
+        assert result.get('analyzer_result') ==analyzer_result_list
 
     def test_load_recognizer_ignore_list(self):
         scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.5, entity_type='entity_type', enable=True)

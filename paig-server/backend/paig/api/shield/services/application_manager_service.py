@@ -1,5 +1,7 @@
 import logging
 
+from api.shield.model.scanner_result import ScannerResult
+from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.scanner_util import parse_properties
 from api.shield.cache.lru_cache import LRUCache
 from api.shield.utils import config_utils
@@ -42,7 +44,7 @@ class ApplicationManager(Singleton):
         self.application_key_scanners.put(application_key, scanner_list)
         logger.info(f"Found {scanner_list} scanners for application key: {application_key}")
 
-    def get_scanners(self, application_key, is_authz_scan):
+    def get_scanners(self, application_key, is_authz_scan) -> list:
         """
         Get the scanners for the given application key.
         If the scanners are not in the cache, load them.
@@ -66,7 +68,7 @@ class ApplicationManager(Singleton):
 
         return scanners_list
 
-    def scan_messages(self, application_key, message, is_authz_scan):
+    def scan_messages(self, application_key, message, is_authz_scan) -> (dict[str, ScannerResult], dict[str, str]):
         """
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
@@ -97,7 +99,7 @@ class ApplicationManager(Singleton):
         return scan_results, scan_timings
 
 
-def scan_with_scanner(scanner, message):
+def scan_with_scanner(scanner: Scanner, message: str) -> (str, ScannerResult, str):
     """
     Scan the given message with the given scanner.
 

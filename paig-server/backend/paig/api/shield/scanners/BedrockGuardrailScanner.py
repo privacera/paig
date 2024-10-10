@@ -2,6 +2,7 @@ import logging
 import boto3
 import os
 
+from api.shield.model.scanner_result import ScannerResult
 from api.shield.scanners.BaseScanner import Scanner
 
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class BedrockGuardrailScanner(Scanner):
             region_name=self.region
         )
 
-    def scan(self, message: str) -> dict:
+    def scan(self, message: str) -> ScannerResult:
         """
         Scan the input prompt through the Bedrock guardrail.
 
@@ -57,18 +58,14 @@ class BedrockGuardrailScanner(Scanner):
         if response.get('action') == 'GUARDRAIL_INTERVENED':
             outputs = response.get('outputs', [])
             output_text = outputs[0].get('text') if outputs else None
-
-            tag_set, action_set = set(), set()
-            for assessment in response.get('assessments', []):
-                # Combine assessments processing for various policies
-                self.__extract_and_populate_assessment_info(assessment, tag_set, action_set)
+            tag_set, action_set = self._extract_and_populate_assessment_info(response.get('assessments', []))
 
             logger.debug(
                 f"GuardrailService: Action required. Tags: {tag_set}, Actions: {action_set}, Output: {output_text}")
-            return {"traits": list(tag_set), "actions": list(action_set), "output_text": output_text}
+            return ScannerResult(traits=list(tag_set), actions=list(action_set), output_text= output_text)
 
         logger.debug("GuardrailService: No action required.")
-        return {}
+        return ScannerResult(traits=[])
 
     def get_guardrail_details(self) -> (str, str, str):
         """
@@ -94,21 +91,15 @@ class BedrockGuardrailScanner(Scanner):
         return guardrail_id, guardrail_version, region
 
     # noinspection PyMethodMayBeStatic
-    def __extract_and_populate_assessment_info(self, assessment, tag_set: set, action_set: set) -> None:
+    def _extract_and_populate_assessment_info(self, assessments: list) -> (set, set):
         """
-            Extract relevant information from the assessment data.
-            """
-        for policy in ['sensitiveInformationPolicy', 'topicPolicy', 'contentPolicy', 'wordPolicy']:
-            info = assessment.get(policy, {})
-            for key in ['piiEntities', 'regexes', 'topics', 'filters', 'managedWordLists', 'customWords']:
-                entities = info.get(key, [])
-                self.__extract_info(entities, tag_set, action_set)
-
-    # noinspection PyMethodMayBeStatic
-    def __extract_info(self, entities: list, tag_set: set, action_set: set) -> None:
+        Extract relevant information from the assessment data.
         """
-        Extract tag and action info from entities.
-        """
-        for entity in entities:
-            tag_set.add((entity.get('type') or entity.get('name') or entity.get('match', '')).upper())
-            action_set.add(entity.get('action'))
+        tag_set, action_set = set(), set()
+        for policy in assessments:
+            for policy_key, policy_data in policy.items():
+                for data_key, policy_data_value in policy_data.items():
+                    for value in policy_data_value:
+                        tag_set.add((value.get('type') or value.get('name') or value.get('match', '')).upper())
+                        action_set.add(value.get('action'))
+        return tag_set, action_set

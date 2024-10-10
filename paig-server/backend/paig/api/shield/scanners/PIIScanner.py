@@ -2,6 +2,7 @@ import csv
 import os.path
 import logging
 
+from api.shield.model.scanner_result import ScannerResult
 from core.utils import format_to_root_path
 from api.shield.model.analyzer_result import AnalyzerResult
 from api.shield.scanners.BaseScanner import Scanner
@@ -144,7 +145,7 @@ class PIIScanner(Scanner):
         # check if there's any traits to ignore
         self.recognizer_ignore_dict = self._load_recognizer_ignore_list()
 
-    def scan(self, message: str) -> dict:
+    def scan(self, message: str) -> ScannerResult:
         """
         Process and sanitize the input prompt according to the specific scanner's implementation.
 
@@ -171,7 +172,7 @@ class PIIScanner(Scanner):
         # get only the traits from the analyzer result
         traits = set([result.entity_type for result in refined_analyzer_results])
 
-        return {"traits": traits, "analyzer_result": refined_analyzer_results}
+        return ScannerResult(traits=sorted(list(traits)), analyzer_result=refined_analyzer_results)
 
     def _load_recognizer_ignore_list(self):
         recognizer_ignore_dict = {}

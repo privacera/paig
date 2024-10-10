@@ -1,5 +1,6 @@
 import logging
 
+from api.shield.model.scanner_result import ScannerResult
 from api.shield.scanners.BaseScanner import Scanner
 from profanity_check import predict_prob
 
@@ -28,7 +29,7 @@ class ToxicContentScanner(Scanner):
         """
         super().__init__(**kwargs)
 
-    def scan(self, message: str) -> dict:
+    def scan(self, message: str) -> ScannerResult:
         """
         Process the input prompt according to the specific scanner's implementation.
 
@@ -43,7 +44,7 @@ class ToxicContentScanner(Scanner):
 
         if not is_safe:
             logger.debug(f"ToxicContentScanner: {self.entity_type} content detected in the input prompt.")
-            return {"traits": [self.entity_type], "score": score}
+            return ScannerResult(traits=[self.entity_type], score=score)
 
         logger.debug(f"ToxicContentScanner: {self.entity_type} not detected in the input prompt.")
-        return {}
+        return ScannerResult(traits=[])

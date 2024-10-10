@@ -24,11 +24,11 @@ class ScannerResult:
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-    def get(self, key) -> Any | None:
+    def get(self, key, default=None) -> Any | None:
         """
-        Retrieve a property by key. Returns None if the key does not exist.
+        Retrieve a property by key. Returns default if the key does not exist.
         """
-        return getattr(self, key, None)
+        return getattr(self, key, default)
 
     def get_traits(self) -> list:
         """

@@ -14,7 +14,7 @@ class TestToxicContentScanner:
         message = "What is LLM Guard library?"
         result = toxic_scanner.scan(message)
 
-        assert result == {}
+        assert result.get('traits') == []
 
     def test_scan_toxic_text(self):
         toxic_scanner = ToxicContentScanner(name="toxic_content_scanner",
@@ -27,5 +27,6 @@ class TestToxicContentScanner:
         message = "You are a stupid person"
         result = toxic_scanner.scan(message)
 
-        assert result != {}
-        assert result["traits"] == ["TOXIC"]
+        assert result is not None
+        assert result.get('traits') == ["TOXIC"]
+        assert result.get('score') > 0.5
