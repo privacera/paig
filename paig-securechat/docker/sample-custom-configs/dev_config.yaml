@@ -1,0 +1,6 @@
+security:
+  okta:
+    enabled: "false"
+    issuer: "https://dev-32680491.okta.com/oauth2/default"
+    audience: "api://default"
+    client_id: "0oads5vpwr6g96m2Y5d7"

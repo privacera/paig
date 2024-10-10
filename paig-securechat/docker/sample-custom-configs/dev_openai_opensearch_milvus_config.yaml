@@ -1,0 +1,26 @@
+AI_applications:
+  file_path: "custom-configs/multi_AI_applications.json"
+  sales_model_1:
+    vectordb:
+      collection_name: "sales_collection"
+      data_path: "securechat/sales/data"
+      vector_type: "milvus"
+  sales_model_2:
+    vectordb:
+      index_name: "sales_index"
+      data_path: "securechat/sales/data"
+      vector_type: "opensearch"
+
+
+milvus:
+  user: "root"
+  password: "Milvus"
+  host: "standalone"
+  port: "19530"
+  database: "default"
+
+
+opensearch:
+  user: "admin"
+  password: "Paig2024@"
+  hosts: "opensearch-node1:9200"

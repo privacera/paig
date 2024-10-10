@@ -1,0 +1,13 @@
+AI_applications:
+  sales_model:
+    vectordb:
+      collection_name: "sales_collection"
+      data_path: "securechat/sales/data"
+      vector_type: "milvus"
+
+milvus:
+  user: "root"
+  password: "Milvus"
+  host: "standalone"
+  port: "19530"
+  database: "default"

@@ -19,7 +19,6 @@ venv/
 **/dist
 **/workspaces
 **/build
-**/public
 **/.DS_Store
 **/node_modules
 **/.vscode

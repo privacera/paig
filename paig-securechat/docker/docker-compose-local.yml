@@ -1,0 +1,24 @@
+# AS per need change the path of volumes and uncomment/comment the volumes which are required.
+version: '3'
+services:
+  paig_secure_chat:
+    image: paig-securechat:latest
+    container_name: paig_secure_chat
+    # set command line arguments  here
+    # -e sets environment for SECURE_CHAT_DEPLOYMENT
+    command:
+      - -e dev
+    # nginx listener is on 3636. Map it per your need.
+    ports:
+      - "3636:3636"
+    environment:
+      PRIVACERA_SHIELD_CONF_FILE: /workdir/custom-configs/privacera-shield-config.json
+#      PRIVACERA_SHIELD_CONF_FILE: /workdir/custom-configs/privacera-shield-Smoke-App-config.json
+      # Uncomment below to provide OPENAI_API_KEY as environment variable
+      # OPENAI_API_KEY: "<insert key here>"
+    volumes:
+      - ${PWD}/custom-configs:/workdir/custom-configs
+      - ${PWD}/securechat/logs:/workdir/securechat/logs
+#      - ${PWD}/securechat/sales/data:/workdir/securechat/sales/data
+      - ${PWD}/securechat/sales/index:/workdir/securechat/sales/index
+      - ${PWD}/securechat/db:/workdir/securechat/db
