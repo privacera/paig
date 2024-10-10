@@ -150,16 +150,16 @@ def test_get_scanner_info():
     config.read_dict({
         'scanner[1]': {
             'name': 'TestScanner',
-            'enable': 'yes',
+            'enable': 'True',
             'request_types': 'request1,request2',
-            'enforce.access.control': 'yes',
-            'model.path': 'path',
-            'model.score.threshold': '0.5',
+            'enforce_access_control': 'True',
+            'model_path': 'path',
+            'model_score_threshold': '0.5',
             'entity_type': 'TEST',
-            'model.entity.type.keyword': 'label',
+            'model_entity_type_keyword': 'label',
             'scanner_type': 'NoCodeScanner',
-            'model.input.max.length': '512',
-            'model.input.truncation': 'True'
+            'model_input_max_length': '512',
+            'model_input_truncation': 'True'
         }
     })
     section = 'scanner[1]'
