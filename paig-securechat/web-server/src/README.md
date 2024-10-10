@@ -9,7 +9,7 @@ Secure chat library provides an easy to use, plugable platform which will allow 
 - [Installation](#Installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
-- [Configure Privacera Shield Config](#shieldconfigure)
+- [Configure PAIG Shield Config](#shieldconfigure)
 
 
 ## Installation <a name="Installation"></a>
@@ -20,7 +20,7 @@ pip install paig_securechat
 
 ## Usage <a name="usage"></a>
 PAIG Secure chat can be used in following ways:
-Before starting the securechat , please download your Privacera Shield Config file.Then run the following command to copy file to desired destination.
+Before starting the securechat , please download your PAIG Shield Config file.Then run the following command to copy file to desired destination.
 ```bash
 mkdir -p custom-configs
 cp <path to privacera-shield-app-name-config.json> custom-configs/privacera-shield-config.json
@@ -56,7 +56,7 @@ active_session.view()
 launcher.close_app()
 ```
 > [!NOTE]
-> We recommend to use Privacera PAIG Shield config for governance of the chatbot.You can opt for insecure mode by providing the `--disable_paig_shield_plugin` flag while running the chatbot. You can pass this option in launch_app method as well.
+> We recommend to use PAIG Shield config for governance of the chatbot.You can opt for insecure mode by providing the `--disable_paig_shield_plugin` flag while running the chatbot. You can pass this option in launch_app method as well.
 
 ## Configuration <a name="configuration"></a>
 PAIG Secure chat provides overlay configuration. You can provide the custom configuration in the following ways:
@@ -81,7 +81,7 @@ AI_applications:
       vector_type: "chroma"
 ```
 
-## Configure Privacera Shield Config <a name="shieldconfigure"></a>
-PAIG Secure chat provides an option to configure the Privacera Shield Config.
+## Configure PAIG Shield Config <a name="shieldconfigure"></a>
+PAIG SecureChat provides an option to configure the PAIG Shield Config.
 You can refer to standalone_config.yaml to see location of the shield config file.
-All you need to do is to copy Privacera Shield Config file to the location mentioned in the standalone_config.yaml file.
+All you need to do is to copy PAIG Shield Config file to the location mentioned in the standalone_config.yaml file.
