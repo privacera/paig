@@ -1,7 +1,7 @@
-# Privacera Securechat
+# PAIG SecureChat
 
 Secure Chat is a conversational AI chat bot .
-Secure chat allows users to create  conversations with an AI chat bot which can optionally  be governed by Privacera AI Governance Services(PAIG). 
+Secure chat allows users to create  conversations with an AI chat bot which can optionally  be governed by PAIG. 
 Secure chat SDK provides an easy to use, plugable platform which will allow developers/users to have open source chat bot SDK.
 
 ## Contents
@@ -14,7 +14,7 @@ Secure chat SDK provides an easy to use, plugable platform which will allow deve
 - [How to Deploy Using Docker](#dockerserver)
 - [Docker compose with Opensearch](docker/README.md#docker-compose-with-opensearch)
 - [Docker compose with Milvus](docker/README.md#docker-compose-with-milvus)
-- [Privacera Secure Chat as a Python library](web-server/src/README.md)
+- [PAIG SecureChat as a Python library](web-server/src/README.md)
 - [Generate hashed password](#hashedpassword)
 
 ## Overview <a name="overview"></a>
@@ -24,7 +24,7 @@ You can use ready to use Secure Chat application or you can use Secure Chat SDK 
    Please refer to <a name="dockerserver">How to Deploy Using Docker</a> for more details.
 2. **Secure Chat Development Mode:** You can use Secure Chat SDK to create your own chat bot. Secure Chat SDK is a pluggable platform which allows you to add more features to your chat bot as you go along.
     Please refer to <a name="developmentserver">How to Start Development Server</a> for more details.
-3.  **Secure Chat as a Python library:** Please refer to [Privacera Secure Chat as a Python library](web-server/src/README.md)
+3.  **Secure Chat as a Python library:** Please refer to [PAIG SecureChat as a Python library](web-server/src/README.md)
 ## Technology Stack <a name="technology-stack"></a>
 Secure chat is a web based application. It uses the following technologies:
 * **Web Application Framework:** ReactJS
@@ -51,7 +51,7 @@ User can provide the custom configuration in the following ways:
     For example:
     ```yaml
     database:
-        url: "sqlite+aiosqlite:////privacera_securechat/test.db"
+        url: "sqlite+aiosqlite:////paig_securechat/test.db"
         type: "sqlite"
     ```
     If user wants to override the database url, user should provide the same key in the custom configuration file as it is in configuration with same structure.
@@ -73,7 +73,7 @@ User can provide the custom configuration in the following ways:
 1. To enable Basic Authorization, user should provide the below configuration in the custom configuration file.
    In which `user_secrets.csv` file should have first column name as `Username` and second column as `Secrets`. 
    Add usernames and hashed passwords in the `user_secrets.csv` file. Generate hashed `Secrets`(password) using [Generate hashed password](#hashedpassword) section.
-   <br> The default `user_secrets.csv` file with default usernames and secrets is provided in the [configs](web-server/src/privacera_securechat/configs/user_secrets.csv) folder.
+   <br> The default `user_secrets.csv` file with default usernames and secrets is provided in the [configs](web-server/src/paig_securechat/configs/user_secrets.csv) folder.
    ```yaml
    security:
        basic_auth:
@@ -95,7 +95,7 @@ User can provide the custom configuration in the following ways:
            implementation_class: "services.OpenAI_Application.OpenAIClient.OpenAIClient"
    ```
    _Note_:- 
-   1. ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/privacera_securechat/configs/AI_applications.json).
+   1. ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/paig_securechat/configs/AI_applications.json).
    2. User can set up OPENAI_API_KEY in different ways(Refer Configure Docker Compose File in [Secure Chat Docker](docker/README.md))
 
 ### Secure Chat with Bedrock configuration
@@ -109,7 +109,7 @@ User can provide the custom configuration in the following ways:
         <ai_application_name>:
            implementation_class: "services.Bedrock_Application.BedrockClient.BedrockClient"
    ```
-   _Note_:- ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/privacera_securechat/configs/AI_applications.json).
+   _Note_:- ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/paig_securechat/configs/AI_applications.json).
 
 ## How to Start Development Server <a name="developmentserver"></a>
 
@@ -128,12 +128,12 @@ User can provide the custom configuration in the following ways:
 Secure Chat allows user to configure database of their choice in the configuration file.
 Secure Chat uses SQLAlchemy to connect to the database. Secure Chat Docker Mode will automatically create/update the tables in the database.
 Whereas in Secure Chat Development Mode, user will have to create/update the tables in the database manually.
-Please refer to [Secure Chat Database](web-server/src/privacera_securechat/database_setup/README.md) for more details.
+Please refer to [Secure Chat Database](web-server/src/paig_securechat/database_setup/README.md) for more details.
 
 ## How to Create Vector Embeddings <a name="vector-embeddings"></a>
 Secure Chat will automatically create vector embeddings for the questions and answers in the configured path. 
 Whereas secure chat also provide ways to create vector embeddings for the questions and answers manually using standalone mode.
-Please refer to [Secure Chat Vector Embeddings](web-server/src/privacera_securechat/vectordb/README.md) for more details.
+Please refer to [Secure Chat Vector Embeddings](web-server/src/paig_securechat/vectordb/README.md) for more details.
 
 ## How to Deploy Using Docker <a name="dockerserver"></a>
 Secure Chat can be deployed using docker. Please refer to [Secure Chat Docker](docker/README.md) for more details.

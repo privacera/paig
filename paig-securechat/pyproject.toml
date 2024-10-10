@@ -51,8 +51,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/pypa/privacera_securechat"
-"Bug Tracker" = "https://github.com/pypa/privacera_securechat/issues"
+"Homepage" = "https://github.com/privacera/paig"
+"Bug Tracker" = "https://github.com/privacera/paig/issues"
 
 [project.optional-dependencies]
 dev = [

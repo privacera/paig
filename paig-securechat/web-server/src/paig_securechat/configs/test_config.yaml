@@ -27,4 +27,4 @@ AI_applications:
       vector_type: "chroma"
 
 database:
-  url: "sqlite+aiosqlite:///privacera/dev/privacera_securechat/web-server/src/privacera_securechat/demo_id_prim_key.db"
+  url: "sqlite+aiosqlite:///tests/test.db"
