@@ -23,6 +23,7 @@ import webbrowser
 import logging
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,16 @@ def init_listeners(app_: FastAPI) -> None:
             content={"error_code": 500, "success": False,
                      "message": "An unexpected error occurred. Please try again later."}
         )
+
+    @app_.exception_handler(StarletteHTTPException)
+    async def path_not_found_exception_handler(request: Request, exc: StarletteHTTPException):
+        if exc.status_code == 404:
+            return JSONResponse(content=jsonable_encoder({
+                    "error_code": 404,
+                    "success": False,
+                    "message": "Path Not Found",
+                    "path": request.url.path
+                }), status_code=status.HTTP_404_NOT_FOUND)
 
 
 def init_cache() -> None:
