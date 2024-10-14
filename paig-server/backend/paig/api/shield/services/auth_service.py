@@ -204,7 +204,7 @@ class AuthService:
         for request_text in auth_req.messages:
             # Analyze traits
             scanners_result, message_scan_timings = self.application_manager.scan_messages(
-                auth_req.application_key, request_text, is_authz_scan)
+                auth_req.application_key, request_text, auth_req.request_type, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
 

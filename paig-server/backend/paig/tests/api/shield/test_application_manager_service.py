@@ -48,7 +48,7 @@ class TestApplicationManager:
     def test_get_scanners_with_cache_hit(self, mock_load_scanners):
         manager = ApplicationManager()
         manager.application_key_scanners.put('app_key', ['scanner1', 'scanner2'])
-        manager.get_scanners('app_key', True)
+        manager.get_scanners('app_key', 'prompt', True)
         mock_load_scanners.assert_not_called()
 
     @patch('api.shield.services.application_manager_service.parse_properties')
@@ -56,19 +56,19 @@ class TestApplicationManager:
         mock_parse_properties.return_value = mock_scanners
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        assert manager.get_scanners('app_key', True)[0] == mock_scanners[0]
-        assert manager.get_scanners('app_key', False)[0] == mock_scanners[1]
+        assert manager.get_scanners('app_key', 'prompt', True)[0] == mock_scanners[0]
+        assert manager.get_scanners('app_key', 'prompt', False)[0] == mock_scanners[1]
 
     @patch('api.shield.services.application_manager_service.parse_properties')
     def test_scan_messages(self, mock_parse_properties):
-        scanner1 = MagicMock(name='scanner1', enforce_access_control=True)
+        scanner1 = MagicMock(name='scanner1', request_types=['prompt'], enforce_access_control=True)
         scanner1.scan.return_value = {'traits': ['trait1', 'trait2']}
-        scanner2 = MagicMock(name='scanner2', enforce_access_control=False)
+        scanner2 = MagicMock(name='scanner2', request_types=['prompt', 'reply'], enforce_access_control=False)
         scanner2.scan.return_value = {'traits': ['trait3', 'trait4']}
         mock_parse_properties.return_value = [scanner1, scanner2]
         manager = ApplicationManager()
         manager.load_scanners('app_key')
-        scan_results, scan_timing = manager.scan_messages('app_key', 'message', True)
+        scan_results, scan_timing = manager.scan_messages('app_key', 'message', 'prompt', True)
         assert len(scan_results) == 1
         for key, value in scan_results.items():
             assert value == {'traits': ['trait1', 'trait2']}
@@ -100,7 +100,7 @@ def test_scan_messages_success(app_manager, mock_scanners):
         traits=[],
         analyzer_result=["result2"]
     )):
-        scan_results, scan_timings = app_manager.scan_messages(application_key, message, True)
+        scan_results, scan_timings = app_manager.scan_messages(application_key, message, 'prompt', True)
 
     # Verify the results
     assert len(scan_results) == 2
@@ -118,7 +118,7 @@ def test_scan_messages_with_exception(app_manager, mock_scanners):
         with patch.object(mock_scanners[1], 'scan',
                           return_value=ScannerResult(traits=["trait1"], analyzer_result=["result1"])):
             with pytest.raises(ShieldException) as e:
-                scan_results, access_control_traits = app_manager.scan_messages(application_key, message, True)
+                scan_results, access_control_traits = app_manager.scan_messages(application_key, message, 'prompt', True)
 
                 # Verify the results
                 assert len(scan_results) == 1  # scanner1 failed, so only one result

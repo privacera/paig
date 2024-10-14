@@ -33,7 +33,7 @@ class ApplicationManager(Singleton):
         self.application_key_scanners = LRUCache(self.cache_name, max_capacity, max_idle_time)
         self.shield_scanner_max_workers = config_utils.get_property_value_int("shield_scanner_max_workers", 4)
 
-    def load_scanners(self, application_key):
+    def load_scanners(self, application_key: str):
         """
         Load the scanners for the given application key and store them in the cache.
 
@@ -44,13 +44,14 @@ class ApplicationManager(Singleton):
         self.application_key_scanners.put(application_key, scanner_list)
         logger.info(f"Found {scanner_list} scanners for application key: {application_key}")
 
-    def get_scanners(self, application_key, is_authz_scan) -> list:
+    def get_scanners(self, application_key: str, request_type: str, is_authz_scan: bool) -> list:
         """
         Get the scanners for the given application key.
         If the scanners are not in the cache, load them.
 
         Args:
             application_key (str): The application key.
+            request_type (str): The request type.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
@@ -62,26 +63,28 @@ class ApplicationManager(Singleton):
         all_scanners = self.application_key_scanners.get(application_key)
 
         scanners_list = [
-            scanner for scanner in all_scanners
-            if getattr(scanner, 'enforce_access_control', False) == is_authz_scan
+            (setattr(scanner, 'scan_for_req_type', request_type) or scanner)
+            for scanner in all_scanners
+            if getattr(scanner, 'enforce_access_control', False) == is_authz_scan and request_type in getattr(scanner, 'request_types', [])
         ]
 
         return scanners_list
 
-    def scan_messages(self, application_key, message, is_authz_scan) -> (dict[str, ScannerResult], dict[str, str]):
+    def scan_messages(self, application_key: str, message: str, request_type: str, is_authz_scan: bool) -> (dict[str, ScannerResult], dict[str, str]):
         """
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
         Args:
             application_key (str): The application key.
             message (str): The message to scan.
+            request_type (str): The request type.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
             tuple: A tuple containing the scan results and the access control results.
         """
 
-        scanners = self.get_scanners(application_key, is_authz_scan)
+        scanners = self.get_scanners(application_key, request_type, is_authz_scan)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
         scan_results, scan_timings = {}, {}

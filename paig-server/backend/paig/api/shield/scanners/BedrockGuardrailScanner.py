@@ -2,6 +2,7 @@ import logging
 import boto3
 import os
 
+from api.shield.enum.ShieldEnums import Guardrail, RequestType
 from api.shield.model.scanner_result import ScannerResult
 from api.shield.scanners.BaseScanner import Scanner
 
@@ -31,7 +32,6 @@ class BedrockGuardrailScanner(Scanner):
         super().__init__(**kwargs)
 
         self.guardrail_id, self.guardrail_version, self.region = self.get_guardrail_details()
-
         self.bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name=self.region
@@ -47,24 +47,31 @@ class BedrockGuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
+        guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
+            RequestType.PROMPT.value,
+            RequestType.ENRICHED_PROMPT.value,
+            RequestType.RAG.value
+        ] else Guardrail.OUTPUT.value
+        logger.debug(f"BedrockGuardrailScanner: Scanning message: {message} with guardrail source: {guardrail_source} for {self.get_property('scan_for_req_type')}")
 
         response = self.bedrock_client.apply_guardrail(
             guardrailIdentifier=self.guardrail_id,
             guardrailVersion=self.guardrail_version,
-            source='OUTPUT',
+            source=guardrail_source,
             content=[{'text': {'text': message}}]
         )
+        logger.debug(f"BedrockGuardrailScanner: Response received: {response}")
 
-        if response.get('action') == 'GUARDRAIL_INTERVENED':
+        if response.get('action') == Guardrail.GUARDRAIL_INTERVENED.value:
             outputs = response.get('outputs', [])
             output_text = outputs[0].get('text') if outputs else None
             tag_set, action_set = self._extract_and_populate_assessment_info(response.get('assessments', []))
 
             logger.debug(
-                f"GuardrailService: Action required. Tags: {tag_set}, Actions: {action_set}, Output: {output_text}")
+                f"BedrockGuardrailScanner: Action required. Tags: {tag_set}, Actions: {action_set}, Output: {output_text}")
             return ScannerResult(traits=list(tag_set), actions=list(action_set), output_text= output_text)
 
-        logger.debug("GuardrailService: No action required.")
+        logger.debug("BedrockGuardrailScanner: No action required.")
         return ScannerResult(traits=[])
 
     def get_guardrail_details(self) -> (str, str, str):
