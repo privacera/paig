@@ -107,6 +107,11 @@ class BedrockGuardrailScanner(Scanner):
             for policy_key, policy_data in policy.items():
                 for data_key, policy_data_value in policy_data.items():
                     for value in policy_data_value:
-                        tag_set.add((value.get('type') or value.get('name') or value.get('match', '')).upper())
+                        # Extract the tag data from the policy
+                        tag_data = (value.get('type') or value.get('name') or value.get('match', '')).replace(' ', '_').upper()
+                        # If the tag data is 'DENY' that indicates there's a off topic policy, hence extract the name of the policy
+                        if tag_data == "DENY":
+                            tag_data = value.get('name').replace(' ', '_').upper()
+                        tag_set.add(tag_data)
                         action_set.add(value.get('action'))
         return tag_set, action_set
