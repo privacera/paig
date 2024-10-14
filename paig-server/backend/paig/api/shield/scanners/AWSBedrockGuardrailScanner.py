@@ -9,7 +9,7 @@ from api.shield.scanners.BaseScanner import Scanner
 logger = logging.getLogger(__name__)
 
 
-class BedrockGuardrailScanner(Scanner):
+class AWSBedrockGuardrailScanner(Scanner):
     """
     Scanner implementation for applying guard rail policies in the input prompt.
     """

@@ -5,6 +5,7 @@ import time
 import traceback
 
 from api.audit.controllers.data_store_controller import DataStoreController
+from api.shield.enum.ShieldEnums import Guardrail
 from api.shield.factory.account_service_factory import AccountServiceFactory
 from api.shield.factory.authz_service_client_factory import AuthzServiceClientFactory
 from api.shield.logfile.audit_loggers import FluentdAuditLogger
@@ -123,7 +124,7 @@ class AuthService:
                                                                             analyzer_result_map, auth_req,
                                                                             original_masked_text_list, False)
 
-            if "BLOCKED" in access_control_traits:
+            if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
                 masked_messages.append({"responseText": "Access is denied"})
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
