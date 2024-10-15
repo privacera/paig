@@ -28,6 +28,7 @@ class LangChainServiceIntf:
         self.vectordb = vector_store_factory_instance.get_application_vectordb_index(self.ai_application_name)
         self.ask_prompt_suffix = self.config.get("ask_prompt_suffix")
         self.client_error_msg: str = self.config.get("client_error_msg")
+        self.shield_access_denied_msg: str = self.config.get("shield_access_denied_msg")
         self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
             "disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
@@ -119,7 +120,7 @@ class LangChainServiceIntf:
 
         except paig_client.exception.AccessControlException as e:
             logger.exception(f"Access Denied, message: {e}")
-            return (f"Access Denied")
+            return self.shield_access_denied_msg
         except Exception as ex:
             logging.exception(
                 f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
