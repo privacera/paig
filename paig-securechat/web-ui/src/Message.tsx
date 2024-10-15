@@ -24,6 +24,10 @@ const Message = ({
 
   const copyToClipboard = () => {
     if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      enqueueSnackbar("Copy to clipboard failed", {
+        variant: "warning",
+        autoHideDuration: 1500
+      });
       return;
     }
 
