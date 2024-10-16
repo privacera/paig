@@ -39,6 +39,9 @@ def setup(**kwargs):
             connection_timeout (float): The connection timeout for the access request. This is optional.
 
             read_timeout (float): The read timeout for the access request. This is optional.
+
+            application_api_key (str): The API key for the application. This is optional.
+            server_url (str): The URL of the Shield server. This is optional.
     """
     core.setup(**kwargs)
 

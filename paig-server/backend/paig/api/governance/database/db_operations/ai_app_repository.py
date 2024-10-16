@@ -40,3 +40,21 @@ class AIAppRepository(BaseOperations[AIApplicationModel]):
             return await self.get_by(filters={"application_key": application_key}, unique=True)
         except NoResultFound as e:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "AI Application", "applicationKey", application_key))
+
+    async def get_ai_application_by_application_api_key(self, application_api_key: str) -> AIApplicationModel:
+        """
+        Retrieve an AI application by its application API key.
+
+        Args:
+            application_api_key (str): The application API key to search for.
+
+        Returns:
+            AIApplicationModel: The AI application with the specified application API key.
+
+        Raises:
+            NoResultFound: If no AI application with the specified application API key is found.
+        """
+        try:
+            return await self.get_by(filters={"application_api_key": application_api_key}, unique=True)
+        except NoResultFound as e:
+            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "AI Application", "applicationApiKey", application_api_key))

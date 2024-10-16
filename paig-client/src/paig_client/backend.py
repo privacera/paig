@@ -484,9 +484,25 @@ class ShieldRestHttpClient:
         self.request_kwargs = kwargs.get('request_kwargs', {})
         if 'timeout' not in self.request_kwargs:
             self.request_kwargs['timeout'] = Timeout(connect=2.0, read=7.0)
+        if kwargs['encryption_keys_info']:
+            self._load_plugin_access_request_encryptor(kwargs['encryption_keys_info'])
 
+    def load_config_from_json(self, config):
+        """
+        Load the configuration from a JSON string.
+
+        Args:
+            config (str): JSON string containing the configuration.
+        """
+        self.tenant_id = config.get('tenantId')
+        self.base_url = config.get('shieldServerUrl')
+        self.api_key = config.get('apiKey')
+        self._load_plugin_access_request_encryptor(config.get('encryptionKeysInfo'))
+
+
+    def _load_plugin_access_request_encryptor(self, encryption_keys_info):
         self.plugin_access_request_encryptor = PluginAccessRequestEncryptor(self.tenant_id,
-                                                                            kwargs["encryption_keys_info"])
+                                                                            encryption_keys_info)
 
     def get_plugin_access_request_encryptor(self):
         return self.plugin_access_request_encryptor
@@ -545,17 +561,20 @@ class ShieldRestHttpClient:
             _logger.error(error_message)
             raise Exception(error_message)
 
-    def init_shield_server(self, application_key) -> None:
+    def init_shield_server(self, application_key, application_api_key=None):
         """
         Initialize shield server for the tenant id.
         """
-
-        if _logger.isEnabledFor(logging.DEBUG):
-            _logger.debug(f"Initializing shield server for tenant: tenant_id={self.tenant_id}")
-
-        request = {"shieldServerKeyId": self.plugin_access_request_encryptor.shield_server_key_id,
-                   "shieldPluginKeyId": self.plugin_access_request_encryptor.shield_plugin_key_id,
-                   "applicationKey": application_key}
+        request = dict()
+        headers = self.get_default_headers()
+        if application_api_key is None:
+            if _logger.isEnabledFor(logging.DEBUG):
+                _logger.debug(f"Initializing shield server for tenant: tenant_id={self.tenant_id}")
+            request = {"shieldServerKeyId": self.plugin_access_request_encryptor.shield_server_key_id,
+                       "shieldPluginKeyId": self.plugin_access_request_encryptor.shield_plugin_key_id,
+                       "applicationKey": application_key}
+        else:
+            headers['x-application-api-key'] = application_api_key
 
         error_message = ""
         init_success = False
@@ -564,7 +583,7 @@ class ShieldRestHttpClient:
         try:
             response = HttpTransport.get_http().request(method="POST",
                                                         url=self.base_url + "/shield/init",
-                                                        headers=self.get_default_headers(),
+                                                        headers=headers,
                                                         json=json.dumps(request),
                                                         **self.request_kwargs)
 
@@ -575,7 +594,11 @@ class ShieldRestHttpClient:
 
             if response_status == 200:
                 init_success = True
-                _logger.info(f"Shield server initialized for tenant: tenant_id={self.tenant_id}")
+                if application_api_key:
+                    _logger.info(f"Shield server initialized")
+                else:
+                    _logger.info(f"Shield server initialized for tenant: tenant_id={self.tenant_id}")
+                return response.json()
             else:
                 if response_status == 400 or response_status == 404:
                     error_message = str(response.data)
