@@ -1,0 +1,151 @@
+# AS per need change the path of volumes and uncomment/comment the volumes which are required.
+version: '3'
+services:
+  opensearch-node1: # This is also the hostname of the container within the Docker network (i.e. https://opensearch-node1/)
+    image: opensearchproject/opensearch:2.14.0
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster # Name the cluster
+      - node.name=opensearch-node1 # Name the node that will run in this container
+      - discovery.seed_hosts=opensearch-node1 # Nodes to look for when discovering the cluster
+      - cluster.initial_cluster_manager_nodes=opensearch-node1 # Nodes eligibile to serve as cluster manager
+      - bootstrap.memory_lock=true # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=Paig@123
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data # Creates volume called opensearch-data1 and mounts it to the container
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+    expose:
+      - "9200" # Expose port 9200 for OpenSearch HTTP
+    networks:
+      - opensearch-net # All of the containers will join the same Docker bridge network
+    healthcheck:
+      test: [ "CMD", "curl", "-k", "https://localhost:9200" ]
+      interval: 5s
+      timeout: 10s
+      retries: 50
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.14.0 # Make sure the version of opensearch-dashboards matches the version of opensearch installed on other nodes
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+    networks:
+      - opensearch-net
+  etcd:
+    container_name: milvus-etcd
+    image: quay.io/coreos/etcd:v3.5.5
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - etcd:/etcd
+    networks:
+      - milvus-net
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    healthcheck:
+      test: [ "CMD", "etcdctl", "endpoint", "health" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio:
+    container_name: milvus-minio
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    expose:
+      - "9000"
+    volumes:
+      - minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    networks:
+      - milvus-net
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  standalone:
+    container_name: milvus-standalone
+    image: milvusdb/milvus:v2.3.4
+    command: [ "milvus", "run", "standalone" ]
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      ETCD_ENDPOINTS: etcd:2379
+      MINIO_ADDRESS: minio:9000
+    volumes:
+      - milvus:/var/lib/milvus
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    expose:
+      - "19530"
+    networks:
+      - milvus-net
+    depends_on:
+      - "etcd"
+      - "minio"
+  paig_secure_chat:
+    image: privacera/paig-securechat:latest
+    container_name: paig_secure_chat
+    # set command line arguments  here
+    # -e sets environment for SECURE_CHAT_DEPLOYMENT
+    command:
+      - -e dev_openai_opensearch_milvus
+    # nginx listener is on 3636. Map it per your need.
+    ports:
+      - "3636:3636"
+    environment:
+      PRIVACERA_SHIELD_CONF_FILE: /workdir/custom-configs/privacera-shield-config.json
+      # Uncomment below to provide OPENAI_API_KEY as environment variable
+      # OPENAI_API_KEY: "<openai_api_key>"
+    volumes:
+      - ${PWD}/custom-configs:/workdir/custom-configs
+#      - ${PWD}/securechat/logs:/workdir/securechat/logs
+#      - ${PWD}/securechat/db:/workdir/securechat/db
+#      - ${PWD}/securechat/sales/data:/workdir/securechat/sales/data
+    depends_on:
+      standalone:
+        condition: service_healthy
+      opensearch-node1:
+        condition: service_healthy
+    networks:
+      - milvus-net
+      - opensearch-net
+
+volumes:
+  etcd:
+  minio:
+  milvus:
+  opensearch-data1:
+
+networks:
+  milvus-net:
+  opensearch-net:

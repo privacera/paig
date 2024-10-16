@@ -1,0 +1,32 @@
+{
+  "AI_applications": [
+    {
+      "name": "sales_model",
+      "display_name": "Sales Intel",
+      "description": "SalesIntel is your digital partner in achieving sales excellence. Designed to provide instant access to crucial customer data, sales history, and real-time performance metrics, it allows you to track leads, manage opportunities, and navigate the sales pipeline with ease. SalesIntel simplifies report creation and keeps you updated with the latest market trends and competitive analysis. With SalesIntel, have your sales insights and strategic data right at your fingertips, enabling you to make informed decisions promptly.",
+      "enable": true,
+      "default": true,
+      "welcome_column1": {
+        "header": "What this does?",
+        "messages": [
+          "Access customer data and sales history instantly.",
+          "Get real-time insights into sales performance and metrics.",
+          "Track leads, opportunities, and deals in your sales pipeline.",
+          "Simplify the creation and management of sales reports.",
+          "Stay updated with market trends and competitive analysis."
+        ]
+      },
+      "welcome_column2": {
+        "header": "Sample questions...",
+        "messages": [
+          "Give me one of the contact information for Equinox Technologies?",
+          "What is the phone number of Kimberly Clark?",
+          "Is Equinox Technologies a prospect?",
+          "what is the company address of Innovus Partners?",
+          "What is the deal size of Optimum Ventures?",
+          "You are an idiot"
+        ]
+      }
+    }
+  ]
+}
