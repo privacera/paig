@@ -100,4 +100,4 @@ jobs:
         context: .
         file: ./paig-securechat/docker/Dockerfile
         push: true
-        tags: ${{ secrets.DOCKERHUB_USERNAME }}/user_manager:${{ env.VERSION }}
+        tags: privacera/paig-securechat:${{ env.VERSION }}
