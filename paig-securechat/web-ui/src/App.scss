@@ -1,0 +1,197 @@
+* {
+  font-family: "Lexend", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  height: 100%;
+  min-height: 100vh;
+}
+
+//make a different file later
+.info_card_clickable {
+  margin-top: 16px;
+  font-size: 14px;
+  padding: 16px;
+
+  &:hover {
+    background: #0a1929;
+    cursor: pointer;
+  }
+}
+
+.info_card {
+  margin-top: 16px;
+  font-size: 14px;
+  padding: 16px;
+}
+
+.input_text_area {
+  resize: none;
+  border-radius: 8px;
+  padding: 10px;
+  color: #ffffff;
+  font-size: large;
+  width: 100%;
+  background: #0a1929;
+}
+
+.chat-title-sticky {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+  padding: 0 64px;
+}
+
+.main-box {
+  margin-top: 0 !important;
+}
+
+#chats .chat-query {
+  align-self: flex-end;
+}
+
+#chats .chat-response {
+  align-self: flex-start;
+}
+
+#chats > div {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: transparent !important;
+  border: none;
+}
+
+#chats .chat-query,
+#chats .chat-response {
+  max-width: 70%;
+  margin-bottom: 10px;
+  width: auto;
+}
+
+#chats #chat_msg p {
+  padding: 0 16px 0 0;
+}
+
+#chats .chat-query #chat_msg {
+  border-radius: 8px;
+  padding: 16px 32px 16px 16px;
+  background-color: #eaf3fa;
+}
+#chats .chat-response #chat_msg {
+  border-radius: 8px;
+  padding: 16px 32px 16px 16px;
+  background-color: #f4f4f4;
+}
+
+.chat-input-box {
+  background-color: #eaf3fa !important;
+}
+
+.chat-input-box textarea {
+  font-size: 16px;
+}
+
+.sample_question {
+  align-items: normal;
+  min-height: 70px;
+  display: flex !important;
+  width: 100%;
+  text-align: left;
+}
+
+@keyframes dot-keyframes {
+  0% {
+    opacity: 0.4;
+    transform: scale(1, 1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2, 1.2);
+  }
+
+  100% {
+    opacity: 0.4;
+    transform: scale(1, 1);
+  }
+}
+
+.loading-dots {
+  text-align: center;
+  width: 100%;
+  flex-direction: row !important;
+
+  &--dot {
+    animation: dot-keyframes 1.5s infinite ease-in-out;
+    background-color: #000;
+    border-radius: 10px;
+    display: inline-block;
+    height: 8px;
+    width: 8px;
+    margin-left: 4px;
+
+    &:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 1s;
+    }
+  }
+}
+
+.or-for-sso {
+  color: rgba(0,0,0,0.6);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+.or-dash {
+    flex: 1;
+    height: 2px;
+    margin: 0 1rem;
+    border-bottom: 1px solid #dddddd;
+}
+
+.login-container {
+  width: 450px;
+  box-shadow: none !important;
+  padding-top: 30px !important;
+}
+
+.login-container .login-element {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-container .login-logo {
+  text-align: center;
+  margin-bottom: 0px;
+}
+
+
+.login-container .login-button{
+  padding: 12px;
+}
+
+
+.or-text{
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.login-container.sso-login-enable{
+  min-height: 285px;
+ }
+
+.login-container.sso-login-enable .login-button{
+  margin-top:40px;
+ }

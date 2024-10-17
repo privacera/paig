@@ -1,0 +1,54 @@
+{
+  "name": "paig-securechat",
+  "version": "1.0.0",
+  "proxy": "http://localhost:3535",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "11.11.0",
+    "@emotion/styled": "11.11.0",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/lab": "^5.0.0-alpha.131",
+    "@mui/material": "5.13.0",
+    "@okta/okta-auth-js": "^7.5.0",
+    "@types/crypto-js": "4.1.1",
+    "@types/react": "18.2.6",
+    "@types/react-dom": "18.2.4",
+    "axios": "^0.27.2",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.3.1",
+    "next-i18next": "^13.2.2",
+    "notistack": "^3.0.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-markdown": "^8.0.7",
+    "react-router-dom": "^6.4.2",
+    "react-scripts": "5.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "rehype-mathjax": "^4.0.2",
+    "remark-gfm": "^3.0.1",
+    "remark-math": "^5.1.1",
+    "sass": "^1.63.3",
+    "typescript": "5.0.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react-syntax-highlighter": "^15.5.7"
+  }
+}

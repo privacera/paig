@@ -1,0 +1,106 @@
+[project]
+name = 'paig_securechat'
+dynamic = ["version"]
+readme = "web-server/src/README.md"
+license = {file = "../LICENSE"}
+description = 'PAAIG Secure Chat is a conversational AI chatbot'
+requires-python = ">= 3.9"
+keywords = [
+    "Chatbot",
+    "Governance",
+    "Privacy",
+    "Security",
+    "PAIG"
+]
+authors = [
+  { name = "Privacera ", email = "support@privacera.com" },
+]
+
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+        'uvicorn',
+        'click',
+        'alembic',
+        'fastapi',
+        'pydantic',
+        'pydantic_settings',
+        'Jinja2',
+        'sqlalchemy',
+        'paig-client',
+        'python-jose',
+        'okta_jwt_verifier',
+        'urllib3',
+        'langchain==0.2.0',
+        'langchain-community==0.2.0',
+        'langchain_openai==0.1.7',
+        'boto3>=1.28.57',
+        'opensearch-py',
+        'aiosqlite',
+        'openai',
+        'chromadb',
+        'tiktoken',
+        'greenlet',
+        'werkzeug',
+        'pandas'
+]
+
+[project.urls]
+"Homepage" = "https://github.com/privacera/paig"
+"Bug Tracker" = "https://github.com/privacera/paig/issues"
+
+[project.optional-dependencies]
+dev = [
+    'pytest',
+    'pytest-cov',
+    'pytest-asyncio',
+    'pytest-mock',
+    'uvicorn[standard]'
+]
+bedrock = [
+    'boto3>=1.28.57'
+]
+milvus = [
+    'pymilvus'
+]
+opensearch = [
+    'opensearch-py',
+    'boto3>=1.28.57'
+]
+chromadb = [
+    'chroma-hnswlib',
+    'chromadb'
+]
+google-colab = [
+    'nest-asyncio'
+]
+
+
+[project.scripts]
+paig_securechat = "paig_securechat.__main__:main"
+paig-securechat = "paig_securechat.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["web-server/src/paig_securechat"]
+exclude = ["web-server/src/paig_securechat/tests/"]
+
+
+[tool.hatch.build]
+include = ["web-server/src/paig_securechat/*"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["web-server/src/paig_securechat/tests/"]
+
+[tool.hatch.version]
+path = "web-server/src/paig_securechat/VERSION"
+
