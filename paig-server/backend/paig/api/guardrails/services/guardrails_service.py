@@ -8,7 +8,7 @@ from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GR
 from api.guardrails.database.db_operations.guardrail_repository import GRApplicationRepository, \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository
 from core.config import load_config_file
-from core.controllers.base_controller import BaseController
+from core.controllers.base_controller import BaseController, ViewType, ModelType
 from core.controllers.paginated_response import Pageable
 from core.exceptions import BadRequestException, NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
@@ -187,24 +187,24 @@ class GuardrailRequestValidator:
     #                                                     invalid_vector_db_names))
 
 
-def create_model_from_dict(model_class, data, exclude_fields=None):
+def transform_view_to_model(model_type: ModelType, view_data: ViewType, exclude_fields: List[str]=None):
     """
     Create a model instance from a dictionary.
 
     Args:
-        model_class (Base): The model class to create an instance of.
-        data (dict): The dictionary containing the data to populate the model.
+        model_type (Base): The model class to create an instance of.
+        view_data (dict): The dictionary containing the view data to populate the model.
         exclude_fields (set): The fields to exclude from the model.
     """
     exclude_fields = exclude_fields or set()  # Use provided fields to exclude, or none
     # Get the valid columns for the model
-    model_columns = model_class.__table__.columns.keys()
+    model_columns = model_type.__table__.columns.keys()
 
     # Filter out the excluded fields and any non-model fields
-    filtered_data = {key: value for key, value in data.items() if key in model_columns and key not in exclude_fields}
+    filtered_data = {key: value for key, value in view_data.dict().items() if key in model_columns and key not in exclude_fields}
 
     # Create the model instance
-    return model_class(**filtered_data)
+    return model_type(**filtered_data)
 
 
 class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
@@ -273,12 +273,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView: The created Guardrail view object.
         """
         await self.guardrail_request_validator.validate_create_request(request)
-        guardrail_model = create_model_from_dict(GuardrailModel, request.dict())
+        guardrail_model = transform_view_to_model(GuardrailModel, request)
         guardrail = await self.repository.create_record(guardrail_model)
 
         for gr_config in request.guardrail_configs:
             gr_config.guardrail_id = guardrail.id
-            gr_config_model = create_model_from_dict(GRConfigModel, gr_config.dict())
+            gr_config_model = transform_view_to_model(GRConfigModel, gr_config)
             await self.gr_config_repository.create_record(gr_config_model)
 
         for app_id in request.application_ids:
