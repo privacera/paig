@@ -61,8 +61,7 @@ class LocalAuthzClient(IAuthzClient):
         """
         tranformed_authz_request = self.transform_authz_request(authz_service_request)
         authz_response = await self.paig_authorizer.authorize(tranformed_authz_request)
-        if not authz_response.reason:
-            logger.debug(f"Reason: {authz_response.reason}")
+        logger.debug(f"Reason: {authz_response.reason}")
         return self.transform_authz_response(authz_response)
 
     async def post_authorize_vectordb(self, vectordb_auth_req: AuthorizeVectorDBRequest, tenant_id):
