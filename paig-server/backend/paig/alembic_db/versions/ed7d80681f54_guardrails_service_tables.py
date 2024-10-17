@@ -97,12 +97,18 @@ def upgrade() -> None:
         sa.text("""
             CREATE VIEW paig_guardrail_view AS
             SELECT 
-                gr.*,
-                gr_conf.id AS config_id,
-                gr_conf.guardrail_id AS guardrail_id,
-                gr_conf.guardrail_provider AS guardrail_provider,
-                gr_conf.config_type AS config_type,
-                gr_conf.config_data AS config_data,
+                SELECT 
+                gr.name,
+                gr.description,
+                gr.version,
+                gr.status,
+                gr.create_time,
+                gr.update_time,
+                gr_conf.id,
+                gr_conf.guardrail_id,
+                gr_conf.guardrail_provider,
+                gr_conf.config_type,
+                gr_conf.config_data,
                 gr_conn.name AS guardrail_provider_connection_name,
                 gr_conn.connection_details AS guardrail_connection,
                 gr_resp.response_data AS guardrail_provider_response,

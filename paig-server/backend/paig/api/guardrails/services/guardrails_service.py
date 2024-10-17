@@ -329,7 +329,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         result.guardrail_connections = {}
         for guardrail in guardrails:
             gr_config = GuardrailConfigView.model_validate(guardrail)
-            gr_config.id = guardrail.config_id
             result.guardrail_configs.append(gr_config)
             result.guardrail_provider_response[guardrail.guardrail_provider] = guardrail.guardrail_provider_response
             result.guardrail_connections[guardrail.guardrail_provider] = guardrail.guardrail_connection

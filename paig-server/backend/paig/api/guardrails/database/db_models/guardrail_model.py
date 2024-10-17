@@ -104,7 +104,6 @@ class GuardrailViewModel(BaseSQLModel):
     description = Column(String(4000), nullable=True)
     version = Column(String(255), nullable=False, default=1)
     guardrail_provider = Column(String(255), nullable=False)
-    config_id = Column(Integer, nullable=False)
     guardrail_id = Column(Integer, nullable=False)
     config_type = Column(String(255), nullable=False)
     config_data = Column(JSON, nullable=False)
