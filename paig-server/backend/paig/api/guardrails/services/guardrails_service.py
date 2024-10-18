@@ -55,7 +55,7 @@ class GuardrailRequestValidator:
         """
         validate_boolean(status, "Guardrail status")
 
-    def validate_read_request(self, id: int):
+    async def validate_read_request(self, id: int):
         """
         Validate a read request for a Guardrail.
 
@@ -63,6 +63,7 @@ class GuardrailRequestValidator:
             id (int): The ID of the Guardrail to retrieve.
         """
         validate_id(id, "Guardrail ID")
+        await self.validate_guardrail_exists_by_id(id)
 
     async def validate_update_request(self, id: int, request: GuardrailView):
         """
@@ -79,23 +80,20 @@ class GuardrailRequestValidator:
         self.validate_status(request.status)
         self.validate_name(request.name)
         self.validate_description(request.description)
+        await self.validate_guardrail_exists_by_id(id)
 
         guardrail = await self.get_guardrail_by_name(request.name)
         if guardrail is not None and guardrail.id != id:
             raise BadRequestException(get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "Guardrail", "name",
                                                         [request.name]))
 
-        guardrail_by_id = None
+    async def validate_guardrail_exists_by_id(self, id):
         try:
-            guardrail_by_id = await self.guardrail_repository.get_record_by_id(id)
+            await self.guardrail_repository.get_record_by_id(id)
         except sqlalchemy.exc.NoResultFound as e:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Resource", "id", [id]))
+            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail", "id", [id]))
 
-        if guardrail_by_id is not None and guardrail_by_id.application_key != request.application_key:
-            raise BadRequestException(get_error_message(ERROR_FIELD_CANNOT_BE_UPDATED, "Guardrail", "applicationKey"))
-
-
-    def validate_delete_request(self, id: int):
+    async def validate_delete_request(self, id: int):
         """
         Validate a delete request for a Guardrail.
 
@@ -103,6 +101,7 @@ class GuardrailRequestValidator:
             id (int): The ID of the Guardrail to delete.
         """
         validate_id(id, "Guardrail ID")
+        await self.validate_guardrail_exists_by_id(id)
 
     def validate_name(self, name: str):
         """
@@ -121,15 +120,6 @@ class GuardrailRequestValidator:
             description (str): The description of the Guardrail.
         """
         validate_string_data(description, "AI Application description", required=False, max_length=4000)
-
-    def validate_application_key(self, application_key: str):
-        """
-        Validate the application key of a Guardrail.
-
-        Args:
-            application_key (str): The application key of the Guardrail.
-        """
-        validate_string_data(application_key, "AI Application key")
 
     async def validate_guardrail_exists_by_name(self, name: str):
         """
@@ -162,28 +152,6 @@ class GuardrailRequestValidator:
         if total_count > 0:
             return records[0]
         return None
-
-    # async def validate_ai_application_vector_db_exists_by_name(self, name: List[str]):
-    #     """
-    #     Validate if the vector DBs exist by their names.
-    #
-    #     Args:
-    #         name (List[str]): The names of the vector DBs.
-    #
-    #     Raises:
-    #         BadRequestException: If any of the vector DBs do not exist.
-    #     """
-    #     vector_db_names = ",".join(name)
-    #     vector_db_filter = VectorDBFilter()
-    #     vector_db_filter.name = vector_db_names
-    #     vector_db_filter.exact_match = True
-    #     records, total_count = await self.vector_db_repository.list_records(filter=vector_db_filter)
-    #     if len(name) != total_count:
-    #         vector_db_names_from_db = [record.name for record in records]
-    #         invalid_vector_db_names = list(set(name) - set(vector_db_names_from_db))
-    #         raise BadRequestException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Vector DB", "names",
-    #                                                     invalid_vector_db_names))
-
 
 def transform_view_to_model(model_type: ModelType, view_data: ViewType, exclude_fields: set[str]=None):
     """
@@ -314,7 +282,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The Guardrail view object corresponding to the ID.
         """
-        self.guardrail_request_validator.validate_read_request(id)
+        await self.guardrail_request_validator.validate_read_request(id)
         guardrails = await self.gr_view_repository.get_all(filters={"guardrail_id": id})
         result = GuardrailView.model_validate(guardrails[0])
         result.id = guardrails[0].guardrail_id
@@ -366,5 +334,5 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Args:
             id (int): The ID of the Guardrail to delete.
         """
-        self.guardrail_request_validator.validate_delete_request(id)
+        await self.guardrail_request_validator.validate_delete_request(id)
         await self.delete_record(id)
