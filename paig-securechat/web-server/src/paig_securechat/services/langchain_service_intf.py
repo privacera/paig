@@ -88,7 +88,7 @@ class LangChainServiceIntf:
             if "source_documents" in result:
                 source_documents = [f"{self.source_document_base_url}/{source_document.metadata['source']}"
                                         for source_document in result["source_documents"]]
-                source_documents_str = "\n".join(list(dict.fromkeys(source_documents)))
+                source_documents_str = ",\n".join(list(dict.fromkeys(source_documents)))
                 answer = f"{answer}\n\nSource documents:\n{source_documents_str}"
             return answer
 
