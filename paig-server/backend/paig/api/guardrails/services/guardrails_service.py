@@ -8,11 +8,11 @@ from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GR
 from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository
 from core.config import load_config_file
-from core.controllers.base_controller import BaseController, ViewType, ModelType
+from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import BadRequestException, NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
-    ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_CANNOT_BE_UPDATED
+    ERROR_RESOURCE_NOT_FOUND
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends
 
 config = load_config_file()
@@ -153,25 +153,6 @@ class GuardrailRequestValidator:
             return records[0]
         return None
 
-def transform_view_to_model(model_type: ModelType, view_data: ViewType, exclude_fields: set[str]=None):
-    """
-    Create a model instance from a dictionary.
-
-    Args:
-        model_type (Base): The model class to create an instance of.
-        view_data (dict): The dictionary containing the view data to populate the model.
-        exclude_fields (set): The fields to exclude from the model.
-    """
-    exclude_fields = exclude_fields or set()  # Use provided fields to exclude, or none
-    # Get the valid columns for the model
-    model_columns = model_type.__table__.columns.keys()
-
-    # Filter out the excluded fields and any non-model fields
-    filtered_data = {key: value for key, value in view_data.dict().items() if key in model_columns and key not in exclude_fields}
-
-    # Create the model instance
-    return model_type(**filtered_data)
-
 
 class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
@@ -237,12 +218,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView: The created Guardrail view object.
         """
         await self.guardrail_request_validator.validate_create_request(request)
-        guardrail_model = transform_view_to_model(GuardrailModel, request)
+        guardrail_model = GuardrailModel()
+        guardrail_model.set_attribute(request.model_dump(exclude={"create_time", "update_time", "version"}))
         guardrail = await self.repository.create_record(guardrail_model)
 
         for gr_config in request.guardrail_configs:
             gr_config.guardrail_id = guardrail.id
-            gr_config_model = transform_view_to_model(GRConfigModel, gr_config)
+            gr_config_model = GRConfigModel()
+            gr_config_model.set_attribute(gr_config.model_dump(exclude={"create_time", "update_time"}))
             await self.gr_config_repository.create_record(gr_config_model)
 
         # TODO: replace below dummy response with actual by creating guardrails to end service
@@ -312,16 +295,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         guardrail_model = await self.repository.get_record_by_id(id)
         updated_guardrail = GuardrailView()
         if guardrail_model is not None:
-            updated_guardrail = transform_view_to_model(GuardrailModel, request, exclude_fields={"create_time", "update_time", "version"})
-            guardrail_model.set_attribute(updated_guardrail)
+            guardrail_model.set_attribute(request.model_dump(exclude={"create_time", "update_time", "version"}))
             guardrail_model.version = guardrail_model.version + 1
             updated_guardrail = await self.repository.update_record(guardrail_model)
 
         updated_guardrail.guardrail_configs = []
         for req_gr_config in request.guardrail_configs:
             gr_config_model = await self.gr_config_repository.get_record_by_id(req_gr_config.id)
-            updated_gr_config_model = transform_view_to_model(GRConfigModel, req_gr_config, exclude_fields={"create_time", "update_time"})
-            gr_config_model.set_attribute(updated_gr_config_model)
+            gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time"}))
             updated_gr_config = await self.gr_config_repository.update_record(gr_config_model)
             updated_guardrail.guardrail_configs.append(updated_gr_config)
 

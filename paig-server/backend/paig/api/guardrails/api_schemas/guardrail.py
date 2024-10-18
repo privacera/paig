@@ -24,8 +24,6 @@ class GuardrailConfigView(BaseView):
     config_type: str = Field(..., description="The guardrail config type", alias="configType")
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
 
-    model_config = ConfigDict()
-
 
 class GuardrailView(BaseView):
     """
@@ -55,7 +53,8 @@ class GuardrailView(BaseView):
                                                   alias="guardrailConnections")
     model_config = ConfigDict(
         from_attributes=True,
-        populate_by_name=True
+        populate_by_name=True,
+        extra='allow'
     )
 
 
@@ -79,3 +78,9 @@ class GuardrailFilter(BaseAPIFilter):
     guardrail_provider: Optional[str] = Field(default=None, description="Filter by guardrails provider", alias="guardrailProvider")
     guardrail_provider_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailProviderConnectionName")
     config_type: Optional[str] = Field(default=None, description="Filter by guardrail type", alias="configType")
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        extra='allow'
+    )

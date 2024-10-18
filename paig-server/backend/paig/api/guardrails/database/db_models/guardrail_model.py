@@ -1,10 +1,9 @@
 
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 
 from core.db_models.BaseSQLModel import BaseSQLModel
 from core.db_models.utils import CommaSeparatedList
-from core.utils import current_utc_time
 
 
 class GuardrailModel(BaseSQLModel):
@@ -20,7 +19,7 @@ class GuardrailModel(BaseSQLModel):
     __tablename__ = "guardrail"
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
-    version = Column(String(255), nullable=False, default=1)
+    version = Column(Integer, nullable=False, default=1)
     applications = Column(CommaSeparatedList(4000), nullable=False)
 
     gr_config = relationship("GRConfigModel", back_populates="guardrail", cascade="all, delete-orphan")
@@ -85,7 +84,7 @@ class GuardrailViewModel(BaseSQLModel):
 
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
-    version = Column(String(255), nullable=False, default=1)
+    version = Column(Integer, nullable=False, default=1)
     applications = Column(CommaSeparatedList(255), nullable=False)
 
     guardrail_provider = Column(String(255), nullable=False)

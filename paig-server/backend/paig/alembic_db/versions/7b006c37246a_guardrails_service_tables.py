@@ -24,7 +24,7 @@ def upgrade() -> None:
     op.create_table('guardrail',
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=4000), nullable=True),
-    sa.Column('version', sa.String(length=255), nullable=False),
+    sa.Column('version', sa.Integer(), nullable=False),
     sa.Column('applications', core.db_models.utils.CommaSeparatedList(length=4000), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
