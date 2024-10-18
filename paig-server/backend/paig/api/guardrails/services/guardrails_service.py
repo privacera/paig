@@ -3,9 +3,9 @@ from typing import List
 import sqlalchemy
 
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GuardrailConfigView
-from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, GRApplicationModel, \
+from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
     GRProviderResponseModel
-from api.guardrails.database.db_operations.guardrail_repository import GRApplicationRepository, \
+from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController, ViewType, ModelType
@@ -28,11 +28,9 @@ class GuardrailRequestValidator:
 
     def __init__(self,
                  guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository),
-                 gr_app_repository: GRApplicationRepository = SingletonDepends(GRApplicationRepository),
                  gr_config_repository: GRConfigRepository = SingletonDepends(GRConfigRepository),
                  gr_provider_response_repository: GRProviderResponseRepository = SingletonDepends(GRProviderResponseRepository)):
         self.guardrail_repository = guardrail_repository
-        self.gr_app_repository = gr_app_repository
         self.gr_config_repository = gr_config_repository
         self.gr_provider_response_repository = gr_provider_response_repository
 
@@ -187,7 +185,7 @@ class GuardrailRequestValidator:
     #                                                     invalid_vector_db_names))
 
 
-def transform_view_to_model(model_type: ModelType, view_data: ViewType, exclude_fields: List[str]=None):
+def transform_view_to_model(model_type: ModelType, view_data: ViewType, exclude_fields: set[str]=None):
     """
     Create a model instance from a dictionary.
 
@@ -211,7 +209,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
     def __init__(self,
                  guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository),
-                 gr_app_repository: GRApplicationRepository = SingletonDepends(GRApplicationRepository),
                  gr_config_repository: GRConfigRepository = SingletonDepends(GRConfigRepository),
                  gr_provider_response_repository: GRProviderResponseRepository = SingletonDepends(GRProviderResponseRepository),
                  gr_view_repository: GuardrailViewRepository = SingletonDepends(GuardrailViewRepository),
@@ -228,7 +225,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView
         )
         self.guardrail_request_validator = guardrail_request_validator
-        self.gr_app_repository = gr_app_repository
         self.gr_config_repository = gr_config_repository
         self.gr_provider_response_repository = gr_provider_response_repository
         self.gr_view_repository = gr_view_repository
@@ -281,10 +277,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             gr_config_model = transform_view_to_model(GRConfigModel, gr_config)
             await self.gr_config_repository.create_record(gr_config_model)
 
-        for app_id in request.application_ids:
-            gr_app_model = GRApplicationModel(guardrail_id=guardrail.id, application_id=app_id)
-            await self.gr_app_repository.create_record(gr_app_model)
-
+        # TODO: replace below dummy response with actual by creating guardrails to end service
         guardrail_provider_response: dict = {
             "AWS": {
                "createdAt": "2024-10-16T07:14:06.102135",
@@ -324,6 +317,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         self.guardrail_request_validator.validate_read_request(id)
         guardrails = await self.gr_view_repository.get_all(filters={"guardrail_id": id})
         result = GuardrailView.model_validate(guardrails[0])
+        result.id = guardrails[0].guardrail_id
         result.guardrail_configs = []
         result.guardrail_provider_response = {}
         result.guardrail_connections = {}
@@ -347,7 +341,23 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView: The updated Guardrail view object.
         """
         await self.guardrail_request_validator.validate_update_request(id, request)
-        return await self.update_record(id, request)
+        guardrail_model = await self.repository.get_record_by_id(id)
+        updated_guardrail = GuardrailView()
+        if guardrail_model is not None:
+            updated_guardrail = transform_view_to_model(GuardrailModel, request, exclude_fields={"create_time", "update_time", "version"})
+            guardrail_model.set_attribute(updated_guardrail)
+            guardrail_model.version = guardrail_model.version + 1
+            updated_guardrail = await self.repository.update_record(guardrail_model)
+
+        updated_guardrail.guardrail_configs = []
+        for req_gr_config in request.guardrail_configs:
+            gr_config_model = await self.gr_config_repository.get_record_by_id(req_gr_config.id)
+            updated_gr_config_model = transform_view_to_model(GRConfigModel, req_gr_config, exclude_fields={"create_time", "update_time"})
+            gr_config_model.set_attribute(updated_gr_config_model)
+            updated_gr_config = await self.gr_config_repository.update_record(gr_config_model)
+            updated_guardrail.guardrail_configs.append(updated_gr_config)
+
+        return updated_guardrail
 
     async def delete(self, id: int):
         """
