@@ -64,6 +64,18 @@ class GuardrailController:
         """
         return await self.guardrail_service.get_by_id(id)
 
+    async def get_by_app_name(self, app_name: str) -> GuardrailView:
+        """
+        Retrieve a Guardrail by its application name.
+
+        Args:
+            app_name (str): The application name of the Guardrail to retrieve.
+
+        Returns:
+            GuardrailView: The Guardrail view object corresponding to the application name.
+        """
+        return await self.guardrail_service.get_by_app_name(app_name)
+
     @Transactional(propagation=Propagation.REQUIRED)
     async def update(self, id: int, request: GuardrailView) -> GuardrailView:
         """

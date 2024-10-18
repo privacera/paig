@@ -48,6 +48,17 @@ async def get(
     return await guardrail_controller.get_by_id(id)
 
 
+@guardrail_router.get("/application/{app_name}", response_model=GuardrailView)
+async def get_by_app_name(
+        app_name: str,
+        guardrail_controller: GuardrailController = gr_controller_instance
+) -> GuardrailView:
+    """
+    Get a Guardrail by Application Name.
+    """
+    return await guardrail_controller.get_by_app_name(app_name)
+
+
 @guardrail_router.put("/{id}", response_model=GuardrailView)
 async def update(
         id: int,
