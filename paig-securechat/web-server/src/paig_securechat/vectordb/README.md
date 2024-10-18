@@ -5,10 +5,10 @@ You can run this script in a standalone mode which can also run as a separate pr
 Currently this script supports only Chroma Vector Type.
 
 ## Contents
-- [How to run with application server](#run-application-server)
-- [How to run in standalone mode](#run-standalone-mode)
+- [Vector Store Index Creation with application server](#with-application-server)
+- [Create Vector Store Index with standalone script](#with-standalone-mode)
 
-## How to run with application server <a name="run-application-server"></a>
+## Vector Store Index Creation with application server <a name="with-application-server"></a>
 1. User needs to provide configuration for vector db in config file of application server.
 2. User needs to provide openai key file path in config file OR user can set it as environment variable.
 3. User needs to provide index_path and data_path in config file.
@@ -16,7 +16,7 @@ Currently this script supports only Chroma Vector Type.
 5. Secure chat will automatically create index for your data and store it in the configured path.
 
 
-## How to run in standalone mode <a name="run-standalone-mode"></a>
+## Create Vector Store Index with standalone script <a name="with-standalone-mode"></a>
 1. Install dependencies run below command.
    ```bash
     pip install chromadb==0.4.13 click==8.1.7 langchain==0.0.310 openai==0.28.1 openai==0.28.1 urllib3==1.26.16

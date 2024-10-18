@@ -8,13 +8,13 @@ Secure chat SDK provides an easy to use, plugable platform which will allow deve
 - [Overview](#overview)
 - [Technology Stack](#technology-stack)
 - [Configuration](#configuration)
-- [How to Start Development Server](#developmentserver)
+- [How to Start Development Server](web-server/README.md#how-to-start-development-server-a-namedevelopmentservera)
+- [PAIG SecureChat as a Python library](web-server/src/README.md)
 - [How to Setup Database](#databsesetup)
 - [How to Create Vector Embeddings](#vector-embeddings)
-- [How to Deploy Using Docker](#dockerserver)
+- [How to Deploy Using Docker](docker/README.md)
 - [Docker compose with Opensearch](docker/README.md#docker-compose-with-opensearch)
 - [Docker compose with Milvus](docker/README.md#docker-compose-with-milvus)
-- [PAIG SecureChat as a Python library](web-server/src/README.md)
 - [Generate hashed password](#hashedpassword)
 
 ## Overview <a name="overview"></a>
@@ -33,21 +33,16 @@ Secure chat is a web based application. It uses the following technologies:
 * **AI:**  Configured by the user
 
 ## Configuration <a name="configuration"></a>
-Secure Chat provides overlay configuration.Secure Chat will use the default configuration provided in the default_config.yaml file.
+Secure Chat provides overlay configuration. When you run Secure Chat as python package or in development mode(SDK) will use the default configuration provided in the `standalone_config.yaml` file.
 This default configuration can be overridden by the user provided custom configuration.
-User can provide the custom configuration in the following ways:
-1. Create a new custom configuration file in the configs folder which is provided to the application.
-2. Naming convention for custom configuration file should be as follows:
+<br>User can provide the custom configuration in the following ways:
+1. Create a `custom-configs` folder.
    ```bash
-   <ENVIRONMENT_NAME>_config.yaml
+    mkdir -p custom-configs
    ```
-   For example:
-   ```bash
-   dev_config.yaml
-   ```
-   _Note-_ ENVIRONMENT_NAME is also referred as SECURE_CHAT_DEPLOYMENT in the application.
+2. Create `standalone_config.yaml` configuration file under `custom-configs` folder to override default configuration.
 3. In custom configuration file , user should provide new configuration key-values or override the existing configuration.
-4. To override the existing configuration, user should provide the same key in the custom configuration file as it is in configuration with same structure.
+4. To override the existing configuration, user should provide the same key in the `standalone_config.yaml` configuration file as it is in configuration with same structure.
     For example:
     ```yaml
     database:
