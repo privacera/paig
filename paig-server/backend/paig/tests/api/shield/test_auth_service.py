@@ -131,7 +131,7 @@ class TestAuthService:
         auth_service.tenant_data_encryptor_service = mock_tenant_data_encryptor_service
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock,
                             return_value=authz_res_data_no_masking())
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
         # Create a mock AuthorizeRequest object
@@ -161,7 +161,7 @@ class TestAuthService:
         auth_service.tenant_data_encryptor_service = mock_tenant_data_encryptor_service
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock,
                             return_value=authz_res_data_no_masking())
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
         # Create a mock AuthorizeRequest object
@@ -171,7 +171,7 @@ class TestAuthService:
         await auth_service.authorize(mock_auth_req)
 
         # Assertions
-        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()
+        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()*2
 
     def test_init_log_message_in_file(self, mocker):
         # Mock dependencies
@@ -309,7 +309,7 @@ class TestAuthService:
         mocker.patch.object(auth_service, 'do_authz_authorize', new_callable=AsyncMock, return_value=authz_res)
         # mocker.patch.object(auth_service, 'log_audit_fluentd')
         mocker.patch.object(auth_service, 'log_audit_message', new_callable=AsyncMock)
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
         # Call the authorize method
@@ -590,7 +590,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock, return_value=authz_res_data())
 
         # Mock the analysis method
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
         # Create a mock AuthorizeRequest object

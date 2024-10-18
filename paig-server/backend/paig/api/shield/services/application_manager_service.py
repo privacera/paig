@@ -1,5 +1,7 @@
 import logging
 
+from api.shield.model.scanner_result import ScannerResult
+from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.scanner_util import parse_properties
 from api.shield.cache.lru_cache import LRUCache
 from api.shield.utils import config_utils
@@ -31,7 +33,7 @@ class ApplicationManager(Singleton):
         self.application_key_scanners = LRUCache(self.cache_name, max_capacity, max_idle_time)
         self.shield_scanner_max_workers = config_utils.get_property_value_int("shield_scanner_max_workers", 4)
 
-    def load_scanners(self, application_key):
+    def load_scanners(self, application_key: str):
         """
         Load the scanners for the given application key and store them in the cache.
 
@@ -42,39 +44,50 @@ class ApplicationManager(Singleton):
         self.application_key_scanners.put(application_key, scanner_list)
         logger.info(f"Found {scanner_list} scanners for application key: {application_key}")
 
-    def get_scanners(self, application_key):
+    def get_scanners(self, application_key: str, request_type: str, is_authz_scan: bool) -> list:
         """
         Get the scanners for the given application key.
         If the scanners are not in the cache, load them.
 
         Args:
             application_key (str): The application key.
+            request_type (str): The request type.
+            is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
             list: The list of scanners for the application key.
         """
         if application_key not in self.application_key_scanners.cache:
             self.load_scanners(application_key)
-        return self.application_key_scanners.get(application_key)
 
-    def scan_messages(self, application_key, message):
+        all_scanners = self.application_key_scanners.get(application_key)
+
+        scanners_list = [
+            (setattr(scanner, 'scan_for_req_type', request_type) or scanner)
+            for scanner in all_scanners
+            if getattr(scanner, 'enforce_access_control', False) == is_authz_scan and request_type in getattr(scanner, 'request_types', [])
+        ]
+
+        return scanners_list
+
+    def scan_messages(self, application_key: str, message: str, request_type: str, is_authz_scan: bool) -> (dict[str, ScannerResult], dict[str, str]):
         """
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
         Args:
             application_key (str): The application key.
             message (str): The message to scan.
+            request_type (str): The request type.
+            is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
             tuple: A tuple containing the scan results and the access control results.
         """
 
-        scanners = self.get_scanners(application_key)
+        scanners = self.get_scanners(application_key, request_type, is_authz_scan)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
-        scan_results = {}
-        scan_timings = {}
-        access_control_traits = []
+        scan_results, scan_timings = {}, {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.shield_scanner_max_workers) as executor:
             future_to_scanner = {executor.submit(scan_with_scanner, scanner, message): scanner for scanner in scanners}
             for future in concurrent.futures.as_completed(future_to_scanner):
@@ -83,15 +96,13 @@ class ApplicationManager(Singleton):
                     scanner_name, result, message_scan_time = future.result()
                     scan_results[scanner_name] = result
                     scan_timings[scanner_name] = message_scan_time
-                    if scanner.enforce_access_control:
-                        access_control_traits.extend(result.get("traits", []))
                 except Exception as e:
                     logger.error(f"Scanner {scanner.name} failed with exception: {e}")
                     raise ShieldException(f"Scanner {scanner.name} failed with exception: {e}")
-        return scan_results, access_control_traits, scan_timings
+        return scan_results, scan_timings
 
 
-def scan_with_scanner(scanner, message):
+def scan_with_scanner(scanner: Scanner, message: str) -> (str, ScannerResult, str):
     """
     Scan the given message with the given scanner.
 

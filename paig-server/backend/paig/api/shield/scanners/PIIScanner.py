@@ -2,6 +2,7 @@ import csv
 import os.path
 import logging
 
+from api.shield.model.scanner_result import ScannerResult
 from core.utils import format_to_root_path
 from api.shield.model.analyzer_result import AnalyzerResult
 from api.shield.scanners.BaseScanner import Scanner
@@ -118,13 +119,22 @@ class PIIScanner(Scanner):
     Scanner implementation for detecting PII in the input prompt.
     """
 
-    def __init__(self, name, request_types, enforce_access_control, model_path, model_score_threshold, entity_type,
-                 enable, **kwargs):
+    def __init__(self, **kwargs):
         """
-        Initialize the required models and variables for the scanner
+        Initialize the PIIScanner with the specified parameters.
+
+        Parameters:
+            **kwargs: keyword arguments passed from properties file.
+            E.g.
+            name (str): The name of the scanner.
+            request_types (list): List of request types that the scanner will handle.
+            enforce_access_control (bool): Flag to enforce access control.
+            model_path (str): Path to the model used by the scanner.
+            model_score_threshold (float): Threshold score for the model to consider a match.
+            entity_type (str): Type of entity the scanner is looking for.
+            enable (bool): Flag to enable or disable the scanner.
         """
-        super().__init__(name, request_types, enforce_access_control, model_path, model_score_threshold, entity_type,
-                         enable, **kwargs)
+        super().__init__(**kwargs)
 
         self.presidio_analyzer = PresidioAnalyzerEngine()
         self.recognizers = {}
@@ -135,7 +145,7 @@ class PIIScanner(Scanner):
         # check if there's any traits to ignore
         self.recognizer_ignore_dict = self._load_recognizer_ignore_list()
 
-    def scan(self, message: str) -> dict:
+    def scan(self, message: str) -> ScannerResult:
         """
         Process and sanitize the input prompt according to the specific scanner's implementation.
 
@@ -162,7 +172,7 @@ class PIIScanner(Scanner):
         # get only the traits from the analyzer result
         traits = set([result.entity_type for result in refined_analyzer_results])
 
-        return {"traits": traits, "analyzer_result": refined_analyzer_results}
+        return ScannerResult(traits=sorted(list(traits)), analyzer_result=refined_analyzer_results)
 
     def _load_recognizer_ignore_list(self):
         recognizer_ignore_dict = {}
