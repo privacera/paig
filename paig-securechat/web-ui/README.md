@@ -16,10 +16,15 @@ Secure Chat provides a web interface to interact with the chat bot. It is a Reac
     ```bash
     npm install
     ```
+   _Note_ - If you get `Conflicting peer dependency` error after running above `npm install` command, Try below command.
+    ```bash
+    npm install --legacy-peer-deps
+    ```
 4. Web UI configuration including proxy configuration can be found in package.json file. Proxy should be set to web server url.
     ```json
     "proxy": "http://localhost:3535"
     ```
+   _Note_ - If `http://localhost:3535` not working for you, try `http://127.0.0.1:3535` or `http://<host_ip>:3535`
 5. Run the web UI
     ```bash
     npm start
