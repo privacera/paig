@@ -103,8 +103,7 @@ class AuthService:
         # loop through the messages in request to scan for traits
         message_analyze_start_time = time.perf_counter()
         scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                              analyzer_result_map, auth_req,
-                                                              original_masked_text_list, True)
+                                                              analyzer_result_map, auth_req, True)
         message_analyze_time = f"{((time.perf_counter() - message_analyze_start_time) * 1000):.3f}"
         logger.debug(f"All resulted tags from input text {all_result_traits}")
 
@@ -121,18 +120,16 @@ class AuthService:
         non_authz_scan_timings_per_message = 0
         if is_allowed:
             non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                                            analyzer_result_map, auth_req,
-                                                                            original_masked_text_list, False)
+                                                                            analyzer_result_map, auth_req, False)
 
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
-                masked_messages.append({"responseText": "Access is denied"})
+                authz_service_res.status_message = "Access is denied"
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
-        self.post_authz_process(analyzer_result_map, auth_req, authz_service_res, is_allowed, masked_messages,
-                                original_masked_text_list)
+        self.post_authz_process(analyzer_result_map, auth_req, authz_service_res, masked_messages, original_masked_text_list)
         masking_time = f"{((time.perf_counter() - masking_start_time) * 1000):.3f}"
 
         # encrypt the message
@@ -176,24 +173,20 @@ class AuthService:
 
         return auth_response
 
-    def post_authz_process(self, analyzer_result_map, auth_req, authz_service_res, is_allowed, masked_messages,
+    def post_authz_process(self, analyzer_result_map, auth_req, authz_service_res, masked_messages,
                            original_masked_text_list):
         """
         Processes the authorization response by either masking the request messages or appending an error message
         based on the authorization result.
 
         """
-        if is_allowed:
-            original_masked_text_list.clear()
-            for request_text in auth_req.messages:
-                self.process_masking(analyzer_result_map.get(request_text, []), request_text, authz_service_res,
-                                     masked_messages,
-                                     original_masked_text_list)
-        else:
-            masked_messages.append({"responseText": authz_service_res.status_message})
+        for request_text in auth_req.messages:
+            self.process_masking(analyzer_result_map.get(request_text, []), request_text, authz_service_res,
+                                    masked_messages,
+                                    original_masked_text_list)
 
     def analyze_scan_messages(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
-                              original_masked_text_list, is_authz_scan):
+                              is_authz_scan):
         """
         Analyzes the messages in the authorization request to extract traits and generate scan results.
 
@@ -211,18 +204,13 @@ class AuthService:
 
             scan_timings_per_message.append(scan_timings)
             # Update the set with traits and store analyzer results if present
-            if is_authz_scan:
-                scanner_analyzer_results = []
-                for scanner_data in scanners_result.values():
-                    all_result_traits.update(scanner_data.get_traits())
-                    scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
+            scanner_analyzer_results = analyzer_result_map.get(request_text, [])
+            for scanner_data in scanners_result.values():
+                all_result_traits.update(scanner_data.get_traits())
+                scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
+                access_control_traits.update(scanner_data.get("actions", []))
 
-                analyzer_result_map[request_text] = scanner_analyzer_results
-                original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
-            else:
-                for scanner_data in scanners_result.values():
-                    all_result_traits.update(scanner_data.get_traits())
-                    access_control_traits.update(scanner_data.get("actions", []))
+            analyzer_result_map[request_text] = scanner_analyzer_results
 
         return scan_timings_per_message
 
@@ -319,8 +307,10 @@ class AuthService:
                                                       analyzerResult=json.dumps(final_analyzer_result)))
                 logger.debug("Masking process finished")
                 return
-
-        masked_messages.append(dict(responseText=request_text, analyzerResult=final_analyzer_result))
+        if authz_service_res.authorized:
+            masked_messages.append(dict(responseText=request_text, analyzerResult=final_analyzer_result))
+        else:
+            masked_messages.append(dict(responseText=authz_service_res.status_message))
         original_masked_text_list.append(dict(originalMessage=request_text, maskedMessage="",
                                               analyzerResult=json.dumps(final_analyzer_result)))
 
