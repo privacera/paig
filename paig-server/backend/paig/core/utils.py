@@ -69,6 +69,28 @@ def generate_unique_identifier_key():
     return str(uuid.uuid4())
 
 
+def generate_hex_key():
+    return str(os.urandom(32).hex())
+
+
+def get_key_from_hex(hex_key):
+    return bytes.fromhex(hex_key)
+
+def generate_expiry_epoch(days: int) -> int:
+    # Get the current time
+    current_time = datetime.now()
+
+    # Add the configurable number of days to the current time
+    expiry_time = current_time + timedelta(days=days)
+
+    # Convert expiry time to epoch timestamp (seconds since 1970-01-01)
+    expiry_epoch = int(expiry_time.timestamp())
+
+    return expiry_epoch
+
+def epoch_to_datetime(epoch: int) -> datetime:
+    return datetime.utcfromtimestamp(epoch)
+
 def get_field_name_by_alias(model: BaseModel, alias: str) -> str:
     for field_name, field in model.model_fields.items():
         if field.alias == alias:

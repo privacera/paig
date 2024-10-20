@@ -6,31 +6,29 @@ from api.encryption.api_schemas.encryption_key import EncryptionKeyView
 from api.encryption.database.db_models.encryption_key_model import EncryptionKeyType
 from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.governance.services.ai_app_service import AIAppService
+from api.governance.services.ai_app_apikey_service import AIAppAPIKeyService
 
 
 class AIAppConfigDownloadController:
 
     def __init__(self,
                  ai_app_service: AIAppService = SingletonDepends(AIAppService),
+                 ai_app_apikey_service: AIAppAPIKeyService = SingletonDepends(AIAppAPIKeyService),
                  encryption_key_service: EncryptionKeyService = SingletonDepends(EncryptionKeyService)):
         self.ai_app_service = ai_app_service
+        self.ai_app_apikey_service = ai_app_apikey_service
         self.encryption_key_service = encryption_key_service
 
-    async def get_ai_app_config_json_data(self, id: int = None, application_api_key=None) -> Tuple[str, dict]:
+    async def get_ai_app_config_json_data(self, id: int = None) -> Tuple[str, dict]:
         """
         Get the configuration of an AI application in JSON format.
 
         Args:
             id (int): The ID of the AI application.
-            application_api_key (str, optional): The API key of the AI application.
-
         Returns:
             Tuple[str, dict]: A tuple containing the name of the AI application and its configuration in JSON format.
         """
-        if application_api_key:
-            ai_application = await self.ai_app_service.get_ai_application_by_application_api_key(application_api_key)
-        else:
-            ai_application = await self.ai_app_service.get_ai_application_by_id(id)
+        ai_application = await self.ai_app_service.get_ai_application_by_id(id)
         shield_server_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(EncryptionKeyType.MSG_PROTECT_SHIELD)
         shield_plugin_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(EncryptionKeyType.MSG_PROTECT_PLUGIN)
         shield_server_url = await self.ai_app_service.get_shield_server_url()
@@ -38,7 +36,6 @@ class AIAppConfigDownloadController:
         return ai_application.name, {
             "applicationId": ai_application.id,
             "applicationKey": ai_application.application_key,
-            "applicationAPIKey": ai_application.application_api_key,
             "tenantId": DEFAULT_TENANT_ID,
             "apiServerUrl": "",
             "apiKey": "none",
@@ -49,3 +46,15 @@ class AIAppConfigDownloadController:
             "shieldPluginPrivateKey": shield_plugin_key.private_key,
             "dateOfDownload": str(current_utc_time().astimezone())
         }
+
+    async def get_ai_app_config_by_api_key(self, application_api_key: str) -> Tuple[str, dict]:
+        """
+        Get the configuration of an AI application in JSON format by API key.
+
+        Args:
+            application_api_key (str): The API key of the AI application.
+        Returns:
+            Tuple[str, dict]: A tuple containing the name of the AI application and its configuration in JSON format.
+        """
+        application_id = await self.ai_app_apikey_service.validate_api_key(application_api_key)
+        return await self.get_ai_app_config_json_data(application_id)

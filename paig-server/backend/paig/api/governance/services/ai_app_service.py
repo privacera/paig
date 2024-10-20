@@ -258,7 +258,6 @@ class AIAppService(BaseController[AIApplicationModel, AIApplicationView]):
         """
         await self.ai_app_request_validator.validate_create_request(request)
         request.application_key = generate_unique_identifier_key()
-        request.application_api_key = generate_unique_identifier_key()
         return await self.create_record(request)
 
     async def get_ai_application_by_id(self, id: int) -> AIApplicationView:
@@ -286,19 +285,6 @@ class AIAppService(BaseController[AIApplicationModel, AIApplicationView]):
         """
         repository = self.get_repository()
         return await repository.get_ai_application_by_application_key(application_key)
-
-    async def get_ai_application_by_application_api_key(self, application_api_key: str) -> AIApplicationView:
-        """
-        Retrieve an AI application by its application key.
-
-        Args:
-            application_api_key (str): The application api key of the AI application to retrieve.
-
-        Returns:
-            AIApplicationView: The AI application view object corresponding to the application key.
-        """
-        repository = self.get_repository()
-        return await repository.get_ai_application_by_application_api_key(application_api_key)
 
     async def update_ai_application(self, id: int, request: AIApplicationView) -> AIApplicationView:
         """

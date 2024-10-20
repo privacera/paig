@@ -41,6 +41,10 @@ class AIApplicationStore extends BaseStore {
     downloadShieldConfig(opts = {}) {
         return this.baseUrl + `/shield/config/properties/download`;
     }
+    generateAPIKey(id, opts = {}) {
+        opts.baseUrl = this.baseUrl + `/${id}/apikey/generate`;
+        return this.create({}, opts);
+    }
 }
 
 const aiApplicationStore = new AIApplicationStore();

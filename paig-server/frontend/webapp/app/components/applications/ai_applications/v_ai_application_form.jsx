@@ -1,4 +1,4 @@
-import React, {Fragment} from 'react';
+import React, {Fragment, useState, useEffect} from 'react';
 import { observer } from 'mobx-react';
 
 import {TextareaAutosize, IconButton} from '@material-ui/core';
@@ -11,7 +11,10 @@ import {STATUS} from 'common-ui/utils/globals';
 import {DEPLOYMENT_TYPE} from 'utils/globals';
 import {configProperties} from 'utils/config_properties';
 import {vectorDBLookUps} from 'components/policies/field_lookups';
-import {ActionButtons, RefreshButton} from 'common-ui/components/action_buttons';
+import {ActionButtons} from 'common-ui/components/action_buttons';
+import Button from '@material-ui/core/Button';
+import stores from '../../../data/stores/all_stores';
+import f from 'common-ui/utils/f';
 
 const VectorDBAssociate = ({form, editMode}) => {
     if (!configProperties.isVectorDBEnable()) {
@@ -53,10 +56,15 @@ const VectorDBAssociate = ({form, editMode}) => {
 }
 
 const VAIApplicationForm = observer(({form, editMode}) => {
-    const { id, name, applicationKey, description, status, deploymentType, vectorDBs, applicationAPIKey } = form.fields;
+    const { id, name, applicationKey, description, status, deploymentType, vectorDBs } = form.fields;
+
+    // State to hold applicationAPIKey
+    const [applicationAPIKey, setApplicationAPIKey] = useState(null);
+
+
     const onCloneClick = () => {
         navigator.clipboard
-        .writeText(applicationAPIKey.value)
+        .writeText(applicationAPIKey)
         .then(() => {
             console.log("successfully copied");
         })
@@ -64,9 +72,18 @@ const VAIApplicationForm = observer(({form, editMode}) => {
             alert("something went wrong");
         });
     };
-    const onRefreshClick = () => {
-        console.log('refreshed')
-    }
+    // Mock API call to fetch API key
+    const fetchAPIKey = async () => {
+        try {
+            let response = await stores.aiApplicationStore.generateAPIKey(id.value);
+            setApplicationAPIKey(response[0].apiKey)
+            f.notifySuccess("The AI Application created successfully");
+        } catch(e) {
+            console.log('failed', e);
+            f.handleError()(e);
+        }
+    };
+
     return (
         <Fragment>
             {   
@@ -146,18 +163,18 @@ const VAIApplicationForm = observer(({form, editMode}) => {
                 <Grid item xs={12}>
                     <FormLabel>API Key</FormLabel>
                     <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        {applicationAPIKey ? (
                         <div data-testid="app-key-text" style={{ marginRight: '8px' }}>
-                            {applicationAPIKey.value || 'No API Key'}
+                            {applicationAPIKey}
+                        <ActionButtons showClone={true} hideEdit={true} hideDelete={true}
+                                                onCloneClick={onCloneClick} />
                         </div>
-
-                        {applicationKey.value && (
-                            <Fragment>
-                                <ActionButtons showClone={true} hideEdit={true} hideDelete={true}
-                                onCloneClick={onCloneClick}     
-                                />
-                                <RefreshButton onClick={onRefreshClick}></RefreshButton>
-                                </Fragment>
-
+                        ) : (
+                            <div>
+                            <Button variant="contained" color="primary" onClick={fetchAPIKey}>
+                                Get API Key
+                            </Button>
+                            </div>
                         )}
 
                     </div>
@@ -220,9 +237,6 @@ const ai_application_form_def = {
                 return false;
             }
         }
-    },
-    applicationAPIKey: {
-        defaultValue: null
     },
     applicationKey: {
         defaultValue: "",

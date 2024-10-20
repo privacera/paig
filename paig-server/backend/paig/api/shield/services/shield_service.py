@@ -91,5 +91,5 @@ class ShieldService:
         return stream_shield_audit
 
     async def get_ai_application_config(self, application_api_key):
-        ai_app, ai_app_json_data = await self.ai_app_config_download_controller.get_ai_app_config_json_data(application_api_key=application_api_key)
+        ai_app, ai_app_json_data = await self.ai_app_config_download_controller.get_ai_app_config_by_api_key(application_api_key=application_api_key)
         return ai_app_json_data

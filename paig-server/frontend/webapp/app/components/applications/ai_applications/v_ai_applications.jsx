@@ -11,6 +11,7 @@ import {Loader, getSkeleton} from 'common-ui/components/generic_components';
 import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
 import {configProperties} from 'utils/config_properties';
 import {DEPLOYMENT_TYPE} from 'utils/globals';
+import Button from '@material-ui/core/Button';
 
 @observer
 class VAIApplications extends Component {

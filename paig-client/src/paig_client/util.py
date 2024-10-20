@@ -1,3 +1,4 @@
+import base64
 import logging
 import socket
 import threading
@@ -30,6 +31,15 @@ def get_time_from_isotime(utc_dt_str):
 @lru_cache(maxsize=None)
 def get_my_hostname():
     return socket.gethostname()
+
+
+def decode_application_api_key(api_key):
+    return (base64.b64decode(api_key.encode('utf-8'))).decode('utf-8')
+
+
+def fetch_server_url_from_key(key):
+    components = key.split(":")
+    return ":".join(components[2:])
 
 
 @lru_cache(maxsize=None)

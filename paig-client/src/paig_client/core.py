@@ -489,6 +489,10 @@ class PAIGApplication:
         """
 
         self.application_api_key = None
+
+        if os.environ.get("PAIG_APPLICATION_API_KEY"):
+            self.application_api_key = os.environ.get("PAIG_APPLICATION_API_KEY")
+
         if "application_api_key" in kwargs and kwargs["application_api_key"]:
             self.application_api_key = kwargs["application_api_key"]
 
@@ -508,6 +512,13 @@ class PAIGApplication:
         self.audit_spool_dir = None
         encryption_keys_info = None
 
+
+        # Decode and load server url from application key
+        if self.application_api_key:
+            decoded_application_api_key = util.decode_application_api_key(self.application_api_key)
+            self.shield_base_url = util.fetch_server_url_from_key(decoded_application_api_key)
+
+        # Allow override from kwargs
         if 'server_url' in kwargs and kwargs['server_url']:
             self.shield_base_url = kwargs['server_url']
 
@@ -524,6 +535,7 @@ class PAIGApplication:
                 "shield_plugin_key_id": self.shield_plugin_key_id,
                 "shield_plugin_private_key": self.shield_plugin_private_key
             }
+
         self.shield_client = ShieldRestHttpClient(base_url=self.shield_base_url, tenant_id=self.tenant_id,
                                                       api_key=self.api_key, encryption_keys_info=encryption_keys_info,
                                                       request_kwargs=kwargs.get("request_kwargs", {}),

@@ -9,6 +9,7 @@ from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
 from api.governance.services.ai_app_config_service import AIAppConfigService
 from api.governance.services.ai_app_policy_service import AIAppPolicyService
 from api.governance.services.ai_app_service import AIAppService
+from api.governance.services.ai_app_apikey_service import AIAppAPIKeyService
 from core.utils import format_to_root_path, SingletonDepends
 
 
@@ -23,10 +24,13 @@ class AIAppController:
     def __init__(self,
                  ai_app_service: AIAppService = SingletonDepends(AIAppService),
                  ai_app_policy_service: AIAppPolicyService = SingletonDepends(AIAppPolicyService),
-                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService)):
+                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService),
+                 ai_app_apikey_service: AIAppAPIKeyService = SingletonDepends(AIAppAPIKeyService)
+                 ):
         self.ai_app_service = ai_app_service
         self.ai_app_policy_service = ai_app_policy_service
         self.ai_app_config_service = ai_app_config_service
+        self.ai_app_apikey_service = ai_app_apikey_service
 
         ai_app_defaults_file_path = format_to_root_path("api/governance/configs/ai_application_defaults.json")
         application_defaults = self.get_application_defaults(ai_app_defaults_file_path)
@@ -76,12 +80,17 @@ class AIAppController:
         """
         created_app = await self.ai_app_service.create_ai_application(request)
 
+
         app_config_create_model = AIApplicationConfigView(**self.ai_app_default_config.model_dump())
         await self.ai_app_config_service.update_ai_app_config(created_app.id, app_config_create_model)
 
         for policy in self.ai_app_default_policies:
             policy_create_view = AIApplicationPolicyView(**policy.model_dump())
             await self.ai_app_policy_service.create_ai_application_policy(created_app.id, policy_create_view)
+
+
+        # Create master encryption key per application
+        await self.ai_app_apikey_service.create_app_encryption_key(created_app.id)
 
         return created_app
 

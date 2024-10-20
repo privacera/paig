@@ -28,6 +28,7 @@ from api.governance.database.db_models import vector_db_model, vector_db_policy_
 from api.governance.database.db_models import ai_app_config_model
 from api.governance.database.db_models import metadata_key_model, metadata_value_model
 from api.governance.database.db_models import tag_model
+from api.governance.database.db_models import ai_app_apikey_model
 from api.user.database.db_models import user_model, groups_model
 from api.audit.RDS_service.db_models import access_audit_model
 from api.encryption.database.db_models import encryption_master_key_model, encryption_key_model
