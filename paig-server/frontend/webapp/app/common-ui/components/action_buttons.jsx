@@ -198,14 +198,14 @@ const ReadRequestBtn = ({ ...props }) => {
 const ActionButtons = ({
     onEditClick, onDeleteClick, onPreviewClick, onRegexClick, showPreview, showRegexBtn, hideEdit,
     hideDelete, rejectRequest, onRejectRequest, onAcceptRequest, acceptRequest, readRequest,
-    onReadRequest, showClone, onCloneClick, ...props 
+    onReadRequest, showClone, onCloneClick, showRefresh, onRefreshClick, ...props 
 }) => {
     return (
         <Fragment>
             {showRegexBtn && <TestRegexBtn onClick={onRegexClick} />}
             {showPreview && <PreviewAnchorBtn onClick={onPreviewClick} />}
             {!hideEdit && <EditAnchorBtn onClick={onEditClick} />}
-            {!hideEdit && showClone && <CloneAnchorBtn onClick={onCloneClick} />}
+            {showClone && <CloneAnchorBtn onClick={onCloneClick} />}
             {!hideDelete && <DeleteAnchorBtn onClick={onDeleteClick} />}
             {!!rejectRequest && <RejectRequestBtn {...props.rejectRequestBtnProps} onClick={onRejectRequest}/>}
             {!!acceptRequest && <AcceptRequestBtn {...props.acceptRequestBtnProps} onClick={onAcceptRequest}/>}

@@ -1,7 +1,7 @@
 import React, {Fragment} from 'react';
 import { observer } from 'mobx-react';
 
-import {TextareaAutosize} from '@material-ui/core';
+import {TextareaAutosize, IconButton} from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import FormLabel from '@material-ui/core/FormLabel';
 
@@ -11,6 +11,7 @@ import {STATUS} from 'common-ui/utils/globals';
 import {DEPLOYMENT_TYPE} from 'utils/globals';
 import {configProperties} from 'utils/config_properties';
 import {vectorDBLookUps} from 'components/policies/field_lookups';
+import {ActionButtons, RefreshButton} from 'common-ui/components/action_buttons';
 
 const VectorDBAssociate = ({form, editMode}) => {
     if (!configProperties.isVectorDBEnable()) {
@@ -52,8 +53,20 @@ const VectorDBAssociate = ({form, editMode}) => {
 }
 
 const VAIApplicationForm = observer(({form, editMode}) => {
-    const { id, name, applicationKey, description, status, deploymentType, vectorDBs } = form.fields;
-
+    const { id, name, applicationKey, description, status, deploymentType, vectorDBs, applicationAPIKey } = form.fields;
+    const onCloneClick = () => {
+        navigator.clipboard
+        .writeText(applicationAPIKey.value)
+        .then(() => {
+            console.log("successfully copied");
+        })
+        .catch(() => {
+            alert("something went wrong");
+        });
+    };
+    const onRefreshClick = () => {
+        console.log('refreshed')
+    }
     return (
         <Fragment>
             {   
@@ -127,6 +140,30 @@ const VAIApplicationForm = observer(({form, editMode}) => {
                     <div className="break-word" data-testid="app-desc-text">{description.value}</div>
                 </Grid>
             }
+
+             {/* New Section: Application API Key */}
+             {id.value && (
+                <Grid item xs={12}>
+                    <FormLabel>API Key</FormLabel>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <div data-testid="app-key-text" style={{ marginRight: '8px' }}>
+                            {applicationAPIKey.value || 'No API Key'}
+                        </div>
+
+                        {applicationKey.value && (
+                            <Fragment>
+                                <ActionButtons showClone={true} hideEdit={true} hideDelete={true}
+                                onCloneClick={onCloneClick}     
+                                />
+                                <RefreshButton onClick={onRefreshClick}></RefreshButton>
+                                </Fragment>
+
+                        )}
+
+                    </div>
+                </Grid>
+            )}
+
             <Grid item xs={12}>
                 <FormLabel>Enabled</FormLabel>
                 <FormGroupSwitch
@@ -183,6 +220,9 @@ const ai_application_form_def = {
                 return false;
             }
         }
+    },
+    applicationAPIKey: {
+        defaultValue: null
     },
     applicationKey: {
         defaultValue: "",

@@ -18,13 +18,12 @@ class AIAppConfigDownloadController:
         self.ai_app_service = ai_app_service
         self.encryption_key_service = encryption_key_service
 
-    async def get_ai_app_config_json_data(self, id: int) -> Tuple[str, dict]:
+    async def get_ai_app_config_json_data(self, id: int = None) -> Tuple[str, dict]:
         """
         Get the configuration of an AI application in JSON format.
 
         Args:
             id (int): The ID of the AI application.
-
         Returns:
             Tuple[str, dict]: A tuple containing the name of the AI application and its configuration in JSON format.
         """

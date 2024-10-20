@@ -19,6 +19,7 @@ class AIApplicationModel(BaseSQLModel):
         name (str): Name of the AI application.
         description (str): Description of the AI application.
         application_key (str): Key for the AI application.
+        application_api_key (str): API key for the AI application.
         vector_dbs (list): List of vector databases associated with the AI application.
     """
 

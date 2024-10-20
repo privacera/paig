@@ -40,31 +40,42 @@ class ShieldController:
         """
         x_tenant_id = request.headers.get("x-tenant-id")
         x_user_role = request.headers.get("x-user-role")
+        x_application_api_key = request.headers.get("x-application-api-key")
 
-        req_obj = await request.json()
-        try:
-            shield_server_key_id = req_obj.get("shieldServerKeyId")
-        except Exception as ex:
-            logger.debug(f"Exception while fetching shield server key id from request: {str(ex)}. "
-                         f"This maybe due to payload format from plugin. Now re-trying...")
-            req_obj = json.loads(req_obj)
-            shield_server_key_id = req_obj.get("shieldServerKeyId")
+        if not x_application_api_key:
+            req_obj = await request.json()
+            try:
+                shield_server_key_id = req_obj.get("shieldServerKeyId")
+            except Exception as ex:
+                logger.debug(f"Exception while fetching shield server key id from request: {str(ex)}. "
+                             f"This maybe due to payload format from plugin. Now re-trying...")
+                req_obj = json.loads(req_obj)
+                shield_server_key_id = req_obj.get("shieldServerKeyId")
 
-        if not shield_server_key_id:
-            raise BadRequestException("Missing shieldServerKeyId in request")
+            if not shield_server_key_id:
+                raise BadRequestException("Missing shieldServerKeyId in request")
 
-        shield_plugin_key_id = req_obj.get("shieldPluginKeyId")
-        if not shield_plugin_key_id:
-            raise BadRequestException("Missing shieldPluginKeyId in request")
+            shield_plugin_key_id = req_obj.get("shieldPluginKeyId")
+            if not shield_plugin_key_id:
+                raise BadRequestException("Missing shieldPluginKeyId in request")
 
-        application_key = req_obj.get("applicationKey")
+            application_key = req_obj.get("applicationKey")
+            response = Response(content=f"Initialization completed successfully for tenant {x_tenant_id}",
+                        media_type="text/plain")
+        else:
+            #  This is the case when application api key is passed in header
+            ai_config = await self.shield_service.get_ai_application_config(x_application_api_key)
+            shield_server_key_id = ai_config.get("shieldServerKeyId")
+            shield_plugin_key_id = ai_config.get("shieldPluginKeyId")
+            application_key = ai_config.get("applicationKey")
+            x_tenant_id = ai_config.get("tenantId")
+            response = ai_config
 
         await self.shield_service.initialize_tenant(x_tenant_id, x_user_role, shield_server_key_id,
                                                     shield_plugin_key_id,
                                                     application_key)
 
-        return Response(content=f"Initialization completed successfully for tenant {x_tenant_id}",
-                        media_type="text/plain")
+        return response
 
     async def authorize(self, request, x_tenant_id, x_user_role):
         """

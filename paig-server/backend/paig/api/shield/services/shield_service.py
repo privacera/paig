@@ -10,6 +10,8 @@ from api.shield.model.shield_audit import ShieldAuditViaApi
 from api.shield.utils import config_utils
 from core.utils import SingletonDepends
 
+from api.governance.controllers.ai_app_config_download_controller import AIAppConfigDownloadController
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,12 +21,14 @@ class ShieldService:
     and handle audit logging for a multi-tenant environment.
     """
 
-    def __init__(self, auth_service: AuthService = SingletonDepends(AuthService)):
+    def __init__(self, auth_service: AuthService = SingletonDepends(AuthService),
+                 ai_app_config_download_controller: AIAppConfigDownloadController = SingletonDepends(AIAppConfigDownloadController)):
         """
         Initializes the ShieldService with the given AuthService dependency.
 
         """
         self.auth_service = auth_service
+        self.ai_app_config_download_controller = ai_app_config_download_controller
 
     async def initialize_tenant(self, x_tenant_id, x_user_role, shield_server_key_id, shield_plugin_key_id,
                                 application_key):
@@ -85,3 +89,7 @@ class ShieldService:
         await self.auth_service.audit_stream_data(stream_shield_audit)
 
         return stream_shield_audit
+
+    async def get_ai_application_config(self, application_api_key):
+        ai_app, ai_app_json_data = await self.ai_app_config_download_controller.get_ai_app_config_json_data(application_api_key=application_api_key)
+        return ai_app_json_data
