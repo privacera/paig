@@ -102,7 +102,6 @@ async def check_and_create_default_ai_application():
                     name=ai_application.get("name"),
                     description=ai_application.get("description"),
                     application_key=generate_unique_identifier_key(),
-                    application_api_key=generate_unique_identifier_key(),
                     vector_dbs=''
                 )
                 session.add(default_app)
