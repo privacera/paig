@@ -32,7 +32,7 @@ class LangChainServiceIntf:
         self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
             "disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
-        self.source_metadata_fields = ai_application_conf[self.ai_application_name].get("source_metadata_fields", ["source"])
+        self.source_metadata_fields = ai_application_conf[self.ai_application_name].get("source_metadata_fields", ["source", "users", "groups"])
 
     def _get_retrievalqa(self):
         try:
