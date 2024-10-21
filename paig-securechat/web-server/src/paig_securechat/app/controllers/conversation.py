@@ -145,7 +145,9 @@ class ConversationController:
             conversation_messages.reverse()
         except:
             conversation_messages = None
-        reply = self.send_prompt(prompt, ai_application_name, conversation_messages, user_name)
+        reply, source_metadata = self.send_prompt(prompt, ai_application_name, conversation_messages, user_name)
+        source_metadata = str(source_metadata)
+
 
         reply_uuid = get_uuid()
         reply_params = {
@@ -153,7 +155,8 @@ class ConversationController:
             "content": reply,
             "type": "reply",
             "message_uuid": reply_uuid,
-            "prompt_id": prompt_uuid
+            "prompt_id": prompt_uuid,
+            "source_metadata": source_metadata
         }
         try:
             create_reply_resp = await self.message_repository.create_message(reply_params)
@@ -165,5 +168,5 @@ class ConversationController:
 
     def send_prompt(self, prompt, ai_application_name, conversation_messages=None, user_name=None):
         AI_application_service = self.AI_application_service.get_service(ai_application_name)
-        response = AI_application_service.ask_prompt(prompt=prompt, conversation_messages=conversation_messages, user_name=user_name)
-        return response
+        response, source_metadata = AI_application_service.ask_prompt(prompt=prompt, conversation_messages=conversation_messages, user_name=user_name)
+        return response, source_metadata

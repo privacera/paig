@@ -134,6 +134,7 @@ const Chat = () => {
                         me={item.type==="prompt" || false}
                         index={index}
                         removeThatChat={removeThatChat}
+                        sourceMetadata={item.source_metadata}
                       />
                     </Box>
                   )
@@ -183,6 +184,7 @@ const FirstPrompt = () => {
             <Message
               msg={(firstConversation && firstConversation.question) || ""}
               me={true}
+              sourceMetadata={null}
             />
           </Box>
         </Paper>
