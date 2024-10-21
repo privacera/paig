@@ -195,3 +195,24 @@
 .login-container.sso-login-enable .login-button{
   margin-top:40px;
  }
+
+ .chat-source-metadata{
+  overflow-x: auto;
+  #source-metadata-typography{
+    padding: 0px;
+    margin-top: 2px;
+    margin-bottom: 0px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  }
+
+.chat-source-metadata table td,
+.chat-source-metadata table th {
+  padding: 4px 8px!Important;
+font-size:12px;
+    vertical-align: top;
+    min-width: 120px;
+    border-bottom: 1px solid #C8C7C7;
+}
+

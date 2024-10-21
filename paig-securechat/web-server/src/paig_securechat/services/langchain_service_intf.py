@@ -32,6 +32,7 @@ class LangChainServiceIntf:
         self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
             "disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
+        self.source_metadata_fields = ai_application_conf[self.ai_application_name].get("source_metadata_fields", ["source"])
 
     def _get_retrievalqa(self):
         try:
@@ -85,12 +86,21 @@ class LangChainServiceIntf:
         else:
             result = retrieval_object.invoke({"question": prompt})
             answer = result['answer']
+            source_metadata = None
             if "source_documents" in result:
-                source_documents = [f"{self.source_document_base_url}/{source_document.metadata['source']}"
-                                        for source_document in result["source_documents"]]
-                source_documents_str = ",\n".join(list(dict.fromkeys(source_documents)))
-                answer = f"{answer}\n\nSource documents:\n{source_documents_str}"
-            return answer
+                source_metadata = list()
+                for source_document in result["source_documents"]:
+                    metadata = dict()
+                    for field in self.source_metadata_fields:
+                        if field in source_document.metadata:
+                            metadata[field] = source_document.metadata[field]
+                    if source_metadata:
+                        if metadata != source_metadata[-1]:
+                            source_metadata.append(metadata)
+                    else:
+                        source_metadata.append(metadata)
+
+            return answer, source_metadata
 
     def ask_prompt(self, prompt, conversation_messages=None, temperature=None, user_name=None):
         logger.info(f"Asking prompt :: {prompt} for ai_application_name :: {self.ai_application_name}")
@@ -102,7 +112,7 @@ class LangChainServiceIntf:
 
             if self.paig_shield.DISABLE_PAIG_SHIELD_PLUGIN_FLAG:
                 retrieval_object = self._get_retrieval_object(conversation_messages)
-                reply = self._execute_prompt(retrieval_object, prompt)
+                reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
                 logger.info(f"Reply :: {reply}")
             else:
                 logger.info(f"Authorizing for  :: {user_name}")
@@ -114,14 +124,14 @@ class LangChainServiceIntf:
                     kwargs['application'] = ai_app
                 with paig_shield_client.create_shield_context(**kwargs):
                     retrieval_object = self._get_retrieval_object(conversation_messages)
-                    reply = self._execute_prompt(retrieval_object, prompt)
+                    reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
                     logger.info(f"Reply :: {reply}")
-            return reply
+            return reply, source_metadata
 
         except paig_client.exception.AccessControlException as e:
             logger.exception(f"Access Denied, message: {e}")
-            return self.shield_access_denied_msg
+            return self.shield_access_denied_msg, None
         except Exception as ex:
             logging.exception(
                 f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
-            return self.client_error_msg
+            return self.client_error_msg, None

@@ -9,7 +9,7 @@ from core.security.authentication import get_auth_user
 
 from core.constants import BASE_ROUTE
 
-@patch('app.controllers.conversation.ConversationController.send_prompt', MagicMock(return_value='yes'))
+@patch('app.controllers.conversation.ConversationController.send_prompt', MagicMock(return_value=('yes', None)))
 class TestConversationRouter:
 
     def setup_class(self):

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, BigInteger
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from uuid import uuid4
@@ -21,6 +21,7 @@ class Messages(Base):
     type = Column(String(50), nullable=True, index=True)
     prompt_id = Column(String(50), nullable=True, index=True)
     auth_status = Column(String(50), nullable=True, default=None)
+    source_metadata =  Column(String, nullable=True)
 
     conversation = relationship("Conversations", back_populates="messages")
 

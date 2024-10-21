@@ -177,7 +177,8 @@ function DataProvider({ children }: DataProviderProps): React.ReactElement {
               created_on: new Date().toISOString(),
               prompt_id: null,
               type: 'prompt',
-              message_uuid: null
+              message_uuid: null,
+              source_metadata: null
             }
           ]
         };

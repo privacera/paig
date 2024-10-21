@@ -3,6 +3,7 @@ type Message = {
   created_on: string;
   type: string | null;
   message_uuid: string | null;
+  source_metadata: string | null;
 };
 
 type Conversation = {
