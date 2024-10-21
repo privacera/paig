@@ -27,7 +27,7 @@ jobs:
     - name: Test with pytest
       run: |
         filepath=$PWD
-        . venv/bin/activate && paig-securechat/web-server/src/paig_securechat
+        . venv/bin/activate && cd paig-securechat/web-server/src/paig_securechat
         python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
 
     - name: Upload coverage report
