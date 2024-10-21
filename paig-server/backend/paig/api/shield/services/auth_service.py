@@ -74,6 +74,9 @@ class AuthService:
         self.data_store_controller = data_store_controller
         self.init_log_message_in_file()
 
+        self.ignore_access_control_application_keys = config_utils.get_property_value_list("ignore_access_control_application_keys", [])
+        logger.info("Found ignore_access_control_application_keys = " + str(self.ignore_access_control_application_keys))
+
         logger.info(f"AuthService Initialized in {self._shield_run_mode} mode!")
 
     async def authorize(self, auth_req: AuthorizeRequest):
@@ -126,6 +129,14 @@ class AuthService:
                 authz_service_res.authorized = is_allowed = False
                 authz_service_res.status_message = "Access is denied"
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
+
+        # Overriding the access control results for the application keys configured under
+        # property ignore_access_control_application_keys
+        if auth_req.application_key in self.ignore_access_control_application_keys:
+            logger.info(f"Overriding access control results for application_key=" + auth_req.application_key)
+            authz_service_res.authorized = is_allowed = True
+            authz_service_res.masked_traits = {}
+            masked_messages = []
 
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
