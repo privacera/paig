@@ -61,7 +61,7 @@ class AWSBedrockGuardrailScanner(Scanner):
             source=guardrail_source,
             content=[{'text': {'text': message}}]
         )
-        logger.debug(f"AWSBedrockGuardrailScanner: Response received: {response}")
+        logger.info(f"AWSBedrockGuardrailScanner: Response received: {response}")
 
         if response.get('action') == Guardrail.GUARDRAIL_INTERVENED.value:
             outputs = response.get('outputs', [])
@@ -71,11 +71,12 @@ class AWSBedrockGuardrailScanner(Scanner):
             analyzer_result = AnalyzerResult(start=0, end=len(message), entity_type='', score=0.0,
                                          model_name='', scanner_name=self.get_property('name'), analysis_explanation=None,
                                          recognition_metadata=response)
-            logger.debug(
-                f"AWSBedrockGuardrailScanner: Action required. Tags: {tag_set}, Actions: {action_set}, Output: {output_text}")
+
+            logger.info(f"AWSBedrockGuardrailScanner: Action required. Tags: {tag_set}, Actions: {action_set}")
+            logger.debug(f"AWSBedrockGuardrailScanner: Action required. Output: {output_text}")
             return ScannerResult(traits=list(tag_set), actions=list(action_set), output_text= output_text, analyzer_result=[analyzer_result])
 
-        logger.debug("AWSBedrockGuardrailScanner: No action required.")
+        logger.info("AWSBedrockGuardrailScanner: No action required for the message.")
         return ScannerResult(traits=[])
 
     def get_guardrail_details(self) -> (str, str, str):
