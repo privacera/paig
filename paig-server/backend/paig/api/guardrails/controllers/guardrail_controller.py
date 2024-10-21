@@ -64,17 +64,17 @@ class GuardrailController:
         """
         return await self.guardrail_service.get_by_id(id)
 
-    async def get_by_app_name(self, app_name: str) -> GuardrailView:
+    async def get_all_by_app_key(self, app_key: str) -> List[GuardrailView]:
         """
-        Retrieve a Guardrail by its application name.
+        Retrieve all Guardrails by the application key.
 
         Args:
-            app_name (str): The application name of the Guardrail to retrieve.
+            app_key (str): The application key to search for.
 
         Returns:
-            GuardrailView: The Guardrail view object corresponding to the application name.
+            List[GuardrailView]: The list of Guardrail view objects corresponding to the application key.
         """
-        return await self.guardrail_service.get_by_app_name(app_name)
+        return await self.guardrail_service.get_all_by_app_key(app_key)
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update(self, id: int, request: GuardrailView) -> GuardrailView:

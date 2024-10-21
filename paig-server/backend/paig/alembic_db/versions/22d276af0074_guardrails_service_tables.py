@@ -1,8 +1,8 @@
 """guardrails_service_tables
 
-Revision ID: 7b006c37246a
+Revision ID: 22d276af0074
 Revises: 5e805b526efa
-Create Date: 2024-10-17 13:04:13.942902
+Create Date: 2024-10-21 14:14:06.374881
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '7b006c37246a'
+revision: str = '22d276af0074'
 down_revision: Union[str, None] = '5e805b526efa'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,7 +25,6 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=4000), nullable=True),
     sa.Column('version', sa.Integer(), nullable=False),
-    sa.Column('applications', core.db_models.utils.CommaSeparatedList(length=4000), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -49,6 +48,21 @@ def upgrade() -> None:
     op.create_index(op.f('ix_guardrail_connection_create_time'), 'guardrail_connection', ['create_time'], unique=False)
     op.create_index(op.f('ix_guardrail_connection_id'), 'guardrail_connection', ['id'], unique=False)
     op.create_index(op.f('ix_guardrail_connection_update_time'), 'guardrail_connection', ['update_time'], unique=False)
+    op.create_table('guardrail_application',
+    sa.Column('guardrail_id', sa.Integer(), nullable=False),
+    sa.Column('application_id', sa.Integer(), nullable=True),
+    sa.Column('application_name', sa.String(length=255), nullable=True),
+    sa.Column('application_key', sa.String(length=255), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('status', sa.Integer(), nullable=False),
+    sa.Column('create_time', sa.DateTime(), nullable=False),
+    sa.Column('update_time', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['guardrail_id'], ['guardrail.id'], name='fk_guardrail_application_guardrail_id', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_guardrail_application_create_time'), 'guardrail_application', ['create_time'], unique=False)
+    op.create_index(op.f('ix_guardrail_application_id'), 'guardrail_application', ['id'], unique=False)
+    op.create_index(op.f('ix_guardrail_application_update_time'), 'guardrail_application', ['update_time'], unique=False)
     op.create_table('guardrail_config',
     sa.Column('guardrail_id', sa.Integer(), nullable=False),
     sa.Column('guardrail_provider', sa.String(length=255), nullable=False),
@@ -92,7 +106,6 @@ def upgrade() -> None:
                 gr.name,
                 gr.description,
                 gr.version,
-                gr.applications,
                 gr_conf.id,
                 gr_conf.guardrail_id,
                 gr_conf.guardrail_provider,
@@ -100,12 +113,14 @@ def upgrade() -> None:
                 gr_conf.config_data,
                 gr_conn.name AS guardrail_provider_connection_name,
                 gr_conn.connection_details AS guardrail_connection,
-                gr_resp.response_data AS guardrail_provider_response
+                gr_resp.response_data AS guardrail_provider_response,
+                GROUP_CONCAT(DISTINCT gr_app.application_key) AS application_keys
             FROM
                 guardrail gr
                     LEFT JOIN guardrail_config gr_conf            ON gr.id = gr_conf.guardrail_id
                     LEFT JOIN guardrail_connection gr_conn        ON gr_conn.name = gr_conf.guardrail_provider_connection_name
                     LEFT JOIN guardrail_provider_response gr_resp ON gr.id = gr_resp.guardrail_id AND gr_conf.guardrail_provider = gr_resp.guardrail_provider
+                    LEFT JOIN guardrail_application gr_app        ON gr.id = gr_app.guardrail_id
             GROUP BY
                 gr_conf.id;
         """))
@@ -123,6 +138,14 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_guardrail_config_id'), table_name='guardrail_config')
     op.drop_index(op.f('ix_guardrail_config_create_time'), table_name='guardrail_config')
     op.drop_table('guardrail_config')
+    op.drop_index(op.f('ix_guardrail_application_update_time'), table_name='guardrail_application')
+    op.drop_index(op.f('ix_guardrail_application_id'), table_name='guardrail_application')
+    op.drop_index(op.f('ix_guardrail_application_create_time'), table_name='guardrail_application')
+    op.drop_table('guardrail_application')
+    op.drop_index(op.f('ix_paig_guardrail_view_update_time'), table_name='paig_guardrail_view')
+    op.drop_index(op.f('ix_paig_guardrail_view_id'), table_name='paig_guardrail_view')
+    op.drop_index(op.f('ix_paig_guardrail_view_create_time'), table_name='paig_guardrail_view')
+    op.drop_table('paig_guardrail_view')
     op.drop_index(op.f('ix_guardrail_connection_update_time'), table_name='guardrail_connection')
     op.drop_index(op.f('ix_guardrail_connection_id'), table_name='guardrail_connection')
     op.drop_index(op.f('ix_guardrail_connection_create_time'), table_name='guardrail_connection')

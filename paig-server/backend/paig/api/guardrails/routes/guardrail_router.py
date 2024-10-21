@@ -12,7 +12,7 @@ guardrail_router = APIRouter()
 gr_controller_instance = Depends(SingletonDepends(GuardrailController, called_inside_fastapi_depends=True))
 
 
-@guardrail_router.get("", response_model=Pageable)
+@guardrail_router.get("", response_model=Pageable, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def list(
         filter: GuardrailFilter = Depends(),
         page: int = Query(0, description="The page number to retrieve"),
@@ -26,7 +26,7 @@ async def list(
     return await guardrail_controller.list(filter, page, size, sort)
 
 
-@guardrail_router.post("", response_model=GuardrailView, status_code=status.HTTP_201_CREATED)
+@guardrail_router.post("", response_model=GuardrailView, status_code=status.HTTP_201_CREATED, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def create(
         request: GuardrailView,
         guardrail_controller: GuardrailController = gr_controller_instance
@@ -37,7 +37,7 @@ async def create(
     return await guardrail_controller.create(request)
 
 
-@guardrail_router.get("/{id}", response_model=GuardrailView)
+@guardrail_router.get("/{id}", response_model=GuardrailView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def get(
         id: int,
         guardrail_controller: GuardrailController = gr_controller_instance
@@ -48,18 +48,18 @@ async def get(
     return await guardrail_controller.get_by_id(id)
 
 
-@guardrail_router.get("/application/{app_name}", response_model=GuardrailView)
-async def get_by_app_name(
-        app_name: str,
+@guardrail_router.get("/application/{app_key}", response_model=List[GuardrailView], response_model_exclude_none=True, response_model_exclude_unset=True)
+async def get_all_by_app_key(
+        app_key: str,
         guardrail_controller: GuardrailController = gr_controller_instance
-) -> GuardrailView:
+) -> List[GuardrailView]:
     """
-    Get a Guardrail by Application Name.
+    Get all Guardrails by app key.
     """
-    return await guardrail_controller.get_by_app_name(app_name)
+    return await guardrail_controller.get_all_by_app_key(app_key)
 
 
-@guardrail_router.put("/{id}", response_model=GuardrailView)
+@guardrail_router.put("/{id}", response_model=GuardrailView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def update(
         id: int,
         request: GuardrailView,

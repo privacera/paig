@@ -20,10 +20,29 @@ class GuardrailModel(BaseSQLModel):
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
     version = Column(Integer, nullable=False, default=1)
-    applications = Column(CommaSeparatedList(4000), nullable=False)
 
+    gr_application = relationship("GRApplicationModel", back_populates="guardrail", cascade="all, delete-orphan")
     gr_config = relationship("GRConfigModel", back_populates="guardrail", cascade="all, delete-orphan")
     gr_response = relationship("GRProviderResponseModel", back_populates="guardrail", cascade="all, delete-orphan")
+
+
+class GRApplicationModel(BaseSQLModel):
+    """
+    SQLAlchemy model representing the guardrails_applications table.
+
+    Attributes:
+        guardrail_id (int): The guardrail id.
+        application_id (int): The application id.
+        application_name (str): The application name.
+        application_key (str): The application key.
+    """
+    __tablename__ = "guardrail_application"
+    guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_application_guardrail_id'), nullable=False)
+    application_id = Column(Integer, nullable=True)
+    application_name = Column(String(255), nullable=True)
+    application_key = Column(String(255), nullable=False)
+
+    guardrail = relationship("GuardrailModel", back_populates="gr_application")
 
 
 class GRConfigModel(BaseSQLModel):
@@ -71,7 +90,6 @@ class GuardrailViewModel(BaseSQLModel):
         name (str): The name of the guardrail.
         description (str): The description of the guardrail.
         version (str): The version of the guardrail.
-        applications (str): The applications associated to the guardrail.
         guardrail_provider (str): The guardrail provider.
         guardrail_id (int): The guardrail id.
         config_type (str): The config type.
@@ -85,7 +103,7 @@ class GuardrailViewModel(BaseSQLModel):
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
     version = Column(Integer, nullable=False, default=1)
-    applications = Column(CommaSeparatedList(255), nullable=False)
+    application_keys = Column(CommaSeparatedList(4000), nullable=False)
 
     guardrail_provider = Column(String(255), nullable=False)
     guardrail_id = Column(Integer, nullable=False)

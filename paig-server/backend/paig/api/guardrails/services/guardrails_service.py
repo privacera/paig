@@ -1,12 +1,13 @@
-from typing import List
+from typing import List, Dict, Set
 
 import sqlalchemy
 
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GuardrailConfigView
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
-    GRProviderResponseModel
+    GRProviderResponseModel, GRApplicationModel
 from api.guardrails.database.db_operations.guardrail_repository import \
-    GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository
+    GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository, \
+    GRApplicationRepository
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
@@ -159,6 +160,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
     def __init__(self,
                  guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository),
+                    gr_app_repository: GuardrailRepository = SingletonDepends(GRApplicationRepository),
                  gr_config_repository: GRConfigRepository = SingletonDepends(GRConfigRepository),
                  gr_provider_response_repository: GRProviderResponseRepository = SingletonDepends(
                      GRProviderResponseRepository),
@@ -176,6 +178,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView
         )
         self.guardrail_request_validator = guardrail_request_validator
+        self.gr_app_repository = gr_app_repository
         self.gr_config_repository = gr_config_repository
         self.gr_provider_response_repository = gr_provider_response_repository
         self.gr_view_repository = gr_view_repository
@@ -219,11 +222,23 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The created Guardrail view object.
         """
+        # Validate the create request
         await self.guardrail_request_validator.validate_create_request(request)
+
+        # Create the Guardrail
         guardrail_model = GuardrailModel()
         guardrail_model.set_attribute(request.model_dump(exclude={"create_time", "update_time", "version"}))
         guardrail = await self.repository.create_record(guardrail_model)
 
+        # Create Guardrail Applications
+        for gr_app_key in request.application_keys:
+            gr_app_model = GRApplicationModel()
+            gr_app_model.application_key = gr_app_key
+            gr_app_model.guardrail_id = guardrail.id
+            # set other fields like app name, app id by getting data from gov service
+            await self.gr_app_repository.create_record(gr_app_model)
+
+        # Create Guardrail Configs
         for gr_config in request.guardrail_configs:
             gr_config.guardrail_id = guardrail.id
             gr_config_model = GRConfigModel()
@@ -244,6 +259,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             }
         }
 
+        # Save Guardrail Provider Responses
         for provider, response in guardrail_provider_response.items():
             gr_resp_model = GRProviderResponseModel(guardrail_id=guardrail.id, guardrail_provider=provider,
                                                     response_data=response)
@@ -268,45 +284,82 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The Guardrail view object corresponding to the ID.
         """
+        # Validate the request
         await self.guardrail_request_validator.validate_read_request(id)
+
+        # Fetch all guardrails matching the given ID
         guardrails = await self.gr_view_repository.get_all(filters={"guardrail_id": id})
+        if not guardrails:
+            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail", "id", [id]))
+
+        # Initialize the result GuardrailView based on the first record
         result = GuardrailView.model_validate(guardrails[0])
         result.id = guardrails[0].guardrail_id
         result.guardrail_configs = []
         result.guardrail_provider_response = {}
         result.guardrail_connections = {}
+        # result.guardrail_applications = []
+
+        # Populate guardrail configurations and connections
         for guardrail in guardrails:
-            gr_config = GuardrailConfigView.model_validate(guardrail)
+            gr_config = GRConfigView.model_validate(guardrail)
             result.guardrail_configs.append(gr_config)
-
-        return result
-
-    async def get_by_app_name(self, app_name: str) -> GuardrailView:
-        """
-        Retrieve a Guardrail by its app name.
-
-        Args:
-            app_name (str): The app name of the Guardrail to retrieve.
-
-        Returns:
-            GuardrailView: The Guardrail view object corresponding to the app name.
-        """
-        guardrails = await self.gr_view_repository.get_all(filters={"applications": app_name})
-        if len(guardrails) == 0:
-            raise NotFoundException(
-                get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail", "application name", [app_name]))
-        result = GuardrailView.model_validate(guardrails[0])
-        result.id = guardrails[0].guardrail_id
-        result.guardrail_configs = []
-        result.guardrail_provider_response = {}
-        result.guardrail_connections = {}
-        for guardrail in guardrails:
-            gr_config = GuardrailConfigView.model_validate(guardrail)
-            result.guardrail_configs.append(gr_config)
-            result.guardrail_provider_response[guardrail.guardrail_provider] = guardrail.guardrail_provider_response
             result.guardrail_connections[guardrail.guardrail_provider] = guardrail.guardrail_connection
 
+        # TODO: uncomment when we have other details of applications like name, id to send in the response
+        # Populate guardrail applications
+        # guardrail_applications = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
+        # for gr_app in guardrail_applications:
+        #     gr_application = GRApplicationView.model_validate(gr_app)
+        #     result.guardrail_applications.append(gr_application)
+
         return result
+
+    async def get_all_by_app_key(self, app_key: str) -> List[GuardrailView]:
+        """
+        Retrieve Guardrails by their AI application key.
+
+        Args:
+            app_key (str): The AI application key of the Guardrail to retrieve.
+
+        Returns:
+            List[GuardrailView]: List of Guardrail view objects corresponding to the application key.
+        """
+        # Retrieve all guardrails matching the application key
+        guardrails = await self.gr_view_repository.get_all(filters={"application_keys": app_key})
+
+        # Raise exception if no guardrails are found
+        if not guardrails:
+            raise NotFoundException(
+                get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail", "application key", [app_key])
+            )
+
+        # Initialize a dictionary to store guardrails by their ID
+        result: Dict[int, GuardrailView] = {}
+
+        # Iterate over the guardrails and process them
+        for guardrail in guardrails:
+            # Validate and get the GuardrailView object
+            guardrail_view = GuardrailView.model_validate(guardrail)
+            guardrail_id = guardrail.guardrail_id
+            guardrail_view.application_keys = None
+
+            # Check if guardrail ID is already in the result, if not, initialize it
+            if guardrail_id not in result:
+                guardrail_view.id = guardrail_id
+                guardrail_view.guardrail_configs = []
+                guardrail_view.guardrail_provider_response = {}
+                guardrail_view.guardrail_connections = {}
+                result[guardrail_id] = guardrail_view  # Add it to the result
+
+            # Add configuration, provider response, and connection to the guardrail
+            gr_config = GRConfigView.model_validate(guardrail)
+            result[guardrail_id].guardrail_configs.append(gr_config)
+            result[guardrail_id].guardrail_provider_response[guardrail.guardrail_provider] = guardrail.guardrail_provider_response
+            result[guardrail_id].guardrail_connections[guardrail.guardrail_provider] = guardrail.guardrail_connection
+
+        # Return the list of guardrails
+        return list(result.values())
 
     async def update(self, id: int, request: GuardrailView) -> GuardrailView:
         """
@@ -319,48 +372,87 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The updated Guardrail view object.
         """
+        # Validate the update request
         await self.guardrail_request_validator.validate_update_request(id, request)
+
+        # Fetch the current guardrail record by ID
         guardrail = await self.repository.get_record_by_id(id)
 
-        # Set the new attributes from the request
+        # Update attributes from the request (excluding specific fields)
         guardrail.set_attribute(request.model_dump(exclude={"create_time", "update_time", "version"}))
-        guardrail.version = guardrail.version + 1
+        guardrail.version += 1  # Increment version number
 
-        # Update the Guardrail
+        # Update guardrail in the database
         updated_gr_model = await self.repository.update_record(guardrail)
         updated_guardrail = GuardrailView.model_validate(updated_gr_model)
 
-        # Update Guardrail Configs
+        # Process Guardrail Applications
+        await self._update_guardrail_application_associations(id, set(request.application_keys), updated_guardrail)
+
+        # Process Guardrail Configs
+        await self._update_guardrail_configs(id, request.guardrail_configs, updated_guardrail)
+
+        return updated_guardrail
+
+    async def _update_guardrail_application_associations(self, guardrail_id: int, request_app_keys: Set[str],
+                                                         updated_guardrail: GuardrailView):
+        """Helper method to add/delete Guardrail Application associations."""
+        updated_guardrail.guardrail_applications = []
+
+        # Fetch existing applications
+        gr_apps = await self.gr_app_repository.get_all(filters={"guardrail_id": guardrail_id})
+        gr_app_map = {gr_app.application_key: gr_app for gr_app in gr_apps}
+
+        # Determine which guardrail to application associations to delete and add
+        existing_app_keys = set(gr_app_map.keys())
+        gr_apps_to_delete = existing_app_keys - request_app_keys  # Applications to delete
+        gr_apps_to_add = request_app_keys - existing_app_keys  # Applications to add
+
+        # Delete the guardrail to application associations not in the request
+        for gr_app_key in gr_apps_to_delete:
+            await self.gr_app_repository.delete_record(gr_app_map[gr_app_key])
+
+        # Add new guardrail to application associations
+        for app_key in gr_apps_to_add:
+            new_gr_app_model = GRApplicationModel(guardrail_id=guardrail_id, application_key=app_key)
+            # Fetch and set other required fields like app name, app id by getting data from gov service
+            updated_gr_app = await self.gr_app_repository.create_record(new_gr_app_model)
+            updated_guardrail.guardrail_applications.append(updated_gr_app)
+
+    async def _update_guardrail_configs(self, guardrail_id: int, request_gr_configs: List[GRConfigView],
+                                        updated_guardrail: GuardrailView):
+        """Helper method to update Guardrail Configs."""
         updated_guardrail.guardrail_configs = []
-        gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": id})
+
+        # Fetch existing configurations
+        gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": guardrail_id})
         gr_config_map = {gr_config.id: gr_config for gr_config in gr_configs}
 
-        # Delete configs not present in the request
-        existing_config_ids = gr_config_map.keys()  # Existing configs
-        request_config_ids = [gr_config.id for gr_config in request.guardrail_configs]  # Requested configs
-        gr_configs_to_delete = existing_config_ids - request_config_ids  # IDs to delete
+        # Determine configs to delete and update
+        existing_config_ids = set(gr_config_map.keys())
+        request_config_ids = {gr_config.id for gr_config in request_gr_configs}
+        gr_configs_to_delete = existing_config_ids - request_config_ids
 
+        # Delete configurations not in the request
         for gr_config_id in gr_configs_to_delete:
             await self.gr_config_repository.delete_record(gr_config_map[gr_config_id])
 
-        # Add/Update Guardrail Configs
-        for req_gr_config in request.guardrail_configs:
+        # Add or update configurations
+        for req_gr_config in request_gr_configs:
             gr_config_model = gr_config_map.get(req_gr_config.id)
             if gr_config_model is None:
-                gr_config_model = GRConfigModel(guardrail_id=id)
+                gr_config_model = GRConfigModel(guardrail_id=guardrail_id)
 
-            # Set the new attributes from the request
+            # Set attributes from the request
             gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time"}))
 
-            # Determine whether to add or update
+            # Determine whether to create or update
             if gr_config_model.id is None:
                 updated_gr_config = await self.gr_config_repository.create_record(gr_config_model)
             else:
                 updated_gr_config = await self.gr_config_repository.update_record(gr_config_model)
 
-            updated_guardrail.guardrail_configs.append(GuardrailConfigView.model_validate(updated_gr_config))
-
-        return updated_guardrail
+            updated_guardrail.guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
 
     async def delete(self, id: int):
         """
