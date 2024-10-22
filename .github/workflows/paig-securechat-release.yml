@@ -2,6 +2,15 @@ name: paig-securechat upload to PyPI and DockerHub
 
 on:
   workflow_dispatch: # Allows manual trigger
+    inputs:
+      skip_publish_to_pypi:
+        description: 'Skip publish to PyPI'
+        required: false
+        default: 'false'
+      skip_publish_to_docker:
+        description: 'Skip publish to Docker Hub'
+        required: false
+        default: 'false'
 
 permissions:
   contents: read
@@ -67,6 +76,7 @@ jobs:
         pip install dist/*.whl
 
     - name: Release to PyPI
+      if: github.event.inputs.skip_publish_to_pypi == 'false'
       env:
         TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.TWINE_PYPI_API_TOKEN }}
@@ -95,9 +105,11 @@ jobs:
         echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Build and push
+      if: github.event.inputs.skip_publish_to_docker == 'false'
       uses: docker/build-push-action@v6
       with:
-        context: .
+        context: ./paig-securechat
         file: ./paig-securechat/docker/Dockerfile
         push: true
         tags: privacera/paig-securechat:${{ env.VERSION }}
+        no-cache: true
