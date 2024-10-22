@@ -1,8 +1,8 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, status, Query
 
-from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView
+from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView
 from api.guardrails.controllers.guardrail_controller import GuardrailController
 from core.controllers.paginated_response import Pageable
 from core.utils import SingletonDepends
@@ -22,6 +22,16 @@ async def list(
 ) -> Pageable:
     """
     List all Guardrails.
+
+    Args:
+        filter (GuardrailFilter): The filter object containing the search parameters.
+        page (int): The page number to retrieve.
+        size (int): The number of records to retrieve per page.
+        sort (List[str]): The sorting parameters to apply.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        Pageable: The paginated response containing the list of Guardrails.
     """
     return await guardrail_controller.list(filter, page, size, sort)
 
@@ -33,6 +43,13 @@ async def create(
 ) -> GuardrailView:
     """
     Create a new Guardrail.
+
+    Args:
+        request (GuardrailView): The view object representing the Guardrail to create.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        GuardrailView: The created Guardrail view object.
     """
     return await guardrail_controller.create(request)
 
@@ -44,19 +61,35 @@ async def get(
 ) -> GuardrailView:
     """
     Get a Guardrail by ID.
+
+    Args:
+        id (int): The ID of the Guardrail to retrieve.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        GuardrailView: The Guardrail view object corresponding to the ID.
     """
     return await guardrail_controller.get_by_id(id)
 
 
-@guardrail_router.get("/application/{app_key}", response_model=List[GuardrailView], response_model_exclude_none=True, response_model_exclude_unset=True)
+@guardrail_router.get("/application/{app_key}", response_model=GuardrailsDataView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def get_all_by_app_key(
         app_key: str,
+        last_known_version: Optional[int] = Query(None, alias="lastKnownVersion"),
         guardrail_controller: GuardrailController = gr_controller_instance
-) -> List[GuardrailView]:
+) -> GuardrailsDataView:
     """
-    Get all Guardrails by app key.
+    Get all Guardrails by app key and lastKnownVersion.
+
+    Args:
+        app_key (str): The application key to filter by.
+        last_known_version (Optional[int]): The last known version to filter by.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        GuardrailsDataView: The Guardrails data view object containing app_key, version and list of guardrails.
     """
-    return await guardrail_controller.get_all_by_app_key(app_key)
+    return await guardrail_controller.get_all_by_app_key(app_key, last_known_version)
 
 
 @guardrail_router.put("/{id}", response_model=GuardrailView, response_model_exclude_none=True, response_model_exclude_unset=True)
@@ -67,6 +100,14 @@ async def update(
 ) -> GuardrailView:
     """
     Update an existing Guardrail by ID.
+
+    Args:
+        id (int): The ID of the Guardrail to update.
+        request (GuardrailView): The updated view object representing the Guardrail.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        GuardrailView: The updated Guardrail view object.
     """
     return await guardrail_controller.update(id, request)
 
@@ -78,5 +119,9 @@ async def delete(
 ):
     """
     Delete an Guardrail by ID.
+
+    Args:
+        id (int): The ID of the Guardrail to delete.
+        guardrail_controller (GuardrailController): The guardrail controller
     """
-    return await guardrail_controller.delete(id)
+    await guardrail_controller.delete(id)

@@ -41,6 +41,7 @@ class GRApplicationModel(BaseSQLModel):
     application_id = Column(Integer, nullable=True)
     application_name = Column(String(255), nullable=True)
     application_key = Column(String(255), nullable=False)
+    version = Column(Integer, nullable=False, default=1)
 
     guardrail = relationship("GuardrailModel", back_populates="gr_application")
 

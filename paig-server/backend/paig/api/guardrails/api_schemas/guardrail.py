@@ -14,10 +14,12 @@ class GRApplicationView(BaseModel):
         application_key (str): The application key.
         application_id (int, optional): The application id.
         application_name (str): The application name.
+        version (int, optional): The version of the Guardrail Application.
     """
     application_key: Optional[str] = Field(..., description="The application key", alias="applicationKey")
     application_id: Optional[int] = Field(None, description="The application id", alias="applicationId")
-    application_name: Optional[str] = Field(..., description="The application name", alias="applicationName")
+    application_name: Optional[str] = Field(None, description="The application name", alias="applicationName")
+    version: Optional[int] = Field(default=1, description="The version of the Guardrail Application")
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -38,7 +40,9 @@ class GRConfigView(BaseView):
         config_data (Dict): The guardrail details.
     """
     guardrail_provider: str = Field(..., description="The guardrail provider", alias="guardrailProvider")
-    guardrail_provider_connection_name: Optional[str] = Field(None, description="The guardrail provider connection name", alias="guardrailProviderConnectionName")
+    guardrail_provider_connection_name: Optional[str] = Field(None,
+                                                              description="The guardrail provider connection name",
+                                                              alias="guardrailProviderConnectionName")
     config_type: str = Field(..., description="The guardrail config type", alias="configType")
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
 
@@ -76,6 +80,28 @@ class GuardrailView(BaseView):
         from_attributes=True,
         populate_by_name=True,
         extra='allow'
+    )
+
+
+class GuardrailsDataView(BaseView):
+    """
+    A model representing the Guardrails data.
+
+    Inherits from:
+        BaseView: The base model containing common fields.
+
+    Attributes:
+        app_key (str): The application key.
+        version (int): The version of the Guardrails.
+        guardrails (List[GuardrailView]): The list of Guardrails.
+    """
+    app_key: str = Field(..., description="The application key", alias="appKey")
+    version: int = Field(..., description="The version of the Guardrails")
+    guardrails: Optional[List[GuardrailView]] = Field(None, description="The list of Guardrails")
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
     )
 
 

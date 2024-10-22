@@ -53,6 +53,7 @@ def upgrade() -> None:
     sa.Column('application_id', sa.Integer(), nullable=True),
     sa.Column('application_name', sa.String(length=255), nullable=True),
     sa.Column('application_key', sa.String(length=255), nullable=False),
+    sa.Column('version', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -62,6 +63,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_guardrail_application_create_time'), 'guardrail_application', ['create_time'], unique=False)
     op.create_index(op.f('ix_guardrail_application_id'), 'guardrail_application', ['id'], unique=False)
+    op.create_index(op.f('ix_guardrail_application_key'), 'guardrail_application', ['application_key'], unique=False)
     op.create_index(op.f('ix_guardrail_application_update_time'), 'guardrail_application', ['update_time'], unique=False)
     op.create_table('guardrail_config',
     sa.Column('guardrail_id', sa.Integer(), nullable=False),
