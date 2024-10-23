@@ -39,7 +39,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
 
         try:
             client = self.create_bedrock_client()
-            response = client.list_guardrails(MaxResults=1)
+            response = client.list_guardrails(maxResults=1)
 
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
                 return True, "Connection successful!"
