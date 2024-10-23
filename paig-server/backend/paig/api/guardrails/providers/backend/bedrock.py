@@ -12,6 +12,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
     REQUIRED_ACCESS_KEYS = ['access_key', 'secret_key']
     REQUIRED_SESSION_KEYS = ['access_key', 'secret_key', 'session_token']
     REQUIRED_IAM_WEB_IDENTITY_KEYS = ['k8AwsRoleArn', 'k8AwsWebIdentityToken', 'sessionName']
+    REQUIRED_IAM_ROLE_KEYS = ['iam_role']
 
     def __init__(self, connection_details: dict, **kwargs):
         """
@@ -24,17 +25,41 @@ class BedrockGuardrailProvider(GuardrailProvider):
         super().__init__(connection_details, **kwargs)
         self.connection_details.setdefault('region', 'us-east-1')
 
-    def verify_connection_details(self) -> bool:
-        """Verify that the necessary connection details are provided.
+    def verify_connection_details(self) -> Tuple[bool, str]:
+        """
+        Verify the necessary connection details and attempt to list guardrails.
 
         Returns:
-            bool: True if connection details are valid, False otherwise.
+            Tuple[bool, str]: A tuple containing a success flag and a friendly message.
+                              If connection details are valid, returns True and a success message.
+                              If invalid, returns False and a user-friendly error message.
         """
-        return (any(all(key in self.connection_details for key in keys)
-                    for keys in (self.REQUIRED_SESSION_KEYS,
-                                 self.REQUIRED_ACCESS_KEYS,
-                                 self.REQUIRED_IAM_WEB_IDENTITY_KEYS)) or
-                'iam_role' in self.connection_details)
+        if not self._has_valid_connection_keys():
+            return False, "Connection details are incomplete. Please review your settings."
+
+        try:
+            client = self.create_bedrock_client()
+            response = client.list_guardrails(MaxResults=1)
+
+            if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+                return True, "Connection successful!"
+            else:
+                return False, "We encountered an issue while verifying your settings. Please try again."
+
+        except Exception as e:
+            return False, "Unable to verify connection. Please check your details and try again."
+
+    def _has_valid_connection_keys(self) -> bool:
+        """
+        Check if any of the valid key sets are present in the connection details.
+
+        Returns:
+            bool: True if a valid set of connection keys is present, False otherwise.
+        """
+        return any(
+            all(key in self.connection_details for key in keys)
+            for keys in (self.REQUIRED_SESSION_KEYS, self.REQUIRED_ACCESS_KEYS, self.REQUIRED_IAM_WEB_IDENTITY_KEYS, self.REQUIRED_IAM_ROLE_KEYS)
+        )
 
     def create_guardrail(self, guardrail_configs: List[GuardrailConfig], **kwargs) -> Tuple[bool, dict]:
         """Create a guardrail using the provided configurations.

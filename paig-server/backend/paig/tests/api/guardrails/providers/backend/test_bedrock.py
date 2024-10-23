@@ -11,34 +11,34 @@ from api.guardrails.providers.models import GuardrailConfigType
 @pytest.fixture
 def connection_details():
     return {
-        'access_key': 'fake_access_key',
-        'secret_key': 'fake_secret_key',
+        'access_key': 'test-access-key',
+        'secret_key': 'test-secret-key',
         'region': 'us-east-1'
     }
-
 
 @pytest.fixture
 def session_connection_details():
     return {
-        'access_key': 'fake_access_key',
-        'secret_key': 'fake_secret_key',
-        'session_token': 'fake_session_token',
+        'access_key': 'test-access-key',
+        'secret_key': 'test-secret-key',
+        'session_token': 'test-session-token',
         'region': 'us-east-1'
     }
 
 @pytest.fixture
 def iam_web_identity_details():
     return {
-        'k8AwsRoleArn': 'fake_role_arn',
-        'k8AwsWebIdentityToken': 'fake_token',
-        'sessionName': 'fake_session_name',
+        'k8AwsRoleArn': 'arn:aws:iam::123456789012:role/test-role',
+        'k8AwsWebIdentityToken': 'test-web-identity-token',
+        'sessionName': 'test-session',
         'region': 'us-east-1'
     }
 
 @pytest.fixture
 def iam_role_details():
     return {
-        'iam_role': 'fake_role_arn'
+        'iam_role': 'arn:aws:iam::123456789012:role/test-role',
+        'region': 'us-east-1'
     }
 
 
@@ -54,26 +54,119 @@ def guardrail_configs():
 
 
 # Test for verifying connection details
-def test_verify_connection_details_with_access_keys(connection_details):
+@patch('boto3.client')
+def test_verify_connection_details_with_access_keys(mock_boto_client, connection_details):
+    # Mock successful list_guardrails response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 200}
+    }
+    mock_boto_client.return_value = mock_client
+
     provider = BedrockGuardrailProvider(connection_details)
-    assert provider.verify_connection_details() == True
+    result, message = provider.verify_connection_details()
 
-def test_verify_connection_details_with_session_tokens(session_connection_details):
+    assert result is True
+    assert message == "Connection successful!"
+    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+
+@patch('boto3.client')
+def test_verify_connection_details_with_session_tokens(mock_boto_client, session_connection_details):
+    # Mock successful list_guardrails response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 200}
+    }
+    mock_boto_client.return_value = mock_client
+
     provider = BedrockGuardrailProvider(session_connection_details)
-    assert provider.verify_connection_details() == True
+    result, message = provider.verify_connection_details()
 
-def test_verify_connection_details_with_assume_iam_role(iam_web_identity_details):
+    assert result is True
+    assert message == "Connection successful!"
+    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+
+@patch('boto3.client')
+def test_verify_connection_details_with_assume_iam_role(mock_boto_client, iam_web_identity_details):
+    # Mock successful list_guardrails response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 200}
+    }
+    mock_boto_client.return_value = mock_client
+
     provider = BedrockGuardrailProvider(iam_web_identity_details)
-    assert provider.verify_connection_details() == True
+    result, message = provider.verify_connection_details()
 
-def test_verify_connection_details_with_iam_role(iam_role_details):
+    assert result is True
+    assert message == "Connection successful!"
+    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+
+@patch('boto3.client')
+def test_verify_connection_details_with_iam_role(mock_boto_client, iam_role_details):
+    # Mock successful list_guardrails response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 200}
+    }
+    mock_boto_client.return_value = mock_client
+
     provider = BedrockGuardrailProvider(iam_role_details)
-    assert provider.verify_connection_details() == True
+    result, message = provider.verify_connection_details()
+
+    assert result is True
+    assert message == "Connection successful!"
+    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
 
 def test_verify_connection_details_invalid():
     connection_details = {'invalid_key': 'fake_value'}
     provider = BedrockGuardrailProvider(connection_details)
-    assert provider.verify_connection_details() == False
+    result, message = provider.verify_connection_details()
+    assert result is False
+    assert message == "Connection details are incomplete. Please review your settings."
+
+# New tests incorporating friendly message changes
+@patch('boto3.client')
+def test_verify_connection_details_success(mock_boto_client, connection_details):
+    # Mocking a successful Bedrock client and response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 200}
+    }
+    mock_boto_client.return_value = mock_client
+
+    provider = BedrockGuardrailProvider(connection_details)
+    result, message = provider.verify_connection_details()
+
+    assert result is True
+    assert message == "Connection successful!"
+    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+
+@patch('boto3.client')
+def test_verify_connection_details_failed_verification(mock_boto_client, connection_details):
+    # Mocking a Bedrock client with a failed list_guardrails response
+    mock_client = MagicMock()
+    mock_client.list_guardrails.return_value = {
+        'ResponseMetadata': {'HTTPStatusCode': 500}
+    }
+    mock_boto_client.return_value = mock_client
+
+    provider = BedrockGuardrailProvider(connection_details)
+    result, message = provider.verify_connection_details()
+
+    assert result is False
+    assert message == "We encountered an issue while verifying your settings. Please try again."
+
+@patch('boto3.client')
+def test_verify_connection_details_exception(mock_boto_client, connection_details):
+    # Mocking an exception during client initialization
+    mock_boto_client.side_effect = Exception("Connection failed")
+
+    provider = BedrockGuardrailProvider(connection_details)
+    result, message = provider.verify_connection_details()
+
+    assert result is False
+    assert message == "Unable to verify connection. Please check your details and try again."
 
 
 # Mock boto3 client creation
@@ -83,8 +176,8 @@ def test_create_bedrock_client_with_access_keys(mock_boto3_client, connection_de
     provider.create_bedrock_client()
     mock_boto3_client.assert_called_once_with(
         'bedrock',
-        aws_access_key_id='fake_access_key',
-        aws_secret_access_key='fake_secret_key',
+        aws_access_key_id='test-access-key',
+        aws_secret_access_key='test-secret-key',
         region_name='us-east-1'
     )
 
@@ -95,9 +188,9 @@ def test_create_bedrock_client_with_session_tokens(mock_boto3_client, session_co
     provider.create_bedrock_client()
     mock_boto3_client.assert_called_once_with(
         'bedrock',
-        aws_access_key_id='fake_access_key',
-        aws_secret_access_key='fake_secret_key',
-        aws_session_token='fake_session_token',
+        aws_access_key_id='test-access-key',
+        aws_secret_access_key='test-secret-key',
+        aws_session_token='test-session-token',
         region_name='us-east-1'
     )
 

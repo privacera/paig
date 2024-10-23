@@ -24,7 +24,7 @@ class GuardrailProvider(ABC):
         self.connection_details = connection_details
 
     @abstractmethod
-    def verify_connection_details(self, **kwargs) -> bool:
+    def verify_connection_details(self, **kwargs) -> Tuple[bool | str]:
         """
         Verify the connection details.
 
@@ -32,7 +32,7 @@ class GuardrailProvider(ABC):
             kwargs: Additional optional arguments.
 
         Returns:
-            bool: True if the connection details are valid, False otherwise.
+            Tuple[bool | str]: A tuple containing a success flag and an error message if the connection details are invalid.
         """
         pass
 
