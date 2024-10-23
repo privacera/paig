@@ -38,11 +38,26 @@ class GRConfigView(BaseView):
         config_data (Dict): The guardrail details.
     """
     guardrail_provider: str = Field(..., description="The guardrail provider", alias="guardrailProvider")
-    guardrail_provider_connection_name: Optional[str] = Field(None,
-                                                              description="The guardrail provider connection name",
-                                                              alias="guardrailProviderConnectionName")
+    guardrail_provider_connection_name: str = Field(...,
+                                                    description="The guardrail provider connection name",
+                                                    alias="guardrailProviderConnectionName")
     config_type: str = Field(..., description="The guardrail config type", alias="configType")
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
+
+    def to_guardrail_config(self):
+        """
+        Convert the Guardrails configuration view to a Guardrails configuration.
+
+        Returns:
+            GuardrailConfig: The Guardrails configuration.
+        """
+        from api.guardrails.providers import GuardrailConfig
+        return GuardrailConfig(
+            guardrailProvider=self.guardrail_provider,
+            guardrailProviderConnectionName=self.guardrail_provider_connection_name,
+            configType=self.config_type,
+            configData=self.config_data
+        )
 
 
 class GuardrailView(BaseView):
@@ -96,11 +111,6 @@ class GuardrailsDataView(BaseView):
     app_key: str = Field(..., description="The application key", alias="appKey")
     version: int = Field(..., description="The version of the Guardrails")
     guardrails: Optional[List[GuardrailView]] = Field(None, description="The list of Guardrails")
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        populate_by_name=True
-    )
 
 
 class GuardrailFilter(BaseAPIFilter):

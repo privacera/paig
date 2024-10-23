@@ -28,7 +28,7 @@ class GuardrailConfig(BaseModel):
         configType (str): The type of configuration being defined.
         configData (Any): The configuration data, which can vary in structure.
     """
-    status: int  # Status as an integer
+    # TODO: variable names should be snake_case
     guardrailProvider: str  # Guardrail provider
     guardrailProviderConnectionName: str  # Connection name as a string
     configType: str  # Configuration type
