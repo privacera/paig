@@ -133,12 +133,7 @@ class GuardrailProviderManager:
                 successful_providers.add(provider_type)
 
         # If any guardrail creation fails, roll back by deleting only the successfully created guardrails
-        if len(create_guardrails_response) != len(successful_providers):
-            for provider_type in successful_providers:
-                success_response = create_guardrails_response[provider_type]
-                if not success_response["success"]:
-                    provider = guardrail_provider_map[provider_type]
-                    provider.delete_guardrail(success_response, **kwargs)
+        GuardrailProviderManager._rollback_successful_guardrails(create_guardrails_response, successful_providers, guardrail_provider_map, **kwargs)
 
         return create_guardrails_response
 
@@ -203,12 +198,12 @@ class GuardrailProviderManager:
         return delete_guardrails_response
 
     @staticmethod
-    def _verify_connection_details(provider: 'GuardrailProviderType', connection_details: Dict, **kwargs) -> bool:
+    def _verify_connection_details(provider: str, connection_details: Dict, **kwargs) -> bool:
         """
         Verifies the connection details for the given guardrail provider.
 
         Args:
-            provider (GuardrailProviderType): The guardrail provider type.
+            provider (str): The guardrail provider type.
             connection_details (Dict): Connection details for the provider.
             **kwargs: Additional keyword arguments.
 
@@ -216,7 +211,7 @@ class GuardrailProviderManager:
             bool: True if the connection details are valid, False otherwise.
         """
         if provider == GuardrailProviderType.AWS:
-            from backend.bedrock import BedrockGuardrailProvider
+            from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
             provider_instance = BedrockGuardrailProvider(connection_details, **kwargs)
             return provider_instance.verify_connection_details()
         else:
@@ -279,3 +274,22 @@ class GuardrailProviderManager:
                 grouped[provider] = []
             grouped[provider].append(item)
         return grouped
+
+    @staticmethod
+    def _rollback_successful_guardrails(create_guardrails_response, successful_providers, guardrail_provider_map,
+                                        **kwargs):
+        """
+        Rolls back successfully created guardrails by deleting them when others fail.
+
+        :param create_guardrails_response: Dictionary of guardrail creation responses.
+        :param successful_providers: List of providers where the guardrails were successfully created.
+        :param guardrail_provider_map: Mapping of provider types to provider instances.
+        :param kwargs: Additional arguments for the delete_guardrail method.
+        """
+        if len(create_guardrails_response) != len(successful_providers):
+            for provider_type in successful_providers:
+                success_response = create_guardrails_response.get(provider_type)
+                if success_response and success_response["success"]:
+                    provider = guardrail_provider_map.get(provider_type)
+                    if provider:
+                        provider.delete_guardrail(success_response, **kwargs)
