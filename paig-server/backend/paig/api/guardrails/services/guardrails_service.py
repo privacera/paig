@@ -6,10 +6,10 @@ from paig_common.lru_cache import LRUCache
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
-    GRProviderResponseModel, GRApplicationModel
+    GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel
 from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository, \
-    GRApplicationRepository
+    GRApplicationRepository, GRApplicationVersionRepository
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
@@ -184,6 +184,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
     def __init__(self,
                  guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository),
                  gr_app_repository: GuardrailRepository = SingletonDepends(GRApplicationRepository),
+                 gr_app_version_repository: GuardrailRepository = SingletonDepends(GRApplicationVersionRepository),
                  gr_config_repository: GRConfigRepository = SingletonDepends(GRConfigRepository),
                  gr_provider_response_repository: GRProviderResponseRepository = SingletonDepends(
                      GRProviderResponseRepository),
@@ -202,6 +203,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         )
         self.guardrail_request_validator = guardrail_request_validator
         self.gr_app_repository = gr_app_repository
+        self.gr_app_version_repository = gr_app_version_repository
         self.gr_config_repository = gr_config_repository
         self.gr_provider_response_repository = gr_provider_response_repository
         self.gr_view_repository = gr_view_repository
@@ -253,17 +255,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         guardrail_model.set_attribute(request.model_dump(exclude={"create_time", "update_time", "version"}))
         guardrail = await self.repository.create_record(guardrail_model)
 
-        # Add new guardrail to application associations
-        gr_apps_to_update_version, version = await self._get_gr_apps_version_by_app_key(set(request.application_keys))
-
         # Create Guardrail Application association by updating the version
-        version += 1
-        created_gr_apps = await self._create_guardrail_application_association(
-            guardrail.id, set(request.application_keys), version)
+        app_keys = set(request.application_keys)
+        guardrail.guardrail_applications = await self._create_guardrail_application_association(guardrail.id, app_keys)
 
-        # update the version for other guardrail to application association
-        await self._update_version_in_gr_apps(version, gr_apps_to_update_version, guardrail.id)
-        guardrail.guardrail_applications = created_gr_apps
+        # bump up the version for guardrail applications
+        await self._bump_up_version_in_gr_apps(app_keys)
 
         # Create Guardrail Configs
         for gr_config in request.guardrail_configs:
@@ -300,27 +297,15 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return result
 
-    async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str], version: int):
+    async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str]):
         # Create Guardrail Applications
         created_gr_apps = []
         for gr_app_key in application_keys:
-            gr_app_model = GRApplicationModel(application_key=gr_app_key, guardrail_id=guardrail_id, version=version)
+            gr_app_model = GRApplicationModel(application_key=gr_app_key, guardrail_id=guardrail_id)
             created_gr_app = await self.gr_app_repository.create_record(gr_app_model)
-            created_gr_apps.append(created_gr_app)
-            gr_app_version_cache_wrapper_dict.put(gr_app_key, version)
+            created_gr_apps.append(GRApplicationView.model_validate(created_gr_app))
 
         return created_gr_apps
-
-    async def _get_gr_apps_version_by_app_key(self, application_keys: Set[str]):
-        version = 0
-        # Get the guardrail applications to update the version
-        gr_apps_to_update_version = await self.gr_app_repository.get_all(
-            filters={"application_key": ','.join(application_keys)})
-        # Get the latest version of the applications
-        for gr_app in gr_apps_to_update_version:
-            if gr_app.version > version:
-                version = gr_app.version
-        return gr_apps_to_update_version, version
 
     async def get_by_id(self, id: int) -> GuardrailView:
         """
@@ -346,7 +331,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         result.guardrail_configs = []
         result.guardrail_provider_response = {}
         result.guardrail_connections = {}
-        result.guardrail_applications = []
 
         # Populate guardrail configurations and connections
         for guardrail in guardrails:
@@ -354,11 +338,13 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             result.guardrail_configs.append(gr_config)
             result.guardrail_connections[guardrail.guardrail_provider] = guardrail.guardrail_connection
 
+        # TODO: Uncomment below code once we have application data fetched from gov service to here
         # Populate guardrail applications
-        guardrail_applications = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
-        for gr_app in guardrail_applications:
-            gr_application = GRApplicationView.model_validate(gr_app)
-            result.guardrail_applications.append(gr_application)
+        # result.guardrail_applications = []
+        # guardrail_applications = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
+        # for gr_app in guardrail_applications:
+        #     gr_application = GRApplicationView.model_validate(gr_app)
+        #     result.guardrail_applications.append(gr_application)
 
         return result
 
@@ -415,9 +401,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Check if the application key and version is in the cache and update the cache if not
         if cached_version is None:
-            gr_app = await self.gr_app_repository.get_by(filters={"application_key": app_key})
-            if gr_app:
-                cached_version = gr_app[0].version
+            gr_app_version = await self.gr_app_version_repository.get_by(filters={"application_key": app_key})
+            if gr_app_version:
+                cached_version = gr_app_version[0].version
                 gr_app_version_cache_wrapper_dict.put(app_key, cached_version)
 
         # Return the result
@@ -449,15 +435,15 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         updated_guardrail = GuardrailView.model_validate(updated_gr_model)
 
         # Process Guardrail Applications
-        await self._update_guardrail_application_associations(id, set(request.application_keys), updated_guardrail)
+        # TODO: Set below value in updated_guardrail.guardrail_applications after fetching app data from gov service
+        await self._update_guardrail_application_associations(id, set(request.application_keys))
 
         # Process Guardrail Configs
-        await self._update_guardrail_configs(id, request.guardrail_configs, updated_guardrail)
+        updated_guardrail.guardrail_configs = await self._update_guardrail_configs(id, request.guardrail_configs)
 
         return updated_guardrail
 
-    async def _update_guardrail_application_associations(self, guardrail_id: int, request_app_keys: Set[str],
-                                                         updated_guardrail: GuardrailView):
+    async def _update_guardrail_application_associations(self, guardrail_id: int, request_app_keys: Set[str]):
         """Helper method to add/delete Guardrail Application associations."""
         # Fetch existing applications
         gr_apps = await self.gr_app_repository.get_all(filters={"guardrail_id": guardrail_id})
@@ -465,64 +451,49 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Determine which guardrail to application associations to delete and add
         existing_app_keys = set(gr_app_map.keys())
-        gr_apps_to_delete = existing_app_keys - request_app_keys  # Applications to delete
-        gr_apps_to_add = request_app_keys - existing_app_keys  # Applications to add
+        all_gr_app_keys = set(request_app_keys | existing_app_keys)
+        gr_apps_to_delete = existing_app_keys - request_app_keys
+        gr_apps_to_add = request_app_keys - existing_app_keys
+        gr_apps_unchanged = request_app_keys - gr_apps_to_add
 
         # Delete the guardrail to application associations not in the request
         for gr_app_key in gr_apps_to_delete:
             await self.gr_app_repository.delete_record(gr_app_map[gr_app_key])
 
-        # Combine all app keys into a set
-        all_gr_app_keys = set(request_app_keys | existing_app_keys)
-
-        # Get guardrail applications for all app keys
-        gr_apps_by_all_app_keys, version = await self._get_gr_apps_version_by_app_key(all_gr_app_keys)
-        gr_all_apps_map = {gr_app.application_key: gr_app for gr_app in gr_apps_by_all_app_keys}
-
-        # Determine apps to delete from cache
-        gr_app_keys_to_delete_from_cache = set(gr_apps_to_delete) - set(gr_all_apps_map.keys())
-
-        # Remove deleted apps from cache
-        for gr_app_key in gr_app_keys_to_delete_from_cache:
-            gr_app_version_cache_wrapper_dict.remove(gr_app_key)
-
-        # Create new guardrail applications
-        version += 1
-        created_gr_apps = await self._create_guardrail_application_association(guardrail_id, gr_apps_to_add, version)
-
-        # Update the version for existing applications that aren't being deleted
-        gr_app_keys_to_update_version = all_gr_app_keys - gr_apps_to_add - gr_app_keys_to_delete_from_cache
-        gr_apps_to_update_version = [gr_app for gr_app in gr_apps_by_all_app_keys if gr_app.application_key in gr_app_keys_to_update_version]
+        # Create new guardrail to application associations
+        created_gr_apps = await self._create_guardrail_application_association(guardrail_id, gr_apps_to_add)
 
         # update the version for other guardrail to application association
-        updated_gr_apps = await self._update_version_in_gr_apps(version, gr_apps_to_update_version, guardrail_id)
-        updated_guardrail.guardrail_applications = created_gr_apps.extend(updated_gr_apps)
+        updated_gr_apps = [GRApplicationView.model_validate(gr_app) for gr_app_key, gr_app in gr_app_map.items() if gr_app_key in gr_apps_unchanged]
+        guardrail_applications = updated_gr_apps + created_gr_apps
 
-    async def _update_version_in_gr_apps(self, version: int, gr_apps_to_update_version: List[GRApplicationModel],
-                                         guardrail_id: int):
-        updated_gr_apps = []
-        for gr_app in gr_apps_to_update_version:
-            if gr_app.version < version:
-                gr_app.version = version
-                updated_gr_app = await self.gr_app_repository.update_record(gr_app)
-                if gr_app.guardrail_id == guardrail_id:
-                    updated_gr_apps.append(updated_gr_app)
-                gr_app_version_cache_wrapper_dict.put(gr_app.application_key, version)
+        # Bump up the version of the all guardrail applications
+        await self._bump_up_version_in_gr_apps(all_gr_app_keys)
 
-        return updated_gr_apps
+        return guardrail_applications
 
-    def _get_cached_version(self, application_keys: Set[str]) -> int | None:
-        version = None
+    async def _bump_up_version_in_gr_apps(self, application_keys: Set[str]):
+        updated_app_keys = set()
+        filters = {"application_key": ','.join(application_keys)}
+        gr_apps_version_to_bump = await self.gr_app_version_repository.get_all(filters=filters)
+
+        # Bump-up the version for the applications
+        for gr_app_version in gr_apps_version_to_bump:
+            gr_app_version.version += 1
+            await self.gr_app_version_repository.update_record(gr_app_version)
+            gr_app_version_cache_wrapper_dict.put(gr_app_version.application_key, gr_app_version.version)
+            updated_app_keys.add(gr_app_version.application_key)
+
+        # Create new versions for the applications not in the database
         for app_key in application_keys:
-            cached_version = gr_app_version_cache_wrapper_dict.get(app_key)
-            if version is None or cached_version > version:
-                version = cached_version
-        return version
+            if app_key not in updated_app_keys:
+                gr_app_version = GRApplicationVersionModel(application_key=app_key, version=1)
+                await self.gr_app_version_repository.create_record(gr_app_version)
+                gr_app_version_cache_wrapper_dict.put(app_key, 1)
 
-    async def _update_guardrail_configs(self, guardrail_id: int, request_gr_configs: List[GRConfigView],
-                                        updated_guardrail: GuardrailView):
+    async def _update_guardrail_configs(self, guardrail_id: int, request_gr_configs: List[GRConfigView]):
         """Helper method to update Guardrail Configs."""
-        updated_guardrail.guardrail_configs = []
+        guardrail_configs = []
 
         # Fetch existing configurations
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": guardrail_id})
@@ -552,7 +523,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             else:
                 updated_gr_config = await self.gr_config_repository.update_record(gr_config_model)
 
-            updated_guardrail.guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
+            guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
+
+            return guardrail_configs
 
     async def delete(self, id: int):
         """
@@ -565,25 +538,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Fetch the existing Guardrail applications for the given ID
         gr_apps = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
-        if gr_apps:
-            gr_app_keys = {gr_app.application_key for gr_app in gr_apps}
-
-            # Fetch all Guardrail apps and versions associated with the application keys
-            all_gr_apps_by_app_keys, version = await self._get_gr_apps_version_by_app_key(gr_app_keys)
-            all_gr_app_keys = {gr_app.application_key for gr_app in all_gr_apps_by_app_keys}
-
-            # Identify the application keys to delete from the cache
-            app_keys_to_delete_from_cache = gr_app_keys - all_gr_app_keys
-
-            # Remove the identified keys from the cache
-            for gr_app_key in app_keys_to_delete_from_cache:
-                gr_app_version_cache_wrapper_dict.remove(gr_app_key)
-
-            # Update the version for the remaining applications
-            version += 1
-            gr_apps_to_update_version = [gr_app for gr_app in all_gr_apps_by_app_keys if
-                                         gr_app.application_key not in app_keys_to_delete_from_cache]
-            await self._update_version_in_gr_apps(version, gr_apps_to_update_version, id)
+        gr_app_keys = {gr_app.application_key for gr_app in gr_apps}
+        await self._bump_up_version_in_gr_apps(gr_app_keys)
 
         # Delete the Guardrail
         await self.delete_record(id)

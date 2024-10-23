@@ -1,5 +1,6 @@
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
-    GRProviderResponseModel, GuardrailViewModel, GRApplicationModel
+    GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel
+from api.guardrails.database.db_models.guardrail_view_model import GuardrailViewModel
 from core.factory.database_initiator import BaseOperations
 
 
@@ -33,6 +34,22 @@ class GRApplicationRepository(BaseOperations[GRApplicationModel]):
         Initialize the GRApplicationRepository.
         """
         super().__init__(GRApplicationModel)
+
+
+class GRApplicationVersionRepository(BaseOperations[GRApplicationVersionModel]):
+    """
+    Repository class for handling database operations related to guardrail application version models.
+
+    Inherits from BaseOperations[GRApplicationVersionModel], providing generic CRUD operations.
+
+    This class inherits all methods from BaseOperations[GRApplicationVersionModel].
+    """
+
+    def __init__(self):
+        """
+        Initialize the GRApplicationVersionRepository.
+        """
+        super().__init__(GRApplicationVersionModel)
 
 
 class GRConfigRepository(BaseOperations[GRConfigModel]):

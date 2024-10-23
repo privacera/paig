@@ -14,12 +14,10 @@ class GRApplicationView(BaseModel):
         application_key (str): The application key.
         application_id (int, optional): The application id.
         application_name (str): The application name.
-        version (int, optional): The version of the Guardrail Application.
     """
     application_key: Optional[str] = Field(..., description="The application key", alias="applicationKey")
     application_id: Optional[int] = Field(None, description="The application id", alias="applicationId")
     application_name: Optional[str] = Field(None, description="The application name", alias="applicationName")
-    version: Optional[int] = Field(default=1, description="The version of the Guardrail Application")
 
     model_config = ConfigDict(
         from_attributes=True,
