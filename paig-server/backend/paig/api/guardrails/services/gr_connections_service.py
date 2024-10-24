@@ -224,7 +224,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         Returns:
             List[GRConnectionView]: The list of Guardrail Connection configurations.
         """
-        return await self.repository.get_all(filter)
+        return await self.repository.get_all(filter.dict())
 
     async def update(self, id: int, request: GRConnectionView):
         """
