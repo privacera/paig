@@ -1,11 +1,14 @@
 import logging
 import boto3
 import os
+import requests 
 
 from api.shield.enum.ShieldEnums import Guardrail, RequestType
 from api.shield.model.scanner_result import ScannerResult
 from api.shield.model.analyzer_result import AnalyzerResult
 from api.shield.scanners.BaseScanner import Scanner
+from api.shield.factory.governance_service_factory import GovernanceServiceFactory
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +35,11 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         super().__init__(**kwargs)
 
-        self.guardrail_id, self.guardrail_version, self.region = self.get_guardrail_details()
         self.bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name=self.region
         )
+        self.gov_serv_client = GovernanceServiceFactory().get_governance_service_client()
 
     def scan(self, message: str) -> ScannerResult:
         """
@@ -48,6 +51,8 @@ class AWSBedrockGuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
+        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
+
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -79,16 +84,22 @@ class AWSBedrockGuardrailScanner(Scanner):
         logger.info("AWSBedrockGuardrailScanner: No action required for the message.")
         return ScannerResult(traits=[])
 
-    def get_guardrail_details(self) -> (str, str, str):
+    def _get_guardrail_details(self) -> (str, str, str):
         """
         Fetch guardrail details
         """
-        default_guardrail_id = self.get_property('guardrail_id')
-        default_guardrail_version = self.get_property('guardrail_version')
-        default_region = self.get_property('region')
-        guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
-        guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
-        region = os.environ.get('BEDROCK_REGION', default_region)
+        # first make call to gov service to get the guardrail id, version and region
+        result = self.gov_serv_client.get_guardrail_details(self.get_property('tenant_id'), self.get_property('application_key'))
+        guardrail_id = result.get('guardrail_id')
+        guardrail_version = result.get('guardrail_version')
+        region = result.get('region')
+        if not guardrail_id or not guardrail_version or not region:
+            default_guardrail_id = self.get_property('guardrail_id')
+            default_guardrail_version = self.get_property('guardrail_version')
+            default_region = self.get_property('region')
+            guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
+            guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
+            region = os.environ.get('BEDROCK_REGION', default_region)
 
         if not guardrail_id:
             logger.error("Bedrock Guardrail ID not found in properties or environment variables.")

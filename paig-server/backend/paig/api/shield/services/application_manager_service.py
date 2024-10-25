@@ -63,10 +63,13 @@ class ApplicationManager(Singleton):
         all_scanners = self.application_key_scanners.get(application_key)
 
         scanners_list = [
-            (setattr(scanner, 'scan_for_req_type', request_type) or scanner)
-            for scanner in all_scanners
+            scanner for scanner in all_scanners
             if getattr(scanner, 'enforce_access_control', False) == is_authz_scan and request_type in getattr(scanner, 'request_types', [])
         ]
+
+        for scanner in scanners_list:
+            setattr(scanner, 'scan_for_req_type', request_type)
+            setattr(scanner, 'application_key', application_key)
 
         return scanners_list
 
