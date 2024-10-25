@@ -1,6 +1,7 @@
 import logging
 import boto3
 import os
+import requests 
 
 from api.shield.enum.ShieldEnums import Guardrail, RequestType
 from api.shield.model.scanner_result import ScannerResult
@@ -32,7 +33,6 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         super().__init__(**kwargs)
 
-        self.guardrail_id, self.guardrail_version, self.region = self.get_guardrail_details()
         self.bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name=self.region
@@ -48,6 +48,8 @@ class AWSBedrockGuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
+        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
+
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -79,10 +81,13 @@ class AWSBedrockGuardrailScanner(Scanner):
         logger.info("AWSBedrockGuardrailScanner: No action required for the message.")
         return ScannerResult(traits=[])
 
-    def get_guardrail_details(self) -> (str, str, str):
+    def _get_guardrail_details(self) -> (str, str, str):
         """
         Fetch guardrail details
         """
+        # first make call to gov service to get the guardrail id, version and region
+        response = requests.request("GET", url, headers=headers, data=payload)
+        
         default_guardrail_id = self.get_property('guardrail_id')
         default_guardrail_version = self.get_property('guardrail_version')
         default_region = self.get_property('region')
