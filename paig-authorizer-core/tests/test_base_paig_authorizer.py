@@ -163,3 +163,61 @@ def test_authorize_explicit_deny(authz_request, authorizer: BasePAIGAuthorizer):
     assert response.authorized is False
     assert response.status_code == 403
     assert 2 in response.paig_policy_ids
+
+
+def test_authorize_application_config_explicit_user_allow(authz_request, authorizer: BasePAIGAuthorizer):
+    app_config = AIApplicationConfigData(id=1, allowed_users=["test_user"])
+    authorizer.get_application_config = Mock(return_value=app_config)
+    authorizer.get_application_policies = Mock(return_value=[])
+    response = authorizer.authorize(authz_request)
+
+    assert response.authorized is True
+    assert response.status_code == 200
+    assert 1 in response.paig_policy_ids
+
+
+def test_authorize_application_config_explicit_group_allow(authz_request, authorizer: BasePAIGAuthorizer):
+    app_config = AIApplicationConfigData(id=1, allowed_groups=["public"])
+    authorizer.get_application_config = Mock(return_value=app_config)
+    authorizer.get_application_policies = Mock(return_value=[])
+    response = authorizer.authorize(authz_request)
+
+    assert response.authorized is True
+    assert response.status_code == 200
+    assert 1 in response.paig_policy_ids
+
+
+def test_authorize_application_config_explicit_user_deny(authz_request, authorizer: BasePAIGAuthorizer):
+    app_config = AIApplicationConfigData(id=1, denied_users=["test_user"])
+    authorizer.get_application_config = Mock(return_value=app_config)
+    authorizer.get_application_policies = Mock(return_value=[])
+    response = authorizer.authorize(authz_request)
+
+    assert response.authorized is False
+    assert response.status_code == 403
+    assert 1 in response.paig_policy_ids
+    assert response.reason == "Explicit deny access to Application"
+
+
+def test_authorize_application_config_explicit_group_deny(authz_request, authorizer: BasePAIGAuthorizer):
+    app_config = AIApplicationConfigData(id=1, denied_groups=["public"])
+    authorizer.get_application_config = Mock(return_value=app_config)
+    authorizer.get_application_policies = Mock(return_value=[])
+    response = authorizer.authorize(authz_request)
+
+    assert response.authorized is False
+    assert response.status_code == 403
+    assert 1 in response.paig_policy_ids
+    assert response.reason == "Explicit deny access to Application"
+
+
+def test_authorize_application_config_no_access(authz_request, authorizer: BasePAIGAuthorizer):
+    app_config = AIApplicationConfigData(id=1)
+    authorizer.get_application_config = Mock(return_value=app_config)
+    authorizer.get_application_policies = Mock(return_value=[])
+    response = authorizer.authorize(authz_request)
+
+    assert response.authorized is False
+    assert response.status_code == 403
+    assert 1 in response.paig_policy_ids
+    assert response.reason == "No Access to Application"

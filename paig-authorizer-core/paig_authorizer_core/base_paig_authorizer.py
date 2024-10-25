@@ -196,7 +196,7 @@ class BasePAIGAuthorizer(PAIGAuthorizer, ABC):
         if check_explicit_application_access(request, app_config, user_groups, "denied"):
             audit_policy_ids_set.add(app_config.id)
             return create_authorize_response(request, application_name, authorized, masked_traits,
-                                             list(audit_policy_ids_set))
+                                             list(audit_policy_ids_set), reason="Explicit deny access to Application")
 
         # Step 4: Check for explicit allow in application config
         explicit_application_access_allowed = check_explicit_application_access(
@@ -205,6 +205,11 @@ class BasePAIGAuthorizer(PAIGAuthorizer, ABC):
             user_groups,
             "allowed"
         )
+
+        if not explicit_application_access_allowed:
+            audit_policy_ids_set.add(app_config.id)
+            return create_authorize_response(request, application_name, authorized, masked_traits,
+                                             list(audit_policy_ids_set), reason="No Access to Application")
 
         # Step 4a: Retrieve application policies matching request traits, user, groups, and request type
         application_policies = self.get_application_policies(request.application_key, request.traits,
@@ -229,6 +234,7 @@ class BasePAIGAuthorizer(PAIGAuthorizer, ABC):
         else:
             # Step 4e: No matching policies, default to authorized with no masked traits
             authorized = True if explicit_application_access_allowed else False
+            audit_policy_ids_set.add(app_config.id)
             return create_authorize_response(request, application_name, authorized, masked_traits,
                                              list(audit_policy_ids_set))
 

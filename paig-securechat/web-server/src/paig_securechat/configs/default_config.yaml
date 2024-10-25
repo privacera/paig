@@ -25,6 +25,7 @@ AI_applications:
     conversation_history_k: 5
     paig_shield_config_file: "custom-configs/privacera-shield-config.json"
     disable_conversation_chain: false
+    source_metadata_fields: ["source", "users", "groups"]
     vectordb:
       index_path: "securechat/sales/index"
       data_path: "securechat/sales/data"
