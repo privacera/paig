@@ -26,6 +26,7 @@ class AIApplicationView(BaseView):
     description: Optional[str] = Field(default=None, description="The description of the AI application")
     application_key: Optional[str] = Field(None, description="The application key", alias="applicationKey")
     vector_dbs: Optional[List[str]] = Field([], description="The vector databases associated with the AI application", alias="vectorDBs")
+    guardrail_details: Optional[str] = Field(None, description="The guardrail details", alias="guardrailDetails")
 
     vector_db_id: Optional[int] = Field(None, description="The vector databases id with the AI application",
                                         alias="vectorDBId")
