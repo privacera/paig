@@ -42,7 +42,6 @@ class CAIApplicationForm extends Component {
     handleFormRefresh(application) {
         this.form.refresh(application);
         if (application.guardrailDetails) {
-            this.guardrailForm.refresh({guardrailEnable: true});
             this.guardrailForm.refresh(Utils.parseJSON(application.guardrailDetails));
         } else {
             this.guardrailForm.clearForm();
@@ -64,7 +63,6 @@ class CAIApplicationForm extends Component {
 
         let guardrailDetails = this.guardrailForm.toJSON();
         if (guardrailDetails.guardrailEnable) {
-            delete guardrailDetails.guardrailEnable;
             data.guardrailDetails = JSON.stringify(guardrailDetails);
         } else {
             data.guardrailDetails = null;
@@ -97,7 +95,6 @@ class CAIApplicationForm extends Component {
         let data = this.form.toJSON();
         let guardrailDetails = this.guardrailForm.toJSON();
         if (guardrailDetails.guardrailEnable) {
-            delete guardrailDetails.guardrailEnable;
             data.guardrailDetails = JSON.stringify(guardrailDetails);
         } else {
             data.guardrailDetails = null;
