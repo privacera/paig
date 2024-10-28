@@ -28,6 +28,7 @@ from api.shield.utils import json_utils
 from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 
 from core.utils import SingletonDepends
 
@@ -46,7 +47,8 @@ class AuthService:
 
     def __init__(self, authz_service_client_factory=SingletonDepends(AuthzServiceClientFactory),
                  data_store_controller: DataStoreController = SingletonDepends(DataStoreController),
-                 account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory)):
+                 account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory),
+                 governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)):
         """
         Initializes the AuthService class with various dependencies and configuration settings.
 
@@ -62,6 +64,7 @@ class AuthService:
         self.application_manager = ApplicationManager()
         self.authz_service_client = authz_service_client_factory.get_authz_service_client()
         self.account_service_client = account_service_factory.get_account_service_client()
+        self.governance_service_client = governance_service_factory.get_governance_service_client()
         self.fluentd_logger_client = FluentdRestHttpClient()
         self.tenant_data_encryptor_service = TenantDataEncryptorService(self.account_service_client)
         self.presidio_anonymizer_engine = PresidioAnonymizerEngine()
@@ -102,6 +105,9 @@ class AuthService:
         logger.debug("Auth Request After Decrypt : " + json_utils.mask_json_fields(json.dumps(auth_req.__dict__),
                                                                                    ['messages']))
         decrypt_time = f"{((time.perf_counter() - decrypt_start_time) * 1000):.3f}"
+        
+        gov_result = await self.governance_service_client.get_aws_bedrock_guardrail_info(auth_req.tenant_id, auth_req.application_key)
+        auth_req.context.update(gov_result)
 
         # loop through the messages in request to scan for traits
         message_analyze_start_time = time.perf_counter()
@@ -209,7 +215,7 @@ class AuthService:
         for request_text in auth_req.messages:
             # Analyze traits
             scanners_result, message_scan_timings = self.application_manager.scan_messages(
-                auth_req.application_key, request_text, auth_req.request_type, is_authz_scan)
+                request_text, auth_req, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
 

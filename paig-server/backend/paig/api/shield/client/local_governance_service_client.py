@@ -1,4 +1,4 @@
-
+import json
 from api.governance.services.ai_app_service import AIAppService
 from api.shield.interfaces.governance_service_interface import IGovernanceServiceClient
 from core.utils import SingletonDepends
@@ -30,9 +30,8 @@ class LocalGovernanceServiceClient(IGovernanceServiceClient):
         Returns:
             dict: AWS Bedrock Guardrail details associated with the specified `tenant_id` and 'application_key'.
         """
-
         result = await self.ai_application_service.get_ai_application_by_application_key(application_key)
         if result.guardrail_details:
-            return result.guardrail_details
+            return json.loads(result.guardrail_details)
         else:
-            return None
+            return {}

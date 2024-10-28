@@ -1,6 +1,7 @@
 import logging
 
 from api.shield.model.scanner_result import ScannerResult
+from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.scanner_util import parse_properties
 from api.shield.cache.lru_cache import LRUCache
@@ -44,7 +45,7 @@ class ApplicationManager(Singleton):
         self.application_key_scanners.put(application_key, scanner_list)
         logger.info(f"Found {scanner_list} scanners for application key: {application_key}")
 
-    def get_scanners(self, application_key: str, request_type: str, is_authz_scan: bool) -> list:
+    def get_scanners(self, application_key: str, request_type: str, is_authz_scan: bool, auth_req: AuthorizeRequest) -> list:
         """
         Get the scanners for the given application key.
         If the scanners are not in the cache, load them.
@@ -71,9 +72,18 @@ class ApplicationManager(Singleton):
             setattr(scanner, 'scan_for_req_type', request_type)
             setattr(scanner, 'application_key', application_key)
 
+            if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
+                guardrail_id = auth_req.context.get('guardrail_id')
+                guardrail_version = auth_req.context.get('guardrail_version')
+                region = auth_req.context.get('region')
+
+                setattr(scanner, 'guardrail_id', guardrail_id)
+                setattr(scanner, 'guardrail_version', guardrail_version)
+                setattr(scanner, 'region', region)
+
         return scanners_list
 
-    def scan_messages(self, application_key: str, message: str, request_type: str, is_authz_scan: bool) -> (dict[str, ScannerResult], dict[str, str]):
+    def scan_messages(self, message: str, auth_req: AuthorizeRequest, is_authz_scan: bool) -> (dict[str, ScannerResult], dict[str, str]):
         """
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
@@ -86,8 +96,9 @@ class ApplicationManager(Singleton):
         Returns:
             tuple: A tuple containing the scan results and the access control results.
         """
-
-        scanners = self.get_scanners(application_key, request_type, is_authz_scan)
+        application_key = auth_req.application_key
+        request_type = auth_req.request_type
+        scanners = self.get_scanners(application_key, request_type, is_authz_scan, auth_req)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
         scan_results, scan_timings = {}, {}
