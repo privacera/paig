@@ -1,14 +1,12 @@
 import logging
 import boto3
 import os
-import requests 
 
 from api.shield.enum.ShieldEnums import Guardrail, RequestType
 from api.shield.model.scanner_result import ScannerResult
 from api.shield.model.analyzer_result import AnalyzerResult
 from api.shield.scanners.BaseScanner import Scanner
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
-
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +87,7 @@ class AWSBedrockGuardrailScanner(Scanner):
         Fetch guardrail details
         """
         # first make call to gov service to get the guardrail id, version and region
-        result = self.gov_serv_client.get_guardrail_details(self.get_property('tenant_id'), self.get_property('application_key'))
+        result = self.gov_serv_client.get_aws_bedrock_guardrail_info(self.get_property('tenant_id'), self.get_property('application_key'))
         guardrail_id = result.get('guardrail_id')
         guardrail_version = result.get('guardrail_version')
         region = result.get('region')
