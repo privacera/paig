@@ -2,7 +2,6 @@ aiohttp==3.8.6
 aiosignal==1.3.1
 aiosqlite==0.19.0
 alembic==1.12.0
-annotated-types==0.5.0
 anyio==3.7.1
 asgiref==3.7.2
 async-timeout==4.0.3
@@ -46,12 +45,11 @@ itsdangerous==2.1.2
 joblib==1.3.2
 jsonpatch==1.33
 jsonpointer==2.4
-langchain==0.2.0
-langchain-community==0.2.0
-langchain-core==0.2.0
-langchain-openai==0.1.7
+langchain==0.3.4
+langchain-community==0.3.3
+langchain-core==0.3.12
+langchain-openai==0.2.3
 langdetect==1.0.9
-langsmith==0.1.60
 lxml==4.9.3
 Markdown==3.5.2
 marshmallow==3.20.1
@@ -62,7 +60,7 @@ mypy-extensions==1.0.0
 nltk==3.8.1
 numpy==1.26.0
 onnxruntime==1.16.0
-openai==1.30.1
+openai==1.52.0
 overrides==7.4.0
 packaging==23.2
 pluggy==1.3.0
@@ -71,9 +69,8 @@ protobuf==4.24.4
 psycopg2-binary==2.9.9
 pulsar-client==3.3.0
 pyasn1==0.5.0
-pydantic==2.3.0
-pydantic-core==2.6.3
-pydantic-settings==2.0.3
+pydantic==2.9.2
+pydantic-settings==2.6.0
 pydantic-settings-yaml==0.2.0
 PyPika==0.48.9
 pytest==7.4.2
@@ -103,7 +100,7 @@ tokenizers==0.14.1
 tomli==2.0.1
 tqdm==4.66.1
 typer==0.9.0
-typing-extensions==4.7.1
+typing-extensions==4.12.2
 typing-inspect==0.9.0
 unstructured==0.10.19
 urllib3
@@ -114,7 +111,7 @@ websockets==11.0.3
 yarl==1.9.2
 zipp==3.17.0
 paig-client
-boto3>=1.28.57
+boto3>=1.35.42
 opensearch-py==2.3.2
 okta-jwt-verifier==0.2.4
 pymilvus==2.3.5
