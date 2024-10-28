@@ -51,7 +51,85 @@ const VectorDBAssociate = ({form, editMode}) => {
     )
 }
 
-const VAIApplicationForm = observer(({form, editMode}) => {
+const VGuardrailForm = observer(({id, form, editMode}) => {
+    const {guardrailEnable, guardrailId, guardrailVersion, region} = form.fields;
+
+    if (!id || editMode) {
+        return (
+            <Fragment>
+                <Grid item xs={12}>
+                    <FormLabel>Enable Guardrail</FormLabel>
+                    <FormGroupSwitch
+                        showLabel={false}
+                        fieldObj={guardrailEnable}
+                        inputColAttr={{ xs: 12}}
+                        data-testid="guardrail-enable"
+                    />
+                </Grid>
+                {
+                    guardrailEnable.value &&
+                    <Fragment>
+                        <FormGroupInput
+                            required={true}
+                            fieldObj={guardrailId}
+                            label="Guardrail ID"
+                            variant="standard"
+                            data-testid="guardrail-id"
+                        />
+                        <FormGroupInput
+                            required={true}
+                            fieldObj={guardrailVersion}
+                            label="Guardrail Version"
+                            variant="standard"
+                            data-testid="guardrail-version"
+                        />
+                        <FormGroupInput
+                            required={true}
+                            fieldObj={region}
+                            label="Guardrail Region"
+                            variant="standard"
+                            data-testid="guardrail-region"
+                        />
+                    </Fragment>
+                }
+            </Fragment>
+        )
+    } else {
+        return (
+            <Fragment>
+                <Grid item xs={12}>
+                    <FormLabel>Enable Guardrail</FormLabel>
+                    <FormGroupSwitch
+                        showLabel={false}
+                        disabled={true}
+                        fieldObj={guardrailEnable}
+                        inputColAttr={{ xs: 12}}
+                        data-testid="guardrail-enable"
+                    />
+                </Grid>
+                {
+                    guardrailEnable.value &&
+                    <Fragment>
+                        <Grid item xs={12}>
+                            <FormLabel>Guardrail ID</FormLabel>
+                            <div data-testid="guardrail-id" style={{ marginBottom: '8px'}}>{guardrailId.value}</div>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormLabel>Guardrail Version</FormLabel>
+                            <div data-testid="guardrail-version" style={{ marginBottom: '8px'}}>{guardrailVersion.value}</div>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormLabel>Guardrail Region</FormLabel>
+                            <div data-testid="region" style={{ marginBottom: '8px'}}>{region.value}</div>
+                        </Grid>
+                    </Fragment>
+                }
+            </Fragment>
+        )
+    }
+})
+
+const VAIApplicationForm = observer(({form, guardrailForm, editMode}) => {
     const { id, name, applicationKey, description, status, deploymentType, vectorDBs } = form.fields;
 
     return (
@@ -137,6 +215,12 @@ const VAIApplicationForm = observer(({form, editMode}) => {
                     data-testid="app-status"
                 />
             </Grid>
+
+            <VGuardrailForm
+                id={id.value}
+                form={guardrailForm}
+                editMode={editMode}
+            />
 
             <VectorDBAssociate
                 form={form}
@@ -224,7 +308,47 @@ const ai_application_form_def = {
     }
 }
 
+const application_guardrail_form_def = {
+    guardrailEnable: {
+        defaultValue: false
+    },
+    guardrailId: {
+        validators: {
+            errorMessage: 'Required!',
+            fn: (field, fields) => {
+                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                    return false;
+                }
+                return true;
+            }
+        }
+    },
+    guardrailVersion: {
+        validators: {
+            errorMessage: 'Required!',
+            fn: (field, fields) => {
+                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                    return false;
+                }
+                return true;
+            }
+        }
+    },
+    region: {
+        validators: {
+            errorMessage: 'Required!',
+            fn: (field, fields) => {
+                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                    return false;
+                }
+                return true;
+            }
+        }
+    }
+}
+
 export {
-    ai_application_form_def
+    ai_application_form_def,
+    application_guardrail_form_def
 }
 export default VAIApplicationForm;
