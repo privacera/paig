@@ -96,6 +96,7 @@ class ApplicationManager(Singleton):
         Returns:
             tuple: A tuple containing the scan results and the access control results.
         """
+
         application_key = auth_req.application_key
         request_type = auth_req.request_type
         scanners = self.get_scanners(application_key, request_type, is_authz_scan, auth_req)

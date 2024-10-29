@@ -31,8 +31,8 @@ class AWSBedrockGuardrailScanner(Scanner):
             enable (bool): Flag to enable or disable the scanner.
         """
         super().__init__(**kwargs)
-        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
 
+        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
         self.bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name=self.region
@@ -48,7 +48,6 @@ class AWSBedrockGuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
-
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -84,7 +83,6 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         Fetch guardrail details
         """
-
         default_guardrail_id = self.get_property('guardrail_id')
         default_guardrail_version = self.get_property('guardrail_version')
         default_region = self.get_property('region')
