@@ -32,7 +32,7 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         super().__init__(**kwargs)
 
-        self.guardrail_id, self.guardrail_version, self.region = self.get_guardrail_details()
+        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
         self.bedrock_client = boto3.client(
             'bedrock-runtime',
             region_name=self.region
@@ -79,7 +79,7 @@ class AWSBedrockGuardrailScanner(Scanner):
         logger.info("AWSBedrockGuardrailScanner: No action required for the message.")
         return ScannerResult(traits=[])
 
-    def get_guardrail_details(self) -> (str, str, str):
+    def _get_guardrail_details(self) -> (str, str, str):
         """
         Fetch guardrail details
         """
