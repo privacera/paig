@@ -62,7 +62,7 @@ class CAIApplicationForm extends Component {
         delete data.id;
 
         let guardrailDetails = this.guardrailForm.toJSON();
-        if (guardrailDetails.guardrailEnable) {
+        if (guardrailDetails.guardrail_enable) {
             data.guardrailDetails = JSON.stringify(guardrailDetails);
         } else {
             data.guardrailDetails = null;
@@ -94,7 +94,7 @@ class CAIApplicationForm extends Component {
         }
         let data = this.form.toJSON();
         let guardrailDetails = this.guardrailForm.toJSON();
-        if (guardrailDetails.guardrailEnable) {
+        if (guardrailDetails.guardrail_enable) {
             data.guardrailDetails = JSON.stringify(guardrailDetails);
         } else {
             data.guardrailDetails = null;

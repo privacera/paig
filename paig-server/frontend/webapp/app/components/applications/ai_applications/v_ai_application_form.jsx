@@ -52,7 +52,7 @@ const VectorDBAssociate = ({form, editMode}) => {
 }
 
 const VGuardrailForm = observer(({id, form, editMode}) => {
-    const {guardrailEnable, guardrailId, guardrailVersion, region} = form.fields;
+    const {guardrail_enable, guardrail_id, guardrail_version, region} = form.fields;
 
     if (!id || editMode) {
         return (
@@ -61,24 +61,24 @@ const VGuardrailForm = observer(({id, form, editMode}) => {
                     <FormLabel>Enable Guardrail</FormLabel>
                     <FormGroupSwitch
                         showLabel={false}
-                        fieldObj={guardrailEnable}
+                        fieldObj={guardrail_enable}
                         inputColAttr={{ xs: 12}}
                         data-testid="guardrail-enable"
                     />
                 </Grid>
                 {
-                    guardrailEnable.value &&
+                    guardrail_enable.value &&
                     <Fragment>
                         <FormGroupInput
                             required={true}
-                            fieldObj={guardrailId}
+                            fieldObj={guardrail_id}
                             label="Guardrail ID"
                             variant="standard"
                             data-testid="guardrail-id"
                         />
                         <FormGroupInput
                             required={true}
-                            fieldObj={guardrailVersion}
+                            fieldObj={guardrail_version}
                             label="Guardrail Version"
                             variant="standard"
                             data-testid="guardrail-version"
@@ -102,21 +102,21 @@ const VGuardrailForm = observer(({id, form, editMode}) => {
                     <FormGroupSwitch
                         showLabel={false}
                         disabled={true}
-                        fieldObj={guardrailEnable}
+                        fieldObj={guardrail_enable}
                         inputColAttr={{ xs: 12}}
                         data-testid="guardrail-enable"
                     />
                 </Grid>
                 {
-                    guardrailEnable.value &&
+                    guardrail_enable.value &&
                     <Fragment>
                         <Grid item xs={12}>
                             <FormLabel>Guardrail ID</FormLabel>
-                            <div data-testid="guardrail-id" style={{ marginBottom: '8px'}}>{guardrailId.value}</div>
+                            <div data-testid="guardrail-id" style={{ marginBottom: '8px'}}>{guardrail_id.value}</div>
                         </Grid>
                         <Grid item xs={12}>
                             <FormLabel>Guardrail Version</FormLabel>
-                            <div data-testid="guardrail-version" style={{ marginBottom: '8px'}}>{guardrailVersion.value}</div>
+                            <div data-testid="guardrail-version" style={{ marginBottom: '8px'}}>{guardrail_version.value}</div>
                         </Grid>
                         <Grid item xs={12}>
                             <FormLabel>Guardrail Region</FormLabel>
@@ -309,25 +309,25 @@ const ai_application_form_def = {
 }
 
 const application_guardrail_form_def = {
-    guardrailEnable: {
+    guardrail_enable: {
         defaultValue: false
     },
-    guardrailId: {
+    guardrail_id: {
         validators: {
             errorMessage: 'Required!',
             fn: (field, fields) => {
-                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
                     return false;
                 }
                 return true;
             }
         }
     },
-    guardrailVersion: {
+    guardrail_version: {
         validators: {
             errorMessage: 'Required!',
             fn: (field, fields) => {
-                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
                     return false;
                 }
                 return true;
@@ -338,7 +338,7 @@ const application_guardrail_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field, fields) => {
-                if (fields.guardrailEnable.value && !(field.value || '').trim().length) {
+                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
                     return false;
                 }
                 return true;
