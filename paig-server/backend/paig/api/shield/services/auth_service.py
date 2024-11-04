@@ -133,7 +133,9 @@ class AuthService:
 
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
-                authz_service_res.status_message = "Access is denied"
+                response_text_message = self.generate_access_denied_message(all_result_traits)
+
+                masked_messages.append({"responseText": response_text_message})
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         # Overriding the access control results for the application keys configured under
@@ -469,3 +471,36 @@ class AuthService:
             self.fluentd_audit_logger.start()
 
         return self.fluentd_audit_logger
+    
+    def generate_access_denied_message(self, all_traits: list) -> str:
+        """
+        Generates an access denied message based on the provided traits.
+
+        This method generates an access denied message based on the provided traits. It constructs a message
+        indicating that the request was denied due to the presence of certain traits.
+
+        Args:
+            all_traits (list): A list of traits that were detected in the request.
+
+        Returns:
+            str: The access denied message indicating the reason for the denial.
+        """
+        multi_trait_message = config_utils.get_property_value("default_access_denied_message_multi_trait",
+                                                                        "Access is denied for ")
+        mapped_messages = []
+        for trait in all_traits:
+            custom_text_message = config_utils.get_property_value(trait)
+            if custom_text_message:
+                mapped_messages.append(custom_text_message)
+            else:
+                mapped_messages.append(trait)
+
+        if len(mapped_messages) == 1:
+            response_text_message = multi_trait_message + " " + mapped_messages[0]
+        elif len(mapped_messages) > 1:
+            response_text_message = multi_trait_message + " " + ", ".join(mapped_messages[:-1]) + " or " + mapped_messages[-1]
+        else:
+            response_text_message = config_utils.get_property_value("default_access_denied_message",
+                                                                    "Access is denied")
+
+        return response_text_message
