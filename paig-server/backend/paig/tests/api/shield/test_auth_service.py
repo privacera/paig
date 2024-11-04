@@ -695,7 +695,7 @@ class TestAuthService:
         assert instance.clientHostname == payload["clientHostname"]
         assert instance.numberOfTokens == payload["numberOfTokens"]
 
-    def generate_access_denied_message_default(self, mocker):
+    def test_generate_access_denied_message_default(self, mocker):
         
         mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
             mocker)
@@ -724,7 +724,7 @@ class TestAuthService:
             "VIOLENCE": "violent topics",
             "CRIMINAL": "criminal topics",
             "PASSWORD": "personal sensitive information"
-        }.get(prop, default)
+        }.get(prop)
 
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
         
@@ -732,7 +732,7 @@ class TestAuthService:
         
         assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss PERSON"
         
-    def generate_access_denied_message_single_trait(self, mocker):
+    def test_generate_access_denied_message_single_trait(self, mocker):
         
         mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
             mocker)
@@ -761,15 +761,15 @@ class TestAuthService:
             "VIOLENCE": "violent topics",
             "CRIMINAL": "criminal topics",
             "PASSWORD": "personal sensitive information"
-        }.get(prop, default)
+        }.get(prop)
 
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
         
         message = auth_service.generate_access_denied_message(['MISCONDUCT'])
         
-        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss MISCONDUCT"
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics"
         
-    def generate_access_denied_message_multiple_traits(self, mocker):
+    def test_generate_access_denied_message_multiple_traits(self, mocker):
         
         mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
             mocker)
@@ -798,14 +798,14 @@ class TestAuthService:
             "VIOLENCE": "violent topics",
             "CRIMINAL": "criminal topics",
             "PASSWORD": "personal sensitive information"
-        }.get(prop, default)
+        }.get(prop)
 
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
 
         message = auth_service.generate_access_denied_message(['MISCONDUCT', 'OFF_TOPIC-INVESTMENT'])
         
-        assert message == "Access is denied"
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or off-topic (investment advice)"
         
         message = auth_service.generate_access_denied_message(['MISCONDUCT', 'PERSON'])
         
-        assert message == "Access is denied"
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or PERSON"

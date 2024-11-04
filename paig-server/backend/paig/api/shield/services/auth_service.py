@@ -488,7 +488,7 @@ class AuthService:
                                                                         "Access is denied for ")
         mapped_messages = []
         for trait in all_traits:
-            custom_text_message = config_utils.get_property_value(trait)
+            custom_text_message = config_utils.get_property_value(trait, None)
             if custom_text_message:
                 mapped_messages.append(custom_text_message)
             else:
