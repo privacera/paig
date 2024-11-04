@@ -133,9 +133,8 @@ class AuthService:
 
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
-                response_text_message = self.generate_access_denied_message(all_result_traits)
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
 
-                masked_messages.append({"responseText": response_text_message})
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         # Overriding the access control results for the application keys configured under
@@ -496,9 +495,9 @@ class AuthService:
                 mapped_messages.append(trait)
 
         if len(mapped_messages) == 1:
-            response_text_message = multi_trait_message + " " + mapped_messages[0]
+            response_text_message = f'{multi_trait_message} {mapped_messages[0]}'
         elif len(mapped_messages) > 1:
-            response_text_message = multi_trait_message + " " + ", ".join(mapped_messages[:-1]) + " or " + mapped_messages[-1]
+            response_text_message = f'{multi_trait_message} {", ".join(mapped_messages[:-1])} or {mapped_messages[-1]}'
         else:
             response_text_message = config_utils.get_property_value("default_access_denied_message",
                                                                     "Access is denied")
