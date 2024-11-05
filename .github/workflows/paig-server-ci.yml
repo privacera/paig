@@ -9,6 +9,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'paig-server/**'
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: read
@@ -24,11 +25,24 @@ jobs:
       with:
         python-version: "3.10"
 
-    - name: Install dependencies
+    - name: Prepare venv
       run: |
         python3 -m pip install virtualenv
-        virtualenv -p python3 venv && . venv/bin/activate
+        virtualenv -p python3 venv
+        . venv/bin/activate
         pip install twine build pytest pytest-cov
+        
+    - name: Build and Install paig-common wheel
+      run: |
+        . venv/bin/activate
+        cd paig-common
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
+    - name: Install PAIG-Server dependencies
+      run: |
+        . venv/bin/activate
         pip install -r paig-server/backend/requirements.txt
 
     - name: Test with pytest
