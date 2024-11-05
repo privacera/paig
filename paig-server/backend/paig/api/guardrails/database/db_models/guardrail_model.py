@@ -1,9 +1,9 @@
 
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey
+from sqlalchemy import Column, Integer, String, JSON, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
+from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
 from core.db_models.BaseSQLModel import BaseSQLModel
-from core.db_models.utils import CommaSeparatedList
 
 
 class GuardrailModel(BaseSQLModel):
@@ -70,7 +70,7 @@ class GRConfigModel(BaseSQLModel):
     """
     __tablename__ = "guardrail_config"
     guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_config_guardrail_id'), nullable=False)
-    guardrail_provider = Column(String(255), nullable=False)
+    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     guardrail_provider_connection_name = Column(String(255), nullable=True)
     config_type = Column(String(255), nullable=False)
     config_data = Column(JSON, nullable=False)
@@ -89,7 +89,7 @@ class GRProviderResponseModel(BaseSQLModel):
     """
     __tablename__ = "guardrail_provider_response"
     guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_provider_response_guardrail_id'), nullable=False)
-    guardrail_provider = Column(String(255), nullable=False)
+    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     response_data = Column(JSON, nullable=False)
 
     guardrail = relationship("GuardrailModel", back_populates="gr_response")

@@ -2,6 +2,7 @@ from typing import Optional
 
 from pydantic import Field
 
+from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
 from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
 
@@ -21,7 +22,7 @@ class GRConnectionView(BaseView):
     """
     name: str = Field(default=None, description="The name of the Guardrail connection")
     description: Optional[str] = Field(default=None, description="The description of the Guardrail connection")
-    guardrail_provider: Optional[str] = Field(..., description="The guardrails provider", alias="guardrailsProvider")
+    guardrail_provider: Optional[GuardrailProvider] = Field(..., description="The guardrails provider", alias="guardrailsProvider")
     connection_details: dict = Field(..., description="The connection details", alias="connectionDetails")
 
     def to_guardrail_connection(self):
@@ -52,4 +53,4 @@ class GRConnectionFilter(BaseAPIFilter):
 
     name: Optional[str] = Field(default=None, description="Filter by name")
     description: Optional[str] = Field(default=None, description="Filter by description")
-    guardrail_provider: Optional[str] = Field(default=None, description="Filter by guardrails provider")
+    guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrails provider", alias="guardrailsProvider")
