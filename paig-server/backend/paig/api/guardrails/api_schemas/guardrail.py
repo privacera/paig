@@ -125,15 +125,3 @@ class GuardrailFilter(BaseAPIFilter):
     name: Optional[str] = Field(default=None, description="Filter by name")
     description: Optional[str] = Field(default=None, description="Filter by description")
     version: Optional[int] = Field(default=None, description="Filter by version")
-
-    # model_config = ConfigDict(
-    #     from_attributes=True,
-    #     populate_by_name=True,
-    #     extra='allow'
-    # )
-    # TODO: Uncomment the above model_config by fixing below error
-    # {
-    #     "error_code": 400,
-    #     "success": false,
-    #     "message": "extra_data: Field required"
-    # }
