@@ -2,6 +2,7 @@ from typing import Optional, Dict, List
 
 from pydantic import Field, ConfigDict, BaseModel
 
+from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
 from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
 
@@ -37,7 +38,7 @@ class GRConfigView(BaseView):
         guardrail_provider (str): The guardrail provider.
         config_data (Dict): The guardrail details.
     """
-    guardrail_provider: str = Field(..., description="The guardrail provider", alias="guardrailProvider")
+    guardrail_provider: Optional[GuardrailProvider] = Field(..., description="The guardrail provider", alias="guardrailProvider")
     guardrail_provider_connection_name: str = Field(...,
                                                     description="The guardrail provider connection name",
                                                     alias="guardrailProviderConnectionName")
@@ -108,7 +109,7 @@ class GuardrailsDataView(BaseView):
         version (int): The version of the Guardrails.
         guardrails (List[GuardrailView]): The list of Guardrails.
     """
-    app_key: str = Field(..., description="The application key", alias="appKey")
+    app_key: str = Field(..., description="The application key", alias="applicationKey")
     version: int = Field(..., description="The version of the Guardrails")
     guardrails: Optional[List[GuardrailView]] = Field(None, description="The list of Guardrails")
 
