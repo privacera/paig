@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from "react";
 import { observer } from "mobx-react";
+import { maxBy } from 'lodash';
 
 import { Box, Grid, Paper, Typography } from "@material-ui/core";
 
@@ -66,7 +67,8 @@ const VSensitiveDataAccess = observer(({data}) => {
 
   let models = f.models(data);
   let length = models.length;
-  let maxQuery = length > 0 ? models[0].queries || 0 : 0;
+  // Find the maximum queries value across all models
+  let maxQuery = maxBy(models, 'queries')?.queries || 0;
 
   if (length) {
     const middleIndex = Math.ceil(length / 2);
