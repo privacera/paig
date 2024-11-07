@@ -80,7 +80,7 @@ class GuardrailView(BaseView):
     name: str = Field(default=None, description="The name of the Guardrail")
     description: Optional[str] = Field(default=None, description="The description of the Guardrail")
     version: Optional[int] = Field(default=1, description="The version of the Guardrail")
-    application_keys: List[str] = Field([], description="The associated application keys",
+    application_keys: List[str] = Field(None, description="The associated application keys",
                                         alias="applicationKeys")
     guardrail_applications: Optional[List[GRApplicationView]] = Field(None, description="The guardrail applications",
                                                                       alias="guardrailApplications")
