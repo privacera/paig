@@ -68,7 +68,7 @@ def test_verify_connection_details_with_access_keys(mock_boto_client, connection
 
     assert result is True
     assert message == "Connection successful!"
-    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+    mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
 def test_verify_connection_details_with_session_tokens(mock_boto_client, session_connection_details):
@@ -84,7 +84,7 @@ def test_verify_connection_details_with_session_tokens(mock_boto_client, session
 
     assert result is True
     assert message == "Connection successful!"
-    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+    mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
 def test_verify_connection_details_with_assume_iam_role(mock_boto_client, iam_web_identity_details):
@@ -100,7 +100,7 @@ def test_verify_connection_details_with_assume_iam_role(mock_boto_client, iam_we
 
     assert result is True
     assert message == "Connection successful!"
-    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+    mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
 def test_verify_connection_details_with_iam_role(mock_boto_client, iam_role_details):
@@ -116,7 +116,7 @@ def test_verify_connection_details_with_iam_role(mock_boto_client, iam_role_deta
 
     assert result is True
     assert message == "Connection successful!"
-    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+    mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 def test_verify_connection_details_invalid():
     connection_details = {'invalid_key': 'fake_value'}
@@ -140,7 +140,7 @@ def test_verify_connection_details_success(mock_boto_client, connection_details)
 
     assert result is True
     assert message == "Connection successful!"
-    mock_client.list_guardrails.assert_called_once_with(MaxResults=1)
+    mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
 def test_verify_connection_details_failed_verification(mock_boto_client, connection_details):
