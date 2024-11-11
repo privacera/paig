@@ -19,6 +19,14 @@ def mock_session():
     return AsyncMock(spec=AsyncSession)
 
 
+@pytest.fixture
+def session_context():
+    from contextvars import ContextVar
+    session_context = ContextVar("session_context")
+    session_context.set("test")
+    return session_context
+
+
 def get_dummy_guardrail_connection_view():
     gr_connection_view_json = {
             "id": 1,
@@ -67,12 +75,14 @@ async def test_list_guardrail_connections(mock_guardrail_connection_service, moc
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Failing due to transactional decorator used at controller level")
-async def test_create_guardrail_connection(mock_guardrail_connection_service, mock_session):
+async def test_create_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
     mock_guardrail_connection_view = get_dummy_guardrail_connection_view()
     mock_guardrail_connection_service.create.return_value = mock_guardrail_connection_view
     mock_session.commit.return_value = None
+
+    mocker.patch("core.db_session.session", mock_session)
+    mocker.patch("core.db_session.session.session_context", session_context)
 
     # Create instance of controller
     controller = GRConnectionController(gr_connection_service=mock_guardrail_connection_service)
@@ -103,17 +113,19 @@ async def test_get_guardrail_connection_by_id(mock_guardrail_connection_service)
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Failing due to transactional decorator used at controller level")
-async def test_update_guardrail_connection(mock_guardrail_connection_service):
+async def test_update_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
     mock_guardrail_connection_view = get_dummy_guardrail_connection_view()
     mock_guardrail_connection_service.update.return_value = mock_guardrail_connection_view
+
+    mocker.patch("core.db_session.session", mock_session)
+    mocker.patch("core.db_session.session.session_context", session_context)
 
     # Create instance of controller
     controller = GRConnectionController(gr_connection_service=mock_guardrail_connection_service)
 
     # Call the method under test
-    result = await controller.update(id=1, gr_connection=mock_guardrail_connection_view)
+    result = await controller.update(id=1, request=mock_guardrail_connection_view)
 
     # Assertions
     assert result == mock_guardrail_connection_view
@@ -121,10 +133,12 @@ async def test_update_guardrail_connection(mock_guardrail_connection_service):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Failing due to transactional decorator used at controller level")
-async def test_delete_guardrail_connection(mock_guardrail_connection_service):
+async def test_delete_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
     mock_guardrail_connection_service.delete.return_value = None
+
+    mocker.patch("core.db_session.session", mock_session)
+    mocker.patch("core.db_session.session.session_context", session_context)
 
     # Create instance of controller
     controller = GRConnectionController(gr_connection_service=mock_guardrail_connection_service)
