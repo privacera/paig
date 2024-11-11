@@ -1,4 +1,3 @@
-from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
 from api.shield.logfile.log_message_in_file import LogMessageInFile
 from api.shield.model.shield_audit import ShieldAudit
 
@@ -31,6 +30,7 @@ class LogMessageInDataService(LogMessageInFile):
         Returns:
             None
         """
+        from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
         transformed_audit: BaseAccessAuditView = self.transform_log_audit(log_data)
         await self.data_service.create_access_audit(transformed_audit)
 
@@ -44,6 +44,7 @@ class LogMessageInDataService(LogMessageInFile):
         Returns:
             base_access_audit: The transformed data, an instance of BaseAccessAuditView.
         """
+        from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
         base_access_audit = BaseAccessAuditView()
         base_access_audit.app_key = log_data.applicationKey
         base_access_audit.app_name = log_data.applicationName

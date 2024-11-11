@@ -140,7 +140,7 @@ class EncryptionKeyRefresher:
         logger.debug(f"==> {self.tenant_id} : EncryptionKeyRefresher::cleanup()")
         self.exit_event.set()
         logger.debug(f"<== {self.tenant_id} : EncryptionKeyRefresher::cleanup()")
-        
+
     def get_key_from_cache(self):
         logger.debug(f"==> {self.tenant_id} : EncryptionKeyRefresher::get_key_from_cache()")
         encryption_key_info_list = []

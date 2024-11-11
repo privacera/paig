@@ -2,7 +2,7 @@ import os
 
 from paig_common.audit_spooler import AuditLogger
 
-from api.shield.client.fluentd_rest_http_client import FluentdRestHttpClient
+from api.shield.client.http_fluentd_client import FluentdRestHttpClient
 from api.shield.model.shield_audit import ShieldAudit
 import logging
 

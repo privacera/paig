@@ -1,6 +1,3 @@
-
-from api.encryption.api_schemas.encryption_key import EncryptionKeyFilter
-from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.shield.interfaces.account_service_interface import IAccountServiceClient
 from core.utils import SingletonDepends
 
@@ -14,11 +11,12 @@ class LocalAccountServiceClient(IAccountServiceClient):
             Retrieves all encryption keys for the specified tenant from a local data source.
     """
 
-    def __init__(self, encryption_key_service: EncryptionKeyService = SingletonDepends(EncryptionKeyService)):
+    def __init__(self):
         """
         Initialize the local account service client.
         """
-        self.encryption_key_service = encryption_key_service
+        from api.encryption.services.encryption_key_service import EncryptionKeyService
+        self.encryption_key_service: EncryptionKeyService = SingletonDepends(EncryptionKeyService)
 
     async def get_all_encryption_keys(self, tenant_id):
         """
@@ -30,7 +28,7 @@ class LocalAccountServiceClient(IAccountServiceClient):
         Returns:
             List[str]: A list of encryption keys associated with the specified `tenant_id`.
         """
-
+        from api.encryption.api_schemas.encryption_key import EncryptionKeyFilter
         result = await self.encryption_key_service.list_encryption_keys(EncryptionKeyFilter(), 0, 10, [])
         result_list = []
         for key in result.content:

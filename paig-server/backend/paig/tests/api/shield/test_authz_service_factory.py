@@ -1,6 +1,6 @@
 import pytest
 from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
-from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
+from api.shield.client.http_authz_service_client import HttpAuthzClient
 from api.shield.client.local_authz_service_client import LocalAuthzClient
 from api.shield.utils import config_utils
 from api.shield.factory.authz_service_client_factory import AuthzServiceClientFactory

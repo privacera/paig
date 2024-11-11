@@ -1,7 +1,8 @@
+import json
 import logging
 
 
-from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
+from privacera_shield_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
@@ -46,7 +47,7 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
         """
         paig_key = config_utils.get_property_value('paig_api_key')
         if paig_key is None:
-            return {"x-tenant-id": tenant_id, "x-user-role": "INTERNAL_SERVICE"}
+            return {"x-tenant-id": tenant_id, "x-user-role": "OWNER"}
 
         return {"x-paig-api-key": paig_key}
 
@@ -64,8 +65,7 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
         Raises:
             ShieldException: If the API request fails or returns a non-200 status code.
         """
-        url = config_utils.get_property_value("governance_service_get_key_endpoint")
-        url = f'{url}/{application_key}'
+        url = config_utils.get_property_value("governance_service_get_ai_app_endpoint")
         logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and application-key={application_key}")
 
         try:
@@ -73,12 +73,15 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
             response = await self.get(
                 url=url,
                 headers=self.get_headers(tenant_id),
+                params={"applicationKey": application_key}
             )
 
             logger.debug(f"response received: {response.__str__()}")
 
             if response.status_code == 200:
-                return response.json()
+                response_content = response.json().get("content")[0]
+                guardrail_details = response_content.get("guardrailDetails") if response_content else {}
+                return json.loads(guardrail_details)
             else:
                 error_message = (f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed "
                                  f"with status code {response.status_code}: {response.text}")

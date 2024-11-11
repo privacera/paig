@@ -7,6 +7,7 @@ init_app_router = APIRouter()
 
 shield_controller_instance = Depends(SingletonDepends(ShieldController, called_inside_fastapi_depends=True))
 
+
 @init_app_router.post("")
 async def init_app(request: Request, shield_controller: ShieldController = shield_controller_instance):
     """

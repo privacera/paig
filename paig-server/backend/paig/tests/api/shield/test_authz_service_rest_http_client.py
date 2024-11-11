@@ -6,7 +6,7 @@ from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
-from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
+from api.shield.client.http_authz_service_client import HttpAuthzClient
 from api.shield.utils import config_utils
 from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
 from requests.models import Response

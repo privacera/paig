@@ -4,12 +4,10 @@ import logging
 import time
 import traceback
 
-from api.audit.controllers.data_store_controller import DataStoreController
 from api.shield.enum.ShieldEnums import Guardrail
 from api.shield.factory.account_service_factory import AccountServiceFactory
 from api.shield.factory.authz_service_client_factory import AuthzServiceClientFactory
 from api.shield.logfile.audit_loggers import FluentdAuditLogger
-from api.shield.logfile.log_message_in_data_service import LogMessageInDataService
 from api.shield.services.application_manager_service import ApplicationManager
 from api.shield.presidio.nlp_handler import NLPHandler
 from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
@@ -20,7 +18,7 @@ from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.shield_audit import ShieldAudit
-from api.shield.client.fluentd_rest_http_client import FluentdRestHttpClient
+from api.shield.client.http_fluentd_client import FluentdRestHttpClient
 
 from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
 from api.shield.utils.custom_exceptions import ShieldException
@@ -29,10 +27,12 @@ from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
+from opentelemetry import metrics
 
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
+meter = metrics.get_meter(__name__)
 
 
 class AuthService:
@@ -45,10 +45,7 @@ class AuthService:
 
     """
 
-    def __init__(self, authz_service_client_factory=SingletonDepends(AuthzServiceClientFactory),
-                 data_store_controller: DataStoreController = SingletonDepends(DataStoreController),
-                 account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory),
-                 governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)):
+    def __init__(self):
         """
         Initializes the AuthService class with various dependencies and configuration settings.
 
@@ -62,8 +59,11 @@ class AuthService:
 
         self.nlp_handler = NLPHandler()
         self.application_manager = ApplicationManager()
+        authz_service_client_factory = SingletonDepends(AuthzServiceClientFactory)
         self.authz_service_client = authz_service_client_factory.get_authz_service_client()
+        account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory)
         self.account_service_client = account_service_factory.get_account_service_client()
+        governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)
         self.governance_service_client = governance_service_factory.get_governance_service_client()
         self.fluentd_logger_client = FluentdRestHttpClient()
         self.tenant_data_encryptor_service = TenantDataEncryptorService(self.account_service_client)
@@ -74,8 +74,12 @@ class AuthService:
         self.message_log_objs = []
         self.fluentd_audit_logger = None
         self.audit_spool_dir = config_utils.get_property_value("audit_spool_dir", "/workdir/shield/audit-spool")
-        self.data_store_controller = data_store_controller
         self.init_log_message_in_file()
+        self.fluentd_failure_counter = meter.create_counter(
+            name="fluentd_failure_total",
+            description="Count of Fluentd failures while logging audits",
+            unit="1"
+        )
 
         self.ignore_access_control_application_keys = config_utils.get_property_value_list("ignore_access_control_application_keys", [])
         logger.info("Found ignore_access_control_application_keys = " + str(self.ignore_access_control_application_keys))
@@ -133,7 +137,8 @@ class AuthService:
 
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
-                authz_service_res.status_message = "Access is denied"
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
+
                 logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
         # Overriding the access control results for the application keys configured under
@@ -262,9 +267,9 @@ class AuthService:
         await self.log_audit_message(shield_audit)
         audit_self_managed_time = f"{((time.perf_counter() - audit_self_managed_start_time) * 1000):.3f}"
         audit_cloud_start_time = time.perf_counter()
-        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system",
-                                                                           "data-service")
-        if audit_msg_content_storage_system == "fluentd":
+        audit_msg_content_storage_system = config_utils.get_property_value_list("audit_msg_content_storage_system")
+        default_msg_metadata_storage_system = config_utils.get_property_value_list("default_msg_metadata_storage_system")
+        if "fluentd" in audit_msg_content_storage_system or "fluentd" in default_msg_metadata_storage_system:
             self.log_audit_fluentd(copy.deepcopy(shield_audit))
         audit_cloud_time = f"{((time.perf_counter() - audit_cloud_start_time) * 1000):.3f}"
         return audit_cloud_time, audit_self_managed_time
@@ -381,16 +386,19 @@ class AuthService:
             fluentd_audit_logger.log(shield_audit)
         except DiskFullException:
             if fluentd_failure_enabled is True:
+                self.fluentd_failure_counter.add(1)
                 raise ShieldException("No space left on device. Disk is full. Please increase the disk size or free "
                                       "up some space to push audits successfully.")
         except AuditEventQueueFullException:
             if fluentd_failure_enabled is True:
+                self.fluentd_failure_counter.add(1)
                 raise ShieldException("Audit event queue is full.The push rate is too high for the audit "
                                       "spooler to process.")
         except Exception as e:
             logger.error(
                 f"Error logging audit message to fluentd: {type(e).__name__}: {str(e)} \n{traceback.format_exc()}")
             if fluentd_failure_enabled is True:
+                self.fluentd_failure_counter.add(1)
                 raise ShieldException("Failed to log audit record!")
 
     async def log_audit_message(self, log_data: ShieldAudit):
@@ -433,19 +441,21 @@ class AuthService:
         """
         audit_msg_content_to_self_managed_storage = config_utils.get_property_value_boolean(
             "audit_msg_content_to_self_managed_storage", True)
-        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system",
-                                                                           "local")
+        audit_msg_content_storage_system_list = config_utils.get_property_value_list("audit_msg_content_storage_system",
+                                                                                     "local")
 
         if ((self._shield_run_mode == 'self_managed' or self._shield_run_mode == 'customer_hosted')
                 and audit_msg_content_to_self_managed_storage):
-            for audit_msg_content_storage_system in audit_msg_content_storage_system.split(","):
-                match audit_msg_content_storage_system:
+            for audit_msg_content_storage_system in audit_msg_content_storage_system_list:
+                match audit_msg_content_storage_system.strip():
                     case "local":
                         self.message_log_objs.append(LogMessageInLocal())
                     case "s3":
                         self.message_log_objs.append(LogMessageInS3File())
                     case "data-service":
-                        self.message_log_objs.append(LogMessageInDataService(self.data_store_controller))
+                        from api.audit.controllers.data_store_controller import DataStoreController
+                        from api.shield.logfile.log_message_in_data_service import LogMessageInDataService
+                        self.message_log_objs.append(LogMessageInDataService(SingletonDepends(DataStoreController)))
                     case _:
                         logger.error(f"Invalid audit_msg_content_storage_system: {audit_msg_content_storage_system}")
                         raise ShieldException(
@@ -469,3 +479,36 @@ class AuthService:
             self.fluentd_audit_logger.start()
 
         return self.fluentd_audit_logger
+    
+    def generate_access_denied_message(self, all_traits: set) -> str:
+        """
+        Generates an access denied message based on the provided traits.
+
+        This method generates an access denied message based on the provided traits. It constructs a message
+        indicating that the request was denied due to the presence of certain traits.
+
+        Args:
+            all_traits (set): A set of traits that were detected in the request.
+
+        Returns:
+            str: The access denied message indicating the reason for the denial.
+        """
+        multi_trait_message = config_utils.get_property_value("default_access_denied_message_multi_trait",
+                                                                        "Access is denied for ")
+        mapped_messages = []
+        for trait in all_traits:
+            custom_text_message = config_utils.get_property_value(trait, None)
+            if custom_text_message:
+                mapped_messages.append(custom_text_message)
+            else:
+                mapped_messages.append(trait)
+
+        if len(mapped_messages) == 1:
+            response_text_message = f'{multi_trait_message} {mapped_messages[0]}'
+        elif len(mapped_messages) > 1:
+            response_text_message = f'{multi_trait_message} {", ".join(mapped_messages[:-1])} or {mapped_messages[-1]}'
+        else:
+            response_text_message = config_utils.get_property_value("default_access_denied_message",
+                                                                    "Access is denied")
+
+        return response_text_message

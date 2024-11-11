@@ -1,6 +1,3 @@
-
-from api.shield.client.local_account_service_client import LocalAccountServiceClient
-from api.shield.client.http_account_service_client import HttpAccountServiceClient
 from api.shield.utils import config_utils
 from core.utils import SingletonDepends
 
@@ -27,8 +24,10 @@ class AccountServiceFactory:
         client_type = config_utils.get_property_value('account_service_client', 'local')
         match client_type:
             case "http":
+                from api.shield.client.http_account_service_client import HttpAccountServiceClient
                 return SingletonDepends(HttpAccountServiceClient)
             case "local":
+                from api.shield.client.local_account_service_client import LocalAccountServiceClient
                 return SingletonDepends(LocalAccountServiceClient)
             case _:
                 raise Exception(

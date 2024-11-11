@@ -1,4 +1,4 @@
-from api.shield.client.fluentd_rest_http_client import FluentdRestHttpClient
+from api.shield.client.http_fluentd_client import FluentdRestHttpClient
 import pytest
 
 from api.shield.utils.custom_exceptions import ShieldException

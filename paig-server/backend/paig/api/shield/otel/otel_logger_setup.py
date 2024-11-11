@@ -1,4 +1,5 @@
 import logging
+import os
 
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
@@ -42,7 +43,12 @@ def get_otel_logging_handler(logger_provider):
     Returns:
         LoggingHandler: An OpenTelemetry logging handler configured with the OTLP exporter.
     """
-    otlp_log_exporter_endpoint = config_utils.get_property_value("otel_exporter_endpoint") + "/v1/logs"
+    shield_run_mode = os.environ.get("shield_run_mode")
+    if shield_run_mode == "self_managed":
+        otlp_log_exporter_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT") + "/v1/logs"
+    else:
+        otlp_log_exporter_endpoint = config_utils.get_property_value("otel_exporter_endpoint") + "/v1/logs"
+
     otlp_exporter = OTLPLogExporter(endpoint=otlp_log_exporter_endpoint)
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_exporter))
     return LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
