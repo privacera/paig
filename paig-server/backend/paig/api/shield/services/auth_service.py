@@ -478,8 +478,8 @@ class AuthService:
             self.fluentd_audit_logger.daemon = True
             self.fluentd_audit_logger.start()
 
-        return self.fluentd_audit_logger
-    
+        return self.fluentd_audit_logger    
+
     def generate_access_denied_message(self, all_traits: set) -> str:
         """
         Generates an access denied message based on the provided traits.
