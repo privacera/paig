@@ -1,5 +1,5 @@
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
@@ -47,89 +47,61 @@ def mock_guardrail_connection_controller():
     return mock_gr_connection_controller
 
 
-def test_list_guardrail_connections_success(mock_guardrail_connection_controller):
-    def get_mock_controller():
+@pytest.fixture
+def gr_connection_app(mock_guardrail_connection_controller, mocker):
+    def get_mock_gr_conn_controller():
         return mock_guardrail_connection_controller
 
-    with patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_controller):
-        from api.guardrails.routes.gr_connection_router import gr_connection_router
-        from server import app
+    mocker.patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_gr_conn_controller)
+    from api.guardrails.routes.gr_connection_router import gr_connection_router
 
-        # Create client
-        app.include_router(gr_connection_router, prefix="/connection")
-        client = TestClient(app)
+    # Create client
+    from fastapi import FastAPI
+    app = FastAPI(
+        title="Paig",
+        description="Paig Application",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url=None
+    )
 
-        response = client.get("http://localhost:9090/connection")
-        assert response.status_code == status.HTTP_200_OK
-        assert "content" in response.json()
-        assert len(response.json()["content"]) == 1
-
-
-def test_create_guardrail_connection_success(mock_guardrail_connection_controller):
-    def get_mock_controller():
-        return mock_guardrail_connection_controller
-
-    with patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_controller):
-        from api.guardrails.routes.gr_connection_router import gr_connection_router
-        from server import app
-
-        # Create client
-        app.include_router(gr_connection_router, prefix="/connection")
-        client = TestClient(app)
-
-        response = client.post("http://localhost:9090/connection", content=json.dumps(gr_connection_view_json))
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json()["id"] == 1
-        assert response.json()["status"] == 1
-        assert response.json()["name"] == "gr_connection_1"
-        assert response.json()["description"] == "test description1"
-        assert response.json()["guardrailsProvider"] == "AWS"
+    app.include_router(gr_connection_router, prefix="/connection")
+    yield app
 
 
-def test_get_guardrail_connection_by_id_success(mock_guardrail_connection_controller):
-    def get_mock_controller():
-        return mock_guardrail_connection_controller
-
-    with patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_controller):
-        from api.guardrails.routes.gr_connection_router import gr_connection_router
-        from server import app
-
-        # Create client
-        app.include_router(gr_connection_router, prefix="/connection")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/connection/1")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["id"] == 1
+@pytest.fixture
+def gr_connection_app_client(gr_connection_app):
+    return TestClient(gr_connection_app)
 
 
-def test_update_guardrail_connection_success(mock_guardrail_connection_controller):
-    def get_mock_controller():
-        return mock_guardrail_connection_controller
-
-    with patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_controller):
-        from api.guardrails.routes.gr_connection_router import gr_connection_router
-        from server import app
-
-        # Create client
-        app.include_router(gr_connection_router, prefix="/connection")
-        client = TestClient(app)
-
-        response = client.put("http://localhost:9090/connection/1", content=json.dumps(gr_connection_view_json))
-        assert response.status_code == status.HTTP_200_OK
+def test_list_guardrail_connections_success(gr_connection_app_client):
+    response = gr_connection_app_client.get("http://localhost:9090/connection")
+    assert response.status_code == status.HTTP_200_OK
+    assert "content" in response.json()
+    assert len(response.json()["content"]) == 1
 
 
-def test_delete_guardrail_connection_success(mock_guardrail_connection_controller):
-    def get_mock_controller():
-        return mock_guardrail_connection_controller
+def test_create_guardrail_connection_success(gr_connection_app_client):
+    response = gr_connection_app_client.post("http://localhost:9090/connection", content=json.dumps(gr_connection_view_json))
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["id"] == 1
+    assert response.json()["status"] == 1
+    assert response.json()["name"] == "gr_connection_1"
+    assert response.json()["description"] == "test description1"
+    assert response.json()["guardrailsProvider"] == "AWS"
 
-    with patch("api.guardrails.controllers.gr_connection_controller.GRConnectionController", get_mock_controller):
-        from api.guardrails.routes.gr_connection_router import gr_connection_router
-        from server import app
 
-        # Create client
-        app.include_router(gr_connection_router, prefix="/connection")
-        client = TestClient(app)
+def test_get_guardrail_connection_by_id_success(gr_connection_app_client):
+    response = gr_connection_app_client.get("http://localhost:9090/connection/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == 1
 
-        response = client.delete("http://localhost:9090/connection/1")
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+def test_update_guardrail_connection_success(gr_connection_app_client):
+    response = gr_connection_app_client.put("http://localhost:9090/connection/1", content=json.dumps(gr_connection_view_json))
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_delete_guardrail_connection_success(gr_connection_app_client):
+    response = gr_connection_app_client.delete("http://localhost:9090/connection/1")
+    assert response.status_code == status.HTTP_204_NO_CONTENT

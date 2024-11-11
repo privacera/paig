@@ -51,108 +51,69 @@ def mock_guardrail_controller():
     return mock_guardrail_controller
 
 
-def test_list_guardrail_success(mock_guardrail_controller):
-    def get_mock_controller():
+@pytest.fixture
+def guardrail_app(mock_guardrail_controller, mocker):
+    def get_mock_guardrail_controller():
         return mock_guardrail_controller
 
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
+    mocker.patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_guardrail_controller)
+    from api.guardrails.routes.guardrail_router import guardrail_router
 
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
+    # Create client
+    from fastapi import FastAPI
+    app = FastAPI(
+        title="Paig",
+        description="Paig Application",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url=None
+    )
 
-        response = client.get("http://localhost:9090/guardrail")
-        assert response.status_code == status.HTTP_200_OK
-        assert "content" in response.json()
-        assert len(response.json()["content"]) == 1
-
-
-def test_create_guardrail_success(mock_guardrail_controller):
-    def get_mock_controller():
-        return mock_guardrail_controller
-
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
-
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
-
-        response = client.post("http://localhost:9090/guardrail", content=json.dumps(guardrail_view_json))
-        assert response.status_code == status.HTTP_201_CREATED
-        assert response.json()["id"] == 1
-        assert response.json()["status"] == 1
-        assert response.json()["name"] == "mock_guardrail"
-        assert response.json()["description"] == "test description1"
-        assert response.json()["version"] == 1
+    app.include_router(guardrail_router, prefix="/guardrail")
+    yield app
 
 
-def test_get_guardrail_by_id_success(mock_guardrail_controller):
-    def get_mock_controller():
-        return mock_guardrail_controller
-
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
-
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/guardrail/1")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["id"] == 1
+@pytest.fixture
+def guardrail_app_client(guardrail_app):
+    return TestClient(guardrail_app)
 
 
-def test_get_guardrail_by_app_key_success(mock_guardrail_controller):
-    def get_mock_controller():
-        return mock_guardrail_controller
-
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
-
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/guardrail/application/mock_app_key?lastKnownVersion=0")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["applicationKey"] == "mock_app_key"
-        assert response.json()["version"] == 1
-        assert len(response.json()["guardrails"]) == 1
+def test_list_guardrail_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail")
+    assert response.status_code == status.HTTP_200_OK
+    assert "content" in response.json()
+    assert len(response.json()["content"]) == 1
 
 
-def test_update_guardrail_success(mock_guardrail_controller):
-    def get_mock_controller():
-        return mock_guardrail_controller
-
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
-
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
-
-        response = client.put("http://localhost:9090/guardrail/1", content=json.dumps(guardrail_view_json))
-        assert response.status_code == status.HTTP_200_OK
+def test_create_guardrail_success(guardrail_app_client):
+    response = guardrail_app_client.post("http://localhost:9090/guardrail", content=json.dumps(guardrail_view_json))
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()["id"] == 1
+    assert response.json()["status"] == 1
+    assert response.json()["name"] == "mock_guardrail"
+    assert response.json()["description"] == "test description1"
+    assert response.json()["version"] == 1
 
 
-def test_delete_guardrail_success(mock_guardrail_controller):
-    def get_mock_controller():
-        return mock_guardrail_controller
+def test_get_guardrail_by_id_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == 1
 
-    with patch("api.guardrails.controllers.guardrail_controller.GuardrailController", get_mock_controller):
-        from api.guardrails.routes.guardrail_router import guardrail_router
-        from server import app
 
-        # Create client
-        app.include_router(guardrail_router, prefix="/guardrail")
-        client = TestClient(app)
+def test_get_guardrail_by_app_key_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail/application/mock_app_key?lastKnownVersion=0")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["applicationKey"] == "mock_app_key"
+    assert response.json()["version"] == 1
+    assert len(response.json()["guardrails"]) == 1
 
-        response = client.delete("http://localhost:9090/guardrail/1")
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+
+def test_update_guardrail_success(guardrail_app_client):
+    response = guardrail_app_client.put("http://localhost:9090/guardrail/1", content=json.dumps(guardrail_view_json))
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_delete_guardrail_success(guardrail_app_client):
+    response = guardrail_app_client.delete("http://localhost:9090/guardrail/1")
+    assert response.status_code == status.HTTP_204_NO_CONTENT
