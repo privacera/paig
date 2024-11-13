@@ -5,7 +5,7 @@ from langchain_community.document_loaders import (
     UnstructuredFileLoader, PyPDFLoader
 )
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
 import boto3
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from core import config

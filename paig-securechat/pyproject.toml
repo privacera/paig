@@ -39,6 +39,7 @@ dependencies = [
         'langchain==0.3.4',
         'langchain-community==0.3.3',
         'langchain_openai==0.2.3',
+        'langchain-aws==0.2.7',
         'boto3>=1.35.42',
         'opensearch-py',
         'aiosqlite',
