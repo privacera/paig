@@ -1,3 +1,9 @@
+bedrock:
+  embedding_model: "amazon.titan-embed-text-v1"
+  model: "anthropic.claude-3-5-sonnet-20240620-v1:0"
+  region: "us-east-1"
+
+
 AI_applications:
   sales_model:
     implementation_class: "services.Bedrock_Application.BedrockClient.BedrockClient"
