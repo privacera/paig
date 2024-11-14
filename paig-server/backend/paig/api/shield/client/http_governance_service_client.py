@@ -2,7 +2,7 @@ import json
 import logging
 
 
-from privacera_shield_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
+from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
@@ -80,7 +80,7 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
 
             if response.status_code == 200:
                 response_content = response.json().get("content")[0]
-                guardrail_details = response_content.get("guardrailDetails") if response_content else {}
+                guardrail_details = response_content.get("guardrailDetails", "{}") if response_content else "{}"
                 return json.loads(guardrail_details)
             else:
                 error_message = (f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed "

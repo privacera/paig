@@ -92,7 +92,7 @@ class TestApplicationManager:
 
         # Mock the scan method of the scanner
         with patch.object(scanner, 'scan', return_value={"traits": ["trait1"], "analyzer_result": ["result1"]}):
-            scanner_name, result, scan_timings = scan_with_scanner(scanner, message)
+            scanner_name, result, scan_timings = scan_with_scanner(scanner, message, "tenant_id")
 
             # Verify the results
             assert scanner_name == "scanner1"

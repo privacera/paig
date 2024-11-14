@@ -1,7 +1,6 @@
 import pytest
-from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
-from api.shield.client.http_authz_service_client import HttpAuthzClient
-from api.shield.client.local_authz_service_client import LocalAuthzClient
+
+
 from api.shield.utils import config_utils
 from api.shield.factory.authz_service_client_factory import AuthzServiceClientFactory
 
@@ -10,12 +9,11 @@ class TestAuthzServiceClientFactory:
 
     @pytest.fixture(autouse=True)
     def setup_method(self, mocker):
-        # Mock the PAIGAuthorizerService dependency
-        self.mock_paig_authorizer = mocker.Mock(spec=AsyncPAIGAuthorizer)
         # Create an instance of the factory with the mocked PAIGAuthorizerService
         self.factory = AuthzServiceClientFactory()
 
     def test_get_http_authz_service_client(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         side_effect = lambda prop, default_value=None: {
             "authz_base_url": "base_url",
             "authz_client": "http"
@@ -29,6 +27,9 @@ class TestAuthzServiceClientFactory:
         assert isinstance(client, HttpAuthzClient)
 
     def test_get_local_authz_service_client(self, mocker):
+        from api.shield.client.local_authz_service_client import LocalAuthzClient
+        from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
+        self.mock_paig_authorizer = mocker.Mock(spec=AsyncPAIGAuthorizer)
         # Mock the get_property_value to return 'local'
         mock_get_property_value = mocker.patch.object(config_utils, 'get_property_value', return_value='local')
 
@@ -36,6 +37,7 @@ class TestAuthzServiceClientFactory:
         client = self.factory.get_authz_service_client()
 
         # Assert that the returned client is an instance of LocalAuthzClient
+        from api.shield.client.local_authz_service_client import LocalAuthzClient
         assert isinstance(client, LocalAuthzClient)
         mock_get_property_value.assert_called_once_with('authz_client', 'local')
 

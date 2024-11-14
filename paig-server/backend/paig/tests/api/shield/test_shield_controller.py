@@ -4,10 +4,8 @@ from pathlib import Path
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from fastapi import Request
-from api.shield.controllers.shield_controller import ShieldController
 from api.shield.model.authorize_response import AuthorizeResponse
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
-from api.shield.services.shield_service import ShieldService
 from api.shield.utils.custom_exceptions import BadRequestException
 
 
@@ -22,10 +20,12 @@ def authorize_req_data():
 class TestShieldController:
     @pytest.fixture
     def mock_shield_service(self):
+        from api.shield.services.shield_service import ShieldService
         return MagicMock(spec=ShieldService)
 
     @pytest.fixture
     def controller(self, mock_shield_service):
+        from api.shield.controllers.shield_controller import ShieldController
         return ShieldController(mock_shield_service)
 
     @pytest.mark.asyncio

@@ -1,11 +1,12 @@
 import logging
+from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
+from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
 from api.shield.interfaces.authz_service_interface import IAuthzClient
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
-from paig_authorizer_core.models.request_models import  AuthzRequest, VectorDBAuthzRequest
-from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
@@ -38,12 +39,14 @@ class LocalAuthzClient(IAuthzClient):
             Transforms a VectorDBAuthzResponse into an AuthorizeVectorDBResponse.
     """
 
-    def __init__(self):
+    def __init__(self, paig_authorizer: PAIGAuthorizerService = SingletonDepends(PAIGAuthorizerService)):
         """
         Constructs a new LocalAuthzClient.
+
+        Args:
+            paig_authorizer (PAIGAuthorizer, optional): An instance of PAIGAuthorizer. Defaults to Depends(PAIGAuthorizerService).
         """
-        from api.authz.services.paig_authorizer_service import PAIGAuthorizerService
-        self.paig_authorizer: PAIGAuthorizerService = SingletonDepends(PAIGAuthorizerService)
+        self.paig_authorizer = paig_authorizer
 
     async def post_authorize(self, authz_service_request: AuthzServiceRequest, tenant_id) -> AuthzServiceResponse:
         """
@@ -57,7 +60,7 @@ class LocalAuthzClient(IAuthzClient):
             AuthzServiceResponse: The authorization response.
         """
         tranformed_authz_request = self.transform_authz_request(authz_service_request)
-        authz_response: AuthzResponse = await self.paig_authorizer.authorize(tranformed_authz_request)
+        authz_response = await self.paig_authorizer.authorize(tranformed_authz_request)
         logger.debug(f"Reason: {authz_response.reason}")
         return self.transform_authz_response(authz_response)
 
@@ -73,7 +76,7 @@ class LocalAuthzClient(IAuthzClient):
             AuthorizeVectorDBResponse: The VectorDB authorization response.
         """
         tranformed_vector_db_authz_request = self.transform_vector_db_authz_request(vectordb_auth_req)
-        vectordb_response: VectorDBAuthzResponse = await self.paig_authorizer.authorize_vector_db(tranformed_vector_db_authz_request)
+        vectordb_response = await self.paig_authorizer.authorize_vector_db(tranformed_vector_db_authz_request)
         if not vectordb_response.reason:
             logger.debug(f"Reason: {vectordb_response.reason}")
         return self.transform_vector_db_authz_response(vectordb_response)
@@ -103,7 +106,7 @@ class LocalAuthzClient(IAuthzClient):
         authz_request.context = authz_service_request.context
         return authz_request
 
-    def transform_authz_response(self, authz_response) -> AuthzServiceResponse:
+    def transform_authz_response(self, authz_response: AuthzResponse) -> AuthzServiceResponse:
         """
         Transforms an AuthzResponse into an AuthzServiceResponse.
 
@@ -143,7 +146,7 @@ class LocalAuthzClient(IAuthzClient):
         vectordb_authz_request.application_key = vectordb_auth_req.applicationKey
         return vectordb_authz_request
 
-    def transform_vector_db_authz_response(self, vectordb_response) -> AuthorizeVectorDBResponse:
+    def transform_vector_db_authz_response(self, vectordb_response: VectorDBAuthzResponse) -> AuthorizeVectorDBResponse:
         """
         Transforms a VectorDBAuthzResponse into an AuthorizeVectorDBResponse.
 

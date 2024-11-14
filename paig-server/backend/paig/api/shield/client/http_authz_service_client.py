@@ -1,9 +1,9 @@
 import logging
 import time
 
-from privacera_shield_common.constants import X_TENANT_ID_HEADER, X_USER_ROLE_HEADER
+from paig_common.constants import X_TENANT_ID_HEADER, X_USER_ROLE_HEADER
 
-from privacera_shield_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
+from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.interfaces.authz_service_interface import IAuthzClient
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse

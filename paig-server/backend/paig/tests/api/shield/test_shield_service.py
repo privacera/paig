@@ -5,7 +5,6 @@ import pytest
 from unittest.mock import MagicMock, AsyncMock
 
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
-from api.shield.services.shield_service import ShieldService
 from api.shield.model.authorize_request import AuthorizeRequest
 
 
@@ -19,6 +18,7 @@ def authorize_req_data():
 
 @pytest.mark.asyncio
 async def test_initialize_tenant():
+    from api.shield.services.shield_service import ShieldService
     # Arrange
     mock_auth_service = MagicMock()
     mock_auth_service.tenant_data_encryptor_service.get_data_encryptor = AsyncMock()
@@ -37,6 +37,7 @@ async def test_initialize_tenant():
 @pytest.mark.asyncio
 async def test_authorize():
     # Arrange
+    from api.shield.services.shield_service import ShieldService
     mock_auth_service = MagicMock()
     mock_auth_service.authorize = AsyncMock()
     service = ShieldService(mock_auth_service)
@@ -56,6 +57,7 @@ async def test_authorize_vectordb():
     mock_vectordb_response = MagicMock(spec=AuthorizeVectorDBResponse)
     mock_vectordb_response.__dict__ = {"key": "value"}
     mock_auth_service.authorize_vectordb = AsyncMock(return_value=mock_vectordb_response)
+    from api.shield.services.shield_service import ShieldService
     service = ShieldService(mock_auth_service)
 
     # Act
@@ -71,6 +73,7 @@ async def test_audit():
     # Arrange
     mock_auth_service = MagicMock()
     mock_auth_service.audit_stream_data = AsyncMock()
+    from api.shield.services.shield_service import ShieldService
     service = ShieldService(mock_auth_service)
     request = {
         "applicationKey": "test_app_key",

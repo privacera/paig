@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import MagicMock, AsyncMock
-from api.shield.logfile.log_message_in_data_service import LogMessageInDataService
+
 from api.shield.model.shield_audit import ShieldAudit
 
 
@@ -37,7 +37,7 @@ async def test_log_message_in_data_service():
         "eventTime": 1111111111
     }
     log_data = ShieldAudit.from_payload_dict(log_data)
-
+    from api.shield.logfile.log_message_in_data_service import LogMessageInDataService
     service = LogMessageInDataService(mock_data_store_controller)
 
     # Act

@@ -3,6 +3,7 @@ from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailSc
 import pytest
 import os
 
+
 class TestAWSBedrockGuardrailScanner:
 
     # Initialize AWSBedrockGuardrailScanner with valid parameters and verify attributes are set correctly
