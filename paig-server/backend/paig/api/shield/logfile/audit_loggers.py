@@ -19,14 +19,14 @@ class FluentdAuditLogger(AuditLogger):
     FluentAuditLogger class for logging audit events to Fluentd.
     """
 
-    def __init__(self, fluentd_rest_http_client: FluentdRestHttpClient, audit_spool_dir: str,
+    def __init__(self, http_fluentd_client: FluentdRestHttpClient, audit_spool_dir: str,
                  max_queue_size: int,
                  audit_event_queue_timeout_sec: int):
         """
         Initializes a FluentdAuditLogger object.
 
         Args:
-            fluentd_rest_http_client (FluentdRestHttpClient): The REST client for Fluentd.
+            http_fluentd_client (FluentdRestHttpClient): The REST client for Fluentd.
             audit_spool_dir (str): The directory path where spooled audit events are stored.
             max_queue_size (int): The maximum queue size.
             audit_event_queue_timeout_sec (int): The audit event queue timeout in seconds.
@@ -34,7 +34,7 @@ class FluentdAuditLogger(AuditLogger):
         # Setting max_queue_size to 0 to make the queue size infinite
         super().__init__(audit_spool_dir=audit_spool_dir, audit_event_cls=ShieldAudit,
                          max_queue_size=max_queue_size, audit_event_queue_timeout=audit_event_queue_timeout_sec)
-        self.fluentd_rest_http_client = fluentd_rest_http_client
+        self.http_fluentd_client = http_fluentd_client
 
     def push_audit_event_to_server(self, audit_event: ShieldAudit):
         """
@@ -43,7 +43,7 @@ class FluentdAuditLogger(AuditLogger):
         Args:
             audit_event (T): The audit event to push.
         """
-        self.fluentd_rest_http_client.log_message(audit_event.to_payload_dict())
+        self.http_fluentd_client.log_message(audit_event.to_payload_dict())
 
 
 class S3AuditLogger(AuditLogger):

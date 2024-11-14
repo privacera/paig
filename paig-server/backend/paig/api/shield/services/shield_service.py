@@ -1,7 +1,6 @@
 import logging
 import json
 
-from api.shield.client.http_authz_service_client import HttpAuthzClient
 from api.shield.services.auth_service import AuthService
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
@@ -56,6 +55,7 @@ class ShieldService:
         authz_client_type = config_utils.get_property_value("authz_client", "local")
         if authz_client_type == "http":
             # Initialize ranger plugin
+            from api.shield.client.http_authz_service_client import HttpAuthzClient
             authz_rest_client = SingletonDepends(HttpAuthzClient)
             await authz_rest_client.post_init_authz(tenant_id=x_tenant_id, user_role=x_user_role, application_key=application_key)
 

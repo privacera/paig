@@ -4,6 +4,8 @@ from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
+from paig_authorizer_core.models.request_models import  AuthzRequest, VectorDBAuthzRequest
+from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
@@ -54,7 +56,6 @@ class LocalAuthzClient(IAuthzClient):
         Returns:
             AuthzServiceResponse: The authorization response.
         """
-        from api.authz.authorizer.paig_authorizer import AuthzResponse
         tranformed_authz_request = self.transform_authz_request(authz_service_request)
         authz_response: AuthzResponse = await self.paig_authorizer.authorize(tranformed_authz_request)
         logger.debug(f"Reason: {authz_response.reason}")
@@ -71,7 +72,6 @@ class LocalAuthzClient(IAuthzClient):
         Returns:
             AuthorizeVectorDBResponse: The VectorDB authorization response.
         """
-        from api.authz.authorizer.paig_authorizer import VectorDBAuthzResponse
         tranformed_vector_db_authz_request = self.transform_vector_db_authz_request(vectordb_auth_req)
         vectordb_response: VectorDBAuthzResponse = await self.paig_authorizer.authorize_vector_db(tranformed_vector_db_authz_request)
         if not vectordb_response.reason:
@@ -88,7 +88,6 @@ class LocalAuthzClient(IAuthzClient):
         Returns:
             AuthzRequest: The transformed authorization request.
         """
-        from api.authz.authorizer.paig_authorizer import AuthzRequest
         authz_request: AuthzRequest = AuthzRequest()
         authz_request.conversation_id = authz_service_request.conversationId
         authz_request.request_id = authz_service_request.requestId
@@ -139,7 +138,6 @@ class LocalAuthzClient(IAuthzClient):
         Returns:
             VectorDBAuthzRequest: The transformed VectorDB authorization request.
         """
-        from api.authz.authorizer.paig_authorizer import VectorDBAuthzRequest
         vectordb_authz_request: VectorDBAuthzRequest = VectorDBAuthzRequest()
         vectordb_authz_request.user_id = vectordb_auth_req.userId
         vectordb_authz_request.application_key = vectordb_auth_req.applicationKey
