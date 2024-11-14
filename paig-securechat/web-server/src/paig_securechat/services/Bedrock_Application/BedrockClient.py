@@ -2,7 +2,7 @@ import logging
 import sys
 
 import boto3
-from langchain_community.llms import Bedrock
+from langchain_aws import ChatBedrock
 from services.langchain_service_intf import LangChainServiceIntf
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class BedrockClient(LangChainServiceIntf):
         logger.info(f"Disable Conversation Chain: {self.disable_conversation_chain}")
 
         self.bedrock_client = boto3.client("bedrock-runtime", region_name=region)
-        self.langchain_llm = Bedrock(model_id=model_name, client=self.bedrock_client,
+        self.langchain_llm = ChatBedrock(model_id=model_name, client=self.bedrock_client,
                                      model_kwargs={'temperature': self.temperature})
 
 
