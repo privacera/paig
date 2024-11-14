@@ -517,11 +517,13 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
     async def _update_guardrail_configs(self, request_gr_configs: List[GRConfigView],
                                         guardrail: GuardrailView):
         """Helper method to update Guardrail Configs."""
-        guardrail_configs = []
+        updated_guardrail_configs = []
 
         # Fetch existing configurations
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": guardrail.id})
         gr_config_map = {gr_config.id: gr_config for gr_config in gr_configs}
+
+        existing_gr_configs = copy.deepcopy(gr_configs)
 
         # Determine configs to delete and update
         existing_config_ids = set(gr_config_map.keys())
@@ -534,7 +536,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Add or update configurations
         for req_gr_config in request_gr_configs:
-            gr_config_model = copy.deepcopy(gr_config_map.get(req_gr_config.id))
+            gr_config_model = gr_config_map.get(req_gr_config.id)
             if gr_config_model is None:
                 gr_config_model = GRConfigModel(guardrail_id=guardrail.id)
 
@@ -547,14 +549,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             else:
                 updated_gr_config = await self.gr_config_repository.update_record(gr_config_model)
 
-            guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
+            updated_guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
 
-        guardrail.guardrail_configs = guardrail_configs
+        guardrail.guardrail_configs = updated_guardrail_configs
 
         # Update Guardrail provider and update provider responses
-        await self._update_guardrail_providers(gr_configs, guardrail_configs, guardrail)
+        await self._update_guardrail_providers(existing_gr_configs, updated_guardrail_configs, guardrail)
 
-        return guardrail_configs
+        return updated_guardrail_configs
 
     async def _update_guardrail_providers(self, existing_gr_configs: List[GRConfigView],
                                           updated_gr_configs: List[GRConfigView], guardrail: GuardrailView):
