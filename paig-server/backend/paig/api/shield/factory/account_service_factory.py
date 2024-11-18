@@ -1,5 +1,4 @@
 
-from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.shield.client.local_account_service_client import LocalAccountServiceClient
 from api.shield.client.http_account_service_client import HttpAccountServiceClient
 from api.shield.utils import config_utils

@@ -156,3 +156,45 @@ class TestAIApplicationRouters:
         assert response.status_code == 400
         assert response.json()['message'] == "Vector DB not found with names: ['invalid_vector_db']"
 
+    @pytest.mark.asyncio
+    async def test_ai_application_crud_operations_with_guardrail_details(self, client: AsyncClient, app: FastAPI):
+        app.dependency_overrides[get_auth_user] = self.auth_user
+
+        new_ai_app_dict = self.ai_application_dict.copy()
+        new_ai_app_dict['guardrailDetails'] = "{\"guardrail_id\": \"guardrail1\",  \"guardrail_version\": \"DRAFT\",\"region\": \"us-east-1\"}"
+
+        await client.post(
+            f"{governance_services_base_route}/application", content=json.dumps(new_ai_app_dict)
+        )
+
+        response = await client.get(
+            f"{governance_services_base_route}/application"
+        )
+        assert response.status_code == 200
+        assert response.json()['content'][0]['guardrailDetails'] == new_ai_app_dict['guardrailDetails']
+        app_id = str(response.json()['content'][0]['id'])
+
+        response = await client.get(
+            f"{governance_services_base_route}/application/" + app_id
+        )
+        assert response.status_code == 200
+        assert response.json()['guardrailDetails'] == new_ai_app_dict['guardrailDetails']
+
+        update_req = {
+            "status": 1,
+            "name": "test_guardrail_app1",
+            "description": "test application1 updated",
+            "applicationKey": response.json()['applicationKey'],
+            "vector_dbs": [],
+            "guardrailDetails": "{\"guardrail_id\": \"guardrail2\",  \"guardrail_version\": \"DRAFT\",\"region\": \"us-east-1\"}"
+        }
+        response = await client.put(
+            f"{governance_services_base_route}/application/" + app_id, content=json.dumps(update_req)
+        )
+        assert response.status_code == 200
+        assert response.json()['guardrailDetails'] == "{\"guardrail_id\": \"guardrail2\",  \"guardrail_version\": \"DRAFT\",\"region\": \"us-east-1\"}"
+
+        response = await client.delete(
+            f"{governance_services_base_route}/application/" + app_id
+        )
+        assert response.status_code == 204

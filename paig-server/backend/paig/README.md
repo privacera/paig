@@ -23,18 +23,25 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    git clone git@github.com:privacera/paig.git
    ```
-2. Run the script to build the web UI.
+2. Change directory to the paig-server.
+   ```bash
+   cd paig/paig-server
+   ```
+3. Run the script to build the web UI.
    ```bash
    cd scripts
    source ./build_ui.sh
    ```
-3. Change directory to the root level of the repository.
 4. Go to the backend directory.
    ```bash
-    cd backend
-    ```
+   cd backend
+   ```
 5. Create a virtual environment.
     ```bash
+    python -m venv venv
+    ```
+   OR
+   ```bash
     python3 -m venv venv
     ```
 6. Activate the virtual environment.

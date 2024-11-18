@@ -5,6 +5,7 @@ import time
 import traceback
 
 from api.audit.controllers.data_store_controller import DataStoreController
+from api.shield.enum.ShieldEnums import Guardrail
 from api.shield.factory.account_service_factory import AccountServiceFactory
 from api.shield.factory.authz_service_client_factory import AuthzServiceClientFactory
 from api.shield.logfile.audit_loggers import FluentdAuditLogger
@@ -27,6 +28,7 @@ from api.shield.utils import json_utils
 from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 
 from core.utils import SingletonDepends
 
@@ -45,7 +47,8 @@ class AuthService:
 
     def __init__(self, authz_service_client_factory=SingletonDepends(AuthzServiceClientFactory),
                  data_store_controller: DataStoreController = SingletonDepends(DataStoreController),
-                 account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory)):
+                 account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory),
+                 governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)):
         """
         Initializes the AuthService class with various dependencies and configuration settings.
 
@@ -61,6 +64,7 @@ class AuthService:
         self.application_manager = ApplicationManager()
         self.authz_service_client = authz_service_client_factory.get_authz_service_client()
         self.account_service_client = account_service_factory.get_account_service_client()
+        self.governance_service_client = governance_service_factory.get_governance_service_client()
         self.fluentd_logger_client = FluentdRestHttpClient()
         self.tenant_data_encryptor_service = TenantDataEncryptorService(self.account_service_client)
         self.presidio_anonymizer_engine = PresidioAnonymizerEngine()
@@ -72,6 +76,9 @@ class AuthService:
         self.audit_spool_dir = config_utils.get_property_value("audit_spool_dir", "/workdir/shield/audit-spool")
         self.data_store_controller = data_store_controller
         self.init_log_message_in_file()
+
+        self.ignore_access_control_application_keys = config_utils.get_property_value_list("ignore_access_control_application_keys", [])
+        logger.info("Found ignore_access_control_application_keys = " + str(self.ignore_access_control_application_keys))
 
         logger.info(f"AuthService Initialized in {self._shield_run_mode} mode!")
 
@@ -98,29 +105,49 @@ class AuthService:
         logger.debug("Auth Request After Decrypt : " + json_utils.mask_json_fields(json.dumps(auth_req.__dict__),
                                                                                    ['messages']))
         decrypt_time = f"{((time.perf_counter() - decrypt_start_time) * 1000):.3f}"
+        
+        gov_result = await self.governance_service_client.get_aws_bedrock_guardrail_info(auth_req.tenant_id, auth_req.application_key)
+        auth_req.context.update(gov_result)
 
         # loop through the messages in request to scan for traits
         message_analyze_start_time = time.perf_counter()
         scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                              analyzer_result_map, auth_req,
-                                                              original_masked_text_list)
+                                                              analyzer_result_map, auth_req, True)
         message_analyze_time = f"{((time.perf_counter() - message_analyze_start_time) * 1000):.3f}"
         logger.debug(f"All resulted tags from input text {all_result_traits}")
-        all_result_traits = sorted(all_result_traits)
 
         # authorize traits
         authz_start_time = time.perf_counter()
         logger.debug(f"Calling authz service with request: {auth_req} "
-                     f"with traits for access control: {access_control_traits}")
-        authz_service_res = await self.do_authz_authorize(auth_req, list(access_control_traits))
+                     f"with traits for access control: {all_result_traits}")
+        authz_service_res = await self.do_authz_authorize(auth_req, list(all_result_traits))
         authz_time = f"{((time.perf_counter() - authz_start_time) * 1000):.3f}"
         logger.debug(f"Received authz service response: {authz_service_res.__dict__}")
         is_allowed = authz_service_res.authorized
 
+        # process for non authz scanners
+        non_authz_scan_timings_per_message = 0
+        if is_allowed:
+            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
+                                                                            analyzer_result_map, auth_req, False)
+
+            if Guardrail.BLOCKED.value in access_control_traits:
+                authz_service_res.authorized = is_allowed = False
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
+
+                logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
+
+        # Overriding the access control results for the application keys configured under
+        # property ignore_access_control_application_keys
+        if auth_req.application_key in self.ignore_access_control_application_keys:
+            logger.info(f"Overriding access control results for application_key=" + auth_req.application_key)
+            authz_service_res.authorized = is_allowed = True
+            authz_service_res.masked_traits = {}
+            masked_messages = []
+
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
-        self.post_authz_process(analyzer_result_map, auth_req, authz_service_res, is_allowed, masked_messages,
-                                original_masked_text_list)
+        self.post_authz_process(analyzer_result_map, auth_req, authz_service_res, masked_messages, original_masked_text_list)
         masking_time = f"{((time.perf_counter() - masking_start_time) * 1000):.3f}"
 
         # encrypt the message
@@ -130,6 +157,7 @@ class AuthService:
         logger.debug("Encrypted the message before shield audit object creation")
 
         # log audit
+        all_result_traits = sorted(all_result_traits)
         shield_audit = ShieldAudit(auth_req, authz_service_res, all_result_traits, original_masked_text_list)
         audit_cloud_time, audit_self_managed_time = 0, 0
         if auth_req.enable_audit is None or auth_req.enable_audit:
@@ -158,28 +186,25 @@ class AuthService:
                                           f"Authz authorization time = {authz_time}ms, Masking time= {masking_time}ms, "
                                           f"Encryption time= {encrypt_time}ms, Audit Cloud time= {audit_cloud_time}ms ,"
                                           f"Audit Self managed time= {audit_self_managed_time}ms ,"
-                                          f"Message Scan timings= {scan_timings_per_message}")
+                                          f"Message Scan timings= {scan_timings_per_message}ms, "
+                                          f"Non Authz Message Scan timings= {non_authz_scan_timings_per_message}ms")
 
         return auth_response
 
-    def post_authz_process(self, analyzer_result_map, auth_req, authz_service_res, is_allowed, masked_messages,
+    def post_authz_process(self, analyzer_result_map, auth_req, authz_service_res, masked_messages,
                            original_masked_text_list):
         """
         Processes the authorization response by either masking the request messages or appending an error message
         based on the authorization result.
 
         """
-        if is_allowed:
-            original_masked_text_list.clear()
-            for request_text in auth_req.messages:
-                self.process_masking(analyzer_result_map.get(request_text, []), request_text, authz_service_res,
-                                     masked_messages,
-                                     original_masked_text_list)
-        else:
-            masked_messages.append({"responseText": authz_service_res.status_message})
+        for request_text in auth_req.messages:
+            self.process_masking(analyzer_result_map.get(request_text, []), request_text, authz_service_res,
+                                    masked_messages,
+                                    original_masked_text_list)
 
     def analyze_scan_messages(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
-                              original_masked_text_list):
+                              is_authz_scan):
         """
         Analyzes the messages in the authorization request to extract traits and generate scan results.
 
@@ -190,21 +215,20 @@ class AuthService:
         scan_timings_per_message = []
         for request_text in auth_req.messages:
             # Analyze traits
-            scanners_result, access_control_result, message_scan_timings = self.application_manager.scan_messages(
-                auth_req.application_key, request_text)
+            scanners_result, message_scan_timings = self.application_manager.scan_messages(
+                request_text, auth_req, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
 
             scan_timings_per_message.append(scan_timings)
-            scanner_analyzer_results = []
             # Update the set with traits and store analyzer results if present
+            scanner_analyzer_results = analyzer_result_map.get(request_text, [])
             for scanner_data in scanners_result.values():
-                all_result_traits.update(scanner_data.get("traits", []))
+                all_result_traits.update(scanner_data.get_traits())
                 scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
+                access_control_traits.update(scanner_data.get("actions", []))
 
             analyzer_result_map[request_text] = scanner_analyzer_results
-            access_control_traits.update(access_control_result)
-            original_masked_text_list.append({"originalMessage": request_text, "maskedMessage": ""})
 
         return scan_timings_per_message
 
@@ -239,7 +263,8 @@ class AuthService:
         await self.log_audit_message(shield_audit)
         audit_self_managed_time = f"{((time.perf_counter() - audit_self_managed_start_time) * 1000):.3f}"
         audit_cloud_start_time = time.perf_counter()
-        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system", "data-service")
+        audit_msg_content_storage_system = config_utils.get_property_value("audit_msg_content_storage_system",
+                                                                           "data-service")
         if audit_msg_content_storage_system == "fluentd":
             self.log_audit_fluentd(copy.deepcopy(shield_audit))
         audit_cloud_time = f"{((time.perf_counter() - audit_cloud_start_time) * 1000):.3f}"
@@ -300,8 +325,10 @@ class AuthService:
                                                       analyzerResult=json.dumps(final_analyzer_result)))
                 logger.debug("Masking process finished")
                 return
-
-        masked_messages.append(dict(responseText=request_text, analyzerResult=final_analyzer_result))
+        if authz_service_res.authorized:
+            masked_messages.append(dict(responseText=request_text, analyzerResult=final_analyzer_result))
+        else:
+            masked_messages.append(dict(responseText=authz_service_res.status_message))
         original_masked_text_list.append(dict(originalMessage=request_text, maskedMessage="",
                                               analyzerResult=json.dumps(final_analyzer_result)))
 
@@ -443,3 +470,36 @@ class AuthService:
             self.fluentd_audit_logger.start()
 
         return self.fluentd_audit_logger
+    
+    def generate_access_denied_message(self, all_traits: list) -> str:
+        """
+        Generates an access denied message based on the provided traits.
+
+        This method generates an access denied message based on the provided traits. It constructs a message
+        indicating that the request was denied due to the presence of certain traits.
+
+        Args:
+            all_traits (list): A list of traits that were detected in the request.
+
+        Returns:
+            str: The access denied message indicating the reason for the denial.
+        """
+        multi_trait_message = config_utils.get_property_value("default_access_denied_message_multi_trait",
+                                                                        "Access is denied for ")
+        mapped_messages = []
+        for trait in all_traits:
+            custom_text_message = config_utils.get_property_value(trait, None)
+            if custom_text_message:
+                mapped_messages.append(custom_text_message)
+            else:
+                mapped_messages.append(trait)
+
+        if len(mapped_messages) == 1:
+            response_text_message = f'{multi_trait_message} {mapped_messages[0]}'
+        elif len(mapped_messages) > 1:
+            response_text_message = f'{multi_trait_message} {", ".join(mapped_messages[:-1])} or {mapped_messages[-1]}'
+        else:
+            response_text_message = config_utils.get_property_value("default_access_denied_message",
+                                                                    "Access is denied")
+
+        return response_text_message

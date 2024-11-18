@@ -28,6 +28,7 @@ class AIApplicationModel(BaseSQLModel):
     description = Column(String(4000), nullable=True)
     application_key = Column(String(255), nullable=False)
     vector_dbs = Column(CommaSeparatedList(255), nullable=True)
+    guardrail_details = Column(String(255), nullable=True)
 
     app_config = relationship("AIApplicationConfigModel", back_populates="ai_app", uselist=False, cascade="all, delete-orphan")
     app_policies = relationship("AIApplicationPolicyModel", back_populates="ai_app", cascade="all, delete-orphan")
