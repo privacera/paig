@@ -48,6 +48,25 @@ PAIG  can be used in following ways:
     ```
   You can simply run the PAIG as a service by running following command:
 
+## PAIG Server Background Mode <a name="backgroundmode"></a>
+PAIG can be run in the background mode by setting the background flag to true.
+
+1. To Start the PAIG in the background mode:
+```bash
+paig run --background true
+```
+**Note:** Please use help command to see all available options you can pass on command line.
+```bash
+paig --help
+```
+2. To Stop the PAIG Server:
+```bash
+paig stop
+```
+3. To Check the status of the PAIG Server:
+```bash
+paig status
+```
 
 ## Optional Configuration <a name="configuration"></a>
 PAIG provides overlay configuration. PAIG will use the default configuration provided in the [default_config.yaml](https://github.com/privacera/paig/blob/main/paig-server/backend/paig/conf/default_config.yaml) file.

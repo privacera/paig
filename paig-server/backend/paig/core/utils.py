@@ -1,5 +1,5 @@
+import threading
 import uuid
-
 import fasteners
 import pytz
 from sqlalchemy import func
@@ -158,9 +158,15 @@ def get_interval(from_time, to_time):
     else:
         return "month"
 
+
 def acquire_lock(lock_file_path):
     lock = fasteners.InterProcessLock(lock_file_path)
-    gotten = lock.acquire(blocking=False)
+    gotten = None
+    if lock_file_path:
+        try:
+            gotten = lock.acquire(blocking=False)
+        except threading.ThreadError:
+            pass
     return lock if gotten else None
 
 
