@@ -74,6 +74,14 @@ jobs:
         cd paig-server/scripts
         sh build_ui.sh
 
+    - name: Set build version to dev
+      id: version
+      run: |
+        FILE=paig-server/backend/paig/VERSION
+        VERSION=$(awk -F= '{gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/^['\''"]+|['\''"]+$/, "", $2); print $2}' $FILE)
+        DEV_VERSION="${VERSION}.dev$(date +%Y%m%d%H%M%S)"
+        echo "__version__ = '${DEV_VERSION}'" > $FILE
+
     - name: Build the wheel
       run: |
         . venv/bin/activate
@@ -86,3 +94,11 @@ jobs:
           virtualenv -p python3 venv && . venv/bin/activate
           cd paig-server
           pip install dist/*.whl
+
+    - name: Upload python package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paig-server-dev-build
+        path: paig-server/dist/*.whl
+        
+

@@ -60,6 +60,14 @@ jobs:
         cd paig-securechat/scripts
         sh build_ui.sh
 
+    - name: Set build version to dev
+      id: version
+      run: |
+        FILE=paig-securechat/web-server/src/paig_securechat/VERSION
+        VERSION=$(awk -F= '{gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/^['\''"]+|['\''"]+$/, "", $2); print $2}' $FILE)
+        DEV_VERSION="${VERSION}.dev$(date +%Y%m%d%H%M%S)"
+        echo "__version__ = '${DEV_VERSION}'" > $FILE
+
     - name: Build the wheel
       run: |
         . venv/bin/activate
@@ -72,3 +80,9 @@ jobs:
           virtualenv -p python3 venv && . venv/bin/activate
           cd paig-securechat
           pip install dist/*.whl
+
+    - name: Upload python package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paig-securechat-dev-build
+        path: paig-securechat/dist/*.whl
