@@ -1,0 +1,403 @@
+openapi: 3.0.3
+info:
+  title: Swagger PAIG SecureChat
+  description: |-
+    PAIG SecureChat API documentation
+  version: 1.0.0
+
+servers:
+  - url: secure_chat_server_url
+tags:
+  - name: conversation
+    description: Conversations with bot
+  - name: model
+    description: Operations about models
+  - name: user
+    description: Operations about user
+paths:
+  /securechat/api/v1/user/login:
+    post:
+      tags:
+        - user
+      summary: User login
+      description: User login
+      operationId: userLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/userLoginRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/userLoginData'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+  /securechat/api/v1/models:
+    get:
+      tags:
+        - model
+      summary: Get all models
+      description: Get all models
+      operationId: getModels
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Models'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+
+
+  /securechat/api/v1/conversations/{conversationID}/prompt:
+    post:
+      tags:
+        - conversation
+      summary: Ask a prompt
+      description: Add a new conversation
+      operationId: askPrompt
+      parameters:
+        - name: conversationID
+          in: path
+          description: ID of conversation to return
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/prompt'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsMessages'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+  /securechat/api/v1/conversations/prompt:
+    post:
+      tags:
+        - conversation
+      summary: New conversation
+      description: Add a new conversation
+      operationId: addConversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConversationRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMessages'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+  /securechat/api/v1/conversations:
+    get:
+      tags:
+        - conversation
+      summary: Get all conversations
+      description: Get all conversations
+      operationId: getAllConversations
+      parameters:
+        - name: offset
+          in: query
+          description: Offset values that need to be considered for filter
+          required: false
+          explode: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: limit values that need to be considered for filter
+          required: false
+          explode: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Conversations'
+            application/xml:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Conversations'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+  /securechat/api/v1/conversations/{conversationID}:
+    get:
+      tags:
+        - conversation
+      summary: Get conversation details by conversation ID
+      description: Returns conversation details
+      operationId: getConversationByID
+      parameters:
+        - name: conversationID
+          in: path
+          description: ID of conversation to return
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: add filter limit to fetch limited latest messages
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: offset
+          in: query
+          description: add filter limit to fetch limited latest messages
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationMessages'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ConversationMessages'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+    delete:
+      tags:
+        - conversation
+      summary: Deletes a conversation
+      description: delete a conversation by conversation ID
+      operationId: deleteConversationByID
+      parameters:
+        - name: conversationID
+          in: path
+          description: conversation id to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+  /securechat/api/v1/server/health:
+    get:
+      tags:
+        - server
+      summary: Get server health
+      description: Get server health
+      operationId: getServerHealth
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthSchema'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/HealthSchema'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+      security:
+        - securechat_auth:
+            - write:conversations
+            - read:conversations
+components:
+  schemas:
+    userLoginData:
+      type: object
+      properties:
+        user_name:
+          type: string
+        user_id:
+          type: integer
+        email_id:
+          type: string
+    userLoginRequest:
+      type: object
+      properties:
+        user_name:
+          type: string
+    Models:
+      type: array
+      items:
+        $ref: '#/components/schemas/ModelDetails'
+    ModelDetails:
+      type: object
+      properties:
+        model_name:
+          type: string
+        model_display_name:
+          type: string
+    CreateConversationRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+        ai_application_name:
+          type: string
+    prompt:
+      type: object
+      properties:
+        prompt:
+          type: string
+    Conversations:
+      type: object
+      properties:
+        total:
+          type: integer
+        offset:
+          type: integer
+        limit:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationsResponse'
+      xml:
+        name: conversations
+    ConversationsResponse:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+        model_name:
+          type: string
+        start_time:
+          type: string
+        title:
+          type: string
+    ConversationMessages:
+      type: object
+      properties:
+        conversation_id:
+          type: string
+        model_name:
+          type: string
+        start_time:
+          type: string
+        title:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversationsMessages'
+    ConversationsMessages:
+        type: object
+        properties:
+          message_id:
+            type: integer
+          timestamp:
+            type: string
+          user_id:
+            type: integer
+          content:
+            type: string
+          type:
+            type: string
+    HealthSchema:
+        type: object
+        properties:
+          server:
+            type: string
+          time:
+            type: string
+          version:
+            type: string
+          details:
+            type: object
+            properties:
+              service:
+                type: string
+              status:
+                type: string
+              reason:
+                type: string
+          reason:
+            type: string
+          status:
+            type: string
+  securitySchemes:
+    securechat_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: /securechat/api/v1/user/login
+          scopes:
+            write:conversations: modify conversations in your account
+            read:conversation: read your conversations
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
