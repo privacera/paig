@@ -1,4 +1,5 @@
-from api.guardrails.providers import GuardrailConnection, GuardrailProviderType, GuardrailProviderManager
+from api.guardrails.providers import GuardrailConnection, GuardrailProviderType, GuardrailProviderManager, \
+    CreateGuardrailRequest, UpdateGuardrailRequest, DeleteGuardrailRequest
 from api.guardrails.providers.models import GuardrailConfigType, GuardrailConfig
 
 aws_creds = {
@@ -286,17 +287,51 @@ blocked_outputs_messaging = GuardrailConfig(
 
 guardrails_connection_list = [guardrail_connection]
 guardrails_configs_list = [content_policy_config, topic_policy_config, word_policy_config, seneitive_information_policy_config, contextual_grounding_policy_config, blocked_inputs_messaging, blocked_outputs_messaging]
-extra_kwargs = {
-    "name": "provider-create-test",
-    "description": "Guardrail connection for AWS Bedrock"
+guardrail_name = "provider-create-test"
+guardrail_description = "Guardrail connection for AWS Bedrock"
+
+create_bedrock_guardrails_request = CreateGuardrailRequest(
+    name=guardrail_name,
+    description=guardrail_description,
+    connectionDetails=aws_creds,
+    guardrailConfigs=guardrails_configs_list
+)
+
+create_guardrails_request_map = {
+    GuardrailProviderType.AWS: create_bedrock_guardrails_request
 }
 
-create_guardrail_response = GuardrailProviderManager.create_guardrail(guardrails_connection_list, guardrails_configs_list, **extra_kwargs)
+create_guardrail_response = GuardrailProviderManager.create_guardrail(create_guardrails_request_map)
 print(create_guardrail_response)
 
 updated_guardrails_configs_list = [content_policy_config, word_policy_config, seneitive_information_policy_config, contextual_grounding_policy_config, blocked_inputs_messaging, blocked_outputs_messaging]
-update_guardrail_response = GuardrailProviderManager.update_guardrail(guardrails_connection_list, create_guardrail_response, updated_guardrails_configs_list, **extra_kwargs)
+
+update_bedrock_guardrails_request = UpdateGuardrailRequest(
+    name="provider-create-test-updated",
+    description=guardrail_description,
+    connectionDetails=aws_creds,
+    guardrailConfigs=updated_guardrails_configs_list,
+    remoteGuardrailDetails=create_guardrail_response[GuardrailProviderType.AWS]
+)
+
+update_guardrail_request_map = {
+    GuardrailProviderType.AWS: update_bedrock_guardrails_request
+}
+
+update_guardrail_response = GuardrailProviderManager.update_guardrail(update_guardrail_request_map)
 print(update_guardrail_response)
 
-delete_guardrail_response = GuardrailProviderManager.delete_guardrail(guardrails_connection_list, create_guardrail_response)
+delete_bedrock_guardrails_request = DeleteGuardrailRequest(
+    name="provider-create-test-updated",
+    description=guardrail_description,
+    connectionDetails=aws_creds,
+    guardrailConfigs=updated_guardrails_configs_list,
+    remoteGuardrailDetails=update_guardrail_response[GuardrailProviderType.AWS]
+)
+
+delete_guardrail_request_map = {
+    GuardrailProviderType.AWS: delete_bedrock_guardrails_request
+}
+
+delete_guardrail_response = GuardrailProviderManager.delete_guardrail(delete_guardrail_request_map)
 print(delete_guardrail_response)

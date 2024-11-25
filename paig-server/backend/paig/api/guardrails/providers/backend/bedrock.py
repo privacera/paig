@@ -1,9 +1,13 @@
-from typing import List, Tuple
+import logging
+from typing import Tuple, Dict
 
 import boto3
 
-from api.guardrails.providers import GuardrailProvider, GuardrailConfig
-from api.guardrails.providers.models import GuardrailConfigType
+from api.guardrails.providers import GuardrailProvider, UpdateGuardrailRequest, DeleteGuardrailRequest
+from api.guardrails.providers.models import GuardrailConfigType, CreateGuardrailRequest, GuardrailRequest
+
+
+logger = logging.getLogger(__name__)
 
 
 class BedrockGuardrailProvider(GuardrailProvider):
@@ -23,31 +27,45 @@ class BedrockGuardrailProvider(GuardrailProvider):
             **kwargs: Additional keyword arguments.
         """
         super().__init__(connection_details, **kwargs)
+
+        # Set default region if not provided
         self.connection_details.setdefault('region', 'us-east-1')
 
-    def verify_connection_details(self) -> Tuple[bool, str]:
+    def verify_connection_details(self) -> Tuple[bool, Dict]:
         """
         Verify the necessary connection details and attempt to list guardrails.
 
         Returns:
-            Tuple[bool, str]: A tuple containing a success flag and a friendly message.
-                              If connection details are valid, returns True and a success message.
-                              If invalid, returns False and a user-friendly error message.
+            Tuple[bool, Dict]: A tuple containing a success flag and a message or error details.
         """
         if not self._has_valid_connection_keys():
-            return False, "Connection details are incomplete. Please review your settings."
+            return False, self._prepare_error_message_details("Connection details are incomplete. Please review your settings.")
 
         try:
             client = self.create_bedrock_client()
             response = client.list_guardrails(maxResults=1)
 
             if response['ResponseMetadata']['HTTPStatusCode'] == 200:
-                return True, "Connection successful!"
+                return True, {"message": "Connection successful!"}
             else:
-                return False, "We encountered an issue while verifying your settings. Please try again."
+                return False, self._prepare_error_message_details("We encountered an issue while verifying your settings. Please try again.")
 
         except Exception as e:
-            return False, "Unable to verify connection. Please check your details and try again."
+            return False, self._prepare_error_message_details("Unable to verify connection. Please check your details and try again.")
+
+    def _prepare_error_message_details(self, message: str) -> Dict:
+        """
+        Prepare error message details from passed message.
+
+        Args:
+            message (str): The error message.
+
+        Returns:
+            Dict: A dictionary containing the error message details.
+        """
+        return {
+            "error": message
+        }
 
     def _has_valid_connection_keys(self) -> bool:
         """
@@ -61,52 +79,59 @@ class BedrockGuardrailProvider(GuardrailProvider):
             for keys in (self.REQUIRED_SESSION_KEYS, self.REQUIRED_ACCESS_KEYS, self.REQUIRED_IAM_WEB_IDENTITY_KEYS, self.REQUIRED_IAM_ROLE_KEYS)
         )
 
-    def create_guardrail(self, guardrail_configs: List[GuardrailConfig], **kwargs) -> Tuple[bool, dict]:
+    def create_guardrail(self, request: CreateGuardrailRequest, **kwargs) -> Tuple[bool, dict]:
         """Create a guardrail using the provided configurations.
 
         Args:
-            guardrail_configs (List[GuardrailConfig]): List of guardrail configurations.
+            request (CreateGuardrailRequest): The request containing guardrail configurations.
             **kwargs: Additional keyword arguments.
 
         Returns:
             Tuple[bool, dict]: A tuple containing a success flag and the created guardrail details or error.
         """
         client = self.create_bedrock_client()
-        payload = self.get_create_bedrock_guardrail_payload(guardrail_configs, **kwargs)
+        payload = self.get_create_bedrock_guardrail_payload(request, **kwargs)
 
         return self._perform_guardrail_action(client.create_guardrail, payload)
 
-    def update_guardrail(self, created_guardrail_details: dict, updated_guardrail_configs: List[GuardrailConfig],
-                         **kwargs) -> Tuple[bool, dict]:
+    def update_guardrail(self, request: UpdateGuardrailRequest, **kwargs) -> Tuple[bool, dict]:
         """Update an existing guardrail with new configurations.
 
         Args:
-            created_guardrail_details (dict): Details of the created guardrail.
-            updated_guardrail_configs (List[GuardrailConfig]): Updated guardrail configurations.
+            request (UpdateGuardrailRequest): A request object containing updated guardrail configurations.
             **kwargs: Additional keyword arguments.
 
         Returns:
             Tuple[bool, dict]: A tuple containing a success flag and the updated guardrail details or error.
         """
         client = self.create_bedrock_client()
-        payload = self.get_create_bedrock_guardrail_payload(updated_guardrail_configs, **kwargs)
-        payload['guardrailIdentifier'] = created_guardrail_details['response']['guardrailId']
+        payload = self.get_create_bedrock_guardrail_payload(request, **kwargs)
 
+        if not request.remoteGuardrailDetails['success']:
+            logger.warning("Guardrail not found. Running create instead of update for guardrail %s of bedrock.", request.name)
+            return self._perform_guardrail_action(client.create_guardrail, payload)
+
+        payload['guardrailIdentifier'] = request.remoteGuardrailDetails['response']['guardrailId']
         return self._perform_guardrail_action(client.update_guardrail, payload)
 
-    def delete_guardrail(self, created_guardrail_details: dict, **kwargs) -> Tuple[bool, dict]:
+    def delete_guardrail(self, request: DeleteGuardrailRequest, **kwargs) -> Tuple[bool, dict]:
         """Delete a specified guardrail.
 
         Args:
-            created_guardrail_details (dict): Details of the guardrail to delete.
+            request (DeleteGuardrailRequest): A request object containing guardrail details.
             **kwargs: Additional keyword arguments.
 
         Returns:
             Tuple[bool, dict]: A tuple containing a success flag and an empty dict or error.
         """
         client = self.create_bedrock_client()
+
+        if request.remoteGuardrailDetails['success'] is False:
+            logger.warning("Guardrail not found. Skipping deletion for guardrail %s of bedrock.", request.name)
+            return True, {}
+
         payload = {
-            'guardrailIdentifier': created_guardrail_details['response']['guardrailId']
+            'guardrailIdentifier': request.remoteGuardrailDetails['response']['guardrailId']
         }
 
         return self._perform_guardrail_action(client.delete_guardrail, payload)
@@ -152,20 +177,20 @@ class BedrockGuardrailProvider(GuardrailProvider):
 
         return boto3.client('bedrock', region_name=self.connection_details['region'])
 
-    def get_create_bedrock_guardrail_payload(self, guardrail_configs: List[GuardrailConfig], **kwargs) -> dict:
+    def get_create_bedrock_guardrail_payload(self, request: GuardrailRequest, **kwargs) -> dict:
         """Construct the payload for creating a Bedrock guardrail.
 
         Args:
-            guardrail_configs (List[GuardrailConfig]): List of guardrail configurations.
+            request (CreateGuardrailRequest): The request containing guardrail configurations.
             **kwargs: Additional keyword arguments.
 
         Returns:
             dict: Payload for creating a Bedrock guardrail.
         """
         payload = {
-            'name': kwargs.get('name'),
-            'description': kwargs.get('description', ''),
-            **{config.configType: config.configData for config in guardrail_configs}
+            'name': request.name,
+            'description': request.description,
+            **{config.configType: config.configData for config in request.guardrailConfigs}
         }
 
         # Set default messages if not provided

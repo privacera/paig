@@ -21,7 +21,6 @@ guardrail_data = {
             "createTime": "2024-10-29T13:03:27.000000",
             "updateTime": "2024-10-29T13:03:27.000000",
             "guardrailProvider": GuardrailProvider.AWS,
-            "guardrailProviderConnectionName": "mock_gr_connection",
             "configType": "contentPolicyConfig",
             "configData": {
                 "filtersConfig": [
@@ -83,7 +82,6 @@ def test_guardrail_view_valid_data():
     assert view.guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
     assert view.guardrail_configs[0].config_type == guardrail_data["guardrailConfigs"][0]["configType"]
     assert view.guardrail_configs[0].guardrail_provider == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
-    assert view.guardrail_configs[0].guardrail_provider_connection_name == guardrail_data["guardrailConfigs"][0]["guardrailProviderConnectionName"]
     assert view.guardrail_provider_response == guardrail_data["guardrailProviderResponse"]
 
 
@@ -173,7 +171,6 @@ def test_guardrail_application_view_invalid_key_type():
 def test_to_guardrail_config():
     guardrail_config_data = {
         "guardrailProvider": GuardrailProvider.AWS,
-        "guardrailProviderConnectionName": "mock_gr_connection",
         "configType": "contentPolicyConfig",
         "configData": {
             "filtersConfig": [
@@ -213,7 +210,6 @@ def test_to_guardrail_config():
     view = GRConfigView(**guardrail_config_data)
     guardrail_config = view.to_guardrail_config()
     assert guardrail_config.guardrailProvider == guardrail_config_data["guardrailProvider"].name
-    assert guardrail_config.guardrailProviderConnectionName == guardrail_config_data["guardrailProviderConnectionName"]
     assert guardrail_config.configType == guardrail_config_data["configType"]
     assert guardrail_config.configData == guardrail_config_data["configData"]
 
@@ -236,5 +232,4 @@ def test_guardrails_data_view_valid_data():
     assert view.guardrails[0].guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
     assert view.guardrails[0].guardrail_configs[0].config_type == guardrail_data["guardrailConfigs"][0]["configType"]
     assert view.guardrails[0].guardrail_configs[0].guardrail_provider == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
-    assert view.guardrails[0].guardrail_configs[0].guardrail_provider_connection_name == guardrail_data["guardrailConfigs"][0]["guardrailProviderConnectionName"]
     assert view.guardrails[0].guardrail_provider_response == guardrail_data["guardrailProviderResponse"]

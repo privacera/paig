@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Dict
+from typing import Tuple, Dict, Any
 
-from api.guardrails.providers.models import GuardrailProviderType, GuardrailConnection, GuardrailConfig
+from api.guardrails.providers.models import GuardrailProviderType, GuardrailConnection, GuardrailConfig, \
+    CreateGuardrailRequest, UpdateGuardrailRequest, DeleteGuardrailRequest
 
 
 class GuardrailProvider(ABC):
@@ -18,13 +19,12 @@ class GuardrailProvider(ABC):
         Initialize the GuardrailProvider with connection details.
 
         Args:
-            connection_details (Dict[str, str]): A dictionary containing the necessary connection details.
             kwargs: Additional optional arguments.
         """
         self.connection_details = connection_details
 
     @abstractmethod
-    def verify_connection_details(self, **kwargs) -> Tuple[bool | str]:
+    def verify_connection_details(self, **kwargs) -> Tuple[bool, Dict]:
         """
         Verify the connection details.
 
@@ -32,17 +32,17 @@ class GuardrailProvider(ABC):
             kwargs: Additional optional arguments.
 
         Returns:
-            Tuple[bool | str]: A tuple containing a success flag and an error message if the connection details are invalid.
+            Tuple[bool, Dict]: A tuple containing a success flag and a dictionary of connection evaluation details.
         """
         pass
 
     @abstractmethod
-    def create_guardrail(self, guardrail_configs: List['GuardrailConfig'], **kwargs) -> Tuple[bool, Dict]:
+    def create_guardrail(self, request: 'CreateGuardrailRequest', **kwargs) -> Tuple[bool, Dict]:
         """
         Create a guardrail using the provided configuration data.
 
         Args:
-            guardrail_configs (List[GuardrailConfig]): A list of guardrail configuration objects.
+            request (CreateGuardrailRequest): A request object containing guardrail configurations.
             kwargs: Additional optional arguments.
 
         Returns:
@@ -51,14 +51,12 @@ class GuardrailProvider(ABC):
         pass
 
     @abstractmethod
-    def update_guardrail(self, created_guardrail_details: Dict, updated_guardrail_configs: List['GuardrailConfig'],
-                         **kwargs) -> Tuple[bool, Dict]:
+    def update_guardrail(self, request: 'UpdateGuardrailRequest', **kwargs) -> Tuple[bool, Dict]:
         """
         Update an existing guardrail with new configurations.
 
         Args:
-            created_guardrail_details (Dict): A dictionary containing details of the existing guardrail.
-            updated_guardrail_configs (List[GuardrailConfig]): A list of updated guardrail configuration objects.
+            request (UpdateGuardrailRequest): A request object containing updated guardrail configurations.
             kwargs: Additional optional arguments.
 
         Returns:
@@ -67,12 +65,12 @@ class GuardrailProvider(ABC):
         pass
 
     @abstractmethod
-    def delete_guardrail(self, created_guardrail_details: Dict, **kwargs) -> Tuple[bool, Dict]:
+    def delete_guardrail(self, request: 'DeleteGuardrailRequest', **kwargs) -> Tuple[bool, Dict]:
         """
         Delete an existing guardrail.
 
         Args:
-            created_guardrail_details (Dict): A dictionary containing details of the guardrail to delete.
+            request (DeleteGuardrailRequest): A request object containing guardrail details.
             kwargs: Additional optional arguments.
 
         Returns:
@@ -82,125 +80,111 @@ class GuardrailProvider(ABC):
 
 
 class GuardrailProviderManager:
+    """
+    Manages operations for multiple guardrail providers.
+
+    This class provides methods for verifying connection details, and creating, updating, and deleting guardrails
+    for multiple guardrail providers.
+    """
 
     @staticmethod
-    def verify_guardrails_connection_details(connections: List['GuardrailConnection'], **kwargs) -> bool:
+    def process_guardrail_request(
+        request: Dict[str, Any],
+        operation: str,
+        **kwargs
+    ) -> Dict[str, Dict]:
         """
-        Verifies the connection details for each guardrail provider.
+        Processes a guardrail request for multiple providers.
 
         Args:
-            connections (List[GuardrailConnection]): List of guardrail connections.
+            request (Dict[str, Any]): A dictionary containing the request data for each provider.
+            operation (str): The operation to perform ('verify', 'create', 'update', 'delete').
             **kwargs: Additional keyword arguments.
 
         Returns:
-            bool: True if all connections are valid, False otherwise.
+            Dict[str, Dict]: A dictionary with the results of the operation for each provider.
         """
-        for connection in connections:
-            if not GuardrailProviderManager._verify_connection_details(connection.guardrailProvider, connection.connectionDetails, **kwargs):
-                return False
-        return True
+        response = {}
+
+        for provider_name, guardrail_request in request.items():
+            connection_details = getattr(guardrail_request, "connectionDetails", {})
+            provider: GuardrailProvider = GuardrailProviderManager._get_provider_instance(
+                provider_name, connection_details, **kwargs
+            )
+
+            operation_method = getattr(provider, f"{operation}_guardrail", None)
+            if not callable(operation_method):
+                raise AttributeError(f"{provider.__class__.__name__} does not implement '{operation}_guardrail'")
+
+            success, response_data = operation_method(guardrail_request, **kwargs)
+
+            response[provider_name] = {
+                "success": success,
+                "response": response_data
+            }
+
+        return response
 
     @staticmethod
-    def create_guardrail(connections: List['GuardrailConnection'], guardrail_configs: List['GuardrailConfig'], **kwargs) -> Dict[str, Dict]:
+    def verify_guardrails_connection_details(request: Dict[str, 'GuardrailConnection'], **kwargs) -> Dict[str, Dict]:
+        """
+        Verifies connection details for each guardrail provider.
+
+        Args:
+            request (Dict[str, GuardrailConnection]): A dictionary containing the connection details for each provider.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            Dict[str, Dict]: A dictionary with the verification results for each provider.
+        """
+        return GuardrailProviderManager.process_guardrail_request(request, "verify", **kwargs)
+
+    @staticmethod
+    def create_guardrail(request: Dict[str, 'CreateGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
         """
         Creates guardrails for each provider.
 
         Args:
-            connections (List[GuardrailConnection]): List of guardrail connections.
-            guardrail_configs (List[GuardrailConfig]): List of guardrail configurations.
+            request (Dict[str, CreateGuardrailRequest]): A dictionary containing the request to create guardrails.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Dict[str, Dict]: A dictionary with the result of guardrail creation for each provider.
+            Dict[str, Dict]: A dictionary with the results of guardrail creation for each provider.
         """
-        grouped_connections = GuardrailProviderManager._group_connections_by_provider(connections)
-        grouped_guardrail_configs = GuardrailProviderManager._group_by_provider(guardrail_configs)
-
-        guardrail_provider_map = GuardrailProviderManager._initialize_providers(grouped_connections, **kwargs)
-
-        create_guardrails_response = {}
-        successful_providers = set()
-
-        for provider_type, guardrail_configs in grouped_guardrail_configs.items():
-            provider = guardrail_provider_map[provider_type]
-            success, response = provider.create_guardrail(guardrail_configs, **kwargs)
-            create_guardrails_response[provider_type] = {
-                "success": success,
-                "response": response
-            }
-
-            if success:
-                successful_providers.add(provider_type)
-
-        # If any guardrail creation fails, roll back by deleting only the successfully created guardrails
-        GuardrailProviderManager._rollback_successful_guardrails(create_guardrails_response, successful_providers, guardrail_provider_map, **kwargs)
-
-        return create_guardrails_response
+        return GuardrailProviderManager.process_guardrail_request(request, "create", **kwargs)
 
     @staticmethod
-    def update_guardrail(connections: List['GuardrailConnection'], create_guardrails_response: Dict[str, Dict], updated_guardrails: List['GuardrailConfig'], **kwargs) -> Dict[str, Dict]:
+    def update_guardrail(request: Dict[str, 'UpdateGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
         """
         Updates guardrails for each provider.
 
         Args:
-            connections (List[GuardrailConnection]): List of guardrail connections.
-            create_guardrails_response (Dict[str, Dict]): Response of previously created guardrails.
-            updated_guardrails (List[GuardrailConfig]): List of updated guardrail configurations.
+            request (Dict[str, UpdateGuardrailRequest]): A dictionary containing the request to update guardrails.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Dict[str, Dict]: A dictionary with the result of the guardrail update for each provider.
+            Dict[str, Dict]: A dictionary with the results of guardrail updates for each provider.
         """
-        grouped_connections = GuardrailProviderManager._group_connections_by_provider(connections)
-        grouped_guardrail_configs = GuardrailProviderManager._group_by_provider(updated_guardrails)
-
-        guardrail_provider_map = GuardrailProviderManager._initialize_providers(grouped_connections, **kwargs)
-
-        update_guardrails_response = {}
-        for provider_type, guardrail_configs in grouped_guardrail_configs.items():
-            provider = guardrail_provider_map[provider_type]
-            success, response = provider.update_guardrail(
-                create_guardrails_response[provider_type],
-                guardrail_configs,
-                **kwargs
-            )
-            update_guardrails_response[provider_type] = {
-                "success": success,
-                "response": response
-            }
-
-        return update_guardrails_response
+        return GuardrailProviderManager.process_guardrail_request(request, "update", **kwargs)
 
     @staticmethod
-    def delete_guardrail(connections: List['GuardrailConnection'], create_guardrails_response: Dict[str, Dict], **kwargs) -> Dict[str, Dict]:
+    def delete_guardrail(request: Dict[str, 'DeleteGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
         """
         Deletes guardrails for each provider.
 
         Args:
-            connections (List[GuardrailConnection]): List of guardrail connections.
-            create_guardrails_response (Dict[str, Dict]): Response of previously created guardrails.
+            request (Dict[str, DeleteGuardrailRequest]): A dictionary containing the request to delete guardrails.
             **kwargs: Additional keyword arguments.
 
         Returns:
-            Dict[str, Dict]: A dictionary with the result of the guardrail deletion for each provider.
+            Dict[str, Dict]: A dictionary with the results of guardrail deletion for each provider.
         """
-        grouped_connections = GuardrailProviderManager._group_connections_by_provider(connections)
-
-        delete_guardrails_response = {}
-        for provider_type, created_guardrail_details in create_guardrails_response.items():
-            provider = GuardrailProviderManager._initialize_providers({provider_type: grouped_connections[provider_type]}, **kwargs)[provider_type]
-            success, response = provider.delete_guardrail(created_guardrail_details, **kwargs)
-            delete_guardrails_response[provider_type] = {
-                "success": success,
-                "response": response
-            }
-
-        return delete_guardrails_response
+        return GuardrailProviderManager.process_guardrail_request(request, "delete", **kwargs)
 
     @staticmethod
-    def _verify_connection_details(provider: str, connection_details: Dict, **kwargs) -> bool:
+    def _get_provider_instance(provider: str, connection_details: Dict, **kwargs) -> 'GuardrailProvider':
         """
-        Verifies the connection details for the given guardrail provider.
+        Returns an instance of the guardrail provider based on the provider type.
 
         Args:
             provider (str): The guardrail provider type.
@@ -208,88 +192,10 @@ class GuardrailProviderManager:
             **kwargs: Additional keyword arguments.
 
         Returns:
-            bool: True if the connection details are valid, False otherwise.
+            GuardrailProvider: An instance of the guardrail provider.
         """
         if provider == GuardrailProviderType.AWS:
             from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
-            provider_instance = BedrockGuardrailProvider(connection_details, **kwargs)
-            return provider_instance.verify_connection_details()
+            return BedrockGuardrailProvider(connection_details, **kwargs)
         else:
             raise ValueError(f"Unknown guardrail provider: {provider}")
-
-    @staticmethod
-    def _initialize_providers(grouped_connections: Dict[str, 'GuardrailConnection'], **kwargs) -> Dict[str, 'GuardrailProvider']:
-        """
-        Initializes providers based on the connection details.
-
-        Args:
-            grouped_connections (Dict[str, GuardrailConnection]): Grouped connections by provider type.
-            **kwargs: Additional keyword arguments.
-
-        Returns:
-            Dict[str, GuardrailProvider]: A dictionary mapping provider types to provider instances.
-        """
-        provider_map = {}
-        for provider_type, connection in grouped_connections.items():
-            if provider_type == 'AWS':
-                from .backend.bedrock import BedrockGuardrailProvider
-                provider_map[provider_type] = BedrockGuardrailProvider(connection.connectionDetails, **kwargs)
-            else:
-                raise ValueError(f"Unknown guardrail provider: {provider_type}")
-        return provider_map
-
-    @staticmethod
-    def _group_connections_by_provider(connections: List['GuardrailConnection']) -> Dict[str, 'GuardrailConnection']:
-        """
-        Groups the connections by provider type.
-
-        Args:
-            connections (List[GuardrailConnection]): List of guardrail connections.
-
-        Returns:
-            Dict[str, GuardrailConnection]: A dictionary with connections grouped by provider type.
-        """
-        grouped = {}
-        for connection in connections:
-            provider = connection.guardrailProvider
-            if provider not in grouped:
-                grouped[provider] = connection
-        return grouped
-
-    @staticmethod
-    def _group_by_provider(items: List['GuardrailConfig']) -> Dict[str, List['GuardrailConfig']]:
-        """
-        Groups the guardrail configurations by provider type.
-
-        Args:
-            items (List[GuardrailConfig]): List of guardrail configurations.
-
-        Returns:
-            Dict[str, List[GuardrailConfig]]: A dictionary with configurations grouped by provider type.
-        """
-        grouped = {}
-        for item in items:
-            provider = item.guardrailProvider
-            if provider not in grouped:
-                grouped[provider] = []
-            grouped[provider].append(item)
-        return grouped
-
-    @staticmethod
-    def _rollback_successful_guardrails(create_guardrails_response, successful_providers, guardrail_provider_map,
-                                        **kwargs):
-        """
-        Rolls back successfully created guardrails by deleting them when others fail.
-
-        :param create_guardrails_response: Dictionary of guardrail creation responses.
-        :param successful_providers: List of providers where the guardrails were successfully created.
-        :param guardrail_provider_map: Mapping of provider types to provider instances.
-        :param kwargs: Additional arguments for the delete_guardrail method.
-        """
-        if len(create_guardrails_response) != len(successful_providers):
-            for provider_type in successful_providers:
-                success_response = create_guardrails_response.get(provider_type)
-                if success_response and success_response["success"]:
-                    provider = guardrail_provider_map.get(provider_type)
-                    if provider:
-                        provider.delete_guardrail(success_response, **kwargs)

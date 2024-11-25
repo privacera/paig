@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 from pydantic import BaseModel
 
 # Define Enums for config types and guardrail providers
@@ -48,3 +48,38 @@ class GuardrailConnection(BaseModel):
     description: str  # A brief description of the connection
     guardrailProvider: str  # The name of the guardrail provider
     connectionDetails: dict  # Connection details for the provider
+
+class GuardrailRequest(BaseModel):
+    """Model representing a request for guardrails.
+
+        Attributes:
+            name (str): The name of the guardrail.
+            description (str): A brief description of the guardrail.
+            connectionDetails (dict): Connection details for the provider.
+            guardrailConfigs (List[GuardrailConfig]): A list of guardrail configurations.
+        """
+    name: str  # The name of the guardrail
+    description: str
+    connectionDetails: dict  # Connection details for the provider
+    guardrailConfigs: List[GuardrailConfig]  # List of guardrail configurations
+
+class CreateGuardrailRequest(GuardrailRequest):
+    """Model representing a request to create guardrails.
+    """
+    pass
+
+class UpdateGuardrailRequest(GuardrailRequest):
+    """Model representing a request to update guardrails.
+
+    Attributes:
+        remoteGuardrailDetails (dict): Remote guardrail details.
+    """
+    remoteGuardrailDetails: dict # Remote guardrail details
+
+class DeleteGuardrailRequest(GuardrailRequest):
+    """Model representing a request to delete guardrails.
+
+    Attributes:
+        remoteGuardrailDetails (dict): Remote guardrail details.
+    """
+    remoteGuardrailDetails: dict # Remote guardrail details

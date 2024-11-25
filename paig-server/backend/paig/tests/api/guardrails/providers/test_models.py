@@ -28,13 +28,11 @@ def test_guardrail_config_valid_data():
     config_data = {"rules": ["rule1", "rule2"]}
     config = GuardrailConfig(
         guardrailProvider="AWS",
-        guardrailProviderConnectionName="TestConnection",
         configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
         configData=config_data
     )
 
     assert config.guardrailProvider == "AWS"
-    assert config.guardrailProviderConnectionName == "TestConnection"
     assert config.configType == GuardrailConfigType.TOPIC_POLICY_CONFIG
     assert config.configData == config_data
 
@@ -44,7 +42,6 @@ def test_guardrail_config_invalid_data():
     with pytest.raises(ValidationError):
         GuardrailConfig(
             guardrailProvider=123,  # Invalid value
-            guardrailProviderConnectionName="TestConnection",
             configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
             configData={"rules": ["rule1", "rule2"]}
         )
