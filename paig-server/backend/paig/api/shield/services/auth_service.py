@@ -268,6 +268,25 @@ class AuthService:
         audit_self_managed_time = f"{((time.perf_counter() - audit_self_managed_start_time) * 1000):.3f}"
         audit_cloud_start_time = time.perf_counter()
         audit_msg_content_storage_system = config_utils.get_property_value_list("audit_msg_content_storage_system")
+        """
+        This section handles the configuration of audit message content and metadata storage across different deployment modes.
+        
+        - **Case 1: Cloud Mode**  
+          - `audit_msg_content_storage_system` is set to `fluentd`.
+          - In this mode, the entire audit (both content and metadata) is sent to OpenSearch via Fluentd.
+          - `default_msg_metadata_storage_system` can be left blank or also set to `fluentd`.
+        
+        - **Case 2: Self-Managed Mode (Docker)**  
+          - `audit_msg_content_storage_system` is user-configurable and may be set to `s3` or `local`.
+          - In this mode, only the metadata is sent to Fluentd, while the original message content is stored in the user-specified system (e.g., S3 or local storage).
+          - `default_msg_metadata_storage_system` is added to ensure that metadata is still pushed to OpenSearch, even when Fluentd is not the primary content storage.
+        
+        - **Case 3: Self-Managed Mode (OpenSource)**  
+          - `audit_msg_content_storage_system` is set to `data-service`.
+          - In this mode, `default_msg_metadata_storage_system` can be left blank since Data-Service will handle the audit storage and no push to OpenSearch via Fluentd is required.
+        
+        This logic ensures that audit metadata is correctly routed based on the deployment mode, with special handling to push metadata to OpenSearch in self-managed environments.
+        """
         default_msg_metadata_storage_system = config_utils.get_property_value_list("default_msg_metadata_storage_system")
         if "fluentd" in audit_msg_content_storage_system or "fluentd" in default_msg_metadata_storage_system:
             self.log_audit_fluentd(copy.deepcopy(shield_audit))
