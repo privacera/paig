@@ -32,3 +32,4 @@ storage
 **/.coverage
 backend/paig/temp
 **/.cache
+paig-server/backend/paig/paig_server.pid
