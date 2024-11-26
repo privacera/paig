@@ -112,11 +112,15 @@ class GuardrailProviderManager:
                 provider_name, connection_details, **kwargs
             )
 
-            operation_method = getattr(provider, f"{operation}_guardrail", None)
+            operation_method = getattr(provider, f"{operation}", None)
             if not callable(operation_method):
-                raise AttributeError(f"{provider.__class__.__name__} does not implement '{operation}_guardrail'")
+                raise AttributeError(f"{provider.__class__.__name__} does not implement '{operation}'")
 
-            success, response_data = operation_method(guardrail_request, **kwargs)
+            success, response_data = False, {}
+            if operation == "verify_connection_details":
+                success, response_data = operation_method(**kwargs)
+            else:
+                success, response_data = operation_method(guardrail_request, **kwargs)
 
             response[provider_name] = {
                 "success": success,
@@ -137,7 +141,7 @@ class GuardrailProviderManager:
         Returns:
             Dict[str, Dict]: A dictionary with the verification results for each provider.
         """
-        return GuardrailProviderManager.process_guardrail_request(request, "verify", **kwargs)
+        return GuardrailProviderManager.process_guardrail_request(request, "verify_connection_details", **kwargs)
 
     @staticmethod
     def create_guardrail(request: Dict[str, 'CreateGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
@@ -151,7 +155,7 @@ class GuardrailProviderManager:
         Returns:
             Dict[str, Dict]: A dictionary with the results of guardrail creation for each provider.
         """
-        return GuardrailProviderManager.process_guardrail_request(request, "create", **kwargs)
+        return GuardrailProviderManager.process_guardrail_request(request, "create_guardrail", **kwargs)
 
     @staticmethod
     def update_guardrail(request: Dict[str, 'UpdateGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
@@ -165,7 +169,7 @@ class GuardrailProviderManager:
         Returns:
             Dict[str, Dict]: A dictionary with the results of guardrail updates for each provider.
         """
-        return GuardrailProviderManager.process_guardrail_request(request, "update", **kwargs)
+        return GuardrailProviderManager.process_guardrail_request(request, "update_guardrail", **kwargs)
 
     @staticmethod
     def delete_guardrail(request: Dict[str, 'DeleteGuardrailRequest'], **kwargs) -> Dict[str, Dict]:
@@ -179,7 +183,7 @@ class GuardrailProviderManager:
         Returns:
             Dict[str, Dict]: A dictionary with the results of guardrail deletion for each provider.
         """
-        return GuardrailProviderManager.process_guardrail_request(request, "delete", **kwargs)
+        return GuardrailProviderManager.process_guardrail_request(request, "delete_guardrail", **kwargs)
 
     @staticmethod
     def _get_provider_instance(provider: str, connection_details: Dict, **kwargs) -> 'GuardrailProvider':

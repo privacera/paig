@@ -24,13 +24,11 @@ class GuardrailConfig(BaseModel):
     Attributes:
         status (int): The status of the guardrail configuration.
         guardrailProvider (str): The name of the guardrail provider.
-        guardrailProviderConnectionName (str): The connection name for the guardrail provider.
         configType (str): The type of configuration being defined.
         configData (Any): The configuration data, which can vary in structure.
     """
     # TODO: variable names should be snake_case
     guardrailProvider: str  # Guardrail provider
-    guardrailProviderConnectionName: str  # Connection name as a string
     configType: str  # Configuration type
     configData: Any  # Configuration data as a dictionary
 

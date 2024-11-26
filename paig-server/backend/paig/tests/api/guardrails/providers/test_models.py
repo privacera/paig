@@ -51,7 +51,6 @@ def test_guardrail_config_missing_required_fields():
     """Test that GuardrailConfig raises a validation error when required fields are missing."""
     with pytest.raises(ValidationError):
         GuardrailConfig(
-            guardrailProvider="AWS",
             configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
             configData={"rules": ["rule1", "rule2"]}
         )

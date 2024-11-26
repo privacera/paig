@@ -4,8 +4,8 @@ from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
 
 from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
-from api.guardrails.providers import GuardrailConfig
-from api.guardrails.providers.models import GuardrailConfigType
+from api.guardrails.providers import GuardrailConfig, CreateGuardrailRequest
+from api.guardrails.providers.models import GuardrailConfigType, UpdateGuardrailRequest, DeleteGuardrailRequest
 
 
 @pytest.fixture
@@ -47,7 +47,6 @@ def guardrail_configs():
     return [GuardrailConfig(
         status=1,
         guardrailProvider='AWS',
-        guardrailProviderConnectionName='test_connection',
         configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
         configData="test_data")
     ]
@@ -67,7 +66,7 @@ def test_verify_connection_details_with_access_keys(mock_boto_client, connection
     result, message = provider.verify_connection_details()
 
     assert result is True
-    assert message == "Connection successful!"
+    assert message == {"message": "Connection successful!"}
     mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
@@ -83,7 +82,7 @@ def test_verify_connection_details_with_session_tokens(mock_boto_client, session
     result, message = provider.verify_connection_details()
 
     assert result is True
-    assert message == "Connection successful!"
+    assert message == {"message": "Connection successful!"}
     mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
@@ -99,7 +98,7 @@ def test_verify_connection_details_with_assume_iam_role(mock_boto_client, iam_we
     result, message = provider.verify_connection_details()
 
     assert result is True
-    assert message == "Connection successful!"
+    assert message == {"message": "Connection successful!"}
     mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
@@ -115,7 +114,7 @@ def test_verify_connection_details_with_iam_role(mock_boto_client, iam_role_deta
     result, message = provider.verify_connection_details()
 
     assert result is True
-    assert message == "Connection successful!"
+    assert message == {"message": "Connection successful!"}
     mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 def test_verify_connection_details_invalid():
@@ -123,7 +122,7 @@ def test_verify_connection_details_invalid():
     provider = BedrockGuardrailProvider(connection_details)
     result, message = provider.verify_connection_details()
     assert result is False
-    assert message == "Connection details are incomplete. Please review your settings."
+    assert message == {"error": "Connection details are incomplete. Please review your settings."}
 
 # New tests incorporating friendly message changes
 @patch('boto3.client')
@@ -139,7 +138,7 @@ def test_verify_connection_details_success(mock_boto_client, connection_details)
     result, message = provider.verify_connection_details()
 
     assert result is True
-    assert message == "Connection successful!"
+    assert message == {"message": "Connection successful!"}
     mock_client.list_guardrails.assert_called_once_with(maxResults=1)
 
 @patch('boto3.client')
@@ -155,7 +154,7 @@ def test_verify_connection_details_failed_verification(mock_boto_client, connect
     result, message = provider.verify_connection_details()
 
     assert result is False
-    assert message == "We encountered an issue while verifying your settings. Please try again."
+    assert message == {"error": "We encountered an issue while verifying your settings. Please try again."}
 
 @patch('boto3.client')
 def test_verify_connection_details_exception(mock_boto_client, connection_details):
@@ -166,7 +165,7 @@ def test_verify_connection_details_exception(mock_boto_client, connection_detail
     result, message = provider.verify_connection_details()
 
     assert result is False
-    assert message == "Unable to verify connection. Please check your details and try again."
+    assert message == {"error": "Unable to verify connection. Please check your details and try again."}
 
 
 # Mock boto3 client creation
@@ -237,7 +236,17 @@ def test_create_bedrock_client_with_iam_role(mock_boto3_client, iam_role_details
 def test_create_guardrail(mock_perform_guardrail_action, mock_create_bedrock_client, connection_details,
                           guardrail_configs):
     provider = BedrockGuardrailProvider(connection_details)
-    provider.create_guardrail(guardrail_configs, name='test_guardrail', kmsKeyId='test_key', tags=['test_tag'])
+
+    request = CreateGuardrailRequest(
+        name='test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=guardrail_configs,
+        kmsKeyId='test_key',
+        tags=['test_tag']
+    )
+
+    provider.create_guardrail(request)
 
     mock_create_bedrock_client.assert_called_once()
     mock_perform_guardrail_action.assert_called_once()
@@ -249,8 +258,19 @@ def test_create_guardrail(mock_perform_guardrail_action, mock_create_bedrock_cli
 def test_update_guardrail(mock_create_bedrock_client, mock_perform_guardrail_action, connection_details,
                           guardrail_configs):
     provider = BedrockGuardrailProvider(connection_details)
-    created_guardrail_details = {'response': {'guardrailId': 'test_id'}}
-    provider.update_guardrail(created_guardrail_details, guardrail_configs)
+    created_guardrail_details = {'success': True, 'response': {'guardrailId': 'test_id'}}
+
+    request = UpdateGuardrailRequest(
+        name='update_test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=guardrail_configs,
+        kmsKeyId='test_key',
+        tags=['test_tag'],
+        remoteGuardrailDetails=created_guardrail_details
+    )
+
+    provider.update_guardrail(request)
 
     mock_create_bedrock_client.assert_called_once()
     mock_perform_guardrail_action.assert_called_once()
@@ -261,8 +281,19 @@ def test_update_guardrail(mock_create_bedrock_client, mock_perform_guardrail_act
 @patch.object(BedrockGuardrailProvider, 'create_bedrock_client')
 def test_delete_guardrail(mock_create_bedrock_client, mock_perform_guardrail_action, connection_details):
     provider = BedrockGuardrailProvider(connection_details)
-    created_guardrail_details = {'response': {'guardrailId': 'test_id'}}
-    provider.delete_guardrail(created_guardrail_details)
+    created_guardrail_details = {'success': True, 'response': {'guardrailId': 'test_id'}}
+
+    request = DeleteGuardrailRequest(
+        name='delete_test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=[],
+        kmsKeyId='test_key',
+        tags=['test_tag'],
+        remoteGuardrailDetails=created_guardrail_details
+    )
+
+    provider.delete_guardrail(request)
 
     mock_create_bedrock_client.assert_called_once()
     mock_perform_guardrail_action.assert_called_once()
@@ -271,10 +302,20 @@ def test_delete_guardrail(mock_create_bedrock_client, mock_perform_guardrail_act
 # Test payload construction
 def test_get_create_bedrock_guardrail_payload(connection_details, guardrail_configs):
     provider = BedrockGuardrailProvider(connection_details)
-    payload = provider.get_create_bedrock_guardrail_payload(guardrail_configs, name='test_guardrail')
+
+    request = CreateGuardrailRequest(
+        name='test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=guardrail_configs,
+        kmsKeyId='test_key',
+        tags=['test_tag']
+    )
+
+    payload = provider.get_create_bedrock_guardrail_payload(request)
 
     assert payload['name'] == 'test_guardrail'
-    assert payload['description'] == ''
+    assert payload['description'] == 'test_description'
     assert payload[GuardrailConfigType.BLOCKED_INPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
     assert payload[GuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
 
