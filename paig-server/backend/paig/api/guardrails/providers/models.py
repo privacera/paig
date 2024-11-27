@@ -1,17 +1,6 @@
 from typing import Any, List
 from pydantic import BaseModel
 
-# Define Enums for config types and guardrail providers
-class GuardrailConfigType:
-    """Enumeration of guardrail configuration types."""
-    TOPIC_POLICY_CONFIG = "topicPolicyConfig"
-    CONTENT_POLICY_CONFIG = "contentPolicyConfig"
-    WORD_POLICY_CONFIG = "wordPolicyConfig"
-    SENSITIVE_INFORMATION_POLICY_CONFIG = "sensitiveInformationPolicyConfig"
-    CONTEXTUAL_GROUNDING_POLICY_CONFIG = "contextualGroundingPolicyConfig"
-    BLOCKED_INPUTS_MESSAGING = "blockedInputMessaging"
-    BLOCKED_OUTPUTS_MESSAGING = "blockedOutputsMessaging"
-
 
 class GuardrailProviderType:
     """Enumeration of guardrail provider types."""

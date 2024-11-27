@@ -1,6 +1,7 @@
 from api.guardrails.providers import GuardrailConnection, GuardrailProviderType, GuardrailProviderManager, \
     CreateGuardrailRequest, UpdateGuardrailRequest, DeleteGuardrailRequest
-from api.guardrails.providers.models import GuardrailConfigType, GuardrailConfig
+from api.guardrails.providers.backend.bedrock import BedrockGuardrailConfigType
+from api.guardrails.providers.models import GuardrailConfig
 
 aws_creds = {
     "access_key": "<ACCESS_KEY>",
@@ -20,7 +21,7 @@ content_policy_config = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.CONTENT_POLICY_CONFIG,
+    configType=BedrockGuardrailConfigType.CONTENT_POLICY_CONFIG,
     configData={
         "filtersConfig": [
             {
@@ -61,7 +62,7 @@ topic_policy_config = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
+    configType=BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG,
     configData={
         "topicsConfig": [
             {
@@ -185,7 +186,7 @@ word_policy_config = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.WORD_POLICY_CONFIG,
+    configType=BedrockGuardrailConfigType.WORD_POLICY_CONFIG,
     configData={
         "managedWordListsConfig": [
             {
@@ -204,7 +205,7 @@ seneitive_information_policy_config = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.SENSITIVE_INFORMATION_POLICY_CONFIG,
+    configType=BedrockGuardrailConfigType.SENSITIVE_INFORMATION_POLICY_CONFIG,
     configData={
         "piiEntitiesConfig": [
             {
@@ -255,7 +256,7 @@ contextual_grounding_policy_config = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.CONTEXTUAL_GROUNDING_POLICY_CONFIG,
+    configType=BedrockGuardrailConfigType.CONTEXTUAL_GROUNDING_POLICY_CONFIG,
     configData={
         'filtersConfig': [
             {
@@ -271,7 +272,7 @@ blocked_inputs_messaging = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.BLOCKED_INPUTS_MESSAGING,
+    configType=BedrockGuardrailConfigType.BLOCKED_INPUTS_MESSAGING,
     configData="Sorry, you are not allowed to ask this question."
 )
 
@@ -279,7 +280,7 @@ blocked_outputs_messaging = GuardrailConfig(
     status=1,
     guardrailProvider=GuardrailProviderType.AWS,
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
-    configType=GuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING,
+    configType=BedrockGuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING,
     configData="Sorry, you are not allowed to ask this question."
 )
 

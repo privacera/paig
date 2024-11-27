@@ -3,9 +3,9 @@ from unittest.mock import patch, MagicMock
 
 from botocore.exceptions import ClientError
 
-from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
+from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider, BedrockGuardrailConfigType
 from api.guardrails.providers import GuardrailConfig, CreateGuardrailRequest
-from api.guardrails.providers.models import GuardrailConfigType, UpdateGuardrailRequest, DeleteGuardrailRequest
+from api.guardrails.providers.models import UpdateGuardrailRequest, DeleteGuardrailRequest
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def guardrail_configs():
     return [GuardrailConfig(
         status=1,
         guardrailProvider='AWS',
-        configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
+        configType=BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG,
         configData="test_data")
     ]
 
@@ -316,8 +316,8 @@ def test_get_create_bedrock_guardrail_payload(connection_details, guardrail_conf
 
     assert payload['name'] == 'test_guardrail'
     assert payload['description'] == 'test_description'
-    assert payload[GuardrailConfigType.BLOCKED_INPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
-    assert payload[GuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
+    assert payload[BedrockGuardrailConfigType.BLOCKED_INPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
+    assert payload[BedrockGuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING] == 'Sorry, the model cannot answer this question.'
 
 
 # Test performing guardrail action and handling exceptions

@@ -4,10 +4,21 @@ from typing import Tuple, Dict
 import boto3
 
 from api.guardrails.providers import GuardrailProvider, UpdateGuardrailRequest, DeleteGuardrailRequest
-from api.guardrails.providers.models import GuardrailConfigType, CreateGuardrailRequest, GuardrailRequest
+from api.guardrails.providers.models import CreateGuardrailRequest, GuardrailRequest
 
 
 logger = logging.getLogger(__name__)
+
+
+class BedrockGuardrailConfigType:
+    """Enumeration of guardrail configuration types."""
+    TOPIC_POLICY_CONFIG = "topicPolicyConfig"
+    CONTENT_POLICY_CONFIG = "contentPolicyConfig"
+    WORD_POLICY_CONFIG = "wordPolicyConfig"
+    SENSITIVE_INFORMATION_POLICY_CONFIG = "sensitiveInformationPolicyConfig"
+    CONTEXTUAL_GROUNDING_POLICY_CONFIG = "contextualGroundingPolicyConfig"
+    BLOCKED_INPUTS_MESSAGING = "blockedInputMessaging"
+    BLOCKED_OUTPUTS_MESSAGING = "blockedOutputsMessaging"
 
 
 class BedrockGuardrailProvider(GuardrailProvider):
@@ -194,9 +205,9 @@ class BedrockGuardrailProvider(GuardrailProvider):
         }
 
         # Set default messages if not provided
-        payload.setdefault(GuardrailConfigType.BLOCKED_INPUTS_MESSAGING,
+        payload.setdefault(BedrockGuardrailConfigType.BLOCKED_INPUTS_MESSAGING,
                            'Sorry, the model cannot answer this question.')
-        payload.setdefault(GuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING,
+        payload.setdefault(BedrockGuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING,
                            'Sorry, the model cannot answer this question.')
 
         # Add optional fields to the payload

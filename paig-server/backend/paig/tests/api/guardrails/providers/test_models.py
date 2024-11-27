@@ -1,20 +1,21 @@
 import pytest
 from pydantic import ValidationError
 
-from api.guardrails.providers.models import GuardrailConfigType, GuardrailProviderType, GuardrailConfig, \
+from api.guardrails.providers.backend.bedrock import BedrockGuardrailConfigType
+from api.guardrails.providers.models import GuardrailProviderType, GuardrailConfig, \
     GuardrailConnection
 
 
 # Unit tests for GuardrailConfigType and GuardrailProviderType
 def test_guardrail_config_type_values():
     """Test that GuardrailConfigType enumeration contains expected values."""
-    assert GuardrailConfigType.TOPIC_POLICY_CONFIG == "topicPolicyConfig"
-    assert GuardrailConfigType.CONTENT_POLICY_CONFIG == "contentPolicyConfig"
-    assert GuardrailConfigType.WORD_POLICY_CONFIG == "wordPolicyConfig"
-    assert GuardrailConfigType.SENSITIVE_INFORMATION_POLICY_CONFIG == "sensitiveInformationPolicyConfig"
-    assert GuardrailConfigType.CONTEXTUAL_GROUNDING_POLICY_CONFIG == "contextualGroundingPolicyConfig"
-    assert GuardrailConfigType.BLOCKED_INPUTS_MESSAGING == "blockedInputMessaging"
-    assert GuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING == "blockedOutputsMessaging"
+    assert BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG == "topicPolicyConfig"
+    assert BedrockGuardrailConfigType.CONTENT_POLICY_CONFIG == "contentPolicyConfig"
+    assert BedrockGuardrailConfigType.WORD_POLICY_CONFIG == "wordPolicyConfig"
+    assert BedrockGuardrailConfigType.SENSITIVE_INFORMATION_POLICY_CONFIG == "sensitiveInformationPolicyConfig"
+    assert BedrockGuardrailConfigType.CONTEXTUAL_GROUNDING_POLICY_CONFIG == "contextualGroundingPolicyConfig"
+    assert BedrockGuardrailConfigType.BLOCKED_INPUTS_MESSAGING == "blockedInputMessaging"
+    assert BedrockGuardrailConfigType.BLOCKED_OUTPUTS_MESSAGING == "blockedOutputsMessaging"
 
 
 def test_guardrail_provider_type_values():
@@ -28,12 +29,12 @@ def test_guardrail_config_valid_data():
     config_data = {"rules": ["rule1", "rule2"]}
     config = GuardrailConfig(
         guardrailProvider="AWS",
-        configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
+        configType=BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG,
         configData=config_data
     )
 
     assert config.guardrailProvider == "AWS"
-    assert config.configType == GuardrailConfigType.TOPIC_POLICY_CONFIG
+    assert config.configType == BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG
     assert config.configData == config_data
 
 
@@ -42,7 +43,7 @@ def test_guardrail_config_invalid_data():
     with pytest.raises(ValidationError):
         GuardrailConfig(
             guardrailProvider=123,  # Invalid value
-            configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
+            configType=BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG,
             configData={"rules": ["rule1", "rule2"]}
         )
 
@@ -51,7 +52,7 @@ def test_guardrail_config_missing_required_fields():
     """Test that GuardrailConfig raises a validation error when required fields are missing."""
     with pytest.raises(ValidationError):
         GuardrailConfig(
-            configType=GuardrailConfigType.TOPIC_POLICY_CONFIG,
+            configType=BedrockGuardrailConfigType.TOPIC_POLICY_CONFIG,
             configData={"rules": ["rule1", "rule2"]}
         )
 
