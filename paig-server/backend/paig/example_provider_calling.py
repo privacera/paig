@@ -30,11 +30,6 @@ content_policy_config = GuardrailConfig(
             },
             {
                 "inputStrength": "HIGH",
-                "outputStrength": "NONE",
-                "type": "PROMPT_ATTACK"
-            },
-            {
-                "inputStrength": "HIGH",
                 "outputStrength": "HIGH",
                 "type": "MISCONDUCT"
             },
@@ -52,6 +47,11 @@ content_policy_config = GuardrailConfig(
                 "inputStrength": "HIGH",
                 "outputStrength": "HIGH",
                 "type": "INSULTS"
+            },
+            {
+                "inputStrength": "HIGH",
+                "outputStrength": "NONE",
+                "type": "PROMPT_ATTACK"
             }
         ]
     }
