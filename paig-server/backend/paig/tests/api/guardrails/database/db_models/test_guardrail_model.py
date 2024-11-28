@@ -3,7 +3,8 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel, GuardrailProvider
+from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
+from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationModel, \
     GRApplicationVersionModel, GRConfigModel, GRProviderResponseModel
 from core.db_models.BaseSQLModel import BaseSQLModel

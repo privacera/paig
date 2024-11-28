@@ -7,19 +7,21 @@ from paig_common.lru_cache import LRUCache
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
+from api.guardrails import GuardrailProvider, GuardrailConfigType
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
     GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel
 from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository, \
     GRApplicationRepository, GRApplicationVersionRepository
-from api.guardrails.providers import GuardrailProviderManager
+from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRequest
 from api.guardrails.services.gr_connections_service import GRConnectionService
+from api.guardrails.transformers.GuardrailTranformProcessor import GuardrailTransformerProcessor
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
-    ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
+    ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED, ERROR_ALLOWED_VALUES
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends
 
 config = load_config_file()
@@ -73,7 +75,7 @@ class GuardrailRequestValidator:
         self.validate_status(request.status)
         self.validate_name(request.name)
         self.validate_description(request.description)
-        self.validate_configs(request.guardrail_configs)
+        self.validate_configs(request)
         await self.validate_guardrail_not_exists_by_name(request.name)
 
     def validate_status(self, status: int):
@@ -184,21 +186,26 @@ class GuardrailRequestValidator:
             return records[0]
         return None
 
-    def validate_configs(self, guardrail_configs):
+    def validate_configs(self, guardrail):
         """
         Validate the Guardrail configurations.
 
         Args:
-            guardrail_configs (List[GRConfigView]): The list of Guardrail configurations.
+            guardrail (GuardrailView): The Guardrail view object containing the configurations.
         """
-        if not guardrail_configs:
+        if not guardrail.guardrail_configs:
             raise BadRequestException(get_error_message(ERROR_FIELD_REQUIRED, "Guardrail Configurations"))
-        gr_provider_conns = {}
-        for gr_config in guardrail_configs:
-            if (gr_config.guardrail_provider in gr_provider_conns and
-                    gr_provider_conns[gr_config.guardrail_provider] != gr_config.guardrail_provider_connection_name):
-                raise BadRequestException("Guardrail configurations should have same connection for same provider")
-            gr_provider_conns[gr_config.guardrail_provider] = gr_config.guardrail_provider_connection_name
+        gr_config_types = []
+        gr_config_providers = []
+        for gr_config in guardrail.guardrail_configs:
+            if gr_config.guardrail_provider not in guardrail.enabled_providers and \
+                    not (gr_config.guardrail_provider == GuardrailProvider.MULTIPLE and gr_config.config_type == GuardrailConfigType.CONTENT_MODERATION):
+                raise BadRequestException(
+                    f"Guardrail provider {[gr_config.guardrail_provider.name]} not enabled for the Guardrail")
+            gr_config_providers.append(gr_config.guardrail_provider)
+            if gr_config.config_type in gr_config_types:
+                raise BadRequestException(f"Multiple Guardrail configurations of same type {[gr_config.config_type.value]} not allowed")
+            gr_config_types.append(gr_config.config_type)
 
 
 class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
@@ -272,6 +279,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView: The created Guardrail view object.
         """
         # Validate the create request
+        try:
+            request.enabled_providers = [GuardrailProvider[provider] for provider in request.guardrail_connections.keys()]
+        except KeyError as e:
+            raise BadRequestException(get_error_message(ERROR_ALLOWED_VALUES, "Guardrail provider", list(e.args), [member.value for member in GuardrailProvider]))
         await self.guardrail_request_validator.validate_create_request(request)
 
         # Create the Guardrail
@@ -288,22 +299,21 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Create Guardrail Configs
         guardrails_configs_list = []
-        guardrail_connection_names = set()
         for gr_config in request.guardrail_configs:
             gr_config_model = GRConfigModel(guardrail_id=guardrail.id)
             gr_config_model.set_attribute(gr_config.model_dump(exclude={"create_time", "update_time"}))
             gr_conf = await self.gr_config_repository.create_record(gr_config_model)
-            guardrails_configs_list.append(GRConfigView.model_validate(gr_conf).to_guardrail_config())
-            if gr_config.guardrail_provider_connection_name:
-                guardrail_connection_names.add(gr_config.guardrail_provider_connection_name)
+            guardrails_configs_list.append(GRConfigView.model_validate(gr_conf))
 
         # Get Guardrail Connections
-        guardrails_connection_list = await self._get_guardrail_connections(guardrail_connection_names)
+        guardrails_connection_list = await self._get_guardrail_connections(request)
+
+        guardrail_configs_to_create = GuardrailTransformerProcessor.process(guardrail_configs=guardrails_configs_list)
 
         # Create Guardrails in end service and save the Responses
         create_guardrail_response = await self._create_guardrail_to_external_provider(guardrail,
                                                                                       guardrails_connection_list,
-                                                                                      guardrails_configs_list)
+                                                                                      guardrail_configs_to_create)
 
         result = GuardrailView(**request.dict())
         result.id = guardrail.id
@@ -314,11 +324,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return result
 
-    async def _get_guardrail_connections(self, guardrail_connection_names: Set[str]):
-        conn_filter = GRConnectionFilter(name=','.join(guardrail_connection_names))
+    async def _get_guardrail_connections(self, guardrail: GuardrailView):
+        conn_filter = GRConnectionFilter(name=','.join(value["connectionName"] for value in guardrail.guardrail_connections.values()))
         gr_conn_list = await self.guardrail_connection_service.get_all(conn_filter)
-        return [GRConnectionView.model_validate(gr_conn).to_guardrail_connection()
-                for gr_conn in gr_conn_list]
+        return {gr_conn.guardrail_provider.name: GRConnectionView.model_validate(gr_conn).to_guardrail_connection() for gr_conn in gr_conn_list}
 
     async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str]):
         # Create Guardrail Applications
@@ -634,13 +643,20 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             await self.gr_provider_response_repository.update_record(gr_resp_model)
         return update_guardrail_response
 
-    async def _create_guardrail_to_external_provider(self, guardrail, create_connection_list,
-                                                     create_guardrails_configs_list):
+    async def _create_guardrail_to_external_provider(self, guardrail, guardrail_connections,
+                                                     create_guardrails_configs):
 
         try:
-            create_guardrail_response = GuardrailProviderManager.create_guardrail(
-                create_connection_list, create_guardrails_configs_list, name=guardrail.name,
-                description=guardrail.description)
+            create_guardrails_request_map = {}
+            for provider, configs in create_guardrails_configs.items():
+                create_bedrock_guardrails_request = CreateGuardrailRequest(
+                    name=guardrail.name,
+                    description=guardrail.description,
+                    connectionDetails=guardrail_connections[provider].connectionDetails,
+                    guardrailConfigs=configs
+                )
+                create_guardrails_request_map[provider] = create_bedrock_guardrails_request
+            create_guardrail_response = GuardrailProviderManager.create_guardrail(create_guardrails_request_map)
         except Exception as e:
             raise InternalServerError(f"Failed to create guardrails. Error - {e.__str__()}")
 

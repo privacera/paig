@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy.exc import NoResultFound
 
-from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
+from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationModel, \
     GRApplicationVersionModel, GRConfigModel, GRProviderResponseModel
 from api.guardrails.database.db_models.guardrail_view_model import GuardrailViewModel

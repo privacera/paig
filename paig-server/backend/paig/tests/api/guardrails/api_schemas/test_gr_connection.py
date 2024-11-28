@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
-from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
+from api.guardrails import GuardrailProvider
 
 
 def test_guardrail_connection_view_valid_data():

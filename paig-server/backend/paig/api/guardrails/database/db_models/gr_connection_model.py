@@ -1,12 +1,8 @@
-from enum import Enum
-
 from sqlalchemy import Column, String, JSON, Enum as SQLEnum
+from sqlalchemy.orm import relationship
 
+from api.guardrails import GuardrailProvider
 from core.db_models.BaseSQLModel import BaseSQLModel
-
-
-class GuardrailProvider(Enum):
-    AWS = 'AWS'
 
 
 class GRConnectionModel(BaseSQLModel):
@@ -25,3 +21,5 @@ class GRConnectionModel(BaseSQLModel):
     description = Column(String(4000), nullable=True)
     guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     connection_details = Column(JSON, nullable=False)
+
+    gr_connection_mapping = relationship("GRConnectionMappingModel", back_populates="gr_connection")

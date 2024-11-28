@@ -2,7 +2,8 @@ import pytest
 from unittest.mock import patch
 from sqlalchemy.exc import NoResultFound
 
-from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel, GuardrailProvider
+from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
+from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
 from core.exceptions import NotFoundException
 

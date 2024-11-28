@@ -2,7 +2,7 @@ from typing import Optional
 
 from pydantic import Field
 
-from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
+from api.guardrails import GuardrailProvider
 from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
 

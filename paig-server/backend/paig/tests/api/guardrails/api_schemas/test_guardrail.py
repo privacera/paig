@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRApplicationView, GRConfigView, \
     GuardrailsDataView
-from api.guardrails.database.db_models.gr_connection_model import GuardrailProvider
+from api.guardrails import GuardrailProvider
 
 guardrail_data = {
     "id": 1,

@@ -25,6 +25,7 @@ def upgrade() -> None:
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=4000), nullable=True),
     sa.Column('version', sa.Integer(), nullable=False),
+    sa.Column('enabled_providers', core.db_models.utils.CommaSeparatedList(length=255), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -37,7 +38,7 @@ def upgrade() -> None:
     op.create_table('guardrail_connection',
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=4000), nullable=True),
-    sa.Column('guardrail_provider', sa.String(length=255), nullable=False),
+    sa.Column('guardrail_provider', sa.Enum('AWS', 'PAIG', 'LLAMA', 'OPENAI', 'MULTIPLE', name='guardrailprovider'), nullable=False),
     sa.Column('connection_details', sa.JSON(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
@@ -66,10 +67,10 @@ def upgrade() -> None:
     op.create_index(op.f('ix_guardrail_application_update_time'), 'guardrail_application', ['update_time'], unique=False)
     op.create_table('guardrail_config',
     sa.Column('guardrail_id', sa.Integer(), nullable=False),
-    sa.Column('guardrail_provider', sa.String(length=255), nullable=False),
-    sa.Column('guardrail_provider_connection_name', sa.String(length=255), nullable=True),
-    sa.Column('config_type', sa.String(length=255), nullable=False),
+    sa.Column('guardrail_provider', sa.Enum('AWS', 'PAIG', 'LLAMA', 'OPENAI', 'MULTIPLE', name='guardrailprovider'), nullable=False),
+    sa.Column('config_type', sa.Enum('CONTENT_MODERATION', 'SENSITIVE_DATA', 'OFF_TOPIC', 'DENIED_TERMS', 'PROMPT_SAFETY', name='guardrailconfigtype'), nullable=False),
     sa.Column('config_data', sa.JSON(), nullable=False),
+    sa.Column('response_message', sa.String(length=4000), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -82,7 +83,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_guardrail_config_update_time'), 'guardrail_config', ['update_time'], unique=False)
     op.create_table('guardrail_provider_response',
     sa.Column('guardrail_id', sa.Integer(), nullable=False),
-    sa.Column('guardrail_provider', sa.String(length=255), nullable=False),
+    sa.Column('guardrail_provider', sa.Enum('AWS', 'PAIG', 'LLAMA', 'OPENAI', 'MULTIPLE', name='guardrailprovider'), nullable=False),
     sa.Column('response_data', sa.JSON(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
@@ -107,36 +108,56 @@ def upgrade() -> None:
     op.create_index(op.f('ix_guardrail_application_version_create_time'), 'guardrail_application_version', ['create_time'], unique=False)
     op.create_index(op.f('ix_guardrail_application_version_id'), 'guardrail_application_version', ['id'], unique=False)
     op.create_index(op.f('ix_guardrail_application_version_update_time'), 'guardrail_application_version', ['update_time'], unique=False)
+    op.create_table('guardrail_connection_mapping',
+    sa.Column('guardrail_id', sa.Integer(), nullable=False),
+    sa.Column('gr_connection_id', sa.Integer(), nullable=False),
+    sa.Column('guardrail_provider', sa.Enum('AWS', 'PAIG', 'LLAMA', 'OPENAI', 'MULTIPLE', name='guardrailprovider'), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.Column('status', sa.Integer(), nullable=False),
+    sa.Column('create_time', sa.DateTime(), nullable=False),
+    sa.Column('update_time', sa.DateTime(), nullable=False),
+    sa.ForeignKeyConstraint(['gr_connection_id'], ['guardrail_connection.id'],
+    name='fk_guardrail_connection_mapping_gr_connection_id'),
+    sa.ForeignKeyConstraint(['guardrail_id'], ['guardrail.id'],
+    name='fk_guardrail_connection_mapping_guardrail_id', ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_guardrail_connection_mapping_create_time'), 'guardrail_connection_mapping',
+                    ['create_time'], unique=False)
+    op.create_index(op.f('ix_guardrail_connection_mapping_id'), 'guardrail_connection_mapping', ['id'], unique=False)
+    op.create_index(op.f('ix_guardrail_connection_mapping_update_time'), 'guardrail_connection_mapping',
+                    ['update_time'], unique=False)
 
     # ### Create view for guardrail by joining guardrail, guardrail_connection, guardrail_application, guardrail_config and guardrail_provider_response
     connection = op.get_bind()
     connection.execute(
         sa.text("""
             CREATE VIEW paig_guardrail_view AS
-            SELECT 
-                gr.status,
-                gr.create_time,
-                gr.update_time,
-                gr.name,
-                gr.description,
-                gr.version,
-                gr_conf.id,
-                gr_conf.guardrail_id,
-                gr_conf.guardrail_provider,
-                gr_conf.config_type,
-                gr_conf.config_data,
-                gr_conn.name AS guardrail_provider_connection_name,
-                gr_conn.connection_details AS guardrail_connection,
-                gr_resp.response_data AS guardrail_provider_response,
-                GROUP_CONCAT(DISTINCT gr_app.application_key) AS application_keys
-            FROM
-                guardrail gr
-                    LEFT JOIN guardrail_config gr_conf            ON gr.id = gr_conf.guardrail_id
-                    LEFT JOIN guardrail_connection gr_conn        ON gr_conn.name = gr_conf.guardrail_provider_connection_name
-                    LEFT JOIN guardrail_provider_response gr_resp ON gr.id = gr_resp.guardrail_id AND gr_conf.guardrail_provider = gr_resp.guardrail_provider
-                    LEFT JOIN guardrail_application gr_app        ON gr.id = gr_app.guardrail_id
-            GROUP BY
-                gr_conf.id;
+                SELECT
+                    gr.status,
+                    gr.create_time,
+                    gr.update_time,
+                    gr.name,
+                    gr.description,
+                    gr.version,
+                    gr_conf.id,
+                    gr_conf.guardrail_id,
+                    gr_conf.guardrail_provider,
+                    gr_conf.config_type,
+                    gr_conf.config_data,
+                    gr_conn.name AS guardrail_provider_connection_name,
+                    gr_conn.connection_details AS guardrail_connection,
+                    gr_resp.response_data AS guardrail_provider_response,
+                    GROUP_CONCAT(DISTINCT gr_app.application_key) AS application_keys
+                FROM
+                    guardrail gr
+                        LEFT JOIN guardrail_config gr_conf            ON gr.id = gr_conf.guardrail_id
+                        LEFT JOIN guardrail_connection_mapping gcm    ON gr.id = gcm.guardrail_id
+                        LEFT JOIN guardrail_connection gr_conn        ON gr_conn.id = gcm.gr_connection_id
+                        LEFT JOIN guardrail_provider_response gr_resp ON gr.id = gr_resp.guardrail_id AND gr_conf.guardrail_provider = gr_resp.guardrail_provider
+                        LEFT JOIN guardrail_application gr_app        ON gr.id = gr_app.guardrail_id
+                GROUP BY
+                    gr_conf.id;
         """))
     # ### end Alembic commands ###
 
@@ -144,6 +165,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.execute("DROP VIEW IF EXISTS paig_guardrail_view;")
+    op.drop_index(op.f('ix_guardrail_connection_mapping_update_time'), table_name='guardrail_connection_mapping')
+    op.drop_index(op.f('ix_guardrail_connection_mapping_id'), table_name='guardrail_connection_mapping')
+    op.drop_index(op.f('ix_guardrail_connection_mapping_create_time'), table_name='guardrail_connection_mapping')
+    op.drop_table('guardrail_connection_mapping')
     op.drop_index(op.f('ix_guardrail_application_version_update_time'), table_name='guardrail_application_version')
     op.drop_index(op.f('ix_guardrail_application_version_id'), table_name='guardrail_application_version')
     op.drop_index(op.f('ix_guardrail_application_version_create_time'), table_name='guardrail_application_version')

@@ -243,10 +243,10 @@ seneitive_information_policy_config = GuardrailConfig(
         ],
         "regexesConfig": [
             {
-                'name': 'email_regex',
-                'description': 'email_regex',
-                'pattern': 'test_pattern',
-                'action': 'ANONYMIZE'
+                "name": "email_regex",
+                "description": "email_regex",
+                "pattern": "test_pattern",
+                "action": "ANONYMIZE"
             }
         ]
     }
@@ -258,10 +258,10 @@ contextual_grounding_policy_config = GuardrailConfig(
     guardrailProviderConnectionName="AWS Bedrock Guardrail",
     configType=BedrockGuardrailConfigType.CONTEXTUAL_GROUNDING_POLICY_CONFIG,
     configData={
-        'filtersConfig': [
+        "filtersConfig": [
             {
-                'type': 'GROUNDING',
-                'threshold': 0.2
+                "type": "GROUNDING",
+                "threshold": 0.2
             },
         ]
     }

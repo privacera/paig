@@ -5,7 +5,8 @@ from sqlalchemy.exc import NoResultFound
 
 from api.guardrails.api_schemas.gr_connection import GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView
-from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel, GuardrailProvider
+from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
+from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_models.guardrail_model import GRApplicationModel, GRConfigModel, \
     GRApplicationVersionModel, GuardrailModel, GRProviderResponseModel
 from api.guardrails.database.db_models.guardrail_view_model import GuardrailViewModel
