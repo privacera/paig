@@ -10,8 +10,8 @@ class GuardrailProvider(Enum):
 
 
 class GuardrailConfigType(Enum):
-    CONTENT_MODERATION = 'contentModeration'
-    SENSITIVE_DATA = 'sensitiveData'
-    OFF_TOPIC = 'offTopic'
-    DENIED_TERMS = 'deniedTerms'
-    PROMPT_SAFETY = 'promptSafety'
+    CONTENT_MODERATION = 'CONTENT_MODERATION'
+    SENSITIVE_DATA = 'SENSITIVE_DATA'
+    OFF_TOPIC = 'OFF_TOPIC'
+    DENIED_TERMS = 'DENIED_TERMS'
+    PROMPT_SAFETY = 'PROMPT_SAFETY'

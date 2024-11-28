@@ -327,6 +327,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
     async def _get_guardrail_connections(self, guardrail: GuardrailView):
         conn_filter = GRConnectionFilter(name=','.join(value["connectionName"] for value in guardrail.guardrail_connections.values()))
         gr_conn_list = await self.guardrail_connection_service.get_all(conn_filter)
+        if not gr_conn_list:
+            raise BadRequestException("Guardrail Connections not found")
         return {gr_conn.guardrail_provider.name: GRConnectionView.model_validate(gr_conn).to_guardrail_connection() for gr_conn in gr_conn_list}
 
     async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str]):

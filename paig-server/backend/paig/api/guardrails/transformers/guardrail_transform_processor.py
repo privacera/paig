@@ -36,6 +36,7 @@ class GuardrailTransformerProcessor:
                         if provider not in gr_providers:
                             if provider not in gr_configs:
                                 gr_configs[provider] = []
+                            gr_providers.append(provider)
                             gr_configs[provider].append(copy.deepcopy(gr_config))
                 gr_configs.pop(GuardrailProvider.MULTIPLE, None)
 
