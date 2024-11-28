@@ -15,7 +15,7 @@ from api.guardrails.database.db_operations.guardrail_repository import \
     GRApplicationRepository, GRApplicationVersionRepository
 from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRequest
 from api.guardrails.services.gr_connections_service import GRConnectionService
-from api.guardrails.transformers.GuardrailTranformProcessor import GuardrailTransformerProcessor
+from api.guardrails.transformers.guardrail_transform_processor import GuardrailTransformerProcessor
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable

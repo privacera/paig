@@ -4,9 +4,7 @@ from collections import defaultdict
 from api.guardrails.api_schemas.guardrail import GRConfigView
 from api.guardrails import GuardrailProvider
 from api.guardrails.providers import GuardrailConfig
-from api.guardrails.transformers import GuardrailTransformer
-from api.guardrails.transformers.backend.aws_gr_transformer import AWSGuardrailTransformer
-from api.guardrails.transformers.backend.llama_gr_transformer import LlamaGuardrailTransformer
+from api.guardrails.transformers import GuardrailTransformerFactory
 from core.exceptions import BadRequestException
 
 
@@ -50,16 +48,3 @@ class GuardrailTransformerProcessor:
             return transformed_results
         except Exception as e:
             raise BadRequestException(f"Failed to process guardrail configurations: {str(e)}")
-
-
-class GuardrailTransformerFactory:
-    @staticmethod
-    def get_transformer(provider: str) -> GuardrailTransformer:
-        transformers = {
-            "AWS": AWSGuardrailTransformer,
-            "LLAMA": LlamaGuardrailTransformer
-        }
-        transformer_class = transformers.get(provider)
-        if not transformer_class:
-            raise ValueError(f"Unsupported provider: {provider}")
-        return transformer_class()
