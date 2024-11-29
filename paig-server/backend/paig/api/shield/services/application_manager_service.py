@@ -79,13 +79,10 @@ class ApplicationManager(Singleton):
             setattr(scanner, 'application_key', application_key)
 
             if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
-                guardrail_id = auth_req.context.get('guardrail_id')
-                guardrail_version = auth_req.context.get('guardrail_version')
-                region = auth_req.context.get('region')
-
-                setattr(scanner, 'guardrail_id', guardrail_id)
-                setattr(scanner, 'guardrail_version', guardrail_version)
-                setattr(scanner, 'region', region)
+                for attr in ['guardrail_id', 'guardrail_version', 'region']:
+                    value = auth_req.context.get(attr)
+                    if value:
+                        setattr(scanner, attr, value)
 
         return scanners_list
 
