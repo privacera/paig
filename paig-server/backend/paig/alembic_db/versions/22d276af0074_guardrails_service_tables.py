@@ -145,6 +145,7 @@ def upgrade() -> None:
                     gr_conf.guardrail_provider,
                     gr_conf.config_type,
                     gr_conf.config_data,
+                    gr_conf.response_message,
                     gr_conn.name AS guardrail_provider_connection_name,
                     gr_conn.connection_details AS guardrail_connection,
                     gr_resp.response_data AS guardrail_provider_response,

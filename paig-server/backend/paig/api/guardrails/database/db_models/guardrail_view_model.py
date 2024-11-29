@@ -31,6 +31,7 @@ class GuardrailViewModel(BaseSQLModel):
     guardrail_id = Column(Integer, nullable=False)
     config_type = Column(String(255), nullable=False)
     config_data = Column(JSON, nullable=False)
+    response_message = Column(String(255), nullable=False)
 
     guardrail_provider_connection_name = Column(String(255), nullable=True)
     guardrail_connection = Column(JSON, nullable=False)

@@ -9,7 +9,7 @@ from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter,
     GuardrailsDataView
 from api.guardrails import GuardrailProvider, GuardrailConfigType
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
-    GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel
+    GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel, GRConnectionMappingModel
 from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository, \
     GRApplicationRepository, GRApplicationVersionRepository
@@ -306,7 +306,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             guardrails_configs_list.append(GRConfigView.model_validate(gr_conf))
 
         # Get Guardrail Connections
-        guardrails_connection_list = await self._get_guardrail_connections(request)
+        guardrails_connection_list = await self._create_guardrail_connection_association(guardrail.id, request.guardrail_connections)
 
         guardrail_configs_to_create = GuardrailTransformerProcessor.process(guardrail_configs=guardrails_configs_list)
 
@@ -324,11 +324,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return result
 
-    async def _get_guardrail_connections(self, guardrail: GuardrailView):
-        conn_filter = GRConnectionFilter(name=','.join(value["connectionName"] for value in guardrail.guardrail_connections.values()))
+    async def _create_guardrail_connection_association(self, guardrail_id, guardrail_connections):
+        conn_filter = GRConnectionFilter(name=','.join(value["connectionName"] for value in guardrail_connections.values()))
         gr_conn_list = await self.guardrail_connection_service.get_all(conn_filter)
         if not gr_conn_list:
             raise BadRequestException("Guardrail Connections not found")
+        for gr_conn in gr_conn_list:
+            gr_conn_mapping = GRConnectionMappingModel(guardrail_id=guardrail_id, gr_connection_id=gr_conn.id, guardrail_provider=gr_conn.guardrail_provider)
+            await self.guardrail_connection_service.create_guardrail_connection_mapping(gr_conn_mapping)
         return {gr_conn.guardrail_provider.name: GRConnectionView.model_validate(gr_conn).to_guardrail_connection() for gr_conn in gr_conn_list}
 
     async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str]):
@@ -364,12 +367,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         result.id = guardrails[0].guardrail_id
         result.guardrail_configs = []
         result.guardrail_provider_response = {}
+        result.guardrail_connections = {}
 
         # Populate guardrail configurations and connections
         for guardrail in guardrails:
             gr_config = GRConfigView.model_validate(guardrail)
             result.guardrail_configs.append(gr_config)
             result.guardrail_provider_response[guardrail.guardrail_provider] = guardrail.guardrail_provider_response
+            result.guardrail_connections[guardrail.guardrail_provider] = {"connectionName": guardrail.guardrail_provider_connection_name}
 
         # TODO: Uncomment below code once we have application data fetched from gov service to here
         # Populate guardrail applications

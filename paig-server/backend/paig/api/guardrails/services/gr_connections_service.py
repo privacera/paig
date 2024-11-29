@@ -2,7 +2,9 @@ from sqlalchemy.exc import NoResultFound
 
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
+from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository, \
+    GRConnectionMappingRepository
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import NotFoundException, BadRequestException
@@ -157,9 +159,10 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
     """
 
     def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository),
-                 gr_connection_request_validator: GRConnectionRequestValidator = SingletonDepends(
-                     GRConnectionRequestValidator)):
+                 gr_connection_mapping_repository: GRConnectionMappingRepository = SingletonDepends(GRConnectionMappingRepository),
+                 gr_connection_request_validator: GRConnectionRequestValidator = SingletonDepends(GRConnectionRequestValidator)):
         super().__init__(gr_connection_repository, GRConnectionModel, GRConnectionView)
+        self.gr_connection_mapping_repository = gr_connection_mapping_repository
         self.gr_connection_request_validator = gr_connection_request_validator
 
     def get_repository(self) -> GRConnectionRepository:
@@ -249,3 +252,12 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         """
         await self.gr_connection_request_validator.validate_delete_request(id)
         return await self.delete_record(id)
+
+    def create_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
+        """
+        Create a new Guardrail Connection Mapping.
+
+        Args:
+            gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to create.
+        """
+        return self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
