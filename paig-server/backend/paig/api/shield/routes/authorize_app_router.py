@@ -7,6 +7,7 @@ authorize_app_router = APIRouter()
 
 shield_controller_instance = Depends(SingletonDepends(ShieldController, called_inside_fastapi_depends=True))
 
+
 @authorize_app_router.post("")
 async def authorize_app(request: Annotated[dict | None, Body()],
                         x_tenant_id: Annotated[Optional[str], Header()] = None,

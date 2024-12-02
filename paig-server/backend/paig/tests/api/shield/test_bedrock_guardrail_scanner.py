@@ -3,6 +3,7 @@ from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailSc
 import pytest
 import os
 
+
 class TestAWSBedrockGuardrailScanner:
 
     # Initialize AWSBedrockGuardrailScanner with valid parameters and verify attributes are set correctly
@@ -57,16 +58,12 @@ class TestAWSBedrockGuardrailScanner:
         result = scanner.scan('non-trigger message')
         assert result.traits == []
 
-    # Initialize AWSBedrockGuardrailScanner with missing mandatory parameters and expect an error
-    def test_initialize_with_missing_parameters(self):
-        with pytest.raises(ValueError):
-            AWSBedrockGuardrailScanner()
-
-    # Handle missing guardrail ID, version, or region gracefully and raise appropriate errors
-    def test_missing_guardrail_details_raises_error(self, mocker):
+    # Handle missing guardrail ID, version, or region gracefully and does not trigger scan
+    def test_missing_guardrail_details(self, mocker):
         mocker.patch('os.environ.get', return_value=None)
-        with pytest.raises(ValueError, match="Bedrock Guardrail ID not found in properties or environment variables."):
-            AWSBedrockGuardrailScanner()
+
+        scan_result = AWSBedrockGuardrailScanner().scan('trigger message')
+        assert scan_result.traits == []
 
     # Scan a message with an empty string and verify ScannerResult is handled correctly
     def test_scan_with_empty_message(self, mocker):
@@ -106,8 +103,8 @@ class TestAWSBedrockGuardrailScanner:
     # Test behavior when environment variables for guardrail details are not set
     def test_guardrail_details_without_env_variables(self, mocker):
         mocker.patch.dict(os.environ, {}, clear=True)
-        with pytest.raises(ValueError):
-            AWSBedrockGuardrailScanner(name='TestScanner')
+        scan_result = AWSBedrockGuardrailScanner(name='TestScanner').scan('trigger message')
+        assert scan_result.traits == []
 
     # Handle response with no assessments gracefully in scan method
     def test_scan_no_assessments_in_response(self, mocker):

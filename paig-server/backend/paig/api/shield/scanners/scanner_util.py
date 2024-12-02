@@ -24,6 +24,7 @@ from core.utils import format_to_root_path
 from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.PIIScanner import PIIScanner
 from api.shield.utils.custom_exceptions import ShieldException
+from api.shield.utils import config_utils
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,9 @@ def get_custom_scanner_objects_from_portal(default_properties, scanner_objects, 
 def get_scanner_object_from_properties_file(default_properties, scanner_objects):
     config = configparser.ConfigParser()
     config.optionxform = str
-    cust_file_path = format_to_root_path("api/shield/conf/shield_scanner.properties")
+
+    cust_file = config_utils.get_property_value("custom_scanner_properties_file", "api/shield/conf/shield_scanner.properties")
+    cust_file_path = format_to_root_path(cust_file)
     default_file_path = format_to_root_path("api/shield/conf/shield_scanner.properties")
 
     if os.path.exists(cust_file_path):
@@ -245,7 +248,17 @@ def create_scanner(default_predefined_properties, scanner_index, scanner_info, s
         scanner_objects (dict): Dictionary to hold scanner objects.
     """
     if scanner_info['enable'] and scanner_index not in scanner_objects:
-        scanner_objects[scanner_index] = load_scanner(scanner_info)
+        if default_predefined_properties:
+            scanner_objects[scanner_index] = load_scanner(scanner_info)
+        else:
+            load_nocode_scanners = config_utils.get_property_value_boolean('enable_nocode_scanners', False)
+            if load_nocode_scanners:
+                # Lazy initialization: Only create NoCodeScanner when required
+                def create_nocode_scanner():
+                    from api.shield.scanners.NoCodeScanner import NoCodeScanner
+                    return NoCodeScanner(**scanner_info)
+
+                scanner_objects[scanner_index] = create_nocode_scanner()
         logger.info(f"Loaded scanner: {scanner_objects[scanner_index].name}")
 
 

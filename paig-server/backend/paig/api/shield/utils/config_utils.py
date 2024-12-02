@@ -45,11 +45,16 @@ def get_property_value_list(property_name, default_value=None):
     """
     value = get_property_value(property_name, default_value)
     try:
-        return value.split(",")
+        if isinstance(value, list):
+            return value
+        elif "," in value:
+            return value.split(",")
+        else:
+            return [value]
     except Exception as e:
         logger.error(f"The property '{property_name}' with value '{value}' and default value '{default_value}' cannot "
                      f"be converted to list. Error: {e}")
-        return None
+        return default_value if default_value is not None else []
 
 
 def get_property_value_int(property_name, default_value=None):

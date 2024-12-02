@@ -11,7 +11,6 @@ from opentelemetry.metrics import Observation
 
 # TODO - Add this in otel module
 # Initialize the meter provider
-metrics.set_meter_provider(MeterProvider())
 meter = metrics.get_meter(__name__)
 
 logger = logging.getLogger(__name__)

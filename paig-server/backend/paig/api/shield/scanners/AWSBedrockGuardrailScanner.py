@@ -32,12 +32,6 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         super().__init__(**kwargs)
 
-        self.guardrail_id, self.guardrail_version, self.region = self._get_guardrail_details()
-        self.bedrock_client = boto3.client(
-            'bedrock-runtime',
-            region_name=self.region
-        )
-
     def scan(self, message: str) -> ScannerResult:
         """
         Scan the input prompt through the Bedrock guardrail.
@@ -48,6 +42,15 @@ class AWSBedrockGuardrailScanner(Scanner):
         Returns:
             dict: Scan result including traits, actions, and output text if intervention occurs.
         """
+        guardrail_id, guardrail_version, region = self._get_guardrail_details()
+        if not guardrail_id or not guardrail_version or not region:
+            logger.error("AWSBedrockGuardrailScanner: Guardrail details not found. Hence skipping the scan.")
+            return ScannerResult(traits=[])
+
+        bedrock_client = boto3.client(
+            'bedrock-runtime',
+            region_name=region
+        )
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -55,9 +58,9 @@ class AWSBedrockGuardrailScanner(Scanner):
         ] else Guardrail.OUTPUT.value
         logger.debug(f"AWSBedrockGuardrailScanner: Scanning message: {message} with guardrail source: {guardrail_source} for {self.get_property('scan_for_req_type')}")
 
-        response = self.bedrock_client.apply_guardrail(
-            guardrailIdentifier=self.guardrail_id,
-            guardrailVersion=self.guardrail_version,
+        response = bedrock_client.apply_guardrail(
+            guardrailIdentifier=guardrail_id,
+            guardrailVersion=guardrail_version,
             source=guardrail_source,
             content=[{'text': {'text': message}}]
         )
@@ -68,7 +71,7 @@ class AWSBedrockGuardrailScanner(Scanner):
             output_text = outputs[0].get('text') if outputs else None
             tag_set, action_set = self._extract_and_populate_assessment_info(response.get('assessments', []))
 
-            analyzer_result = AnalyzerResult(start=0, end=len(message), entity_type='', score=0.0,
+            analyzer_result = AnalyzerResult(start=0, end=len(message), entity_type='AWSBEDROCKGUARDRAIL', score=1.0,
                                          model_name='', scanner_name=self.get_property('name'), analysis_explanation=None,
                                          recognition_metadata=response)
 
@@ -92,13 +95,10 @@ class AWSBedrockGuardrailScanner(Scanner):
 
         if not guardrail_id:
             logger.error("Bedrock Guardrail ID not found in properties or environment variables.")
-            raise ValueError("Bedrock Guardrail ID not found in properties or environment variables.")
         if not guardrail_version:
             logger.error("Bedrock Guardrail version not found in properties or environment variables.")
-            raise ValueError("Bedrock Guardrail version not found in properties or environment variables.")
         if not region:
             logger.error("Bedrock Guardrail region not found in properties or environment variables.")
-            raise ValueError("Bedrock Guardrail region not found in properties or environment variables.")
 
         return guardrail_id, guardrail_version, region
 

@@ -6,6 +6,7 @@ from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.scanner_util import parse_properties
 from api.shield.cache.lru_cache import LRUCache
 from api.shield.utils import config_utils
+from opentelemetry import metrics
 import concurrent.futures
 
 from api.shield.utils.custom_exceptions import ShieldException
@@ -14,6 +15,7 @@ import time
 from core.utils import Singleton
 
 logger = logging.getLogger(__name__)
+meter = metrics.get_meter(__name__)
 
 
 class ApplicationManager(Singleton):
@@ -21,6 +23,8 @@ class ApplicationManager(Singleton):
     The ApplicationManager class is responsible for managing the application's scanners.
     It uses an LRUCache to store the scanners for each application key.
     """
+    scan_timings_histogram = None
+
     def __init__(self):
         """
         Initialize the ApplicationManager with a cache of scanners.
@@ -33,6 +37,8 @@ class ApplicationManager(Singleton):
         self.cache_name = "ApplicationKey_Scanners"
         self.application_key_scanners = LRUCache(self.cache_name, max_capacity, max_idle_time)
         self.shield_scanner_max_workers = config_utils.get_property_value_int("shield_scanner_max_workers", 4)
+        ApplicationManager.scan_timings_histogram = meter.create_histogram("scan_timings", "ms",
+                                                                           "Histogram for scan timings")
 
     def load_scanners(self, application_key: str):
         """
@@ -73,13 +79,10 @@ class ApplicationManager(Singleton):
             setattr(scanner, 'application_key', application_key)
 
             if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
-                guardrail_id = auth_req.context.get('guardrail_id')
-                guardrail_version = auth_req.context.get('guardrail_version')
-                region = auth_req.context.get('region')
-
-                setattr(scanner, 'guardrail_id', guardrail_id)
-                setattr(scanner, 'guardrail_version', guardrail_version)
-                setattr(scanner, 'region', region)
+                for attr in ['guardrail_id', 'guardrail_version', 'region']:
+                    value = auth_req.context.get(attr)
+                    if value:
+                        setattr(scanner, attr, value)
 
         return scanners_list
 
@@ -99,12 +102,13 @@ class ApplicationManager(Singleton):
 
         application_key = auth_req.application_key
         request_type = auth_req.request_type
+        tenant_id = auth_req.tenant_id
         scanners = self.get_scanners(application_key, request_type, is_authz_scan, auth_req)
         logger.debug(f"Found {len(scanners)} scanners for application key: {application_key}")
 
         scan_results, scan_timings = {}, {}
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.shield_scanner_max_workers) as executor:
-            future_to_scanner = {executor.submit(scan_with_scanner, scanner, message): scanner for scanner in scanners}
+            future_to_scanner = {executor.submit(scan_with_scanner, scanner, message, tenant_id): scanner for scanner in scanners}
             for future in concurrent.futures.as_completed(future_to_scanner):
                 scanner = future_to_scanner[future]
                 try:
@@ -117,13 +121,14 @@ class ApplicationManager(Singleton):
         return scan_results, scan_timings
 
 
-def scan_with_scanner(scanner: Scanner, message: str) -> (str, ScannerResult, str):
+def scan_with_scanner(scanner: Scanner, message: str, tenant_id: str) -> (str, ScannerResult, str):
     """
     Scan the given message with the given scanner.
 
     Args:
         scanner (Scanner): The scanner to use.
         message (str): The message to scan.
+        tenant_id (str): The tenant ID.
 
     Returns:
         dict: The scan results.
@@ -134,4 +139,7 @@ def scan_with_scanner(scanner: Scanner, message: str) -> (str, ScannerResult, st
     logger.debug(f"Scanner {scanner.name} got this result: {result} for message: {message}, which is having access "
                  f"control: {scanner.enforce_access_control}")
     message_scan_time = f"{((time.perf_counter() - message_scan_start_time) * 1000):.3f}"
+    ApplicationManager.scan_timings_histogram.record(float(message_scan_time),
+                                                     {"scanner": scanner.name,
+                                                      "tenant_id": tenant_id})
     return scanner.name, result, message_scan_time

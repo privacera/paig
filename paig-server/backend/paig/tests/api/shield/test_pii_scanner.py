@@ -35,7 +35,7 @@ class TestPIIScanner:
         message = 'Hi John, please send me an email to you@moon.com'
         result = scanner.scan(message)
         assert result.get('traits') == ['EMAIL_ADDRESS', 'PERSON']
-        assert result.get('analyzer_result') ==analyzer_result_list
+        assert result.get('analyzer_result') == analyzer_result_list
 
     def test_load_recognizer_ignore_list(self):
         scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.5, entity_type='entity_type', enable=True)
@@ -77,7 +77,7 @@ class TestPIIScanner:
         assert result == ['word1', 'word2']
 
     def test_load_keyword_list_with_multiple_parameters(self, mocker):
-        mocker.patch('os.path.exists', retrun_value=True)
+        mocker.patch('os.path.exists', return_value=True)
         mocker.patch('os.path.getsize', return_value=10)
 
         def mock_open_func(file, mode='r'):

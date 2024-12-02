@@ -1,6 +1,3 @@
-
-from api.shield.client.local_governance_service_client import LocalGovernanceServiceClient
-from api.shield.client.http_governance_service_client import HttpGovernanceServiceClient
 from api.shield.utils import config_utils
 from core.utils import SingletonDepends
 
@@ -27,8 +24,10 @@ class GovernanceServiceFactory:
         client_type = config_utils.get_property_value('governance_service_client', 'local')
         match client_type:
             case "http":
+                from api.shield.client.http_governance_service_client import HttpGovernanceServiceClient
                 return SingletonDepends(HttpGovernanceServiceClient)
             case "local":
+                from api.shield.client.local_governance_service_client import LocalGovernanceServiceClient
                 return SingletonDepends(LocalGovernanceServiceClient)
             case _:
                 raise Exception(

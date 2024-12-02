@@ -1,13 +1,14 @@
 import logging
-
-
+import time
 from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.account_service_interface import IAccountServiceClient
+from opentelemetry import metrics
 
 logger = logging.getLogger(__name__)
+meter = metrics.get_meter(__name__)
 
 
 class HttpAccountServiceClient(AsyncBaseRESTHttpClient, IAccountServiceClient):
@@ -32,6 +33,8 @@ class HttpAccountServiceClient(AsyncBaseRESTHttpClient, IAccountServiceClient):
         Initialize the client instance with the base URL from configuration.
         """
         super().__init__(config_utils.get_property_value("account_service_base_url"))
+        self.account_service_request_histogram = meter.create_histogram("account_service_request_duration", "ms",
+                                                                        "Histogram for account_service request")
 
     @staticmethod
     def get_headers(tenant_id: str):
@@ -65,7 +68,8 @@ class HttpAccountServiceClient(AsyncBaseRESTHttpClient, IAccountServiceClient):
         """
         url = config_utils.get_property_value("account_service_get_key_endpoint")
         logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id}")
-
+        request_start_time = time.perf_counter()
+        response = None
         try:
 
             response = await self.get(
@@ -84,3 +88,8 @@ class HttpAccountServiceClient(AsyncBaseRESTHttpClient, IAccountServiceClient):
         except Exception as ex:
             logger.error(f"Request all_latest_encryption_key({tenant_id}) failed with error: {ex}")
             raise ShieldException(ex.args[0])
+        finally:
+            self.account_service_request_histogram.record(round((time.perf_counter() - request_start_time) * 1000, 3),
+                                                          {"path": url, "status": response.status_code,
+                                                           "tenant_id": tenant_id,
+                                                           "request_method": "GET"})

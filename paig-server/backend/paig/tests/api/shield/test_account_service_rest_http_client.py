@@ -1,5 +1,4 @@
 from unittest.mock import Mock
-from api.shield.client.http_account_service_client import HttpAccountServiceClient
 from api.shield.utils.custom_exceptions import ShieldException
 
 import pytest
@@ -10,6 +9,7 @@ class TestHttpAccountServiceClient:
     #  can get all encryption keys for a given tenant
     @pytest.mark.asyncio
     async def test_can_get_all_encryption_keys_for_given_tenant(self, mocker):
+        from api.shield.client.http_account_service_client import HttpAccountServiceClient
         # Mock the necessary dependencies
         side_effect = lambda prop, default_value=None: {
             "account_service_base_url": "base_url",
@@ -35,6 +35,7 @@ class TestHttpAccountServiceClient:
     #  can get all encryption keys for a given tenant with paig api key
     @pytest.mark.asyncio
     async def test_can_get_all_encryption_keys_for_given_tenant_with_paig_api_key(self, mocker):
+        from api.shield.client.http_account_service_client import HttpAccountServiceClient
         # Mock the necessary dependencies
         side_effect = lambda prop, default_value=None: {
             "account_service_base_url": "base_url",
@@ -61,6 +62,7 @@ class TestHttpAccountServiceClient:
     #  can get all encryption keys for a given tenant with no paig api key
     @pytest.mark.asyncio
     async def test_get_all_encryption_keys_with_error_response(self, mocker):
+        from api.shield.client.http_account_service_client import HttpAccountServiceClient
         # Mock the necessary dependencies
         side_effect = lambda prop, default_value=None: {
             "account_service_base_url": "base_url",
