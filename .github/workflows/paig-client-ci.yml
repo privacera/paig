@@ -25,6 +25,17 @@ jobs:
       with:
         python-version: "3.10"
 
+    - name: Set sanitized branch name
+      run: |
+          # Get branch name and sanitize it
+          BRANCH_NAME="${GITHUB_REF_NAME//[^a-zA-Z0-9-]/-}"  # Replace invalid characters with '-'
+          
+          # Remove leading and trailing hyphens
+          BRANCH_NAME="${BRANCH_NAME##-}"  # Trim leading hyphens
+          BRANCH_NAME="${BRANCH_NAME%%-}"  # Trim trailing hyphens
+          
+          echo "SANITIZED_BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+
     - name: Prepare venv
       run: |
         python3 -m pip install virtualenv
@@ -50,19 +61,27 @@ jobs:
       run: |
         filepath=$PWD
         . venv/bin/activate && cd paig-client/src
-        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
+        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml --junitxml=$filepath/junit-${{ env.SANITIZED_BRANCH_NAME }}.xml tests
 
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-report
-        path: coverage.xml
+        name: coverage-report-${{ env.SANITIZED_BRANCH_NAME }}
+        path: coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
       with:
-        name: junit-results
-        path: junit.xml
+        name: junit-results-${{ env.SANITIZED_BRANCH_NAME }}
+        path: junit-${{ env.SANITIZED_BRANCH_NAME }}.xml
+
+    - name: Set build version to dev
+      id: version
+      run: |
+        FILE=paig-client/src/paig_client/VERSION
+        VERSION=$(awk -F= '{gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/^['\''"]+|['\''"]+$/, "", $2); print $2}' $FILE)
+        DEV_VERSION="${VERSION}+${SANITIZED_BRANCH_NAME}$(date +%Y%m%d%H%M%S)"
+        echo "__version__ = '${DEV_VERSION}'" > $FILE
 
     - name: Build the wheel
       run: |
@@ -77,3 +96,9 @@ jobs:
           virtualenv -p python3 venv && . venv/bin/activate
           cd paig-client
           pip install dist/*.whl
+
+    - name: Upload python package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paig-client-${{ env.SANITIZED_BRANCH_NAME }}-build
+        path: paig-client/dist/*.whl
