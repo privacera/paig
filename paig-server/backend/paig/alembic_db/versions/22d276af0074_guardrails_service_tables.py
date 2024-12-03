@@ -146,19 +146,31 @@ def upgrade() -> None:
                     gr_conf.config_type,
                     gr_conf.config_data,
                     gr_conf.response_message,
-                    gr_conn.name AS guardrail_provider_connection_name,
-                    gr_conn.connection_details AS guardrail_connection,
-                    gr_resp.response_data AS guardrail_provider_response,
                     GROUP_CONCAT(DISTINCT gr_app.application_key) AS application_keys
                 FROM
                     guardrail gr
                         LEFT JOIN guardrail_config gr_conf            ON gr.id = gr_conf.guardrail_id
-                        LEFT JOIN guardrail_connection_mapping gcm    ON gr.id = gcm.guardrail_id
-                        LEFT JOIN guardrail_connection gr_conn        ON gr_conn.id = gcm.gr_connection_id
-                        LEFT JOIN guardrail_provider_response gr_resp ON gr.id = gr_resp.guardrail_id AND gr_conf.guardrail_provider = gr_resp.guardrail_provider
                         LEFT JOIN guardrail_application gr_app        ON gr.id = gr_app.guardrail_id
                 GROUP BY
                     gr_conf.id;
+        """))
+
+    connection.execute(
+        sa.text("""
+            CREATE VIEW paig_guardrail_connection_view AS
+                SELECT
+                    gr_conn_map.guardrail_id,
+                    gr_conn.status,
+                    gr_conn.create_time,
+                    gr_conn.update_time,
+                    gr_conn.name,
+                    gr_conn.description,
+                    gr_conn.guardrail_provider,
+                    gr_conn.connection_details,
+                    gr_conn.id
+                FROM
+                    guardrail_connection gr_conn
+                        LEFT JOIN guardrail_connection_mapping gr_conn_map ON gr_conn.id = gr_conn_map.gr_connection_id;
         """))
     # ### end Alembic commands ###
 

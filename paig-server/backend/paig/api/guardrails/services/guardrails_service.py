@@ -366,15 +366,15 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         result = GuardrailView.model_validate(guardrails[0])
         result.id = guardrails[0].guardrail_id
         result.guardrail_configs = []
-        result.guardrail_provider_response = {}
         result.guardrail_connections = {}
 
         # Populate guardrail configurations and connections
         for guardrail in guardrails:
             gr_config = GRConfigView.model_validate(guardrail)
             result.guardrail_configs.append(gr_config)
-            result.guardrail_provider_response[guardrail.guardrail_provider] = guardrail.guardrail_provider_response
-            result.guardrail_connections[guardrail.guardrail_provider] = {"connectionName": guardrail.guardrail_provider_connection_name}
+
+        gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(id)
+        result.guardrail_connections = {gr_conn.guardrail_provider: {"connectionName": gr_conn.name} for gr_conn in gr_connections}
 
         # TODO: Uncomment below code once we have application data fetched from gov service to here
         # Populate guardrail applications

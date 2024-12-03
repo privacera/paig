@@ -4,7 +4,7 @@ from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnect
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository, \
-    GRConnectionMappingRepository
+    GRConnectionMappingRepository, GRConnectionViewRepository
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import NotFoundException, BadRequestException
@@ -160,9 +160,11 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
 
     def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository),
                  gr_connection_mapping_repository: GRConnectionMappingRepository = SingletonDepends(GRConnectionMappingRepository),
+                 gr_connection_view_repository: GRConnectionViewRepository = SingletonDepends(GRConnectionViewRepository),
                  gr_connection_request_validator: GRConnectionRequestValidator = SingletonDepends(GRConnectionRequestValidator)):
         super().__init__(gr_connection_repository, GRConnectionModel, GRConnectionView)
         self.gr_connection_mapping_repository = gr_connection_mapping_repository
+        self.gr_connection_view_repository = gr_connection_view_repository
         self.gr_connection_request_validator = gr_connection_request_validator
 
     def get_repository(self) -> GRConnectionRepository:
@@ -261,3 +263,15 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to create.
         """
         return self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
+
+    def get_connections_by_guardrail_id(self, id):
+        """
+        Get the connections by guardrail id.
+
+        Args:
+            id (int): The ID of the Guardrail.
+
+        Returns:
+            List[GRConnectionMappingModel]: The list of Guardrail Connection Mappings.
+        """
+        return self.gr_connection_view_repository.get_all(filters={"guardrail_id": id})
