@@ -1,4 +1,5 @@
 import copy
+from collections import defaultdict
 from typing import List, Dict, Set
 
 import sqlalchemy
@@ -7,7 +8,7 @@ from paig_common.lru_cache import LRUCache
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
-from api.guardrails import GuardrailProvider, GuardrailConfigType
+from api.guardrails import GuardrailProvider, GuardrailConfigType, model_to_dict
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
     GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel, GRConnectionMappingModel
 from api.guardrails.database.db_operations.guardrail_repository import \
@@ -414,12 +415,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Initialize a dictionary to store guardrails by their ID
         result: Dict[int, GuardrailView] = {}
+        guardrail_ids = set()
 
         # Iterate over the guardrails and process them
         for guardrail in guardrails:
             # Validate and get the GuardrailView object
             guardrail_view = GuardrailView.model_validate(guardrail)
             guardrail_id = guardrail.guardrail_id
+            guardrail_ids.add(str(guardrail_id))
             guardrail_view.application_keys = None
 
             # Check if guardrail ID is already in the result, if not, initialize it
@@ -433,9 +436,19 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             # Add configuration, provider response, and connection to the guardrail
             gr_config = GRConfigView.model_validate(guardrail)
             result[guardrail_id].guardrail_configs.append(gr_config)
-            result[guardrail_id].guardrail_provider_response[
-                guardrail.guardrail_provider] = guardrail.guardrail_provider_response
-            result[guardrail_id].guardrail_connections[guardrail.guardrail_provider] = guardrail.guardrail_connection
+
+        guardrail_ids = ",".join(guardrail_ids)
+        gr_conn_data = defaultdict(dict)
+        gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(guardrail_ids)
+        [gr_conn_data[gr_conn.guardrail_id].update({gr_conn.guardrail_provider: gr_conn.connection_details}) for gr_conn in gr_connections]
+
+        gr_resp_data = defaultdict(dict)
+        gr_response = await self.gr_provider_response_repository.get_all(filters={"guardrail_id": guardrail_ids})
+        [gr_resp_data[gr_resp.guardrail_id].update({gr_resp.guardrail_provider.name: gr_resp.response_data}) for gr_resp in gr_response]
+
+        for guardrail_id, guardrail in result.items():
+            guardrail.guardrail_provider_response = gr_resp_data.get(guardrail_id)
+            guardrail.guardrail_connections = gr_conn_data.get(guardrail_id)
 
         # Check if the application key and version is in the cache and update the cache if not
         if cached_version is None:

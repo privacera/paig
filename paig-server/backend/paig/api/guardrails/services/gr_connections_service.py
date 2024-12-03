@@ -269,7 +269,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         Get the connections by guardrail id.
 
         Args:
-            id (int): The ID of the Guardrail.
+            id: The ID of the Guardrail.
 
         Returns:
             List[GRConnectionMappingModel]: The list of Guardrail Connection Mappings.
