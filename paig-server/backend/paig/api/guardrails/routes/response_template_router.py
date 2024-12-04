@@ -8,7 +8,7 @@ from api.guardrails.api_schemas.response_template import ResponseTemplateFilter,
 from api.guardrails.controllers.response_template_controller import ResponseTemplateController
 from core.utils import SingletonDepends
 
-response_template_router = APIRouter(dependencies=[Depends(get_auth_user)])
+response_template_router = APIRouter()
 
 response_template_controller_instance = Depends(SingletonDepends(ResponseTemplateController, called_inside_fastapi_depends=True))
 
