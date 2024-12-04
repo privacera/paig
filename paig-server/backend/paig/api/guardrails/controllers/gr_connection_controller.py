@@ -38,6 +38,15 @@ class GRConnectionController:
             sort=sort
         )
 
+    async def list_connection_provider_names(self) -> List[str]:
+        """
+        List all Guardrail connection provider names.
+
+        Returns:
+            List[str]: The list of Guardrail connection provider names.
+        """
+        return await self.gr_connection_service.list_connection_provider_names()
+
     @Transactional(propagation=Propagation.REQUIRED)
     async def create(self, request: GRConnectionView) -> GRConnectionView:
         """

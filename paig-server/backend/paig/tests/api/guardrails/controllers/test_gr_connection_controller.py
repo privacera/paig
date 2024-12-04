@@ -75,6 +75,23 @@ async def test_list_guardrail_connections(mock_guardrail_connection_service, moc
 
 
 @pytest.mark.asyncio
+async def test_list_guardrail_connection_provider_names(mock_guardrail_connection_service, mock_session):
+    # Mock return value from service
+    expected_result = ["AWS", "Azure"]
+    mock_guardrail_connection_service.list_connection_provider_names.return_value = expected_result
+
+    # Create instance of controller
+    controller = GRConnectionController(gr_connection_service=mock_guardrail_connection_service)
+
+    # Call the method under test
+    result = await controller.list_connection_provider_names()
+
+    # Assertions
+    assert result == expected_result
+    mock_guardrail_connection_service.list_connection_provider_names.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_create_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
     mock_guardrail_connection_view = get_dummy_guardrail_connection_view()

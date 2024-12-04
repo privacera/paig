@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy.exc import NoResultFound
 
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
@@ -218,6 +220,18 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             PageableResponse: The pageable response containing the list of Guardrail Connection configurations.
         """
         return await self.list_records(filter, page_number, size, sort)
+
+    async def list_connection_provider_names(self) -> List[str]:
+        """
+        Retrieve a list of Guardrail connection provider names.
+
+        Returns:
+            List[str]: A list of Guardrail connection provider names.
+        """
+        filter = GRConnectionFilter()
+        records, total_count = await self.repository.list_records(filter=filter, cardinality="guardrail_provider")
+        names = [record.guardrail_provider for record in records]
+        return names
 
     async def get_all(self, filter: GRConnectionFilter):
         """

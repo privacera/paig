@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.exc import NoResultFound
 
+from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
@@ -63,6 +64,26 @@ async def test_list_guardrail_connections(guardrail_connection_service, mock_gua
         mock_list_records.assert_called_once_with(filter=mock_filter, page_number=1, size=10, sort=mock_sort)
         assert result.content == expected_records
         assert result.totalElements == expected_total_count
+
+
+@pytest.mark.asyncio
+async def test_list_guardrail_connection_provider_names(guardrail_connection_service, mock_guardrail_connection_repository):
+    expected_records = [gr_connection_view]
+    # Patch the list_records method on the repository
+    with patch.object(
+        mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, 2)
+    ) as mock_list_records:
+
+        # Call the method under test
+        result = await guardrail_connection_service.list_connection_provider_names()
+
+        # Assertions
+        mock_list_records.assert_called_once_with(
+            cardinality="guardrail_provider",
+            filter=GRConnectionFilter(),
+        )
+        assert result == [GuardrailProvider.AWS]
+
 
 
 @pytest.mark.asyncio

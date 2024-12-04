@@ -8,7 +8,7 @@ from paig_common.lru_cache import LRUCache
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
-from api.guardrails import GuardrailProvider, GuardrailConfigType, model_to_dict
+from api.guardrails import GuardrailProvider, GuardrailConfigType
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
     GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel, GRConnectionMappingModel
 from api.guardrails.database.db_operations.guardrail_repository import \

@@ -39,6 +39,7 @@ def mock_guardrail_connection_controller():
         sort=["id"]
     )
 
+    mock_gr_connection_controller.list_connection_provider_names.return_value = ["AWS"]
     mock_gr_connection_controller.create.return_value = gr_connection_view
     mock_gr_connection_controller.get_by_id.return_value = gr_connection_view
     mock_gr_connection_controller.update.return_value = gr_connection_view
@@ -79,6 +80,13 @@ def test_list_guardrail_connections_success(gr_connection_app_client):
     assert response.status_code == status.HTTP_200_OK
     assert "content" in response.json()
     assert len(response.json()["content"]) == 1
+
+
+def test_list_guardrail_connection_provider_names(gr_connection_app_client):
+    response = gr_connection_app_client.get("http://localhost:9090/connection_providers")
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()) == 1
+    assert response.json() == ["AWS"]
 
 
 def test_create_guardrail_connection_success(gr_connection_app_client):

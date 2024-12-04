@@ -26,6 +26,16 @@ async def list(
     return await gr_connection_controller.list(filter, page, size, sort)
 
 
+@gr_connection_router.get("_providers", response_model=List[str])
+async def list_connection_provider_names(
+        gr_connection_controller: GRConnectionController = gr_connection_controller_instance
+) -> List[str]:
+    """
+    List all Guardrail Connection Providers.
+    """
+    return await gr_connection_controller.list_connection_provider_names()
+
+
 @gr_connection_router.post("", response_model=GRConnectionView, status_code=status.HTTP_201_CREATED)
 async def create(
         request: GRConnectionView,
