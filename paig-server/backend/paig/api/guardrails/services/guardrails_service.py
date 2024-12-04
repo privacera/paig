@@ -5,16 +5,17 @@ from typing import List, Dict, Set
 import sqlalchemy
 from paig_common.lru_cache import LRUCache
 
-from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
+from api.guardrails import GuardrailProvider, GuardrailConfigType
+from api.guardrails.api_schemas.gr_connection import GRConnectionFilter
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
-from api.guardrails import GuardrailProvider, GuardrailConfigType
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRConfigModel, \
     GRProviderResponseModel, GRApplicationModel, GRApplicationVersionModel, GRConnectionMappingModel
 from api.guardrails.database.db_operations.guardrail_repository import \
     GRConfigRepository, GRProviderResponseRepository, GuardrailRepository, GuardrailViewRepository, \
     GRApplicationRepository, GRApplicationVersionRepository
-from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRequest, DeleteGuardrailRequest
+from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRequest, DeleteGuardrailRequest, \
+    UpdateGuardrailRequest, GuardrailConfig
 from api.guardrails.services.gr_connections_service import GRConnectionService
 from api.guardrails.transformers.guardrail_transform_processor import GuardrailTransformerProcessor
 from core.config import load_config_file
@@ -113,7 +114,7 @@ class GuardrailRequestValidator:
         self.validate_status(request.status)
         self.validate_name(request.name)
         self.validate_description(request.description)
-        self.validate_configs(request.guardrail_configs)
+        self.validate_configs(request)
         await self.validate_guardrail_exists_by_id(id)
 
         guardrail = await self.get_guardrail_by_name(request.name)
@@ -200,12 +201,14 @@ class GuardrailRequestValidator:
         gr_config_providers = []
         for gr_config in guardrail.guardrail_configs:
             if gr_config.guardrail_provider not in guardrail.enabled_providers and \
-                    not (gr_config.guardrail_provider == GuardrailProvider.MULTIPLE and gr_config.config_type == GuardrailConfigType.CONTENT_MODERATION):
+                    not (gr_config.guardrail_provider == GuardrailProvider.MULTIPLE and
+                         gr_config.config_type == GuardrailConfigType.CONTENT_MODERATION):
                 raise BadRequestException(
                     f"Guardrail provider {[gr_config.guardrail_provider.name]} not enabled for the Guardrail")
             gr_config_providers.append(gr_config.guardrail_provider)
             if gr_config.config_type in gr_config_types:
-                raise BadRequestException(f"Multiple Guardrail configurations of same type {[gr_config.config_type.value]} not allowed")
+                raise BadRequestException(
+                    f"Multiple Guardrail configurations of same type {[gr_config.config_type.value]} not allowed")
             gr_config_types.append(gr_config.config_type)
 
 
@@ -214,7 +217,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
     def __init__(self,
                  guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository),
                  gr_app_repository: GRApplicationRepository = SingletonDepends(GRApplicationRepository),
-                 gr_app_version_repository: GRApplicationVersionRepository = SingletonDepends(GRApplicationVersionRepository),
+                 gr_app_version_repository: GRApplicationVersionRepository = SingletonDepends(
+                     GRApplicationVersionRepository),
                  gr_config_repository: GRConfigRepository = SingletonDepends(GRConfigRepository),
                  gr_provider_response_repository: GRProviderResponseRepository = SingletonDepends(
                      GRProviderResponseRepository),
@@ -279,11 +283,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The created Guardrail view object.
         """
+        await self._set_enabled_providers(request)
         # Validate the create request
-        try:
-            request.enabled_providers = [GuardrailProvider[provider] for provider in request.guardrail_connections.keys()]
-        except KeyError as e:
-            raise BadRequestException(get_error_message(ERROR_ALLOWED_VALUES, "Guardrail provider", list(e.args), [member.value for member in GuardrailProvider]))
         await self.guardrail_request_validator.validate_create_request(request)
 
         # Create the Guardrail
@@ -307,33 +308,50 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             guardrails_configs_list.append(GRConfigView.model_validate(gr_conf))
 
         # Get Guardrail Connections
-        guardrails_connection_list = await self._create_guardrail_connection_association(guardrail.id, request.guardrail_connections)
+        guardrails_connection_list = await self._create_guardrail_connection_association(guardrail.id,
+                                                                                         request.guardrail_connections)
 
         guardrail_configs_to_create = GuardrailTransformerProcessor.process(guardrail_configs=guardrails_configs_list)
 
         # Create Guardrails in end service and save the Responses
-        create_guardrail_response = await self._create_guardrail_to_external_provider(guardrail,
-                                                                                      guardrails_connection_list,
-                                                                                      guardrail_configs_to_create)
+        await self._create_guardrail_to_external_provider(guardrail, guardrails_connection_list,
+                                                          guardrail_configs_to_create)
 
         result = GuardrailView(**request.dict())
         result.id = guardrail.id
         result.status = guardrail.status
         result.create_time = guardrail.create_time
         result.update_time = guardrail.update_time
-        result.guardrail_provider_response = create_guardrail_response
 
         return result
 
+    async def _set_enabled_providers(self, request):
+        try:
+            request.enabled_providers = [GuardrailProvider[provider] for provider in
+                                         request.guardrail_connections.keys()]
+        except KeyError as e:
+            raise BadRequestException(get_error_message(ERROR_ALLOWED_VALUES, "Guardrail provider", list(e.args),
+                                                        [member.value for member in GuardrailProvider]))
+
     async def _create_guardrail_connection_association(self, guardrail_id, guardrail_connections):
-        conn_filter = GRConnectionFilter(name=','.join(value["connectionName"] for value in guardrail_connections.values()))
-        gr_conn_list = await self.guardrail_connection_service.get_all(conn_filter)
+        gr_conn_map_by_provider = {}
+        gr_conn_names = [value["connectionName"] for value in guardrail_connections.values()]
+        gr_conn_filter = GRConnectionFilter(name=','.join(gr_conn_names))
+        gr_conn_list = await self.guardrail_connection_service.get_all(gr_conn_filter)
         if not gr_conn_list:
             raise BadRequestException("Guardrail Connections not found")
         for gr_conn in gr_conn_list:
-            gr_conn_mapping = GRConnectionMappingModel(guardrail_id=guardrail_id, gr_connection_id=gr_conn.id, guardrail_provider=gr_conn.guardrail_provider)
+            gr_conn_mapping = GRConnectionMappingModel(guardrail_id=guardrail_id, gr_connection_id=gr_conn.id,
+                                                       guardrail_provider=gr_conn.guardrail_provider)
             await self.guardrail_connection_service.create_guardrail_connection_mapping(gr_conn_mapping)
-        return {gr_conn.guardrail_provider.name: GRConnectionView.model_validate(gr_conn).to_guardrail_connection() for gr_conn in gr_conn_list}
+            gr_conn_map_by_provider[gr_conn.guardrail_provider.name] = gr_conn.connection_details
+        return gr_conn_map_by_provider
+
+    async def _delete_guardrail_connection_association(self, guardrail_id, gr_connection_ids_to_delete):
+        gr_connection_mappings = await self.guardrail_connection_service.get_guardrail_connection_mappings(guardrail_id)
+        for gr_conn_mapping in gr_connection_mappings:
+            if gr_conn_mapping.gr_connection_id in gr_connection_ids_to_delete:
+                await self.guardrail_connection_service.delete_guardrail_connection_mapping(gr_conn_mapping)
 
     async def _create_guardrail_application_association(self, guardrail_id, application_keys: Set[str]):
         # Create Guardrail Applications
@@ -375,7 +393,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             result.guardrail_configs.append(gr_config)
 
         gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(id)
-        result.guardrail_connections = {gr_conn.guardrail_provider: {"connectionName": gr_conn.name} for gr_conn in gr_connections}
+        result.guardrail_connections = {gr_conn.guardrail_provider: {"connectionName": gr_conn.name}
+                                        for gr_conn in gr_connections}
 
         # TODO: Uncomment below code once we have application data fetched from gov service to here
         # Populate guardrail applications
@@ -437,15 +456,20 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             gr_config = GRConfigView.model_validate(guardrail)
             result[guardrail_id].guardrail_configs.append(gr_config)
 
+        # Fetch Guardrail Connections by Guardrail ID
         guardrail_ids = ",".join(guardrail_ids)
         gr_conn_data = defaultdict(dict)
         gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(guardrail_ids)
-        [gr_conn_data[gr_conn.guardrail_id].update({gr_conn.guardrail_provider: gr_conn.connection_details}) for gr_conn in gr_connections]
+        [gr_conn_data[gr_conn.guardrail_id].update({gr_conn.guardrail_provider: gr_conn.connection_details})
+         for gr_conn in gr_connections]
 
+        # Fetch Guardrail Provider Responses by Guardrail ID
         gr_resp_data = defaultdict(dict)
         gr_response = await self.gr_provider_response_repository.get_all(filters={"guardrail_id": guardrail_ids})
-        [gr_resp_data[gr_resp.guardrail_id].update({gr_resp.guardrail_provider.name: gr_resp.response_data}) for gr_resp in gr_response]
+        [gr_resp_data[gr_resp.guardrail_id].update({gr_resp.guardrail_provider.name: gr_resp.response_data})
+         for gr_resp in gr_response]
 
+        # Update the guardrail with provider response and connections
         for guardrail_id, guardrail in result.items():
             guardrail.guardrail_provider_response = gr_resp_data.get(guardrail_id)
             guardrail.guardrail_connections = gr_conn_data.get(guardrail_id)
@@ -471,6 +495,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             GuardrailView: The updated Guardrail view object.
         """
+        await self._set_enabled_providers(request)
         # Validate the update request
         await self.guardrail_request_validator.validate_update_request(id, request)
 
@@ -490,7 +515,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         await self._update_guardrail_application_associations(id, set(request.application_keys))
 
         # Process Guardrail Configs
-        await self._update_guardrail_configs(request.guardrail_configs, updated_guardrail)
+        await self._update_guardrail_configs(request, updated_guardrail)
 
         return updated_guardrail
 
@@ -543,18 +568,19 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                 await self.gr_app_version_repository.create_record(gr_app_version)
                 gr_app_version_cache_wrapper_dict.put(app_key, 1)
 
-    async def _update_guardrail_configs(self, request_gr_configs: List[GRConfigView],
-                                        guardrail: GuardrailView):
+    async def _update_guardrail_configs(self, request: GuardrailView, updated_guardrail: GuardrailView):
         """Helper method to update Guardrail Configs."""
+        request_gr_configs = request.guardrail_configs
         updated_guardrail_configs = []
 
         # Fetch existing configurations
-        gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": guardrail.id})
+        gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": updated_guardrail.id})
         gr_config_map = {gr_config.id: gr_config for gr_config in gr_configs}
 
         existing_gr_configs = copy.deepcopy(gr_configs)
 
         # Determine configs to delete and update
+        ## TODO: instead of id, use config type
         existing_config_ids = set(gr_config_map.keys())
         request_config_ids = {gr_config.id for gr_config in request_gr_configs}
         gr_configs_to_delete = existing_config_ids - request_config_ids
@@ -565,9 +591,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Add or update configurations
         for req_gr_config in request_gr_configs:
+            ## TODO: instead of id, use config type
             gr_config_model = gr_config_map.get(req_gr_config.id)
             if gr_config_model is None:
-                gr_config_model = GRConfigModel(guardrail_id=guardrail.id)
+                gr_config_model = GRConfigModel(guardrail_id=updated_guardrail.id)
 
             # Set attributes from the request
             gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time"}))
@@ -580,65 +607,74 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
             updated_guardrail_configs.append(GRConfigView.model_validate(updated_gr_config))
 
-        guardrail.guardrail_configs = updated_guardrail_configs
+        updated_guardrail.guardrail_configs = updated_guardrail_configs
 
         # Update Guardrail provider and update provider responses
-        await self._update_guardrail_providers(existing_gr_configs, updated_guardrail_configs, guardrail)
+        await self._update_guardrail_providers(existing_gr_configs, updated_guardrail_configs, request,
+                                               updated_guardrail)
 
         return updated_guardrail_configs
 
     async def _update_guardrail_providers(self, existing_gr_configs: List[GRConfigView],
-                                          updated_gr_configs: List[GRConfigView], guardrail: GuardrailView):
+                                          updated_gr_configs: List[GRConfigView],
+                                          request: GuardrailView, guardrail: GuardrailView):
         created_connections = {}
         updated_connections = {}
         deleted_connections = {}
-        create_guardrails_configs_list = []
-        update_guardrails_configs_list = []
+        deleted_connections_ids = []
+        create_guardrails_configs = {}
+        delete_guardrails_configs = {}
 
         # Prepare config maps for existing and updated configurations
         existing_gr_configs_map = self.prepare_gr_provider_config_map(existing_gr_configs)
-        updated_gr_configs_map = self.prepare_gr_provider_config_map(updated_gr_configs)
+        update_guardrails_configs = self.prepare_gr_provider_config_map(updated_gr_configs)
 
-        # Iterate over updated config map to find created and updated connections and configs
-        self._populate_created_updated_connections_configs(existing_gr_configs_map, updated_gr_configs_map,
-                                                           create_guardrails_configs_list, created_connections,
-                                                           update_guardrails_configs_list, updated_connections)
+        # Get guardrail connections by guardrail ID from the database
+        gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(guardrail.id)
+        existing_connections = {gr_conn.guardrail_provider: gr_conn for gr_conn in gr_connections}
 
-        # Find connections and configs to delete (existing but not in updated)
-        self._populate_deleted_connections_configs(existing_gr_configs_map, updated_gr_configs_map, deleted_connections)
+        # Prepare the guardrail connections and configs to create, update, and delete
+        for provider, gr_conn in request.guardrail_connections.items():
+            connection_name = gr_conn["connectionName"]
+            existing_connection_name = existing_connections[provider].name
 
-        # Get Guardrail Connections for all created, updated, and deleted connections
-        all_conn_names = set(created_connections.values()) | set(updated_connections.values()) | set(
-            deleted_connections.values())
-        all_gr_connections = await self._get_guardrail_connections(all_conn_names)
-
-        # Get connections to add, update, and delete from the list of all connections
-        create_connection_list, update_connection_list, delete_connection_list = self._get_connection_to_add_update_delete(
-            all_gr_connections, created_connections, updated_connections, deleted_connections)
+            if provider not in existing_connections or existing_connection_name != connection_name:
+                deleted_connections_ids.append(existing_connections[provider].id)
+                deleted_connections[provider] = existing_connections[provider].connection_details
+                delete_guardrails_configs[provider] = existing_gr_configs_map[provider]
+                created_connections[provider] = gr_conn
+                create_guardrails_configs[provider] = update_guardrails_configs[provider]
+            else:
+                updated_connections[provider] = existing_connections[provider].connection_details
 
         # Get responses to update and delete guardrails
         response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
             guardrail.id, updated_connections, deleted_connections)
 
         # Delete the guardrails in end service
-        if delete_connection_list:
-            self._delete_guardrail_to_external_provider(delete_connection_list, response_to_delete_guardrail)
+        if deleted_connections:
+            await self._delete_guardrail_connection_association(guardrail.id, deleted_connections_ids)
+            await self._delete_guardrail_to_external_provider(guardrail, deleted_connections, delete_guardrails_configs,
+                                                              response_to_delete_guardrail)
 
         # Create guardrails in end service and save the responses
         guardrail_response = {}
-        if create_connection_list and create_guardrails_configs_list:
-            guardrail_response.update(await self._create_guardrail_to_external_provider(
-                guardrail, create_connection_list, create_guardrails_configs_list))
+        if created_connections and create_guardrails_configs:
+            gr_connections = await self._create_guardrail_connection_association(guardrail.id, created_connections)
+            gr_resp_data = await self._create_guardrail_to_external_provider(guardrail, gr_connections,
+                                                                             create_guardrails_configs)
+            guardrail_response.update(gr_resp_data)
 
         # Update guardrails in end service and save the responses
-        if update_connection_list and update_guardrails_configs_list:
-            guardrail_response.update(await self._update_guardrail_to_external_provider(
-                guardrail, update_connection_list, update_guardrails_configs_list, response_to_update_guardrail))
+        if updated_connections and update_guardrails_configs:
+            gr_resp_data = await self._update_guardrail_to_external_provider(
+                guardrail, updated_connections, update_guardrails_configs, response_to_update_guardrail)
+            guardrail_response.update(gr_resp_data)
 
         return guardrail_response
 
-    def _delete_guardrail_to_external_provider(self, guardrail, guardrail_connections,
-                                               guardrails_configs, resp_data):
+    async def _delete_guardrail_to_external_provider(self, guardrail, guardrail_connections,
+                                                     guardrails_configs, resp_data):
         try:
             delete_guardrail_map = {}
             for provider, configs in guardrails_configs.items():
@@ -647,28 +683,45 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider],
                     guardrailConfigs=configs,
-                    remoteGuardrailDetails=resp_data[provider]
+                    remoteGuardrailDetails=resp_data[provider].response_data
                 )
                 delete_guardrail_map[provider] = delete_bedrock_guardrails_request
-            GuardrailProviderManager.delete_guardrail(delete_guardrail_map)
+            delete_guardrail_response = GuardrailProviderManager.delete_guardrail(delete_guardrail_map)
         except Exception as e:
             raise InternalServerError(f"Failed to delete guardrails. Error - {e.__str__()}")
 
-    async def _update_guardrail_to_external_provider(self, guardrail, update_connection_list,
-                                                     update_guardrails_configs_list, response_to_update_guardrail):
-        resp_data = {provider: response.response_data for provider, response in response_to_update_guardrail.items()}
+        for provider, response in delete_guardrail_response.items():
+            if not response['success']:
+                raise InternalServerError(f"Failed to delete guardrail in provider {provider}",
+                                          response['response']['details'])
+            gr_resp_model = resp_data.get(provider)
+            gr_resp_model.response_data = response
+            await self.gr_provider_response_repository.delete_record(gr_resp_model)
+        return delete_guardrail_response
+
+    async def _update_guardrail_to_external_provider(self, guardrail, guardrail_connections,
+                                                     guardrails_configs, resp_data):
         try:
-            update_guardrail_response = GuardrailProviderManager.update_guardrail(
-                update_connection_list, resp_data, update_guardrails_configs_list,
-                name=guardrail.name, description=guardrail.description)
+            update_guardrail_map = {}
+            for provider, configs in guardrails_configs.items():
+                update_bedrock_guardrails_request = UpdateGuardrailRequest(
+                    name=guardrail.name,
+                    description=guardrail.description,
+                    connectionDetails=guardrail_connections[provider],
+                    guardrailConfigs=configs,
+                    remoteGuardrailDetails=resp_data[provider].response_data
+                )
+                update_guardrail_map[provider] = update_bedrock_guardrails_request
+            update_guardrail_response = GuardrailProviderManager.update_guardrail(update_guardrail_map)
         except Exception as e:
             raise InternalServerError(f"Failed to update guardrails. Error - {e.__str__()}")
+
         for provider, response in update_guardrail_response.items():
             if not response['success']:
                 raise InternalServerError(
                     f"Failed to update guardrail in provider {provider}",
                     response['response']['details'])
-            gr_resp_model = response_to_update_guardrail.get(provider)
+            gr_resp_model = resp_data.get(provider)
             gr_resp_model.response_data = response
             await self.gr_provider_response_repository.update_record(gr_resp_model)
         return update_guardrail_response
@@ -681,7 +734,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                 create_bedrock_guardrails_request = CreateGuardrailRequest(
                     name=guardrail.name,
                     description=guardrail.description,
-                    connectionDetails=guardrail_connections[provider].connectionDetails,
+                    connectionDetails=guardrail_connections[provider],
                     guardrailConfigs=configs
                 )
                 create_guardrails_request_map[provider] = create_bedrock_guardrails_request
@@ -764,12 +817,11 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                     created_connections[provider] = updated_conf_conn_name
                     create_guardrails_configs_list.extend(updated_gr_config)
 
-    def prepare_gr_provider_config_map(self, gr_configs: List[GRConfigView]) -> Dict[str, List[GRConfigView]]:
-        from collections import defaultdict
+    def prepare_gr_provider_config_map(self, gr_configs: List[GRConfigView]) -> Dict[str, List[GuardrailConfig]]:
         gr_provider_configs_map = defaultdict(list)
         for gr_config in gr_configs:
             gr_provider_configs_map[gr_config.guardrail_provider].append(gr_config)
-        return dict(gr_provider_configs_map)
+        return GuardrailTransformerProcessor.process(gr_configs)
 
     async def delete(self, id: int):
         """
@@ -790,10 +842,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": id})
         guardrail_configs_to_delete = GuardrailTransformerProcessor.process(guardrail_configs=gr_configs)
         gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(id)
-        connections_to_delete_guardrails = {gr_conn.guardrail_provider: gr_conn.connection_details for gr_conn in gr_connections}
-        response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(id, {}, connections_to_delete_guardrails)
-        resp_data = {provider: response.response_data for provider, response in response_to_delete_guardrail.items()}
-        self._delete_guardrail_to_external_provider(guardrail, connections_to_delete_guardrails, guardrail_configs_to_delete, resp_data)
+        connections_to_delete_guardrails = {gr_conn.guardrail_provider: gr_conn.connection_details
+                                            for gr_conn in gr_connections}
+        response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
+            id, {}, connections_to_delete_guardrails)
+        await self._delete_guardrail_to_external_provider(guardrail, connections_to_delete_guardrails,
+                                                          guardrail_configs_to_delete, response_to_delete_guardrail)
 
         # Delete the Guardrail
         await self.delete_record(id)

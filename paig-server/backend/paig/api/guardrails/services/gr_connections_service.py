@@ -5,18 +5,9 @@ from sqlalchemy.exc import NoResultFound
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
-from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository, \
-    GRConnectionMappingRepository, GRConnectionViewRepository
-from core.controllers.base_controller import BaseController
-from core.controllers.paginated_response import Pageable
-from core.exceptions import NotFoundException, BadRequestException
-from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND, \
-    ERROR_RESOURCE_ALREADY_EXISTS
-from core.utils import validate_id, SingletonDepends, validate_boolean, validate_string_data
-from sqlalchemy.exc import NoResultFound
-
-from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
-from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
+from api.guardrails.database.db_models.guardrail_view_model import GRConnectionViewModel
+from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionMappingRepository, \
+    GRConnectionViewRepository
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
@@ -269,23 +260,47 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         await self.gr_connection_request_validator.validate_delete_request(id)
         return await self.delete_record(id)
 
-    def create_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
+    async def create_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
         """
         Create a new Guardrail Connection Mapping.
 
         Args:
             gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to create.
         """
-        return self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
+        return await self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
 
-    def get_connections_by_guardrail_id(self, id):
+    async def get_connections_by_guardrail_id(self, guardrail_id) -> List[GRConnectionViewModel]:
         """
         Get the connections by guardrail id.
 
         Args:
-            id: The ID of the Guardrail.
+            guardrail_id: The ID of the Guardrail.
+
+        Returns:
+            List[GRConnectionViewModel]: The list of Guardrail Connection Mappings.
+        """
+        return await self.gr_connection_view_repository.get_all(filters={"guardrail_id": guardrail_id})
+
+    async def get_guardrail_connection_mappings(self, guardrail_id: int) -> List[GRConnectionMappingModel]:
+        """
+        Get the Guardrail Connection Mapping.
+
+        Args:
+            guardrail_id (int): The ID of the Guardrail.
 
         Returns:
             List[GRConnectionMappingModel]: The list of Guardrail Connection Mappings.
         """
-        return self.gr_connection_view_repository.get_all(filters={"guardrail_id": id})
+        return await self.gr_connection_mapping_repository.get_all(filters={"guardrail_id": guardrail_id})
+
+    async def delete_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
+        """
+        Delete the Guardrail Connection Mapping.
+
+        Args:
+            gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to delete.
+
+        Returns:
+            None
+        """
+        await self.gr_connection_mapping_repository.delete_record(gr_conn_mapping)
