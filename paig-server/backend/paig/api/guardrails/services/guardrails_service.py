@@ -575,29 +575,27 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Fetch existing configurations
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": updated_guardrail.id})
-        gr_config_map = {gr_config.id: gr_config for gr_config in gr_configs}
+        gr_config_map = {gr_config.config_type: gr_config for gr_config in gr_configs}
 
         existing_gr_configs = copy.deepcopy(gr_configs)
 
         # Determine configs to delete and update
-        ## TODO: instead of id, use config type
-        existing_config_ids = set(gr_config_map.keys())
-        request_config_ids = {gr_config.id for gr_config in request_gr_configs}
-        gr_configs_to_delete = existing_config_ids - request_config_ids
+        existing_config_types = set(gr_config_map.keys())
+        request_config_types = {gr_config.config_type for gr_config in request_gr_configs}
+        gr_configs_to_delete = existing_config_types - request_config_types
 
         # Delete configurations not in the request
-        for gr_config_id in gr_configs_to_delete:
-            await self.gr_config_repository.delete_record(gr_config_map[gr_config_id])
+        for gr_config_type in gr_configs_to_delete:
+            await self.gr_config_repository.delete_record(gr_config_map[gr_config_type])
 
         # Add or update configurations
         for req_gr_config in request_gr_configs:
-            ## TODO: instead of id, use config type
-            gr_config_model = gr_config_map.get(req_gr_config.id)
+            gr_config_model = gr_config_map.get(req_gr_config.config_type)
             if gr_config_model is None:
                 gr_config_model = GRConfigModel(guardrail_id=updated_guardrail.id)
 
             # Set attributes from the request
-            gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time"}))
+            gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time", "id"}))
 
             # Determine whether to create or update
             if gr_config_model.id is None:
