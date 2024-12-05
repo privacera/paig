@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.controllers.gr_connection_controller import GRConnectionController
 from api.guardrails.services.gr_connections_service import GRConnectionService
@@ -166,3 +167,25 @@ async def test_delete_guardrail_connection(mock_guardrail_connection_service, mo
     # Assertions
     mock_guardrail_connection_service.delete.assert_called_once_with(1)
 
+
+@pytest.mark.asyncio
+async def test_test_guardrail_connection(mock_guardrail_connection_service):
+    # Mock return value from service
+    mock_guardrail_connection_service.test_connection.return_value = True
+
+    # Create instance of controller
+    controller = GRConnectionController(gr_connection_service=mock_guardrail_connection_service)
+
+    request = GRConnectionView(
+        name="test_connection",
+        description="Test description",
+        guardrail_provider=GuardrailProvider.AWS,
+        connection_details={"key": "value"}
+    )
+
+    # Call the method under test
+    result = await controller.test_connection(request)
+
+    # Assertions
+    assert result is True
+    mock_guardrail_connection_service.test_connection.assert_called_once_with(request)

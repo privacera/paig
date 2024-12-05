@@ -291,6 +291,13 @@ guardrails_configs_list = [content_policy_config, topic_policy_config, word_poli
 guardrail_name = "provider-create-test"
 guardrail_description = "Guardrail connection for AWS Bedrock"
 
+test_connection_request_map = {
+    GuardrailProviderType.AWS: guardrail_connection
+}
+
+verify_connection_response = GuardrailProviderManager.verify_guardrails_connection_details(test_connection_request_map)
+print(verify_connection_response)
+
 create_bedrock_guardrails_request = CreateGuardrailRequest(
     name=guardrail_name,
     description=guardrail_description,

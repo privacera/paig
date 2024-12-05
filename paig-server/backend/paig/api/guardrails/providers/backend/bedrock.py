@@ -2,6 +2,7 @@ import logging
 from typing import Tuple, Dict
 
 import boto3
+from botocore.exceptions import ClientError
 
 from api.guardrails.providers import GuardrailProvider, UpdateGuardrailRequest, DeleteGuardrailRequest
 from api.guardrails.providers.models import CreateGuardrailRequest, GuardrailRequest
@@ -60,9 +61,11 @@ class BedrockGuardrailProvider(GuardrailProvider):
                 return True, {"message": "Connection successful!"}
             else:
                 return False, self._prepare_error_message_details("We encountered an issue while verifying your settings. Please try again.")
-
+        except ClientError as e:
+            message = e.response["Error"]["Message"]
+            return False, self._prepare_error_message_details("Unable to verify connection. " + message)
         except Exception as e:
-            return False, self._prepare_error_message_details("Unable to verify connection. Please check your details and try again.")
+            return False, self._prepare_error_message_details("Unable to verify connection. " + str(e))
 
     def _prepare_error_message_details(self, message: str) -> Dict:
         """

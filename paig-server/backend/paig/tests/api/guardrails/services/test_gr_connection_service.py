@@ -7,6 +7,7 @@ from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.providers import GuardrailConnection
 from api.guardrails.services.gr_connections_service import GRConnectionRequestValidator, GRConnectionService
 from core.exceptions import BadRequestException, NotFoundException
 
@@ -197,3 +198,40 @@ async def test_delete_guardrail_connection(guardrail_connection_service, mock_gu
         # Assertions
         assert mock_delete_record.called
         assert mock_get_record_by_id.called
+
+
+@pytest.mark.asyncio
+async def test_test_connection(guardrail_connection_service):
+    # Mock input
+    request = GRConnectionView(
+        name="test_connection",
+        description="Test description",
+        guardrail_provider=GuardrailProvider.AWS,
+        connection_details={"key": "value"}
+    )
+
+    # Mock GuardrailConnection
+    mock_guardrail_connection = GuardrailConnection(
+        name=request.name,
+        description=request.description,
+        guardrailProvider=request.guardrail_provider,
+        connectionDetails=request.connection_details
+    )
+
+    # Mock GuardrailProviderManager response
+    mock_response = {
+        request.guardrail_provider.name: {
+            "status": "success",
+            "message": "Connection successful"
+        }
+    }
+
+    with patch("api.guardrails.providers.GuardrailProviderManager.verify_guardrails_connection_details", return_value=mock_response) as mock_verify:
+        # Call the method
+        response = await guardrail_connection_service.test_connection(request)
+
+        # Assertions
+        mock_verify.assert_called_once_with({request.guardrail_provider.name: mock_guardrail_connection})
+        assert response == mock_response[request.guardrail_provider.name]
+        assert response["status"] == "success"
+        assert response["message"] == "Connection successful"

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any, Dict
 
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.services.gr_connections_service import GRConnectionService
@@ -98,3 +98,15 @@ class GRConnectionController:
         """
         await self.gr_connection_service.delete(id)
         # await background_capture_event(event=DeleteAIApplicationEvent())
+
+    async def test_connection(self, request: GRConnectionView) -> Dict[str, Any]:
+        """
+        Test a Guardrail connection.
+
+        Args:
+            request (GRConnectionView): The view object representing the Guardrail connection to test.
+
+        Returns:
+            Dict[str, Any]: The test connection result.
+        """
+        return await self.gr_connection_service.test_connection(request)

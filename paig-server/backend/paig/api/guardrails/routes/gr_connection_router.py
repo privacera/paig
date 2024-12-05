@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 
 from fastapi import APIRouter, Depends, status, Query
 
@@ -79,3 +79,14 @@ async def delete(
     Delete a Guardrail Connection by ID.
     """
     return await gr_connection_controller.delete(id)
+
+
+@gr_connection_router.post("_test", response_model=Dict[str, Any])
+async def test_connection(
+        request: GRConnectionView,
+        gr_connection_controller: GRConnectionController = gr_connection_controller_instance
+) -> Dict[str, Any]:
+    """
+    Test the connection to the Guardrail provider.
+    """
+    return await gr_connection_controller.test_connection(request)

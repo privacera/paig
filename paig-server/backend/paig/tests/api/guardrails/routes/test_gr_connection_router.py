@@ -44,6 +44,12 @@ def mock_guardrail_connection_controller():
     mock_gr_connection_controller.get_by_id.return_value = gr_connection_view
     mock_gr_connection_controller.update.return_value = gr_connection_view
     mock_gr_connection_controller.delete.return_value = None
+    mock_gr_connection_controller.test_connection.return_value = {
+      "success": True,
+      "response": {
+        "message": "Connection successful!"
+      }
+    }
 
     return mock_gr_connection_controller
 
@@ -113,3 +119,10 @@ def test_update_guardrail_connection_success(gr_connection_app_client):
 def test_delete_guardrail_connection_success(gr_connection_app_client):
     response = gr_connection_app_client.delete("http://localhost:9090/connection/1")
     assert response.status_code == status.HTTP_204_NO_CONTENT
+
+
+def test_test_guardrail_connection_success(gr_connection_app_client):
+    response = gr_connection_app_client.post("http://localhost:9090/connection_test", content=json.dumps(gr_connection_view_json))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["success"] == True
+    assert response.json()["response"]["message"] == "Connection successful!"

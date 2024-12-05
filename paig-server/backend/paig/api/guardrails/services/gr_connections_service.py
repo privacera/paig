@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict, Any
 
 from sqlalchemy.exc import NoResultFound
 
@@ -9,6 +9,7 @@ from api.guardrails.database.db_models.guardrail_view_model import GRConnectionV
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionMappingRepository, \
     GRConnectionViewRepository
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.providers import GuardrailProviderManager, GuardrailConnection
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import NotFoundException, BadRequestException
@@ -196,6 +197,30 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         """
         await self.gr_connection_request_validator.validate_create_request(request)
         return await self.create_record(request)
+
+    async def test_connection(self, request: GRConnectionView) -> Dict[str, Any]:
+        """
+        Test the connection of a Guardrail Connection.
+
+        Args:
+            request (GRConnectionView): The view object representing the Guardrail connection to test.
+
+        Returns:
+            Dict[str, Any]: The response of the connection test.
+        """
+        guardrail_connection = GuardrailConnection(
+            name=request.name,
+            description=request.description,
+            guardrailProvider=request.guardrail_provider,
+            connectionDetails=request.connection_details
+        )
+
+        connection_test_request_dict = {
+            request.guardrail_provider.name: guardrail_connection
+        }
+        connection_test_response_dict = GuardrailProviderManager.verify_guardrails_connection_details(connection_test_request_dict)
+
+        return connection_test_response_dict[request.guardrail_provider.name]
 
     async def list(self, filter: GRConnectionFilter, page_number: int, size: int, sort: list) -> Pageable:
         """

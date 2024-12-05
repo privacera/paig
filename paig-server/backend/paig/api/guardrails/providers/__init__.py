@@ -135,7 +135,7 @@ class GuardrailProviderManager:
         Verifies connection details for each guardrail provider.
 
         Args:
-            request (Dict[str, GuardrailConnection]): A dictionary containing the connection details for each provider.
+            request (Dict[str, Dict[str, Any]]): A dictionary containing the connection details for each provider.
             **kwargs: Additional keyword arguments.
 
         Returns:
