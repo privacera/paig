@@ -57,7 +57,7 @@ class AWSGuardrailTransformer(GuardrailTransformer):
                         "inputStrength": config['filterStrengthPrompt'].upper(),
                         "outputStrength": config['filterStrengthResponse'].upper()
                     })
-            if filters_config is None:
+            if not filters_config:
                 return None
             aws_gr_config.configData['filtersConfig'] = filters_config
             return aws_gr_config
@@ -68,6 +68,7 @@ class AWSGuardrailTransformer(GuardrailTransformer):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="sensitiveInformationPolicyConfig", guardrailProvider="AWS", configData={})
             pii_entities_config = []
+            regex_entities_config = []
             for config in guardrail_config.config_data['configs']:
                 if config['action'].upper() == "DENY":
                     action = "BLOCK"
@@ -75,13 +76,24 @@ class AWSGuardrailTransformer(GuardrailTransformer):
                     action = "ANONYMIZE"
                 else:
                     continue
-                pii_entities_config.append({
-                    "type": config['category'],
-                    "action": action
-                })
-            if pii_entities_config is None:
+                if 'category' in config:
+                    pii_entities_config.append({
+                        "type": config['category'],
+                        "action": action
+                    })
+                if 'type' in config and config['type'].upper() == "REGEX":
+                    regex_entities_config.append({
+                        "name": config['name'],
+                        "description": config['description'],
+                        "pattern": config['pattern'],
+                        "action": action
+                    })
+            if not pii_entities_config and not regex_entities_config:
                 return None
-            aws_gr_config.configData['piiEntitiesConfig'] = pii_entities_config
+            if pii_entities_config:
+                aws_gr_config.configData['piiEntitiesConfig'] = pii_entities_config
+            if regex_entities_config:
+                aws_gr_config.configData['regexesConfig'] = regex_entities_config
             return aws_gr_config
         except Exception as e:
             raise Exception(f"Invalid data in sensitive data config: {str(e)}")
@@ -97,7 +109,7 @@ class AWSGuardrailTransformer(GuardrailTransformer):
                     "examples": config['samplePhrases'],
                     "type": "DENY"
                 })
-            if topic_policy_config is None:
+            if not topic_policy_config:
                 return None
             aws_gr_config.configData['topicsConfig'] = topic_policy_config
             return aws_gr_config
@@ -108,20 +120,28 @@ class AWSGuardrailTransformer(GuardrailTransformer):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="wordPolicyConfig", guardrailProvider="AWS", configData={})
             word_policy_config = []
-            aws_gr_config.configData['managedWordListsConfig'] = [{"type": "PROFANITY"}]
+            profanity_config = []
             for config in guardrail_config.config_data['configs']:
-                word_policy_config.append({"text": config['term']})
-                for term in config['keywords']:
-                    word_policy_config.append({"text": term})
-            if word_policy_config is None:
+                if 'type' in config and config['type'].upper() == "PROFANITY" and config['value'] is True:
+                    profanity_config.append({"type": "PROFANITY"})
+                if 'term' in config:
+                    word_policy_config.append({"text": config['term']})
+                    for term in config['keywords']:
+                        word_policy_config.append({"text": term})
+            if not word_policy_config and not profanity_config:
                 return None
-            aws_gr_config.configData['wordsConfig'] = word_policy_config
+            if word_policy_config:
+                aws_gr_config.configData['wordsConfig'] = word_policy_config
+            if profanity_config:
+                aws_gr_config.configData['managedWordListsConfig'] = profanity_config
             return aws_gr_config
         except Exception as e:
             raise Exception(f"Invalid data in denied terms config: {str(e)}")
 
     def _transform_prompt_safety(self, content_moderation_config, prompt_attack_config):
         try:
+            if not prompt_attack_config.config_data['configs']:
+                return None
             if content_moderation_config is not None:
                 content_moderation_config.configData['filtersConfig'].append({
                     "type": "PROMPT_ATTACK",

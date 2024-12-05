@@ -596,6 +596,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
             # Set attributes from the request
             gr_config_model.set_attribute(req_gr_config.model_dump(exclude={"create_time", "update_time", "id"}))
+            if gr_config_model.status is None:
+                gr_config_model.status = 1
 
             # Determine whether to create or update
             if gr_config_model.id is None:
