@@ -165,7 +165,7 @@ def test_verify_connection_details_exception(mock_boto_client, connection_detail
     result, message = provider.verify_connection_details()
 
     assert result is False
-    assert message == {"error": "Unable to verify connection. Please check your details and try again."}
+    assert message == {"error": "Unable to verify connection. Connection failed"}
 
 
 # Mock boto3 client creation

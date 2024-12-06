@@ -198,14 +198,19 @@ class GuardrailRequestValidator:
         if not guardrail.guardrail_configs:
             raise BadRequestException(get_error_message(ERROR_FIELD_REQUIRED, "Guardrail Configurations"))
         gr_config_types = []
-        gr_config_providers = []
         for gr_config in guardrail.guardrail_configs:
-            if gr_config.guardrail_provider not in guardrail.enabled_providers and \
-                    not (gr_config.guardrail_provider == GuardrailProvider.MULTIPLE and
-                         gr_config.config_type == GuardrailConfigType.CONTENT_MODERATION):
-                raise BadRequestException(
-                    f"Guardrail provider {[gr_config.guardrail_provider.name]} not enabled for the Guardrail")
-            gr_config_providers.append(gr_config.guardrail_provider)
+            if gr_config.guardrail_provider == GuardrailProvider.MULTIPLE:
+                for conf in gr_config.config_data['configs']:
+                    if 'guardrailProvider' not in conf or not conf['guardrailProvider']:
+                        raise BadRequestException(get_error_message(ERROR_FIELD_REQUIRED, "Guardrail Provider for CONTENT_MODERATION Config"))
+                    else:
+                        if GuardrailProvider[conf['guardrailProvider']] not in guardrail.enabled_providers:
+                            raise BadRequestException(
+                                f"Guardrail provider connection for {[conf['guardrailProvider']]} not provided for the Guardrail")
+            else:
+                if gr_config.guardrail_provider not in guardrail.enabled_providers:
+                    raise BadRequestException(
+                        f"Guardrail provider connection for {[gr_config.guardrail_provider.name]} not provided for the Guardrail")
             if gr_config.config_type in gr_config_types:
                 raise BadRequestException(
                     f"Multiple Guardrail configurations of same type {[gr_config.config_type.value]} not allowed")
@@ -339,7 +344,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         gr_conn_filter = GRConnectionFilter(name=','.join(gr_conn_names))
         gr_conn_list = await self.guardrail_connection_service.get_all(gr_conn_filter)
         if not gr_conn_list:
-            raise BadRequestException("Guardrail Connections not found")
+            raise BadRequestException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail Connection", "name", gr_conn_names))
         for gr_conn in gr_conn_list:
             gr_conn_mapping = GRConnectionMappingModel(guardrail_id=guardrail_id, gr_connection_id=gr_conn.id,
                                                        guardrail_provider=gr_conn.guardrail_provider)

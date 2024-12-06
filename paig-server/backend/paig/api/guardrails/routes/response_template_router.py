@@ -3,7 +3,6 @@ from typing import List
 from fastapi import APIRouter, Depends, status, Query
 
 from core.controllers.paginated_response import Pageable
-from core.security.authentication import get_auth_user
 from api.guardrails.api_schemas.response_template import ResponseTemplateFilter, ResponseTemplateView
 from api.guardrails.controllers.response_template_controller import ResponseTemplateController
 from core.utils import SingletonDepends

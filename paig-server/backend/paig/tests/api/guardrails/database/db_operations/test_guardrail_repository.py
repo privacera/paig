@@ -321,7 +321,7 @@ async def test_get_guardrail_config(mock_guardrail_config_repository):
         id=1,
         guardrail_id=1,
         guardrail_provider=GuardrailProvider.AWS,
-        guardrail_provider_connection_name="mock_connection_name",
+        response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
     )
@@ -331,7 +331,7 @@ async def test_get_guardrail_config(mock_guardrail_config_repository):
         assert len(result) == 1
         assert result[0].guardrail_id == 1
         assert result[0].guardrail_provider == GuardrailProvider.AWS
-        assert result[0].guardrail_provider_connection_name == "mock_connection_name"
+        assert result[0].response_message == "mock_response_message"
         assert result[0].config_type == "mock_config_type"
         assert result[0].config_data == {"mock_key": "mock_value"}
 
@@ -343,7 +343,7 @@ async def test_get_guardrail_config_by_id(mock_guardrail_config_repository):
         id=key_id,
         guardrail_id=1,
         guardrail_provider=GuardrailProvider.AWS,
-        guardrail_provider_connection_name="mock_connection_name",
+        response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
     )
@@ -353,7 +353,7 @@ async def test_get_guardrail_config_by_id(mock_guardrail_config_repository):
         assert result.id == key_id
         assert result.guardrail_id == 1
         assert result.guardrail_provider == GuardrailProvider.AWS
-        assert result.guardrail_provider_connection_name == "mock_connection_name"
+        assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
 
@@ -375,7 +375,7 @@ async def test_create_guardrail_config(mock_guardrail_config_repository):
         id=1,
         guardrail_id=1,
         guardrail_provider=GuardrailProvider.AWS,
-        guardrail_provider_connection_name="mock_connection_name",
+        response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
     )
@@ -385,7 +385,7 @@ async def test_create_guardrail_config(mock_guardrail_config_repository):
         assert result.id == 1
         assert result.guardrail_id == 1
         assert result.guardrail_provider == GuardrailProvider.AWS
-        assert result.guardrail_provider_connection_name == "mock_connection_name"
+        assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
 
@@ -397,7 +397,7 @@ async def test_update_guardrail_config(mock_guardrail_config_repository):
         id=key_id,
         guardrail_id=1,
         guardrail_provider=GuardrailProvider.AWS,
-        guardrail_provider_connection_name="mock_connection_name",
+        response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
     )
@@ -407,7 +407,7 @@ async def test_update_guardrail_config(mock_guardrail_config_repository):
         assert result.id == key_id
         assert result.guardrail_id == 1
         assert result.guardrail_provider == GuardrailProvider.AWS
-        assert result.guardrail_provider_connection_name == "mock_connection_name"
+        assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
 
@@ -419,7 +419,7 @@ async def test_delete_guardrail_config(mock_guardrail_config_repository):
         id=key_id,
         guardrail_id=1,
         guardrail_provider=GuardrailProvider.AWS,
-        guardrail_provider_connection_name="mock_connection_name",
+        response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
     )
@@ -547,9 +547,7 @@ async def test_get_guardrail_view(mock_guardrail_view_repository):
         guardrail_id=1,
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"},
-        guardrail_provider_connection_name="mock_connection_name",
-        guardrail_connection={"mock_key": "mock_value"},
-        guardrail_provider_response={"mock_key": "mock_value"}
+        response_message="mock_response_message"
     )
 
     with patch.object(GuardrailViewRepository, 'get_all', return_value=[mock_guardrail_view]):
@@ -563,9 +561,7 @@ async def test_get_guardrail_view(mock_guardrail_view_repository):
         assert result[0].guardrail_id == 1
         assert result[0].config_type == "mock_config_type"
         assert result[0].config_data == {"mock_key": "mock_value"}
-        assert result[0].guardrail_provider_connection_name == "mock_connection_name"
-        assert result[0].guardrail_connection == {"mock_key": "mock_value"}
-        assert result[0].guardrail_provider_response == {"mock_key": "mock_value"}
+        assert result[0].response_message == "mock_response_message"
 
 
 @pytest.mark.asyncio
@@ -581,9 +577,7 @@ async def test_get_guardrail_view_by_id(mock_guardrail_view_repository):
         guardrail_id=1,
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"},
-        guardrail_provider_connection_name="mock_connection_name",
-        guardrail_connection={"mock_key": "mock_value"},
-        guardrail_provider_response={"mock_key": "mock_value"}
+        response_message="mock_response_message"
     )
 
     with patch.object(GuardrailViewRepository, 'get_record_by_id', return_value=mock_guardrail_view):
@@ -597,9 +591,7 @@ async def test_get_guardrail_view_by_id(mock_guardrail_view_repository):
         assert result.guardrail_id == 1
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
-        assert result.guardrail_provider_connection_name == "mock_connection_name"
-        assert result.guardrail_connection == {"mock_key": "mock_value"}
-        assert result.guardrail_provider_response == {"mock_key": "mock_value"}
+        assert result.response_message == "mock_response_message"
 
 
 @pytest.mark.asyncio

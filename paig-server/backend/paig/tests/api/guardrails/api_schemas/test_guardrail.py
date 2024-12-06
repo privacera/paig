@@ -14,48 +14,131 @@ guardrail_data = {
     "description": "mock description",
     "version": 1,
     "applicationKeys": ["mock_app_key1", "mock_app_key2"],
+    "guardrailConnections": {
+        "AWS": {
+            "connectionName": "gr_connection_1"
+        }
+    },
     "guardrailConfigs": [
+        {
+            "id": 1,
+            "status": 1,
+            "createTime": "2024-12-05T10:17:04.662783",
+            "updateTime": "2024-12-05T10:17:04.662832",
+            "guardrailProvider": "MULTIPLE",
+            "configType": "CONTENT_MODERATION",
+            "configData": {
+                "configs": [
+                    {
+                        "category": "Hate",
+                        "guardrailProvider": "AWS",
+                        "filterStrengthPrompt": "high",
+                        "filterStrengthResponse": "medium"
+                    },
+                    {
+                        "category": "Insults",
+                        "guardrailProvider": "AWS",
+                        "filterStrengthPrompt": "high",
+                        "filterStrengthResponse": "medium"
+                    }
+                ]
+            },
+            "responseMessage": "I couldn't respond to that message."
+        },
+        {
+            "id": 2,
+            "status": 1,
+            "createTime": "2024-12-05T10:17:04.662783",
+            "updateTime": "2024-12-05T10:17:04.662832",
+            "guardrailProvider": "AWS",
+            "configType": "SENSITIVE_DATA",
+            "configData": {
+                "configs": [
+                    {
+                        "category": "EMAIL",
+                        "action": "DENY"
+                    },
+                    {
+                        "category": "USERNAME",
+                        "action": "ALLOW"
+                    },
+                    {
+                        "category": "PASSWORD",
+                        "action": "REDACT"
+                    },
+                    {
+                        "type": "regex",
+                        "name": "email_regex",
+                        "description": "email_regex",
+                        "pattern": "test_pattern",
+                        "action": "REDACT"
+                    }
+                ]
+            },
+            "responseMessage": "I couldn't respond to that message."
+        },
         {
             "id": 3,
             "status": 1,
-            "createTime": "2024-10-29T13:03:27.000000",
-            "updateTime": "2024-10-29T13:03:27.000000",
-            "guardrailProvider": GuardrailProvider.AWS,
-            "configType": "contentPolicyConfig",
+            "createTime": "2024-12-05T10:17:04.662783",
+            "updateTime": "2024-12-05T10:17:04.662832",
+            "guardrailProvider": "AWS",
+            "configType": "OFF_TOPIC",
             "configData": {
-                "filtersConfig": [
+                "configs": [
                     {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "HIGH",
-                        "type": "VIOLENCE"
-                    },
-                    {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "NONE",
-                        "type": "PROMPT_ATTACK"
-                    },
-                    {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "HIGH",
-                        "type": "MISCONDUCT"
-                    },
-                    {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "HIGH",
-                        "type": "HATE"
-                    },
-                    {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "HIGH",
-                        "type": "SEXUAL"
-                    },
-                    {
-                        "inputStrength": "HIGH",
-                        "outputStrength": "HIGH",
-                        "type": "INSULTS"
+                        "topic": "Sports",
+                        "definition": "Sports Definition",
+                        "samplePhrases": [
+                            "Who's playing NFL tonight ?",
+                            "Who's leading tonight ?"
+                        ],
+                        "action": "DENY"
                     }
                 ]
-            }
+            },
+            "responseMessage": "I couldn't respond to that message."
+        },
+        {
+            "id": 4,
+            "status": 1,
+            "createTime": "2024-12-05T10:17:04.662783",
+            "updateTime": "2024-12-05T10:17:04.662832",
+            "guardrailProvider": "AWS",
+            "configType": "DENIED_TERMS",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "PROFANITY",
+                        "value": True
+                    },
+                    {
+                        "term": "Violance",
+                        "keywords": [
+                            "Violent Bahaviour",
+                            "Physical Assault"
+                        ]
+                    }
+                ]
+            },
+            "responseMessage": "I couldn't respond to that message."
+        },
+        {
+            "id": 5,
+            "status": 1,
+            "createTime": "2024-12-05T10:17:04.662783",
+            "updateTime": "2024-12-05T10:17:04.662832",
+            "guardrailProvider": "AWS",
+            "configType": "PROMPT_SAFETY",
+            "configData": {
+                "configs": [
+                    {
+                        "category": "PROMPT_ATTACK",
+                        "filterStrengthPrompt": "HIGH"
+                    }
+                ]
+            },
+            "responseMessage": "I couldn't respond to that message."
         }
     ],
     "guardrailProviderResponse": {
@@ -80,8 +163,9 @@ def test_guardrail_view_valid_data():
     assert view.version == guardrail_data["version"]
     assert view.application_keys == guardrail_data["applicationKeys"]
     assert view.guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
-    assert view.guardrail_configs[0].config_type == guardrail_data["guardrailConfigs"][0]["configType"]
-    assert view.guardrail_configs[0].guardrail_provider == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
+    assert view.guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
+    assert view.guardrail_configs[0].guardrail_provider.value == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
+    assert view.guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
     assert view.guardrail_provider_response == guardrail_data["guardrailProviderResponse"]
 
 
@@ -170,46 +254,29 @@ def test_guardrail_application_view_invalid_key_type():
 
 def test_to_guardrail_config():
     guardrail_config_data = {
-        "guardrailProvider": GuardrailProvider.AWS,
-        "configType": "contentPolicyConfig",
+        "guardrailProvider": "MULTIPLE",
+        "configType": "CONTENT_MODERATION",
         "configData": {
-            "filtersConfig": [
+            "configs": [
                 {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "HIGH",
-                    "type": "VIOLENCE"
+                    "category": "Hate",
+                    "guardrailProvider": "AWS",
+                    "filterStrengthPrompt": "high",
+                    "filterStrengthResponse": "medium"
                 },
                 {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "NONE",
-                    "type": "PROMPT_ATTACK"
-                },
-                {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "HIGH",
-                    "type": "MISCONDUCT"
-                },
-                {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "HIGH",
-                    "type": "HATE"
-                },
-                {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "HIGH",
-                    "type": "SEXUAL"
-                },
-                {
-                    "inputStrength": "HIGH",
-                    "outputStrength": "HIGH",
-                    "type": "INSULTS"
+                    "category": "Insults",
+                    "guardrailProvider": "AWS",
+                    "filterStrengthPrompt": "high",
+                    "filterStrengthResponse": "medium"
                 }
             ]
-        }
+        },
+        "responseMessage": "I couldn't respond to that message."
     }
     view = GRConfigView(**guardrail_config_data)
     guardrail_config = view.to_guardrail_config()
-    assert guardrail_config.guardrailProvider == guardrail_config_data["guardrailProvider"].name
+    assert guardrail_config.guardrailProvider == guardrail_config_data["guardrailProvider"]
     assert guardrail_config.configType == guardrail_config_data["configType"]
     assert guardrail_config.configData == guardrail_config_data["configData"]
 
@@ -230,6 +297,7 @@ def test_guardrails_data_view_valid_data():
     assert view.guardrails[0].version == guardrail_data["version"]
     assert view.guardrails[0].application_keys == guardrail_data["applicationKeys"]
     assert view.guardrails[0].guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
-    assert view.guardrails[0].guardrail_configs[0].config_type == guardrail_data["guardrailConfigs"][0]["configType"]
-    assert view.guardrails[0].guardrail_configs[0].guardrail_provider == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
+    assert view.guardrails[0].guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
+    assert view.guardrails[0].guardrail_configs[0].guardrail_provider.value == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
+    assert view.guardrails[0].guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
     assert view.guardrails[0].guardrail_provider_response == guardrail_data["guardrailProviderResponse"]

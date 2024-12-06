@@ -16,9 +16,7 @@ class GuardrailViewModel(BaseSQLModel):
         guardrail_id (int): The guardrail id.
         config_type (str): The config type.
         config_data (dict): The config data JSON.
-        guardrail_provider_connection_name (str): The guardrail provider connection name.
-        guardrail_connection (dict): The guardrail connection JSON.
-        guardrail_provider_response (dict): The guardrail response JSON.
+        response_message (str): The response message.
     """
     __tablename__ = "paig_guardrail_view"
 
