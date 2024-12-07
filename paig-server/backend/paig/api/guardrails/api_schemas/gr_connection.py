@@ -25,21 +25,6 @@ class GRConnectionView(BaseView):
     guardrail_provider: Optional[GuardrailProvider] = Field(..., description="The guardrails provider", alias="guardrailsProvider")
     connection_details: dict = Field(..., description="The connection details", alias="connectionDetails")
 
-    def to_guardrail_connection(self):
-        """
-        Convert the Guardrails connection view to a Guardrails connection.
-
-        Returns:
-            GuardrailConnection: The Guardrails connection.
-        """
-        from api.guardrails.providers import GuardrailConnection
-        return GuardrailConnection(
-            name=self.name,
-            description=self.description,
-            guardrailProvider=self.guardrail_provider,
-            connectionDetails=self.connection_details
-        )
-
 
 class GRConnectionFilter(BaseAPIFilter):
     """

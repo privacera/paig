@@ -6,7 +6,10 @@ from sqlalchemy.exc import NoResultFound
 from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
+from api.guardrails.database.db_models.guardrail_view_model import GRConnectionViewModel
+from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository, \
+    GRConnectionMappingRepository, GRConnectionViewRepository
 from api.guardrails.providers import GuardrailConnection
 from api.guardrails.services.gr_connections_service import GRConnectionRequestValidator, GRConnectionService
 from core.exceptions import BadRequestException, NotFoundException
@@ -27,6 +30,11 @@ gr_connection_view_json = {
 }
 
 gr_connection_view = GRConnectionView(**gr_connection_view_json)
+gr_conn_view_model = GRConnectionViewModel()
+gr_conn_view_model.guardrail_id = 1
+gr_conn_view_model.set_attribute(gr_connection_view.model_dump())
+gr_connection_mapping = GRConnectionMappingModel(guardrail_id=1, gr_connection_id=1,
+                                                 guardrail_provider=GuardrailProvider.AWS)
 
 
 @pytest.fixture
@@ -35,14 +43,27 @@ def mock_guardrail_connection_repository():
 
 
 @pytest.fixture
+def mock_guardrail_connection_view_repository():
+    return AsyncMock(spec=GRConnectionViewRepository)
+
+
+@pytest.fixture
+def mock_guardrail_connection_mapping_repository():
+    return AsyncMock(spec=GRConnectionMappingRepository)
+
+
+@pytest.fixture
 def guardrail_connection_request_validator(mock_guardrail_connection_repository):
     return GRConnectionRequestValidator(gr_connection_repository=mock_guardrail_connection_repository)
 
 
 @pytest.fixture
-def guardrail_connection_service(mock_guardrail_connection_repository, guardrail_connection_request_validator):
+def guardrail_connection_service(mock_guardrail_connection_repository, mock_guardrail_connection_view_repository,
+                                 mock_guardrail_connection_mapping_repository, guardrail_connection_request_validator):
     return GRConnectionService(
         gr_connection_repository=mock_guardrail_connection_repository,
+        gr_connection_view_repository=mock_guardrail_connection_view_repository,
+        gr_connection_mapping_repository=mock_guardrail_connection_mapping_repository,
         gr_connection_request_validator=guardrail_connection_request_validator
     )
 
@@ -55,9 +76,8 @@ async def test_list_guardrail_connections(guardrail_connection_service, mock_gua
     expected_total_count = 100
     # Patch the list_records method on the repository
     with patch.object(
-        mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, expected_total_count)
+            mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, expected_total_count)
     ) as mock_list_records:
-
         # Call the method under test
         result = await guardrail_connection_service.list(filter=mock_filter, page_number=1, size=10, sort=mock_sort)
 
@@ -68,13 +88,13 @@ async def test_list_guardrail_connections(guardrail_connection_service, mock_gua
 
 
 @pytest.mark.asyncio
-async def test_list_guardrail_connection_provider_names(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_list_guardrail_connection_provider_names(guardrail_connection_service,
+                                                        mock_guardrail_connection_repository):
     expected_records = [gr_connection_view]
     # Patch the list_records method on the repository
     with patch.object(
-        mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, 2)
+            mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, 2)
     ) as mock_list_records:
-
         # Call the method under test
         result = await guardrail_connection_service.list_connection_provider_names()
 
@@ -86,11 +106,10 @@ async def test_list_guardrail_connection_provider_names(guardrail_connection_ser
         assert result == [GuardrailProvider.AWS]
 
 
-
 @pytest.mark.asyncio
 async def test_create_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
     with patch.object(
-        mock_guardrail_connection_repository, 'create_record', return_value=gr_connection_view
+            mock_guardrail_connection_repository, 'create_record', return_value=gr_connection_view
     ) as mock_create_record, patch.object(
         mock_guardrail_connection_repository, 'list_records', return_value=(None, 0)
     ) as mock_get_by_name:
@@ -104,9 +123,10 @@ async def test_create_guardrail_connection(guardrail_connection_service, mock_gu
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_connection_when_name_already_exists(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_create_guardrail_connection_when_name_already_exists(guardrail_connection_service,
+                                                                    mock_guardrail_connection_repository):
     with patch.object(
-        mock_guardrail_connection_repository, 'list_records', return_value=([gr_connection_view], 1)
+            mock_guardrail_connection_repository, 'list_records', return_value=([gr_connection_view], 1)
     ) as mock_get_by_name:
         # Call the method under test
         with pytest.raises(BadRequestException) as exc_info:
@@ -133,7 +153,8 @@ async def test_get_guardrail_connection_by_id(guardrail_connection_service, mock
 
 
 @pytest.mark.asyncio
-async def test_get_guardrail_connection_by_id_when_not_found(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_get_guardrail_connection_by_id_when_not_found(guardrail_connection_service,
+                                                             mock_guardrail_connection_repository):
     with patch.object(
             mock_guardrail_connection_repository, 'get_record_by_id', side_effect=NoResultFound
     ) as mock_get_record_by_id:
@@ -148,9 +169,24 @@ async def test_get_guardrail_connection_by_id_when_not_found(guardrail_connectio
 
 
 @pytest.mark.asyncio
+async def test_get_all_guardrail_connections_by_provider(guardrail_connection_service,
+                                                         mock_guardrail_connection_repository):
+    with patch.object(
+            mock_guardrail_connection_repository, 'get_all', return_value=[gr_connection_view]
+    ) as mock_get_all_records:
+        # Call the method under test
+        gr_conn_filter = GRConnectionFilter(name="gr_connection_1")
+        result = await guardrail_connection_service.get_all(gr_conn_filter)
+
+        # Assertions
+        mock_get_all_records.assert_called_once_with(gr_conn_filter.dict())
+        assert result == [gr_connection_view]
+
+
+@pytest.mark.asyncio
 async def test_update_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
     with (patch.object(
-        mock_guardrail_connection_repository, 'update_record', return_value=gr_connection_view
+            mock_guardrail_connection_repository, 'update_record', return_value=gr_connection_view
     ) as mock_update_record, patch.object(
         mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel(id=1)
     ) as mock_get_record_by_id, patch.object(
@@ -167,9 +203,10 @@ async def test_update_guardrail_connection(guardrail_connection_service, mock_gu
 
 
 @pytest.mark.asyncio
-async def test_update_guardrail_connection_when_name_already_exists(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_update_guardrail_connection_when_name_already_exists(guardrail_connection_service,
+                                                                    mock_guardrail_connection_repository):
     with patch.object(
-        mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel(id=2)
+            mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel(id=2)
     ) as mock_get_record_by_id, patch.object(
         mock_guardrail_connection_repository, 'list_records', return_value=([gr_connection_view], 1)
     ) as mock_get_by_name:
@@ -188,7 +225,7 @@ async def test_update_guardrail_connection_when_name_already_exists(guardrail_co
 @pytest.mark.asyncio
 async def test_delete_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
     with patch.object(
-        mock_guardrail_connection_repository, 'delete_record', return_value=None
+            mock_guardrail_connection_repository, 'delete_record', return_value=None
     ) as mock_delete_record, patch.object(
         mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel()
     ) as mock_get_record_by_id:
@@ -198,6 +235,60 @@ async def test_delete_guardrail_connection(guardrail_connection_service, mock_gu
         # Assertions
         assert mock_delete_record.called
         assert mock_get_record_by_id.called
+
+
+@pytest.mark.asyncio
+async def test_create_guardrail_connection_mapping(guardrail_connection_service,
+                                                   mock_guardrail_connection_mapping_repository):
+    with patch.object(
+            mock_guardrail_connection_mapping_repository, 'create_record', return_value=gr_connection_mapping
+    ) as mock_create_record:
+        # Call the method under test
+        result = await guardrail_connection_service.create_guardrail_connection_mapping(gr_connection_mapping)
+
+        # Assertions
+        assert result == gr_connection_mapping
+        assert mock_create_record.called
+
+
+@pytest.mark.asyncio
+async def test_get_connections_by_guardrail_id(guardrail_connection_service, mock_guardrail_connection_view_repository):
+    with patch.object(
+            mock_guardrail_connection_view_repository, 'get_all', return_value=[gr_conn_view_model]
+    ) as mock_get_all:
+        # Call the method under test
+        result = await guardrail_connection_service.get_connections_by_guardrail_id(1)
+
+        # Assertions
+        assert result == [gr_conn_view_model]
+        assert mock_get_all.called
+
+
+@pytest.mark.asyncio
+async def test_get_guardrail_connection_mappings_by_guardrail_id(guardrail_connection_service,
+                                                                 mock_guardrail_connection_mapping_repository):
+    with patch.object(
+            mock_guardrail_connection_mapping_repository, 'get_all', return_value=[gr_connection_mapping]
+    ) as mock_get_all:
+        # Call the method under test
+        result = await guardrail_connection_service.get_guardrail_connection_mappings(1)
+
+        # Assertions
+        assert result == [gr_connection_mapping]
+        assert mock_get_all.called
+
+
+@pytest.mark.asyncio
+async def test_delete_guardrail_connection_mapping(guardrail_connection_service,
+                                                   mock_guardrail_connection_mapping_repository):
+    with patch.object(
+            mock_guardrail_connection_mapping_repository, 'delete_record', return_value=None
+    ) as mock_delete_record:
+        # Call the method under test
+        await guardrail_connection_service.delete_guardrail_connection_mapping(gr_connection_mapping)
+
+        # Assertions
+        assert mock_delete_record.called
 
 
 @pytest.mark.asyncio
@@ -226,7 +317,8 @@ async def test_test_connection(guardrail_connection_service):
         }
     }
 
-    with patch("api.guardrails.providers.GuardrailProviderManager.verify_guardrails_connection_details", return_value=mock_response) as mock_verify:
+    with patch("api.guardrails.providers.GuardrailProviderManager.verify_guardrails_connection_details",
+               return_value=mock_response) as mock_verify:
         # Call the method
         response = await guardrail_connection_service.test_connection(request)
 

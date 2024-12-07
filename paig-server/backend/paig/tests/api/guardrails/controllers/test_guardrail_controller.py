@@ -113,6 +113,23 @@ async def test_get_guardrail_by_id(mock_guardrail_service):
 
 
 @pytest.mark.asyncio
+async def test_get_all_by_app_key(mock_guardrail_service):
+    # Mock return value from service
+    mock_guardrail_view = get_dummy_guardrail_view()
+    mock_guardrail_service.get_all_by_app_key.return_value = mock_guardrail_view
+
+    # Create instance of controller
+    controller = GuardrailController(guardrail_service=mock_guardrail_service)
+
+    # Call the method under test
+    result = await controller.get_all_by_app_key(app_key="mock_app_key")
+
+    # Assertions
+    assert result == mock_guardrail_view
+    mock_guardrail_service.get_all_by_app_key.assert_called_once()
+
+
+@pytest.mark.asyncio
 async def test_update_guardrail(mock_guardrail_service, mock_session, session_context, mocker):
     # Mock return value from service
     mock_guardrail_view = get_dummy_guardrail_view()

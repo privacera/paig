@@ -59,7 +59,7 @@ def response_template_app(mock_response_template_controller, mocker):
         redoc_url=None
     )
 
-    app.include_router(response_template_router, prefix="/response_template")
+    app.include_router(response_template_router, prefix="/response_templates")
     yield app
 
 
@@ -69,14 +69,14 @@ def response_template_app_client(response_template_app):
 
 
 def test_list_response_templates_success(response_template_app_client):
-    response = response_template_app_client.get("http://localhost:9090/response_template")
+    response = response_template_app_client.get("http://localhost:9090/response_templates")
     assert response.status_code == status.HTTP_200_OK
     assert "content" in response.json()
     assert len(response.json()["content"]) == 1
 
 
 def test_create_response_template_success(response_template_app_client):
-    response = response_template_app_client.post("http://localhost:9090/response_template", content=json.dumps(response_template_view_json))
+    response = response_template_app_client.post("http://localhost:9090/response_templates", content=json.dumps(response_template_view_json))
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["id"] == 1
     assert response.json()["status"] == 1
@@ -85,16 +85,16 @@ def test_create_response_template_success(response_template_app_client):
 
 
 def test_get_response_template_by_id_success(response_template_app_client):
-    response = response_template_app_client.get("http://localhost:9090/response_template/1")
+    response = response_template_app_client.get("http://localhost:9090/response_templates/1")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["id"] == 1
 
 
 def test_update_response_template_success(response_template_app_client):
-    response = response_template_app_client.put("http://localhost:9090/response_template/1", content=json.dumps(response_template_view_json))
+    response = response_template_app_client.put("http://localhost:9090/response_templates/1", content=json.dumps(response_template_view_json))
     assert response.status_code == status.HTTP_200_OK
 
 
 def test_delete_response_template_success(response_template_app_client):
-    response = response_template_app_client.delete("http://localhost:9090/response_template/1")
+    response = response_template_app_client.delete("http://localhost:9090/response_templates/1")
     assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -383,8 +383,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Fetch all guardrails matching the given ID
         guardrails = await self.gr_view_repository.get_all(filters={"guardrail_id": id})
-        if not guardrails:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail", "id", [id]))
 
         # Initialize the result GuardrailView based on the first record
         result = GuardrailView.model_validate(guardrails[0])
@@ -768,59 +766,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             if gr_resp.guardrail_provider.name in updated_connections:
                 response_to_update_guardrail[gr_resp.guardrail_provider.name] = gr_resp
         return response_to_update_guardrail, response_to_delete_guardrail
-
-    def _get_connection_to_add_update_delete(self, gr_connections, created_connections, updated_connections,
-                                             deleted_connections):
-        create_connection_list = []
-        update_connection_list = []
-        delete_connection_list = []
-        for gr_conn in gr_connections:
-            if gr_conn.name in created_connections.values():
-                create_connection_list.append(gr_conn)
-            elif gr_conn.name in updated_connections.values():
-                update_connection_list.append(gr_conn)
-            elif gr_conn.name in deleted_connections.values():
-                delete_connection_list.append(gr_conn)
-        return create_connection_list, update_connection_list, delete_connection_list
-
-    def _populate_deleted_connections_configs(self, existing_gr_configs_map, updated_gr_configs_map,
-                                              deleted_connections):
-        for provider, existing_configs in existing_gr_configs_map.items():
-            if provider not in updated_gr_configs_map:
-                # All connections should be deleted
-                deleted_connections[provider] = existing_configs[0].guardrail_provider_connection_name
-            else:
-                # Compare existing and updated configurations to find deleted connections
-                updated_configs = updated_gr_configs_map[provider]
-                updated_conf_conn_name = updated_configs[0].guardrail_provider_connection_name
-                existing_conf_conn_name = existing_configs[0].guardrail_provider_connection_name
-
-                # Connections to delete
-                if existing_conf_conn_name != updated_conf_conn_name:
-                    deleted_connections[provider] = existing_conf_conn_name
-
-    def _populate_created_updated_connections_configs(self, existing_gr_configs_map, updated_gr_configs_map,
-                                                      create_guardrails_configs_list, created_connections,
-                                                      update_guardrails_configs_list, updated_connections):
-        for provider, updated_configs in updated_gr_configs_map.items():
-            updated_gr_config = [gr_config.to_guardrail_config() for gr_config in updated_configs]
-            if provider not in existing_gr_configs_map:
-                # All connections are new (to create)
-                created_connections[provider] = updated_configs[0].guardrail_provider_connection_name
-                create_guardrails_configs_list.extend(updated_gr_config)
-            else:
-                # Compare existing and updated configurations to find updated connections
-                existing_configs = existing_gr_configs_map[provider]
-                existing_conf_conn_name = existing_configs[0].guardrail_provider_connection_name
-                updated_conf_conn_name = updated_configs[0].guardrail_provider_connection_name
-
-                # Connections to update
-                if existing_conf_conn_name == updated_conf_conn_name:
-                    updated_connections[provider] = updated_conf_conn_name
-                    update_guardrails_configs_list.extend(updated_gr_config)
-                else:
-                    created_connections[provider] = updated_conf_conn_name
-                    create_guardrails_configs_list.extend(updated_gr_config)
 
     def prepare_gr_provider_config_map(self, gr_configs: List[GRConfigView]) -> Dict[str, List[GuardrailConfig]]:
         gr_provider_configs_map = defaultdict(list)
