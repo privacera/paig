@@ -43,13 +43,16 @@ class GuardrailTransformer:
             transformed_results = {}
             for provider, configs in gr_configs.items():
                 gr_transformer = GuardrailTransformerFactory.get_transformer(provider.name)
-                if provider.name not in transformed_results:
-                    transformed_results[provider.name] = []
-                transformed_results[provider.name].extend(gr_transformer.transform(configs))
+                result = gr_transformer.transform(configs)
+                if result:
+                    if provider.name not in transformed_results:
+                        transformed_results[provider.name] = []
+                    transformed_results[provider.name].extend(result)
 
             return transformed_results
         except Exception as e:
-            raise BadRequestException(f"Failed to process guardrail configurations: {str(e)}")
+            msg = f"{[e]}" if isinstance(e, KeyError) else str(e)
+            raise BadRequestException(f"Failed to process guardrail configurations: {msg}")
 
 
 class GuardrailTransformerFactory:

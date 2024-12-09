@@ -62,7 +62,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
             aws_gr_config.configData['filtersConfig'] = filters_config
             return aws_gr_config
         except Exception as e:
-            raise Exception(f"Invalid data in content moderation config: {str(e)}")
+            raise Exception(f"Invalid data in content moderation config: {[e]}")
 
     def _transform_sensitive_data(self, sensitive_data_config):
         try:
@@ -96,7 +96,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                 aws_gr_config.configData['regexesConfig'] = regex_entities_config
             return aws_gr_config
         except Exception as e:
-            raise Exception(f"Invalid data in sensitive data config: {str(e)}")
+            raise Exception(f"Invalid data in sensitive data config: {[e]}")
 
     def _transform_off_topic(self, off_topic_config):
         try:
@@ -114,7 +114,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
             aws_gr_config.configData['topicsConfig'] = topic_policy_config
             return aws_gr_config
         except Exception as e:
-            raise Exception(f"Invalid data in off topic config: {str(e)}")
+            raise Exception(f"Invalid data in off topic config: {[e]}")
 
     def _transform_denied_terms(self, denied_terms_config):
         try:
@@ -136,7 +136,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                 aws_gr_config.configData['managedWordListsConfig'] = profanity_config
             return aws_gr_config
         except Exception as e:
-            raise Exception(f"Invalid data in denied terms config: {str(e)}")
+            raise Exception(f"Invalid data in denied terms config: {[e]}")
 
     def _transform_prompt_safety(self, content_moderation_config, prompt_attack_config):
         try:
@@ -150,6 +150,9 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                 })
                 return None
             else:
+                prompt_attack_config.config_data['configs'][0]['guardrailProvider'] = prompt_attack_config.guardrail_provider.name
+                prompt_attack_config.config_data['configs'][0]['filterStrengthResponse'] = "NONE"
                 return self._transform_content_moderation(prompt_attack_config)
         except Exception as e:
-            raise Exception(f"Invalid data in prompt safety config: {str(e)}")
+            msg = f"{[e]}" if isinstance(e, KeyError) else str(e)
+            raise Exception(f"Invalid data in prompt safety config: {msg}")
