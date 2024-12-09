@@ -1,8 +1,6 @@
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
-from api.guardrails.routes.response_template_router import response_template_router
-from core.controllers.paginated_response import create_pageable_response
 from core.exceptions import BadRequestException
 from api.guardrails.api_schemas.response_template import ResponseTemplateView, ResponseTemplateFilter
 from api.guardrails.database.db_models.response_template_model import ResponseTemplateModel
