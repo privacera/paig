@@ -1,9 +1,10 @@
 import unittest
 
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from api.guardrails.providers import GuardrailConnection, GuardrailProviderManager, GuardrailProvider, \
-    CreateGuardrailRequest, UpdateGuardrailRequest, DeleteGuardrailRequest, GuardrailConfig
+    CreateGuardrailRequest, UpdateGuardrailRequest, DeleteGuardrailRequest, GuardrailConfig, GuardrailProviderType
+from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
 
 
 # Mocked GuardrailProvider Implementation for Testing
@@ -119,3 +120,26 @@ class TestGuardrailProviderManager(unittest.TestCase):
         # Assert
         self.assertEqual(result["AWS"]["success"], True)
         self.assertEqual(result["AWS"]["response"]["message"], "Guardrail deleted successfully")
+
+    def test_get_provider_instance_aws(self):
+        """Test that the method returns an instance of BedrockGuardrailProvider for AWS provider."""
+        connection_details = {"region": "us-east-1"}
+        mock_bedrock_provider = MagicMock(spec=BedrockGuardrailProvider)
+
+        with patch("api.guardrails.providers.backend.bedrock.BedrockGuardrailProvider",
+                   return_value=mock_bedrock_provider):
+            instance = GuardrailProviderManager._get_provider_instance(
+                provider=GuardrailProviderType.AWS,
+                connection_details=connection_details
+            )
+            self.assertIsInstance(instance, BedrockGuardrailProvider)
+
+    def test_get_provider_instance_invalid_provider(self):
+        """Test that the method raises a ValueError for an unknown provider."""
+        connection_details = {"region": "us-east-1"}
+        with self.assertRaises(ValueError) as context:
+            GuardrailProviderManager._get_provider_instance(
+                provider="InvalidProvider",
+                connection_details=connection_details
+            )
+        self.assertEqual(str(context.exception), "Unknown guardrail provider: InvalidProvider")
