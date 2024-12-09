@@ -4,14 +4,14 @@ from collections import defaultdict
 from api.guardrails.api_schemas.guardrail import GRConfigView
 from api.guardrails import GuardrailProvider
 from api.guardrails.providers import GuardrailConfig
-from api.guardrails.transformers import GuardrailTransformer
+from api.guardrails.transformers.backend import GuardrailTransformerBase
 from api.guardrails.transformers.backend.aws_gr_transformer import AWSGuardrailTransformer
 from core.exceptions import BadRequestException
 
 
-class GuardrailTransformerProcessor:
+class GuardrailTransformer:
     @staticmethod
-    def process(guardrail_configs: list[GRConfigView]) -> dict[str, list[GuardrailConfig]]:
+    def transform(guardrail_configs: list[GRConfigView]) -> dict[str, list[GuardrailConfig]]:
         """
         Processes multiple guardrail configurations and returns a dict
         with provider names as keys and lists of transformed configs as values.
@@ -42,10 +42,10 @@ class GuardrailTransformerProcessor:
 
             transformed_results = {}
             for provider, configs in gr_configs.items():
-                transformer = GuardrailTransformerFactory.get_transformer(provider.name)
+                gr_transformer = GuardrailTransformerFactory.get_transformer(provider.name)
                 if provider.name not in transformed_results:
                     transformed_results[provider.name] = []
-                transformed_results[provider.name].extend(transformer.transform(configs))
+                transformed_results[provider.name].extend(gr_transformer.transform(configs))
 
             return transformed_results
         except Exception as e:
@@ -54,7 +54,7 @@ class GuardrailTransformerProcessor:
 
 class GuardrailTransformerFactory:
     @staticmethod
-    def get_transformer(provider: str) -> GuardrailTransformer:
+    def get_transformer(provider: str) -> GuardrailTransformerBase:
         transformers = {
             "AWS": AWSGuardrailTransformer
         }

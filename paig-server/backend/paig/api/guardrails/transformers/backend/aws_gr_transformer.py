@@ -3,10 +3,10 @@ import logging
 from api.guardrails.api_schemas.guardrail import GRConfigView
 from api.guardrails import GuardrailConfigType
 from api.guardrails.providers import GuardrailConfig as AWSGuardrailConfig, GuardrailConfig
-from api.guardrails.transformers import GuardrailTransformer
+from api.guardrails.transformers.backend import GuardrailTransformerBase
 
 
-class AWSGuardrailTransformer(GuardrailTransformer):
+class AWSGuardrailTransformer(GuardrailTransformerBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._logger = logging.getLogger(__name__)
@@ -46,11 +46,11 @@ class AWSGuardrailTransformer(GuardrailTransformer):
 
         return transformed_configs
 
-    def _transform_content_moderation(self, guardrail_config):
+    def _transform_content_moderation(self, content_moderation_config):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={})
             filters_config = list(dict())
-            for config in guardrail_config.config_data['configs']:
+            for config in content_moderation_config.config_data['configs']:
                 if config['guardrailProvider'] == "AWS":
                     filters_config.append({
                         "type": config['category'].upper(),
@@ -64,12 +64,12 @@ class AWSGuardrailTransformer(GuardrailTransformer):
         except Exception as e:
             raise Exception(f"Invalid data in content moderation config: {str(e)}")
 
-    def _transform_sensitive_data(self, guardrail_config):
+    def _transform_sensitive_data(self, sensitive_data_config):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="sensitiveInformationPolicyConfig", guardrailProvider="AWS", configData={})
             pii_entities_config = []
             regex_entities_config = []
-            for config in guardrail_config.config_data['configs']:
+            for config in sensitive_data_config.config_data['configs']:
                 if config['action'].upper() == "DENY":
                     action = "BLOCK"
                 elif config['action'].upper() == "REDACT":
@@ -98,11 +98,11 @@ class AWSGuardrailTransformer(GuardrailTransformer):
         except Exception as e:
             raise Exception(f"Invalid data in sensitive data config: {str(e)}")
 
-    def _transform_off_topic(self, guardrail_config):
+    def _transform_off_topic(self, off_topic_config):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="topicPolicyConfig", guardrailProvider="AWS", configData={})
             topic_policy_config = []
-            for config in guardrail_config.config_data['configs']:
+            for config in off_topic_config.config_data['configs']:
                 topic_policy_config.append({
                     "name": config['topic'],
                     "definition": config['definition'],
@@ -116,12 +116,12 @@ class AWSGuardrailTransformer(GuardrailTransformer):
         except Exception as e:
             raise Exception(f"Invalid data in off topic config: {str(e)}")
 
-    def _transform_denied_terms(self, guardrail_config):
+    def _transform_denied_terms(self, denied_terms_config):
         try:
             aws_gr_config = AWSGuardrailConfig(configType="wordPolicyConfig", guardrailProvider="AWS", configData={})
             word_policy_config = []
             profanity_config = []
-            for config in guardrail_config.config_data['configs']:
+            for config in denied_terms_config.config_data['configs']:
                 if 'type' in config and config['type'].upper() == "PROFANITY" and config['value'] is True:
                     profanity_config.append({"type": "PROFANITY"})
                 if 'term' in config:

@@ -5,7 +5,7 @@ from typing import List, Dict, Set
 import sqlalchemy
 from paig_common.lru_cache import LRUCache
 
-from api.guardrails import GuardrailProvider, GuardrailConfigType
+from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
@@ -17,7 +17,7 @@ from api.guardrails.database.db_operations.guardrail_repository import \
 from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRequest, DeleteGuardrailRequest, \
     UpdateGuardrailRequest, GuardrailConfig
 from api.guardrails.services.gr_connections_service import GRConnectionService
-from api.guardrails.transformers.guardrail_transform_processor import GuardrailTransformerProcessor
+from api.guardrails.transformers.guardrail_transformer import GuardrailTransformer
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
@@ -316,7 +316,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         guardrails_connection_list = await self._create_guardrail_connection_association(guardrail.id,
                                                                                          request.guardrail_connections)
 
-        guardrail_configs_to_create = GuardrailTransformerProcessor.process(guardrail_configs=guardrails_configs_list)
+        guardrail_configs_to_create = GuardrailTransformer.transform(guardrail_configs=guardrails_configs_list)
 
         # Create Guardrails in end service and save the Responses
         await self._create_guardrail_to_external_provider(guardrail, guardrails_connection_list,
@@ -771,7 +771,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         gr_provider_configs_map = defaultdict(list)
         for gr_config in gr_configs:
             gr_provider_configs_map[gr_config.guardrail_provider].append(gr_config)
-        return GuardrailTransformerProcessor.process(gr_configs)
+        return GuardrailTransformer.transform(gr_configs)
 
     async def delete(self, id: int):
         """
@@ -790,7 +790,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Delete Guardrails from end service
         guardrail = await self.repository.get_record_by_id(id)
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": id})
-        guardrail_configs_to_delete = GuardrailTransformerProcessor.process(guardrail_configs=gr_configs)
+        guardrail_configs_to_delete = GuardrailTransformer.transform(guardrail_configs=gr_configs)
         gr_connections = await self.guardrail_connection_service.get_connections_by_guardrail_id(id)
         connections_to_delete_guardrails = {gr_conn.guardrail_provider: gr_conn.connection_details
                                             for gr_conn in gr_connections}
