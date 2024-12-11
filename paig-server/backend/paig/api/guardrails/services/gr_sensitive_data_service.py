@@ -31,7 +31,8 @@ class GRSensitiveDataRequestValidator:
             request (GRSensitiveDataView): The view object representing the Guardrail Sensitive Data to create.
         """
         self.validate_name(request.name)
-        await self.validate_gr_sensitive_data_exists_by_name_and_provider(request.name, request.guardrail_provider)
+        self.validate_label(request.label)
+        await self.validate_gr_sensitive_data_exists(request)
 
     def validate_read_request(self, id: int):
         """
@@ -55,12 +56,9 @@ class GRSensitiveDataRequestValidator:
         """
         validate_id(id, "Guardrail Sensitive Data ID")
         self.validate_name(request.name)
+        self.validate_label(request.label)
 
-        gr_sensitive_data = await self.get_gr_sensitive_data_by_name_and_provider(request.name, request.guardrail_provider)
-        if gr_sensitive_data is not None and gr_sensitive_data.id != id:
-            message = get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "Guardrail Sensitive Data ", "name", [request.name])
-            message += " and provider ['" + request.guardrail_provider.value + "']"
-            raise BadRequestException(message)
+        await self.validate_gr_sensitive_data_exists(request)
 
     def validate_delete_request(self, id: int):
         """
@@ -80,36 +78,55 @@ class GRSensitiveDataRequestValidator:
         """
         validate_string_data(name, "Guardrail Sensitive Data name")
 
-    async def validate_gr_sensitive_data_exists_by_name_and_provider(self, name: str, provider: GuardrailProvider):
+    def validate_label(self, label: str):
+        """
+        Validate the label of GRSensitiveData value.
+
+        Args:
+            label (str): The label of the GRSensitiveData.
+        """
+        validate_string_data(label, "Guardrail Sensitive Data label")
+
+    async def validate_gr_sensitive_data_exists(self, request: GRSensitiveDataView):
         """
         Check if a GRSensitiveData already exists by its name and provider.
 
         Args:
-            name (str): The name of the Guardrail Sensitive Data.
-            provider (GuardrailProvider): The provider of the Guardrail Sensitive Data.
+            request (GRSensitiveDataView): The view object representing the Guardrail Sensitive Data to create.
 
         Raises:
             BadRequestException: If the Guardrail Sensitive Data with the same name and guardrail provider already exists.
         """
-        gr_sensitive_data = await self.get_gr_sensitive_data_by_name_and_provider(name, provider)
-        if gr_sensitive_data is not None:
-            message = get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "Guardrail Sensitive Data ", "name", [name])
-            message += " and provider ['" + provider.value + "']"
+        message = get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "Guardrail Sensitive Data", "name",
+                                    [request.name])
+        message += " or label ['" + request.label + "']"
+        message += " with provider ['" + request.guardrail_provider.value + "']"
+
+        gr_sensitive_data_by_name = await self.get_gr_sensitive_data(request.name, None, request.guardrail_provider)
+        if gr_sensitive_data_by_name is not None and gr_sensitive_data_by_name.id != id:
             raise BadRequestException(message)
 
-    async def get_gr_sensitive_data_by_name_and_provider(self, name: str, provider: GuardrailProvider):
+        gr_sensitive_data_by_label = await self.get_gr_sensitive_data(None, request.label, request.guardrail_provider)
+        if gr_sensitive_data_by_label is not None and gr_sensitive_data_by_label.id != id:
+            raise BadRequestException(message)
+
+    async def get_gr_sensitive_data(self, name: str | None, label: str | None, provider: GuardrailProvider):
         """
         Retrieve GRSensitiveData by its name.
 
         Args:
-            name (str): The name of the Guardrail Sensitive Data.
+            name (str | None): The name of the Guardrail Sensitive Data.
+            label (str | None): The label of the Guardrail Sensitive Data.
             provider (GuardrailProvider): The provider of the Guardrail Sensitive Data.
 
         Returns:
             GRSensitiveDataModel: The GRSensitiveData model corresponding to the name.
         """
         gr_sensitive_data_filter = GRSensitiveDataFilter()
-        gr_sensitive_data_filter.name = name
+        if name is not None:
+            gr_sensitive_data_filter.name = name
+        if label is not None:
+            gr_sensitive_data_filter.label = label
         gr_sensitive_data_filter.guardrail_provider = provider
         gr_sensitive_data_filter.exact_match = True
         records, total_count = await self.gr_sensitive_data_repository.list_records(filter=gr_sensitive_data_filter)

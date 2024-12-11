@@ -14,7 +14,8 @@ class GRSensitiveDataModel(BaseSQLModel):
         status (int): Status of the Metadata.
         create_time (datetime): Timestamp of creation.
         update_time (datetime): Timestamp of the last update.
-        name (str): Name of the Metadata.
+        name (str): Name of the Guardrail Sensitive Data.
+        label (str): Label of the Guardrail Sensitive Data.
         guardrail_provider (str): The guardrail provider.
         description (str): Description of gr_sensitive_data.
     """
@@ -22,5 +23,6 @@ class GRSensitiveDataModel(BaseSQLModel):
     __tablename__ = "gr_sensitive_data"
 
     name = Column(String(255), nullable=False)
+    label = Column(String(255), nullable=False)
     guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     description = Column(String(4000), nullable=True)

@@ -13,11 +13,13 @@ class GRSensitiveDataView(BaseView):
 
     Attributes:
         name (str): The name of the sensitive data.
+        label (str): The label of the sensitive data.
         guardrail_provider (GuardrailProvider): The guardrail's provider.
         description (Optional[str]): The description of the GRSensitiveData.
     """
     name: str = Field(default=None, description="The name of the sensitive data")
-    guardrail_provider: Optional[GuardrailProvider] = Field(..., description="The guardrails provider", alias="guardrailsProvider")
+    label: str = Field(default=None, description="The label of the sensitive data")
+    guardrail_provider: GuardrailProvider = Field(default=GuardrailProvider.PAIG, description="The guardrails provider", alias="guardrailsProvider")
     description: Optional[str] = Field(default=None, description="The Description of GRSensitiveData")
 
     model_config = BaseView.model_config
@@ -30,10 +32,12 @@ class GRSensitiveDataFilter(BaseAPIFilter):
     Attributes:
         id (int, optional): Filter by ID.
         name (str, optional): Filter by name.
+        label (str, optional): Filter by label.
         guardrail_provider (GuardrailProvider): The guardrail's provider.
         description (str, optional): Filter by description.
     """
 
     name: Optional[str] = Field(default=None, description="The name of the sensitive data")
+    label: Optional[str] = Field(default=None, description="The label of the sensitive data")
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrails provider", alias="guardrailsProvider")
     description: Optional[str] = Field(default=None, description="The Description of GRSensitiveData")
