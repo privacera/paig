@@ -59,7 +59,6 @@ class GRConnectionController:
             GRConnectionView: The created Guardrail connection view object.
         """
         return await self.gr_connection_service.create(request)
-        # await background_capture_event(event=CreateAIApplication
 
     async def get_by_id(self, id: int) -> GRConnectionView:
         """
@@ -86,7 +85,7 @@ class GRConnectionController:
             GRConnectionView: The updated Guardrail connection view object.
         """
         return await self.gr_connection_service.update(id, request)
-        # await background_capture_event(event=UpdateAIApplicationEvent())
+        # TODO: background_capture_event(event=UpdateAIApplicationEvent())
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete(self, id: int):
@@ -97,7 +96,7 @@ class GRConnectionController:
             id (int): The ID of the Guardrail connection to delete.
         """
         await self.gr_connection_service.delete(id)
-        # await background_capture_event(event=DeleteAIApplicationEvent())
+        # TODO: background_capture_event(event=DeleteAIApplicationEvent())
 
     async def test_connection(self, request: GRConnectionView) -> Dict[str, Any]:
         """

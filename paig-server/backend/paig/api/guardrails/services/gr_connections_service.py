@@ -1,7 +1,12 @@
 from typing import List, Dict, Any
 
+from paig_common.encryption import DataEncryptor
 from sqlalchemy.exc import NoResultFound
 
+from api.encryption.api_schemas.encryption_key import EncryptionKeyView
+from api.encryption.database.db_models.encryption_key_model import EncryptionKeyType
+from api.encryption.events.startup import create_encryption_keys_if_not_exists
+from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
@@ -155,10 +160,12 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
     def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository),
                  gr_connection_mapping_repository: GRConnectionMappingRepository = SingletonDepends(GRConnectionMappingRepository),
                  gr_connection_view_repository: GRConnectionViewRepository = SingletonDepends(GRConnectionViewRepository),
+                 encryption_key_service: EncryptionKeyService = SingletonDepends(EncryptionKeyService),
                  gr_connection_request_validator: GRConnectionRequestValidator = SingletonDepends(GRConnectionRequestValidator)):
         super().__init__(gr_connection_repository, GRConnectionModel, GRConnectionView)
         self.gr_connection_mapping_repository = gr_connection_mapping_repository
         self.gr_connection_view_repository = gr_connection_view_repository
+        self.encryption_key_service = encryption_key_service
         self.gr_connection_request_validator = gr_connection_request_validator
 
     def get_repository(self) -> GRConnectionRepository:
@@ -196,7 +203,10 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The created Guardrail Connection view object.
         """
         await self.gr_connection_request_validator.validate_create_request(request)
-        return await self.create_record(request)
+        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        await self.encrypt_connection_details(request)
+
+        return await self.create_record(request, exclude_fields={"encrypt_fields"})
 
     async def test_connection(self, request: GRConnectionView) -> Dict[str, Any]:
         """
@@ -208,6 +218,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         Returns:
             Dict[str, Any]: The response of the connection test.
         """
+        await self.decrypt_connection_details(request)
         guardrail_connection = GuardrailConnection(
             name=request.name,
             description=request.description,
@@ -249,17 +260,22 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         names = [record.guardrail_provider for record in records]
         return names
 
-    async def get_all(self, filter: GRConnectionFilter):
+    async def get_all(self, filter: GRConnectionFilter, decrypted=False) -> List[GRConnectionView]:
         """
         Get all Guardrail Connection configurations.
 
         Args:
             filter (GRConnectionFilter): The filter to apply to the query.
+            decrypted (bool): Whether to decrypt the connection details.
 
         Returns:
             List[GRConnectionView]: The list of Guardrail Connection configurations.
         """
-        return await self.repository.get_all(filter.dict())
+        result = await self.repository.get_all(filter.dict())
+        if decrypted:
+            for connection in result:
+                await self.decrypt_connection_details(connection)
+        return result
 
     async def update(self, id: int, request: GRConnectionView):
         """
@@ -273,7 +289,8 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The updated configuration of the Guardrail Connection.
         """
         await self.gr_connection_request_validator.validate_update_request(id, request)
-        return await self.update_record(id, request)
+        await self.encrypt_connection_details(request)
+        return await self.update_record(id, request, exclude_fields={"encrypt_fields"})
 
     async def delete(self, id: int):
         """
@@ -294,17 +311,22 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         """
         return await self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
 
-    async def get_connections_by_guardrail_id(self, guardrail_id) -> List[GRConnectionViewModel]:
+    async def get_connections_by_guardrail_id(self, guardrail_id, decrypted=False) -> List[GRConnectionViewModel]:
         """
         Get the connections by guardrail id.
 
         Args:
             guardrail_id: The ID of the Guardrail.
+            decrypted: Whether to decrypt the connection details.
 
         Returns:
             List[GRConnectionViewModel]: The list of Guardrail Connection Mappings.
         """
-        return await self.gr_connection_view_repository.get_all(filters={"guardrail_id": guardrail_id})
+        result = await self.gr_connection_view_repository.get_all(filters={"guardrail_id": guardrail_id})
+        if decrypted:
+            for connection in result:
+                await self.decrypt_connection_details(connection)
+        return result
 
     async def get_guardrail_connection_mappings(self, guardrail_id: int) -> List[GRConnectionMappingModel]:
         """
@@ -329,3 +351,26 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             None
         """
         await self.gr_connection_mapping_repository.delete_record(gr_conn_mapping)
+
+    async def encrypt_connection_details(self, gr_connection):
+        connection_details = gr_connection.connection_details
+        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
+            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        data_encryptor = DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
+        for key, value in connection_details.items():
+            if not value.startswith("GuardrailEncrypt:") and gr_connection.encrypt_fields and key in gr_connection.encrypt_fields:
+                gr_connection.connection_details[key] = "GuardrailEncrypt:" + data_encryptor.encrypt(data=str(value))
+
+    async def decrypt_connection_details(self, gr_connection):
+        connection_details = gr_connection.connection_details
+        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
+            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        data_encryptor = DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
+        for key, value in connection_details.items():
+            if value.startswith("GuardrailEncrypt:"):
+                try:
+                    gr_connection.connection_details[key] = data_encryptor.decrypt(
+                        data=value.replace("GuardrailEncrypt:", ""))
+                except Exception as e:
+                    raise BadRequestException(
+                        f"Invalid connection details('{key}') for {gr_connection.guardrail_provider.value}")

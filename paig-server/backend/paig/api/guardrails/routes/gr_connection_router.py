@@ -12,7 +12,7 @@ gr_connection_router = APIRouter()
 gr_connection_controller_instance = Depends(SingletonDepends(GRConnectionController, called_inside_fastapi_depends=True))
 
 
-@gr_connection_router.get("", response_model=Pageable)
+@gr_connection_router.get("", response_model=Pageable, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def list(
         filter: GRConnectionFilter = Depends(),
         page: int = Query(0, description="The page number to retrieve"),
@@ -36,7 +36,7 @@ async def list_connection_provider_names(
     return await gr_connection_controller.list_connection_provider_names()
 
 
-@gr_connection_router.post("", response_model=GRConnectionView, status_code=status.HTTP_201_CREATED)
+@gr_connection_router.post("", response_model=GRConnectionView, status_code=status.HTTP_201_CREATED, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def create(
         request: GRConnectionView,
         gr_connection_controller: GRConnectionController = gr_connection_controller_instance
@@ -47,7 +47,7 @@ async def create(
     return await gr_connection_controller.create(request)
 
 
-@gr_connection_router.get("/{id}", response_model=GRConnectionView)
+@gr_connection_router.get("/{id}", response_model=GRConnectionView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def get(
         id: int,
         gr_connection_controller: GRConnectionController = gr_connection_controller_instance
@@ -58,7 +58,7 @@ async def get(
     return await gr_connection_controller.get_by_id(id)
 
 
-@gr_connection_router.put("/{id}", response_model=GRConnectionView)
+@gr_connection_router.put("/{id}", response_model=GRConnectionView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def update(
         id: int,
         request: GRConnectionView,
@@ -81,7 +81,7 @@ async def delete(
     return await gr_connection_controller.delete(id)
 
 
-@gr_connection_router.post("_test", response_model=Dict[str, Any])
+@gr_connection_router.post("/test", response_model=Dict[str, Any])
 async def test_connection(
         request: GRConnectionView,
         gr_connection_controller: GRConnectionController = gr_connection_controller_instance

@@ -53,17 +53,21 @@ class BaseController(Generic[ModelType, ViewType]):
         v_records = [self.view_type.model_validate(record) for record in records]
         return create_pageable_response(v_records, total_count, page_number, size, sort)
 
-    async def create_record(self, v_request: ViewType) -> ViewType:
+    async def create_record(self, v_request: ViewType, exclude_fields: set[str] = None) -> ViewType:
         """
         Create a new record.
 
         Args:
             v_request (ViewType): The view object representing the record to create.
+            exclude_fields (set[str]): The fields to exclude from the creation.
 
         Returns:
             ViewType: The created view object.
         """
-        updated_request = v_request.model_dump(exclude_unset=True, exclude={"id", "create_time", "update_time"})
+        if exclude_fields is None:
+            exclude_fields = {}
+        exclude_fields.update({"id", "create_time", "update_time"})
+        updated_request = v_request.model_dump(exclude_unset=True, exclude=exclude_fields)
         model = self.model_type(**updated_request)
         return await self.repository.create_record(model)
 
@@ -82,20 +86,24 @@ class BaseController(Generic[ModelType, ViewType]):
         except NoResultFound as e:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Resource", "id", [id]))
 
-    async def update_record(self, id: int, v_request: ViewType) -> ViewType:
+    async def update_record(self, id: int, v_request: ViewType, exclude_fields: set[str] = None) -> ViewType:
         """
         Update a record identified by its ID.
 
         Args:
             id (int): The ID of the record to update.
             v_request (ViewType): The updated view object.
+            exclude_fields (set[str]): The fields to exclude from the update.
 
         Returns:
             ViewType: The updated view object.
         """
         model = await self.get_record_by_id(id)
         if model is not None:
-            updated_data = v_request.model_dump(exclude_unset=True, exclude={"create_time", "update_time"})
+            if exclude_fields is None:
+                exclude_fields = {}
+            exclude_fields.update({"create_time", "update_time"})
+            updated_data = v_request.model_dump(exclude_unset=True, exclude=exclude_fields)
             model.set_attribute(updated_data)
             return await self.repository.update_record(model)
 
