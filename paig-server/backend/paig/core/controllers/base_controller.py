@@ -65,7 +65,7 @@ class BaseController(Generic[ModelType, ViewType]):
             ViewType: The created view object.
         """
         if exclude_fields is None:
-            exclude_fields = {}
+            exclude_fields = set()
         exclude_fields.update({"id", "create_time", "update_time"})
         updated_request = v_request.model_dump(exclude_unset=True, exclude=exclude_fields)
         model = self.model_type(**updated_request)
@@ -101,7 +101,7 @@ class BaseController(Generic[ModelType, ViewType]):
         model = await self.get_record_by_id(id)
         if model is not None:
             if exclude_fields is None:
-                exclude_fields = {}
+                exclude_fields = set()
             exclude_fields.update({"create_time", "update_time"})
             updated_data = v_request.model_dump(exclude_unset=True, exclude=exclude_fields)
             model.set_attribute(updated_data)
