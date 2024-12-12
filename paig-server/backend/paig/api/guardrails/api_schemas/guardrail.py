@@ -86,7 +86,7 @@ class GuardrailView(BaseView):
                                                             alias="guardrailConfigs")
     guardrail_provider_response: Optional[Dict] = Field(None, description="The guardrail response info",
                                                         alias="guardrailProviderResponse")
-    guardrail_connections: Dict = Field(..., description="The guardrail connections",
+    guardrail_connections: Optional[Dict] = Field(None, description="The guardrail connections",
                                                   alias="guardrailConnections")
     model_config = ConfigDict(
         from_attributes=True,
