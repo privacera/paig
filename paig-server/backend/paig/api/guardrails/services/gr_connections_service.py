@@ -354,23 +354,27 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
 
     async def encrypt_connection_details(self, gr_connection):
         connection_details = gr_connection.connection_details
-        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
-            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
-        data_encryptor = DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
+        data_encryptor = None
         for key, value in connection_details.items():
             if not value.startswith("GuardrailEncrypt:") and gr_connection.encrypt_fields and key in gr_connection.encrypt_fields:
+                if data_encryptor is None:
+                    data_encryptor = await self.create_data_encryptor_obj()
                 gr_connection.connection_details[key] = "GuardrailEncrypt:" + data_encryptor.encrypt(data=str(value))
+
+    async def create_data_encryptor_obj(self):
+        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
+            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        return DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
 
     async def decrypt_connection_details(self, gr_connection):
         connection_details = gr_connection.connection_details
-        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
-            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
-        data_encryptor = DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
+        data_encryptor = None
         for key, value in connection_details.items():
             if value.startswith("GuardrailEncrypt:"):
                 try:
-                    gr_connection.connection_details[key] = data_encryptor.decrypt(
-                        data=value.replace("GuardrailEncrypt:", ""))
+                    if data_encryptor is None:
+                        data_encryptor = await self.create_data_encryptor_obj()
+                    gr_connection.connection_details[key] = data_encryptor.decrypt(data=value.replace("GuardrailEncrypt:", ""))
                 except Exception as e:
                     raise BadRequestException(
                         f"Invalid connection details('{key}') for {gr_connection.guardrail_provider.value}")
