@@ -278,6 +278,36 @@ async def test_create_guardrail_when_invalid_guardrail_connection_provided(guard
 
 
 @pytest.mark.asyncio
+async def test_create_guardrail_when_guardrail_connection_not_provided(guardrail_service, mock_guardrail_repository):
+    create_guardrail_view = GuardrailView(**guardrail_view_json)
+    create_guardrail_view.guardrail_configs = [gr_config_view]
+    create_guardrail_view.guardrail_connections = None
+    # Call the method under test
+    with pytest.raises(BadRequestException) as exc_info:
+        await guardrail_service.create(create_guardrail_view)
+
+    # Assertions
+    assert exc_info.type == BadRequestException
+    assert exc_info.value.message == "Guardrail Connections must be provided"
+    assert not mock_guardrail_repository.create_record.called
+
+
+@pytest.mark.asyncio
+async def test_create_guardrail_when_guardrail_connection_empty_provided(guardrail_service, mock_guardrail_repository):
+    create_guardrail_view = GuardrailView(**guardrail_view_json)
+    create_guardrail_view.guardrail_configs = [gr_config_view]
+    create_guardrail_view.guardrail_connections = {"AWS": None}
+    # Call the method under test
+    with pytest.raises(BadRequestException) as exc_info:
+        await guardrail_service.create(create_guardrail_view)
+
+    # Assertions
+    assert exc_info.type == BadRequestException
+    assert exc_info.value.message == "Guardrail Connection Name must be provided"
+    assert not mock_guardrail_repository.create_record.called
+
+
+@pytest.mark.asyncio
 async def test_create_guardrail_when_name_already_exists(guardrail_service, mock_guardrail_repository):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
     create_guardrail_view.guardrail_configs = [gr_config_view]

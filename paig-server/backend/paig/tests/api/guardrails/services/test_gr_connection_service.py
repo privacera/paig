@@ -3,6 +3,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.exc import NoResultFound
 
+from api.encryption.api_schemas.encryption_key import EncryptionKeyView
+from api.encryption.database.db_models.encryption_key_model import EncryptionKeyStatus, EncryptionKeyType
 from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
@@ -115,18 +117,47 @@ async def test_list_guardrail_connection_provider_names(guardrail_connection_ser
 
 @pytest.mark.asyncio
 async def test_create_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository, mock_encryption_key_service):
-    with patch.object(
+    with (patch.object(
             mock_guardrail_connection_repository, 'create_record', return_value=gr_connection_view
     ) as mock_create_record, patch.object(
         mock_guardrail_connection_repository, 'list_records', return_value=(None, 0)
-    ) as mock_get_by_name, patch.object(
-        mock_encryption_key_service, 'get_active_encryption_key_by_type', return_value=None
-    ) as mock_get_encryption_key:
+    ) as mock_get_by_name):
         # Call the method under test
         result = await guardrail_connection_service.create(gr_connection_view)
 
         # Assertions
         assert result == gr_connection_view
+        assert mock_create_record.called
+        assert mock_get_by_name.called
+
+
+@pytest.mark.asyncio
+async def test_create_guardrail_connection_encrypted(guardrail_connection_service, mock_guardrail_connection_repository, mock_encryption_key_service):
+    gr_connection_view_encrypted = GRConnectionView(**gr_connection_view_json)
+    gr_connection_view_encrypted.encrypt_fields = ["session_token"]
+
+    from paig_common.encryption import RSAKeyUtil
+    key_pair = RSAKeyUtil.generate_key_pair()
+    mock_encryption_key_json = {
+        "private_key": key_pair.private_key_encoded_str,
+        "public_key": key_pair.public_key_encoded_str,
+        "key_status": EncryptionKeyStatus.ACTIVE,
+        "key_type": EncryptionKeyType.CRDS_PROTECT_GUARDRAIL
+    }
+    encryption_key = EncryptionKeyView(**mock_encryption_key_json)
+
+    with (patch.object(
+            mock_guardrail_connection_repository, 'create_record', return_value=gr_connection_view_encrypted
+    ) as mock_create_record, patch.object(
+        mock_guardrail_connection_repository, 'list_records', return_value=(None, 0)
+    ) as mock_get_by_name, patch.object(
+        mock_encryption_key_service, 'get_active_encryption_key_by_type', return_value=encryption_key
+    ) as mock_get_encryption_key):
+        # Call the method under test
+        result = await guardrail_connection_service.create(gr_connection_view_encrypted)
+
+        # Assertions
+        assert result == gr_connection_view_encrypted
         assert mock_create_record.called
         assert mock_get_by_name.called
         assert mock_get_encryption_key.called
@@ -191,6 +222,72 @@ async def test_get_all_guardrail_connections_by_provider(guardrail_connection_se
         # Assertions
         mock_get_all_records.assert_called_once_with(gr_conn_filter.dict())
         assert result == [gr_connection_view]
+
+
+@pytest.mark.asyncio
+async def test_get_all_guardrail_connections_decrypted(
+        guardrail_connection_service, mock_encryption_key_service, mock_guardrail_connection_repository):
+
+    from paig_common.encryption import RSAKeyUtil
+    key_pair = RSAKeyUtil.generate_key_pair()
+
+    mock_encryption_key_json = {
+        "private_key": key_pair.private_key_encoded_str,
+        "public_key": key_pair.public_key_encoded_str,
+        "key_status": EncryptionKeyStatus.ACTIVE,
+        "key_type": EncryptionKeyType.CRDS_PROTECT_GUARDRAIL
+    }
+    encryption_key = EncryptionKeyView(**mock_encryption_key_json)
+
+    from paig_common.encryption import DataEncryptor
+    data_encryptor = DataEncryptor(public_key=key_pair.public_key_encoded_str, private_key=key_pair.private_key_encoded_str)
+
+    gr_connection_view_encrypted = GRConnectionView(**gr_connection_view_json)
+    gr_connection_view_encrypted.connection_details["session_token"] = "GuardrailEncrypt:" + data_encryptor.encrypt("mock_session_token")
+    with patch.object(
+            mock_guardrail_connection_repository, 'get_all', return_value=[gr_connection_view_encrypted]
+    ) as mock_get_all_records, patch.object(
+        mock_encryption_key_service, 'get_active_encryption_key_by_type', return_value=encryption_key
+    ) as mock_decrypt:
+        # Call the method under test
+        gr_conn_filter = GRConnectionFilter(name="gr_connection_1")
+        result = await guardrail_connection_service.get_all(gr_conn_filter, True)
+
+        # Assertions
+        mock_get_all_records.assert_called_once_with(gr_conn_filter.dict())
+        mock_decrypt.assert_called_once_with(EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        assert result == [gr_connection_view_encrypted]
+
+
+@pytest.mark.asyncio
+async def test_get_all_guardrail_connections_decrypted_gives_error(guardrail_connection_service, mock_guardrail_connection_repository):
+    gr_connection_view_encrypted = GRConnectionView(**gr_connection_view_json)
+    gr_connection_view_encrypted.connection_details["session_token"] = "GuardrailEncrypt:encrypted_session_token"
+    with patch.object(
+            mock_guardrail_connection_repository, 'get_all', return_value=[gr_connection_view_encrypted]
+    ) as mock_get_all_records:
+        # Call the method under test
+        gr_conn_filter = GRConnectionFilter(name="gr_connection_1")
+        with pytest.raises(BadRequestException) as exc_info:
+            await guardrail_connection_service.get_all(gr_conn_filter, True)
+
+        # Assertions
+        mock_get_all_records.assert_called_once_with(gr_conn_filter.dict())
+        assert exc_info.type == BadRequestException
+        assert exc_info.value.message == "Invalid connection details('session_token') for AWS"
+
+
+@pytest.mark.asyncio
+async def test_get_connections_by_guardrail_id_decrypted(guardrail_connection_service, mock_guardrail_connection_view_repository):
+    with patch.object(
+            mock_guardrail_connection_view_repository, 'get_all', return_value=[gr_conn_view_model]
+    ) as mock_get_all:
+        # Call the method under test
+        result = await guardrail_connection_service.get_connections_by_guardrail_id(1, True)
+
+        # Assertions
+        assert result == [gr_conn_view_model]
+        assert mock_get_all.called
 
 
 @pytest.mark.asyncio

@@ -289,8 +289,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             GuardrailView: The created Guardrail view object.
         """
         await self._set_enabled_providers(request)
-        if request.status is None:
-            request.status = 1
+
         # Validate the create request
         await self.guardrail_request_validator.validate_create_request(request)
 
