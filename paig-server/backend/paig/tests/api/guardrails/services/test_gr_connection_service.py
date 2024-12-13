@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.exc import NoResultFound
 
+from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
@@ -58,12 +59,18 @@ def guardrail_connection_request_validator(mock_guardrail_connection_repository)
 
 
 @pytest.fixture
+def mock_encryption_key_service():
+    return AsyncMock(spec=EncryptionKeyService)
+
+
+@pytest.fixture
 def guardrail_connection_service(mock_guardrail_connection_repository, mock_guardrail_connection_view_repository,
-                                 mock_guardrail_connection_mapping_repository, guardrail_connection_request_validator):
+                                 mock_guardrail_connection_mapping_repository, mock_encryption_key_service, guardrail_connection_request_validator):
     return GRConnectionService(
         gr_connection_repository=mock_guardrail_connection_repository,
         gr_connection_view_repository=mock_guardrail_connection_view_repository,
         gr_connection_mapping_repository=mock_guardrail_connection_mapping_repository,
+        encryption_key_service=mock_encryption_key_service,
         gr_connection_request_validator=guardrail_connection_request_validator
     )
 
@@ -107,12 +114,14 @@ async def test_list_guardrail_connection_provider_names(guardrail_connection_ser
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_create_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository, mock_encryption_key_service):
     with patch.object(
             mock_guardrail_connection_repository, 'create_record', return_value=gr_connection_view
     ) as mock_create_record, patch.object(
         mock_guardrail_connection_repository, 'list_records', return_value=(None, 0)
-    ) as mock_get_by_name:
+    ) as mock_get_by_name, patch.object(
+        mock_encryption_key_service, 'get_active_encryption_key_by_type', return_value=None
+    ) as mock_get_encryption_key:
         # Call the method under test
         result = await guardrail_connection_service.create(gr_connection_view)
 
@@ -120,6 +129,7 @@ async def test_create_guardrail_connection(guardrail_connection_service, mock_gu
         assert result == gr_connection_view
         assert mock_create_record.called
         assert mock_get_by_name.called
+        assert mock_get_encryption_key.called
 
 
 @pytest.mark.asyncio

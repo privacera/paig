@@ -225,7 +225,7 @@ async def test_create_guardrail(guardrail_service, mock_guardrail_repository, mo
 
     gr_app_model = GRApplicationModel(id=1, guardrail_id=1, application_key="mock_app_key1")
     gr_config_model = GRConfigModel(**gr_config_view.model_dump())
-    gr_connection_model = GRConnectionModel(**gr_connection_view.model_dump())
+    gr_connection_model = GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_app_versions = [GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)]
 
     with (patch.object(
@@ -477,7 +477,7 @@ async def test_create_guardrail_when_guardrail_provider_gives_error(
     ) as mock_gr_app_version_get_all, patch.object(
         mock_gr_config_repository, 'create_record', return_value=gr_config_model
     ) as mock_gr_config_create_record, patch.object(
-        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump())]
+        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'create_guardrail', side_effect=InternalServerError("AWS Error")
     ) as mock_bedrock_guardrail_create):
@@ -523,7 +523,7 @@ async def test_create_guardrail_when_guardrail_provider_does_not_give_success(
     ) as mock_gr_app_version_get_all, patch.object(
         mock_gr_config_repository, 'create_record', return_value=gr_config_model
     ) as mock_gr_config_create_record, patch.object(
-        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump())]
+        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'create_guardrail', return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
     ) as mock_bedrock_guardrail_create):
@@ -580,7 +580,7 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
     gr_view_model.application_keys = ["mock_app_key1", "mock_app_key2"]
     gr_view_model.guardrail_id = 1
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_view_model.guardrail_id = 1
     gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
 
@@ -626,7 +626,7 @@ async def test_get_guardrail_by_app_key_when_cache_does_not_have_app_version(
     gr_view_model.application_keys = ["mock_app_key3"]
     gr_view_model.guardrail_id = 1
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_view_model.guardrail_id = 1
     gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
 
@@ -727,7 +727,7 @@ async def test_update_guardrail(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_view_model.guardrail_id = 1
     gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
@@ -818,11 +818,11 @@ async def test_update_guardrail_when_connection_is_updated(
     gr_config_model_updated_with_new_connection = GRConfigModel(**gr_conf_view.model_dump())
     gr_config_model_existing_with_old_connection = GRConfigModel(**gr_conf_view.model_dump())
 
-    gr_connection_model_to_detach = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_model_to_detach = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_model_to_detach.guardrail_id = 1
     gr_connection_model_to_detach.guardrail_provider = gr_connection_model_to_detach.guardrail_provider.name
 
-    gr_connection_model_to_attach = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_model_to_attach = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_model_to_attach.guardrail_id = 1
     gr_connection_model_to_attach.id = 2
     gr_connection_model_to_attach.name = "gr_connection_2"
@@ -938,7 +938,7 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_view_model.guardrail_id = 1
     gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
@@ -1032,7 +1032,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump())
+    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
     gr_connection_view_model.guardrail_id = 1
     gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)

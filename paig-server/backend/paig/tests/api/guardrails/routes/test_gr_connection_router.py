@@ -122,7 +122,7 @@ def test_delete_guardrail_connection_success(gr_connection_app_client):
 
 
 def test_test_guardrail_connection_success(gr_connection_app_client):
-    response = gr_connection_app_client.post("http://localhost:9090/connection_test", content=json.dumps(gr_connection_view_json))
+    response = gr_connection_app_client.post("http://localhost:9090/connection/test", content=json.dumps(gr_connection_view_json))
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["success"] == True
     assert response.json()["response"]["message"] == "Connection successful!"
