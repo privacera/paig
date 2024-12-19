@@ -23,30 +23,13 @@ class GuardrailViewModel(BaseSQLModel):
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
     version = Column(Integer, nullable=False, default=1)
+    guardrail_provider = Column(String(255), nullable=False)
+    guardrail_connection_name = Column(String(255), nullable=False)
+
     application_keys = Column(CommaSeparatedList(4000), nullable=False)
 
-    guardrail_provider = Column(String(255), nullable=False)
     guardrail_id = Column(Integer, nullable=False)
     config_type = Column(String(255), nullable=False)
     config_data = Column(JSON, nullable=False)
     response_message = Column(String(255), nullable=False)
 
-
-class GRConnectionViewModel(BaseSQLModel):
-    """
-    SQLAlchemy model representing the paig_guardrail_connection_view view.
-
-    Attributes:
-        name (str): The name of the connection.
-        description (str): The description of the connection.
-        guardrail_provider (str): The guardrail provider.
-        connection_details (dict): The connection details JSON.
-        guardrail_id (int): The guardrail id.
-    """
-    __tablename__ = "paig_guardrail_connection_view"
-
-    name = Column(String(255), nullable=False)
-    description = Column(String(4000), nullable=True)
-    guardrail_provider = Column(String(255), nullable=False)
-    connection_details = Column(JSON, nullable=False)
-    guardrail_id = Column(Integer, nullable=False)

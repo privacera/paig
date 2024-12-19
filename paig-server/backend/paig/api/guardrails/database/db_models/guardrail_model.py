@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 
 from api.guardrails import GuardrailProvider, GuardrailConfigType
 from core.db_models.BaseSQLModel import BaseSQLModel
-from core.db_models.utils import CommaSeparatedList
 
 
 class GuardrailModel(BaseSQLModel):
@@ -15,36 +14,19 @@ class GuardrailModel(BaseSQLModel):
         name (str): The name of the guardrail.
         description (str): The description of the guardrail.
         version (str): The version of the guardrail.
+        guardrail_provider (str): The guardrail provider.
     """
 
     __tablename__ = "guardrail"
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
     version = Column(Integer, nullable=False, default=1)
-    enabled_providers = Column(CommaSeparatedList(255), nullable=True)
+    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
+    guardrail_connection_name = Column(String(255), nullable=False)
 
     gr_application = relationship("GRApplicationModel", back_populates="guardrail", cascade="all, delete-orphan")
     gr_config = relationship("GRConfigModel", back_populates="guardrail", cascade="all, delete-orphan")
     gr_response = relationship("GRProviderResponseModel", back_populates="guardrail", cascade="all, delete-orphan")
-    gr_connection_mapping = relationship("GRConnectionMappingModel", back_populates="guardrail", cascade="all, delete-orphan")
-
-
-class GRConnectionMappingModel(BaseSQLModel):
-    """
-    SQLAlchemy model representing the guardrails_connection table.
-
-    Attributes:
-        guardrail_id (int): The guardrail id.
-        gr_connection_id (int): The guardrail connection id.
-        guardrail_provider (str): The guardrail provider.
-    """
-    __tablename__ = "guardrail_connection_mapping"
-    guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_connection_mapping_guardrail_id'), nullable=False)
-    gr_connection_id = Column(Integer, ForeignKey('guardrail_connection.id', name='fk_guardrail_connection_mapping_gr_connection_id'), nullable=False)
-    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
-
-    guardrail = relationship("GuardrailModel", back_populates="gr_connection_mapping")
-    gr_connection = relationship("GRConnectionModel", back_populates="gr_connection_mapping")
 
 
 class GRApplicationModel(BaseSQLModel):
@@ -85,13 +67,11 @@ class GRConfigModel(BaseSQLModel):
 
     Attributes:
         guardrail_id (int): The guardrail id.
-        guardrail_provider (str): The guardrail provider.
         config_type (str): The config type.
         config_data (dict): The config data JSON.
     """
     __tablename__ = "guardrail_config"
     guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_config_guardrail_id'), nullable=False)
-    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     config_type = Column(SQLEnum(GuardrailConfigType), nullable=False)
     config_data = Column(JSON, nullable=False)
     response_message = Column(String(4000), nullable=True)

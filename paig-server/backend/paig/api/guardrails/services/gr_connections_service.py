@@ -9,10 +9,6 @@ from api.encryption.events.startup import create_encryption_keys_if_not_exists
 from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
-from api.guardrails.database.db_models.guardrail_view_model import GRConnectionViewModel
-from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionMappingRepository, \
-    GRConnectionViewRepository
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
 from api.guardrails.providers import GuardrailProviderManager, GuardrailConnection
 from core.controllers.base_controller import BaseController
@@ -158,13 +154,9 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
     """
 
     def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository),
-                 gr_connection_mapping_repository: GRConnectionMappingRepository = SingletonDepends(GRConnectionMappingRepository),
-                 gr_connection_view_repository: GRConnectionViewRepository = SingletonDepends(GRConnectionViewRepository),
                  encryption_key_service: EncryptionKeyService = SingletonDepends(EncryptionKeyService),
                  gr_connection_request_validator: GRConnectionRequestValidator = SingletonDepends(GRConnectionRequestValidator)):
         super().__init__(gr_connection_repository, GRConnectionModel, GRConnectionView)
-        self.gr_connection_mapping_repository = gr_connection_mapping_repository
-        self.gr_connection_view_repository = gr_connection_view_repository
         self.encryption_key_service = encryption_key_service
         self.gr_connection_request_validator = gr_connection_request_validator
 
@@ -301,56 +293,6 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         """
         await self.gr_connection_request_validator.validate_delete_request(id)
         return await self.delete_record(id)
-
-    async def create_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
-        """
-        Create a new Guardrail Connection Mapping.
-
-        Args:
-            gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to create.
-        """
-        return await self.gr_connection_mapping_repository.create_record(gr_conn_mapping)
-
-    async def get_connections_by_guardrail_id(self, guardrail_id, decrypted=False) -> List[GRConnectionViewModel]:
-        """
-        Get the connections by guardrail id.
-
-        Args:
-            guardrail_id: The ID of the Guardrail.
-            decrypted: Whether to decrypt the connection details.
-
-        Returns:
-            List[GRConnectionViewModel]: The list of Guardrail Connection Mappings.
-        """
-        result = await self.gr_connection_view_repository.get_all(filters={"guardrail_id": guardrail_id})
-        if decrypted:
-            for connection in result:
-                await self.decrypt_connection_details(connection)
-        return result
-
-    async def get_guardrail_connection_mappings(self, guardrail_id: int) -> List[GRConnectionMappingModel]:
-        """
-        Get the Guardrail Connection Mapping.
-
-        Args:
-            guardrail_id (int): The ID of the Guardrail.
-
-        Returns:
-            List[GRConnectionMappingModel]: The list of Guardrail Connection Mappings.
-        """
-        return await self.gr_connection_mapping_repository.get_all(filters={"guardrail_id": guardrail_id})
-
-    async def delete_guardrail_connection_mapping(self, gr_conn_mapping: GRConnectionMappingModel):
-        """
-        Delete the Guardrail Connection Mapping.
-
-        Args:
-            gr_conn_mapping (GRConnectionMappingModel): The view object representing the Guardrail connection mapping to delete.
-
-        Returns:
-            None
-        """
-        await self.gr_connection_mapping_repository.delete_record(gr_conn_mapping)
 
     async def encrypt_connection_details(self, gr_connection):
         connection_details = gr_connection.connection_details

@@ -3,10 +3,9 @@ from enum import Enum
 
 class GuardrailProvider(Enum):
     AWS = 'AWS'
-    PAIG = 'PAIG'
-    LLAMA = 'LLAMA'
-    OPENAI = 'OPENAI'
-    MULTIPLE = 'MULTIPLE'
+    # TODO: enable these providers whenever they are implemented
+    # LLAMA = 'LLAMA'
+    # OPENAI = 'OPENAI'
 
 
 class GuardrailConfigType(Enum):

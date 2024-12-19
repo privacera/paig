@@ -1,5 +1,6 @@
 from abc import ABC
 
+from api.guardrails.api_schemas.guardrail import GRConfigView
 from api.guardrails.providers import GuardrailConfig
 
 
@@ -19,12 +20,12 @@ class GuardrailTransformerBase(ABC):
         """
         pass
 
-    def transform(self, guardrail_configs: list[GuardrailConfig], **kwargs) -> list[GuardrailConfig]:
+    def transform(self, guardrail_configs: list[GRConfigView], **kwargs) -> list[GuardrailConfig]:
         """
         Transform the guardrail configurations.
 
         Args:
-            guardrail_configs (list[GuardrailConfig]): A list of guardrail configurations.
+            guardrail_configs (list[GRConfigView]): A list of guardrail configurations.
             kwargs: Additional optional arguments.
 
         Returns:

@@ -35,10 +35,9 @@ class GRConfigView(BaseView):
 
     Attributes:
         config_type (str): The guardrail type.
-        guardrail_provider (str): The guardrail provider.
         config_data (Dict): The guardrail details.
+        response_message (str): The response message.
     """
-    guardrail_provider: GuardrailProvider = Field(..., description="The guardrail provider", alias="guardrailProvider")
     config_type: GuardrailConfigType = Field(..., description="The guardrail config type", alias="configType")
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
     response_message: str = Field(..., description="The response message", alias="responseMessage")
@@ -69,16 +68,19 @@ class GuardrailView(BaseView):
         name (str): The name of the Guardrail.
         description (str): The description of the Guardrail.
         version (int): The version of the Guardrail.
+        guardrail_provider (GuardrailProvider): The guardrail provider.
+        guardrail_connection_name (str): The connection name to guardrail provider.
         application_keys (List[str]): The associated application keys.
         guardrail_configs (List[Dict]): The guardrail details.
         guardrail_provider_response (dict): The guardrail response info.
-        guardrail_connections (dict): The guardrail connections.
+        guardrail_connection_details (dict): The guardrail connection details.
     """
     name: str = Field(default=None, description="The name of the Guardrail")
     description: Optional[str] = Field(default=None, description="The description of the Guardrail")
     version: Optional[int] = Field(default=1, description="The version of the Guardrail")
-    enabled_providers: Optional[List[GuardrailProvider]] = Field(None, description="The enabled providers", alias="enabledProviders")
-    application_keys: List[str] = Field(None, description="The associated application keys",
+    guardrail_provider: GuardrailProvider = Field(..., description="The guardrail provider", alias="guardrailProvider")
+    guardrail_connection_name: str = Field(..., description="The connection name to guardrail provider", alias="guardrailConnectionName")
+    application_keys: Optional[List[str]] = Field(None, description="The associated application keys",
                                         alias="applicationKeys")
     guardrail_applications: Optional[List[GRApplicationView]] = Field(None, description="The guardrail applications",
                                                                       alias="guardrailApplications")
@@ -86,8 +88,8 @@ class GuardrailView(BaseView):
                                                             alias="guardrailConfigs")
     guardrail_provider_response: Optional[Dict] = Field(None, description="The guardrail response info",
                                                         alias="guardrailProviderResponse")
-    guardrail_connections: Optional[Dict] = Field(None, description="The guardrail connections",
-                                                  alias="guardrailConnections")
+    guardrail_connection_details: Optional[Dict] = Field(None, description="The guardrail connection details",
+                                                         alias="guardrailConnectionDetails")
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True,
@@ -120,8 +122,13 @@ class GuardrailFilter(BaseAPIFilter):
         name (str, optional): Filter by name.
         description (str, optional): Filter by description.
         version (int, optional): Filter by version.
+        guardrail_provider (GuardrailProvider, optional): Filter by guardrail provider.
+        guardrail_connection_name (str, optional): Filter by connection name.
+        application_keys (List[str], optional): Filter by application keys.
     """
     name: Optional[str] = Field(default=None, description="Filter by name")
     description: Optional[str] = Field(default=None, description="Filter by description")
     version: Optional[int] = Field(default=None, description="Filter by version")
-    enabled_providers: Optional[List[str]] = Field(None, description="Filter by enabled providers", alias="enabledProviders")
+    guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
+    guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
+    application_keys: Optional[List[str]] = Field(default=None, description="Filter by application keys", alias="applicationKey")

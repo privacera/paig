@@ -2,7 +2,7 @@ import logging
 
 from api.guardrails.api_schemas.guardrail import GRConfigView
 from api.guardrails import GuardrailConfigType
-from api.guardrails.providers import GuardrailConfig as AWSGuardrailConfig, GuardrailConfig
+from api.guardrails.providers import GuardrailConfig
 from api.guardrails.transformers.backend import GuardrailTransformerBase
 
 
@@ -11,7 +11,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
         super().__init__(**kwargs)
         self._logger = logging.getLogger(__name__)
 
-    def transform(self, guardrail_configs: list[GRConfigView], **kwargs) -> list[GuardrailConfig]:
+    def transform(self, guardrail_configs: list[GuardrailConfig], **kwargs) -> list[GuardrailConfig]:
         """
         Transform the config into AWS Bedrock-specific format.
 
@@ -19,7 +19,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
             guardrail_configs (list[GRConfigView]): A list of guardrail configurations.
             kwargs: Additional optional arguments.
         """
-        transformed_configs = []
+        transformed_configs: list[GuardrailConfig] = []
         content_moderation_config = None
         prompt_attack_config = None
         for guardrail_config in guardrail_configs:
@@ -48,7 +48,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
 
     def _transform_content_moderation(self, content_moderation_config):
         try:
-            aws_gr_config = AWSGuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={})
+            aws_gr_config = GuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={})
             filters_config = list(dict())
             for config in content_moderation_config.config_data['configs']:
                 if config['guardrailProvider'] == "AWS":
@@ -66,8 +66,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
 
     def _transform_sensitive_data(self, sensitive_data_config):
         try:
-            aws_gr_config = AWSGuardrailConfig(configType="sensitiveInformationPolicyConfig", guardrailProvider="AWS", configData={})
-            pii_entities_config = []
+            aws_gr_config = GuardrailConfig(configType="sensitiveInformationPolicyConfig", guardrailProvider="AWS", configData={})
             regex_entities_config = []
             for config in sensitive_data_config.config_data['configs']:
                 if config['action'].upper() == "DENY":
@@ -76,11 +75,6 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                     action = "ANONYMIZE"
                 else:
                     continue
-                if 'category' in config:
-                    pii_entities_config.append({
-                        "type": config['category'],
-                        "action": action
-                    })
                 if 'type' in config and config['type'].upper() == "REGEX":
                     regex_entities_config.append({
                         "name": config['name'],
@@ -88,10 +82,6 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                         "pattern": config['pattern'],
                         "action": action
                     })
-            if not pii_entities_config and not regex_entities_config:
-                return None
-            if pii_entities_config:
-                aws_gr_config.configData['piiEntitiesConfig'] = pii_entities_config
             if regex_entities_config:
                 aws_gr_config.configData['regexesConfig'] = regex_entities_config
             return aws_gr_config
@@ -100,7 +90,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
 
     def _transform_off_topic(self, off_topic_config):
         try:
-            aws_gr_config = AWSGuardrailConfig(configType="topicPolicyConfig", guardrailProvider="AWS", configData={})
+            aws_gr_config = GuardrailConfig(configType="topicPolicyConfig", guardrailProvider="AWS", configData={})
             topic_policy_config = []
             for config in off_topic_config.config_data['configs']:
                 topic_policy_config.append({
@@ -118,7 +108,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
 
     def _transform_denied_terms(self, denied_terms_config):
         try:
-            aws_gr_config = AWSGuardrailConfig(configType="wordPolicyConfig", guardrailProvider="AWS", configData={})
+            aws_gr_config = GuardrailConfig(configType="wordPolicyConfig", guardrailProvider="AWS", configData={})
             word_policy_config = []
             profanity_config = []
             for config in denied_terms_config.config_data['configs']:

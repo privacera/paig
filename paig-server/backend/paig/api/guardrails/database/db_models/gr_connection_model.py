@@ -21,5 +21,3 @@ class GRConnectionModel(BaseSQLModel):
     description = Column(String(4000), nullable=True)
     guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
     connection_details = Column(JSON, nullable=False)
-
-    gr_connection_mapping = relationship("GRConnectionMappingModel", back_populates="gr_connection")

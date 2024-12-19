@@ -36,6 +36,7 @@ class GuardrailConnection(BaseModel):
     guardrailProvider: str  # The name of the guardrail provider
     connectionDetails: dict  # Connection details for the provider
 
+
 class GuardrailRequest(BaseModel):
     """Model representing a request for guardrails.
 
@@ -50,10 +51,12 @@ class GuardrailRequest(BaseModel):
     connectionDetails: dict  # Connection details for the provider
     guardrailConfigs: List[GuardrailConfig]  # List of guardrail configurations
 
+
 class CreateGuardrailRequest(GuardrailRequest):
     """Model representing a request to create guardrails.
     """
     pass
+
 
 class UpdateGuardrailRequest(GuardrailRequest):
     """Model representing a request to update guardrails.
@@ -61,7 +64,8 @@ class UpdateGuardrailRequest(GuardrailRequest):
     Attributes:
         remoteGuardrailDetails (dict): Remote guardrail details.
     """
-    remoteGuardrailDetails: dict # Remote guardrail details
+    remoteGuardrailDetails: dict  # Remote guardrail details
+
 
 class DeleteGuardrailRequest(GuardrailRequest):
     """Model representing a request to delete guardrails.
@@ -69,4 +73,4 @@ class DeleteGuardrailRequest(GuardrailRequest):
     Attributes:
         remoteGuardrailDetails (dict): Remote guardrail details.
     """
-    remoteGuardrailDetails: dict # Remote guardrail details
+    remoteGuardrailDetails: dict  # Remote guardrail details

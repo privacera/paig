@@ -11,45 +11,20 @@ from core.exceptions import BadRequestException
 
 class GuardrailTransformer:
     @staticmethod
-    def transform(guardrail_configs: list[GRConfigView]) -> dict[str, list[GuardrailConfig]]:
+    def transform(guardrail_provider: GuardrailProvider, guardrail_configs: list[GRConfigView]) -> dict[str, list[GuardrailConfig]]:
         """
         Processes multiple guardrail configurations and returns a dict
         with provider names as keys and lists of transformed configs as values.
 
         Args:
+            guardrail_provider (GuardrailProvider): The guardrail provider.
             guardrail_configs (list[GRConfigView]): A list of guardrail configurations.
         Returns:
             dict: Transformed configurations grouped by provider.
         """
         try:
-            gr_provider_configs_map = defaultdict(list)
-            [gr_provider_configs_map[config.guardrail_provider].append(config) for config in guardrail_configs]
-            gr_configs = dict(gr_provider_configs_map)
-
-            multi_configs = gr_provider_configs_map[GuardrailProvider.MULTIPLE]
-            gr_providers = []
-            if multi_configs:
-                for gr_config in multi_configs:
-                    sub_configs = gr_config.config_data.get('configs')
-                    for sub_config in sub_configs:
-                        provider = GuardrailProvider[sub_config['guardrailProvider']]
-                        if provider not in gr_providers:
-                            if provider not in gr_configs:
-                                gr_configs[provider] = []
-                            gr_providers.append(provider)
-                            gr_configs[provider].append(copy.deepcopy(gr_config))
-                gr_configs.pop(GuardrailProvider.MULTIPLE, None)
-
-            transformed_results = {}
-            for provider, configs in gr_configs.items():
-                gr_transformer = GuardrailTransformerFactory.get_transformer(provider.name)
-                result = gr_transformer.transform(configs)
-                if result:
-                    if provider.name not in transformed_results:
-                        transformed_results[provider.name] = []
-                    transformed_results[provider.name].extend(result)
-
-            return transformed_results
+            gr_transformer = GuardrailTransformerFactory.get_transformer(guardrail_provider.name)
+            return {guardrail_provider.name: gr_transformer.transform(guardrail_configs)}
         except Exception as e:
             msg = f"{[e]}" if isinstance(e, KeyError) else str(e)
             raise BadRequestException(f"Failed to process guardrail configurations: {msg}")

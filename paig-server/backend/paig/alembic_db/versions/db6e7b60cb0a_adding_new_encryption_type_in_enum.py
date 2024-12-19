@@ -11,8 +11,6 @@ from alembic import op
 import sqlalchemy as sa
 from alembic.context import get_context
 
-import core.db_models.utils
-
 
 # revision identifiers, used by Alembic.
 revision: str = 'db6e7b60cb0a'
