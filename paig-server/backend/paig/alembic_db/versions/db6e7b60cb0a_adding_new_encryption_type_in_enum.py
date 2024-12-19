@@ -1,7 +1,7 @@
 """Adding new encryption type in enum
 
 Revision ID: db6e7b60cb0a
-Revises: f4277e4b4320
+Revises: 8026d07174b9
 Create Date: 2024-12-17 10:59:41.630340
 
 """
@@ -16,7 +16,7 @@ import core.db_models.utils
 
 # revision identifiers, used by Alembic.
 revision: str = 'db6e7b60cb0a'
-down_revision: Union[str, None] = 'f4277e4b4320'
+down_revision: Union[str, None] = '8026d07174b9'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
