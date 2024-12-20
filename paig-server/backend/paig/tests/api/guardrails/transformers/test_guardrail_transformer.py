@@ -15,45 +15,36 @@ guardrail_view_json = {
     "name": "mock_guardrail",
     "description": "mock description",
     "version": 1,
-    "guardrailConnections": {
-        "AWS": {
-            "connectionName": "gr_connection_1"
-        }
-    }
+    "guardrailConnectionName": "gr_connection_1",
+    "guardrailProvider": "AWS"
 }
 
 gr_content_moderation_config_json = {
-    "guardrailProvider": "MULTIPLE",
     "configType": "CONTENT_MODERATION",
     "configData": {
         "configs": [
             {
                 "category": "VIOLENCE",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "MISCONDUCT",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "HATE",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "low"
             },
             {
                 "category": "SEXUAL",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "INSULTS",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             }
@@ -62,7 +53,6 @@ gr_content_moderation_config_json = {
     "responseMessage": "I couldn't respond to that message."
 }
 gr_sensitive_data_config_json = {
-    "guardrailProvider": "AWS",
     "configType": "SENSITIVE_DATA",
     "status": 1,
     "responseMessage": "I couldn't respond to that message.",
@@ -91,7 +81,6 @@ gr_sensitive_data_config_json = {
     }
 }
 gr_denied_terms_config_json = {
-    "guardrailProvider": "AWS",
     "configType": "DENIED_TERMS",
     "configData": {
         "configs": [
@@ -111,7 +100,6 @@ gr_denied_terms_config_json = {
     "responseMessage": "I couldn't respond to that message."
 }
 gr_off_topic_config_json = {
-    "guardrailProvider": "AWS",
     "configType": "OFF_TOPIC",
     "responseMessage": "I couldn't respond to that message.",
     "configData": {
@@ -129,7 +117,6 @@ gr_off_topic_config_json = {
     }
 }
 gr_prompt_safety_config_json = {
-    "guardrailProvider": "AWS",
     "configType": "PROMPT_SAFETY",
     "status": 1,
     "responseMessage": "I couldn't respond to that message.",
@@ -199,34 +186,22 @@ def test_aws_guardrail_transform_content_moderation_config():
             }
         ]
     })
-    transformed_config = GuardrailTransformer.transform([gr_content_moderation_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_content_moderation_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
 def test_aws_guardrail_transform_content_moderation_config_with_empty_config_data():
     gr_content_moderation_config_with_empty = GRConfigView(**gr_content_moderation_config_json)
-    gr_content_moderation_config_with_empty.guardrail_provider = GuardrailProvider.AWS
     gr_content_moderation_config_with_empty.config_data = {"configs": []}
-    transformed_config = GuardrailTransformer.transform([gr_content_moderation_config_with_empty])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_content_moderation_config_with_empty])
     assert transformed_config == {}
-
-
-def test_aws_guardrail_transform_content_moderation_config_gives_key_error_for_guardrail_provider():
-    gr_content_moderation_config_with_partial_data = GRConfigView(**gr_content_moderation_config_json)
-    gr_content_moderation_config_with_partial_data.config_data = {"configs": [{"category": "VIOLENCE"}]}
-    with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_content_moderation_config_with_partial_data])
-
-    # Assertions
-    assert exc_info.type == BadRequestException
-    assert exc_info.value.message == "Failed to process guardrail configurations: [KeyError('guardrailProvider')]"
 
 
 def test_aws_guardrail_transform_content_moderation_config_gives_error():
     gr_content_moderation_config_with_partial_data = GRConfigView(**gr_content_moderation_config_json)
     gr_content_moderation_config_with_partial_data.config_data = {"configs": [{"category": "VIOLENCE", "guardrailProvider": "AWS"}]}
     with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_content_moderation_config_with_partial_data])
+        GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_content_moderation_config_with_partial_data])
 
     # Assertions
     assert exc_info.type == BadRequestException
@@ -236,16 +211,6 @@ def test_aws_guardrail_transform_content_moderation_config_gives_error():
 def test_aws_guardrail_transform_sensitive_data_config():
     expected_config = GuardrailConfig(configType="sensitiveInformationPolicyConfig", guardrailProvider="AWS",
                                       configData={
-                                          "piiEntitiesConfig": [
-                                              {
-                                                  "type": "EMAIL",
-                                                  "action": "BLOCK"
-                                              },
-                                              {
-                                                  "type": "PASSWORD",
-                                                  "action": "ANONYMIZE"
-                                              }
-                                          ],
                                           "regexesConfig": [
                                               {
                                                   "name": "email_regex",
@@ -255,14 +220,14 @@ def test_aws_guardrail_transform_sensitive_data_config():
                                               }
                                           ]
                                       })
-    transformed_config = GuardrailTransformer.transform([gr_sensitive_data_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_sensitive_data_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
 def test_aws_guardrail_transform_sensitive_data_config_with_empty_config_data():
     gr_sensitive_data_config_with_empty = GRConfigView(**gr_sensitive_data_config_json)
     gr_sensitive_data_config_with_empty.config_data = {"configs": []}
-    transformed_config = GuardrailTransformer.transform([gr_sensitive_data_config_with_empty])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_sensitive_data_config_with_empty])
     assert transformed_config == {}
 
 
@@ -270,7 +235,7 @@ def test_aws_guardrail_transform_sensitive_data_config_gives_error():
     gr_sensitive_data_config_with_partial_data = GRConfigView(**gr_sensitive_data_config_json)
     gr_sensitive_data_config_with_partial_data.config_data = {"configs": [{"category": "EMAIL"}]}
     with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_sensitive_data_config_with_partial_data])
+        GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_sensitive_data_config_with_partial_data])
 
     # Assertions
     assert exc_info.type == BadRequestException
@@ -296,14 +261,14 @@ def test_aws_guardrail_transform_denied_terms_config():
             }
         ]
     })
-    transformed_config = GuardrailTransformer.transform([gr_denied_terms_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_denied_terms_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
 def test_aws_guardrail_transform_denied_terms_config_with_empty_config_data():
     gr_denied_terms_config_with_empty = GRConfigView(**gr_denied_terms_config_json)
     gr_denied_terms_config_with_empty.config_data = {"configs": []}
-    transformed_config = GuardrailTransformer.transform([gr_denied_terms_config_with_empty])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_denied_terms_config_with_empty])
     assert transformed_config == {}
 
 
@@ -311,7 +276,7 @@ def test_aws_guardrail_transform_denied_terms_config_gives_error():
     gr_denied_terms_config_with_partial_data = GRConfigView(**gr_denied_terms_config_json)
     gr_denied_terms_config_with_partial_data.config_data = {"configs": [{"type": "PROFANITY"}]}
     with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_denied_terms_config_with_partial_data])
+        GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_denied_terms_config_with_partial_data])
 
     # Assertions
     assert exc_info.type == BadRequestException
@@ -332,14 +297,14 @@ def test_aws_guardrail_transform_off_topic_config():
             }
         ]
     })
-    transformed_config = GuardrailTransformer.transform([gr_off_topic_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_off_topic_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
 def test_aws_guardrail_transform_off_topic_config_with_empty_config_data():
     gr_off_topic_config_with_empty = GRConfigView(**gr_off_topic_config_json)
     gr_off_topic_config_with_empty.config_data = {"configs": []}
-    transformed_config = GuardrailTransformer.transform([gr_off_topic_config_with_empty])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_off_topic_config_with_empty])
     assert transformed_config == {}
 
 
@@ -347,7 +312,7 @@ def test_aws_guardrail_transform_off_topic_config_gives_error():
     gr_off_topic_config_with_partial_data = GRConfigView(**gr_off_topic_config_json)
     gr_off_topic_config_with_partial_data.config_data = {"configs": [{"topic": "Sports"}]}
     with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_off_topic_config_with_partial_data])
+        GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_off_topic_config_with_partial_data])
 
     # Assertions
     assert exc_info.type == BadRequestException
@@ -364,14 +329,14 @@ def test_aws_guardrail_transform_prompt_safety_config():
             }
         ]
     })
-    transformed_config = GuardrailTransformer.transform([gr_prompt_safety_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_prompt_safety_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
 def test_aws_guardrail_transform_prompt_safety_config_with_empty_config_data():
     gr_prompt_safety_config_with_empty = GRConfigView(**gr_prompt_safety_config_json)
     gr_prompt_safety_config_with_empty.config_data = {"configs": []}
-    transformed_config = GuardrailTransformer.transform([gr_prompt_safety_config_with_empty])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_prompt_safety_config_with_empty])
     assert transformed_config == {}
 
 
@@ -410,7 +375,7 @@ def test_aws_guardrail_transform_multiple_configs():
             }
         ]
     })
-    transformed_config = GuardrailTransformer.transform([gr_prompt_safety_config, gr_content_moderation_config])
+    transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_prompt_safety_config, gr_content_moderation_config])
     assert transformed_config == {"AWS": [expected_config]}
 
 
@@ -418,7 +383,7 @@ def test_aws_guardrail_transform_prompt_safety_config_gives_error():
     gr_prompt_safety_config_with_partial_data = GRConfigView(**gr_prompt_safety_config_json)
     gr_prompt_safety_config_with_partial_data.config_data = {"configs": [{"category": "PROMPT_ATTACK", "guardrailProvider": "AWS"}]}
     with pytest.raises(BadRequestException) as exc_info:
-        GuardrailTransformer.transform([gr_content_moderation_config, gr_prompt_safety_config_with_partial_data])
+        GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_content_moderation_config, gr_prompt_safety_config_with_partial_data])
 
     # Assertions
     assert exc_info.type == BadRequestException

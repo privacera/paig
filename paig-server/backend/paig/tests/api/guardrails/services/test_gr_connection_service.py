@@ -9,10 +9,7 @@ from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails.database.db_models.guardrail_model import GRConnectionMappingModel
-from api.guardrails.database.db_models.guardrail_view_model import GRConnectionViewModel
-from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository, \
-    GRConnectionMappingRepository, GRConnectionViewRepository
+from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
 from api.guardrails.providers import GuardrailConnection
 from api.guardrails.services.gr_connections_service import GRConnectionRequestValidator, GRConnectionService
 from core.exceptions import BadRequestException, NotFoundException
@@ -33,26 +30,11 @@ gr_connection_view_json = {
 }
 
 gr_connection_view = GRConnectionView(**gr_connection_view_json)
-gr_conn_view_model = GRConnectionViewModel()
-gr_conn_view_model.guardrail_id = 1
-gr_conn_view_model.set_attribute(gr_connection_view.model_dump())
-gr_connection_mapping = GRConnectionMappingModel(guardrail_id=1, gr_connection_id=1,
-                                                 guardrail_provider=GuardrailProvider.AWS)
 
 
 @pytest.fixture
 def mock_guardrail_connection_repository():
     return AsyncMock(spec=GRConnectionRepository)
-
-
-@pytest.fixture
-def mock_guardrail_connection_view_repository():
-    return AsyncMock(spec=GRConnectionViewRepository)
-
-
-@pytest.fixture
-def mock_guardrail_connection_mapping_repository():
-    return AsyncMock(spec=GRConnectionMappingRepository)
 
 
 @pytest.fixture
@@ -66,12 +48,9 @@ def mock_encryption_key_service():
 
 
 @pytest.fixture
-def guardrail_connection_service(mock_guardrail_connection_repository, mock_guardrail_connection_view_repository,
-                                 mock_guardrail_connection_mapping_repository, mock_encryption_key_service, guardrail_connection_request_validator):
+def guardrail_connection_service(mock_guardrail_connection_repository, mock_encryption_key_service, guardrail_connection_request_validator):
     return GRConnectionService(
         gr_connection_repository=mock_guardrail_connection_repository,
-        gr_connection_view_repository=mock_guardrail_connection_view_repository,
-        gr_connection_mapping_repository=mock_guardrail_connection_mapping_repository,
         encryption_key_service=mock_encryption_key_service,
         gr_connection_request_validator=guardrail_connection_request_validator
     )
@@ -278,19 +257,6 @@ async def test_get_all_guardrail_connections_decrypted_gives_error(guardrail_con
 
 
 @pytest.mark.asyncio
-async def test_get_connections_by_guardrail_id_decrypted(guardrail_connection_service, mock_guardrail_connection_view_repository):
-    with patch.object(
-            mock_guardrail_connection_view_repository, 'get_all', return_value=[gr_conn_view_model]
-    ) as mock_get_all:
-        # Call the method under test
-        result = await guardrail_connection_service.get_connections_by_guardrail_id(1, True)
-
-        # Assertions
-        assert result == [gr_conn_view_model]
-        assert mock_get_all.called
-
-
-@pytest.mark.asyncio
 async def test_update_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
     with (patch.object(
             mock_guardrail_connection_repository, 'update_record', return_value=gr_connection_view
@@ -342,60 +308,6 @@ async def test_delete_guardrail_connection(guardrail_connection_service, mock_gu
         # Assertions
         assert mock_delete_record.called
         assert mock_get_record_by_id.called
-
-
-@pytest.mark.asyncio
-async def test_create_guardrail_connection_mapping(guardrail_connection_service,
-                                                   mock_guardrail_connection_mapping_repository):
-    with patch.object(
-            mock_guardrail_connection_mapping_repository, 'create_record', return_value=gr_connection_mapping
-    ) as mock_create_record:
-        # Call the method under test
-        result = await guardrail_connection_service.create_guardrail_connection_mapping(gr_connection_mapping)
-
-        # Assertions
-        assert result == gr_connection_mapping
-        assert mock_create_record.called
-
-
-@pytest.mark.asyncio
-async def test_get_connections_by_guardrail_id(guardrail_connection_service, mock_guardrail_connection_view_repository):
-    with patch.object(
-            mock_guardrail_connection_view_repository, 'get_all', return_value=[gr_conn_view_model]
-    ) as mock_get_all:
-        # Call the method under test
-        result = await guardrail_connection_service.get_connections_by_guardrail_id(1)
-
-        # Assertions
-        assert result == [gr_conn_view_model]
-        assert mock_get_all.called
-
-
-@pytest.mark.asyncio
-async def test_get_guardrail_connection_mappings_by_guardrail_id(guardrail_connection_service,
-                                                                 mock_guardrail_connection_mapping_repository):
-    with patch.object(
-            mock_guardrail_connection_mapping_repository, 'get_all', return_value=[gr_connection_mapping]
-    ) as mock_get_all:
-        # Call the method under test
-        result = await guardrail_connection_service.get_guardrail_connection_mappings(1)
-
-        # Assertions
-        assert result == [gr_connection_mapping]
-        assert mock_get_all.called
-
-
-@pytest.mark.asyncio
-async def test_delete_guardrail_connection_mapping(guardrail_connection_service,
-                                                   mock_guardrail_connection_mapping_repository):
-    with patch.object(
-            mock_guardrail_connection_mapping_repository, 'delete_record', return_value=None
-    ) as mock_delete_record:
-        # Call the method under test
-        await guardrail_connection_service.delete_guardrail_connection_mapping(gr_connection_mapping)
-
-        # Assertions
-        assert mock_delete_record.called
 
 
 @pytest.mark.asyncio

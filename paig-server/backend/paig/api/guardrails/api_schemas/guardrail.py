@@ -42,20 +42,6 @@ class GRConfigView(BaseView):
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
     response_message: str = Field(..., description="The response message", alias="responseMessage")
 
-    def to_guardrail_config(self):
-        """
-        Convert the Guardrails configuration view to a Guardrails configuration.
-
-        Returns:
-            GuardrailConfig: The Guardrails configuration.
-        """
-        from api.guardrails.providers import GuardrailConfig
-        return GuardrailConfig(
-            guardrailProvider=self.guardrail_provider,
-            configType=self.config_type,
-            configData=self.config_data
-        )
-
 
 class GuardrailView(BaseView):
     """
@@ -78,8 +64,8 @@ class GuardrailView(BaseView):
     name: str = Field(default=None, description="The name of the Guardrail")
     description: Optional[str] = Field(default=None, description="The description of the Guardrail")
     version: Optional[int] = Field(default=1, description="The version of the Guardrail")
-    guardrail_provider: GuardrailProvider = Field(..., description="The guardrail provider", alias="guardrailProvider")
-    guardrail_connection_name: str = Field(..., description="The connection name to guardrail provider", alias="guardrailConnectionName")
+    guardrail_provider: Optional[GuardrailProvider] = Field(None, description="The guardrail provider", alias="guardrailProvider")
+    guardrail_connection_name: Optional[str] = Field(None, description="The connection name to guardrail provider", alias="guardrailConnectionName")
     application_keys: Optional[List[str]] = Field(None, description="The associated application keys",
                                         alias="applicationKeys")
     guardrail_applications: Optional[List[GRApplicationView]] = Field(None, description="The guardrail applications",

@@ -17,11 +17,8 @@ guardrail_view_json = {
     "name": "mock_guardrail",
     "description": "test description1",
     "version": 1,
-    "guardrailConnections": {
-        "AWS": {
-            "connectionName": "gr_connection_1"
-        }
-    }
+    "guardrailConnectionName": "gr_connection_1",
+    "guardrailProvider": "AWS",
 }
 
 guardrail_view = GuardrailView(**guardrail_view_json)

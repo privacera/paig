@@ -36,11 +36,8 @@ def get_dummy_guardrail_view():
             "name": "mock_guardrail",
             "description": "mock description",
             "version": 1,
-            "guardrailConnections": {
-                "AWS": {
-                    "connectionName": "gr_connection_1"
-                }
-            }
+            "guardrailConnectionName": "gr_connection_1",
+            "guardrailProvider": "AWS"
         }
     return GuardrailView(**guardrail_view_json)
 

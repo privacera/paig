@@ -9,8 +9,8 @@ from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter,
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_models.guardrail_model import GRApplicationModel, GRConfigModel, \
-    GRApplicationVersionModel, GuardrailModel, GRProviderResponseModel, GRConnectionMappingModel
-from api.guardrails.database.db_models.guardrail_view_model import GuardrailViewModel, GRConnectionViewModel
+    GRApplicationVersionModel, GuardrailModel, GRProviderResponseModel
+from api.guardrails.database.db_models.guardrail_view_model import GuardrailViewModel
 from api.guardrails.database.db_operations.guardrail_repository import GuardrailRepository, GRConfigRepository, \
     GRProviderResponseRepository, GRApplicationRepository, GRApplicationVersionRepository, GuardrailViewRepository
 from api.guardrails.providers import GuardrailProviderManager
@@ -26,11 +26,8 @@ guardrail_view_json = {
     "name": "mock_guardrail",
     "description": "mock description",
     "version": 1,
-    "guardrailConnections": {
-        "AWS": {
-            "connectionName": "gr_connection_1"
-        }
-    }
+    "guardrailConnectionName": "gr_connection_1",
+    "guardrailProvider": "AWS"
 }
 
 guardrail_config_json = {
@@ -40,31 +37,26 @@ guardrail_config_json = {
         "configs": [
             {
                 "category": "VIOLENCE",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "MISCONDUCT",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "HATE",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "low"
             },
             {
                 "category": "SEXUAL",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             },
             {
                 "category": "INSULTS",
-                "guardrailProvider": "AWS",
                 "filterStrengthPrompt": "high",
                 "filterStrengthResponse": "medium"
             }
@@ -251,8 +243,8 @@ async def test_create_guardrail(guardrail_service, mock_guardrail_repository, mo
         assert result.name == create_guardrail_view.name
         assert result.guardrail_configs == create_guardrail_view.guardrail_configs
         assert result.application_keys == create_guardrail_view.application_keys
-        assert result.guardrail_connections == create_guardrail_view.guardrail_connections
-        assert result.enabled_providers == [GuardrailProvider.AWS]
+        assert result.guardrail_provider == create_guardrail_view.guardrail_provider
+        assert result.guardrail_connection_name == create_guardrail_view.guardrail_connection_name
         assert mock_guardrail_create_record.called
         assert mock_guardrail_get_by_name.called
         assert mock_gr_app_create_record.called
@@ -263,40 +255,25 @@ async def test_create_guardrail(guardrail_service, mock_guardrail_repository, mo
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_when_invalid_guardrail_connection_provided(guardrail_service, mock_guardrail_repository):
+async def test_create_guardrail_when_guardrail_connection_name_provided_without_guardrail_provider(guardrail_service, mock_guardrail_repository):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
     create_guardrail_view.guardrail_configs = [gr_config_view]
-    create_guardrail_view.guardrail_connections = {"INVALID": {"connectionName": "mock_connection_name"}}
+    create_guardrail_view.guardrail_provider = None
     # Call the method under test
     with pytest.raises(BadRequestException) as exc_info:
         await guardrail_service.create(create_guardrail_view)
 
     # Assertions
     assert exc_info.type == BadRequestException
-    assert exc_info.value.message == "Guardrail provider value ['INVALID'] is invalid. Allowed values are: ['AWS', 'PAIG', 'LLAMA', 'OPENAI', 'MULTIPLE']"
+    assert exc_info.value.message == "Guardrail Provider must be provided"
     assert not mock_guardrail_repository.create_record.called
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_when_guardrail_connection_not_provided(guardrail_service, mock_guardrail_repository):
+async def test_create_guardrail_when_guardrail_connection_name_not_provided(guardrail_service, mock_guardrail_repository):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
     create_guardrail_view.guardrail_configs = [gr_config_view]
-    create_guardrail_view.guardrail_connections = None
-    # Call the method under test
-    with pytest.raises(BadRequestException) as exc_info:
-        await guardrail_service.create(create_guardrail_view)
-
-    # Assertions
-    assert exc_info.type == BadRequestException
-    assert exc_info.value.message == "Guardrail Connections must be provided"
-    assert not mock_guardrail_repository.create_record.called
-
-
-@pytest.mark.asyncio
-async def test_create_guardrail_when_guardrail_connection_empty_provided(guardrail_service, mock_guardrail_repository):
-    create_guardrail_view = GuardrailView(**guardrail_view_json)
-    create_guardrail_view.guardrail_configs = [gr_config_view]
-    create_guardrail_view.guardrail_connections = {"AWS": None}
+    create_guardrail_view.guardrail_connection_name = None
     # Call the method under test
     with pytest.raises(BadRequestException) as exc_info:
         await guardrail_service.create(create_guardrail_view)
@@ -311,7 +288,6 @@ async def test_create_guardrail_when_guardrail_connection_empty_provided(guardra
 async def test_create_guardrail_when_name_already_exists(guardrail_service, mock_guardrail_repository):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
     create_guardrail_view.guardrail_configs = [gr_config_view]
-    create_guardrail_view.guardrail_connections = {"AWS": {"connectionName": "mock_connection_name"}}
     with patch.object(
             mock_guardrail_repository, 'list_records', return_value=([guardrail_view], 1)
     ) as mock_get_by_name:
@@ -346,75 +322,6 @@ async def test_create_guardrail_when_config_not_provided(guardrail_service, mock
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_when_content_moderation_config_does_not_have_guardrail_provider(
-        guardrail_service, mock_guardrail_repository):
-    create_guardrail_view = GuardrailView(**guardrail_view_json)
-    gr_config_1 = copy.deepcopy(GRConfigView(**guardrail_config_json))
-    gr_config_1.config_data['configs'][0]['guardrailProvider'] = None
-
-    create_guardrail_view.guardrail_configs = [gr_config_1]
-
-    with patch.object(
-            mock_guardrail_repository, 'list_records', return_value=([guardrail_view], 1)
-    ) as mock_get_by_name:
-        # Call the method under test
-        with pytest.raises(BadRequestException) as exc_info:
-            await guardrail_service.create(create_guardrail_view)
-
-        # Assertions
-        assert exc_info.type == BadRequestException
-        assert exc_info.value.message == "Guardrail Provider for CONTENT_MODERATION Config must be provided"
-        assert not mock_get_by_name.called
-        assert not mock_guardrail_repository.create_record.called
-
-
-@pytest.mark.asyncio
-async def test_create_guardrail_when_content_moderation_config_has_different_guardrail_provider(
-        guardrail_service, mock_guardrail_repository):
-    create_guardrail_view = GuardrailView(**guardrail_view_json)
-    gr_config_1 = copy.deepcopy(GRConfigView(**guardrail_config_json))
-    gr_config_1.config_data['configs'][0]['guardrailProvider'] = "OPENAI"
-
-    create_guardrail_view.guardrail_configs = [gr_config_1]
-
-    with patch.object(
-            mock_guardrail_repository, 'list_records', return_value=([guardrail_view], 1)
-    ) as mock_get_by_name:
-        # Call the method under test
-        with pytest.raises(BadRequestException) as exc_info:
-            await guardrail_service.create(create_guardrail_view)
-
-        # Assertions
-        assert exc_info.type == BadRequestException
-        assert exc_info.value.message == "Guardrail provider connection for ['OPENAI'] not provided for the Guardrail"
-        assert not mock_get_by_name.called
-        assert not mock_guardrail_repository.create_record.called
-
-
-@pytest.mark.asyncio
-async def test_create_guardrail_when_denied_terms_config_has_different_guardrail_provider(
-        guardrail_service, mock_guardrail_repository):
-    create_guardrail_view = GuardrailView(**guardrail_view_json)
-    gr_config_2 = GRConfigView(**guardrail_config_json2)
-    gr_config_2.guardrail_provider = GuardrailProvider.OPENAI
-
-    create_guardrail_view.guardrail_configs = [gr_config_2]
-
-    with (patch.object(
-            mock_guardrail_repository, 'list_records', return_value=([guardrail_view], 1)
-    ) as mock_get_by_name):
-        # Call the method under test
-        with pytest.raises(BadRequestException) as exc_info:
-            await guardrail_service.create(create_guardrail_view)
-
-        # Assertions
-        assert exc_info.type == BadRequestException
-        assert exc_info.value.message == "Guardrail provider connection for ['OPENAI'] not provided for the Guardrail"
-        assert not mock_get_by_name.called
-        assert not mock_guardrail_repository.create_record.called
-
-
-@pytest.mark.asyncio
 async def test_create_guardrail_when_multiple_guardrail_config_with_same_type_provided(
         guardrail_service, mock_guardrail_repository):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
@@ -442,7 +349,7 @@ async def test_create_guardrail_when_invalid_connection_name_provided(
     create_guardrail_view = GuardrailView(**guardrail_view_json)
     create_guardrail_config_view = GRConfigView(**guardrail_config_json)
 
-    create_guardrail_view.guardrail_connections = {"AWS": {"connectionName": "INVALID_CONNECTION"}}
+    create_guardrail_view.guardrail_connection_name = "INVALID_CONNECTION"
 
     create_guardrail_view.guardrail_configs = [create_guardrail_config_view]
     create_guardrail_view.application_keys = ["mock_app_key1", "mock_app_key2"]
@@ -610,10 +517,6 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
     gr_view_model.application_keys = ["mock_app_key1", "mock_app_key2"]
     gr_view_model.guardrail_id = 1
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_view_model.guardrail_id = 1
-    gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
-
     gr_provider_response_model = GRProviderResponseModel(
         id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS,
         response_data={"success": True, "response": {"guardrail_id": 1}})
@@ -621,7 +524,7 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
     with patch.object(
             mock_guardrail_view_repository, 'get_all', return_value=[gr_view_model]
     ) as mock_guardrail_get_all, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_view_model]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
         mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
     ) as mock_gr_provider_response_get_all:
@@ -636,12 +539,13 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
         assert result.version == 1
         assert result.guardrails[0].id == 1
         assert result.guardrails[0].name == guardrail_view_data.name
+        assert result.guardrails[0].guardrail_provider == guardrail_view_data.guardrail_provider
+        assert result.guardrails[0].guardrail_connection_name == guardrail_view_data.guardrail_connection_name
         assert result.guardrails[0].guardrail_configs[0].config_type == gr_config_view_data.config_type
         assert result.guardrails[0].guardrail_configs[0].config_data == gr_config_view_data.config_data
-        assert result.guardrails[0].guardrail_configs[0].guardrail_provider == gr_config_view_data.guardrail_provider
         assert result.guardrails[0].guardrail_configs[0].response_message == gr_config_view_data.response_message
-        assert result.guardrails[0].guardrail_connections == {gr_connection_view_model.guardrail_provider: gr_connection_view_model.connection_details}
-        assert result.guardrails[0].guardrail_provider_response['AWS'] == gr_provider_response_model.response_data
+        assert result.guardrails[0].guardrail_connection_details == gr_connection_view.connection_details
+        assert result.guardrails[0].guardrail_provider_response == gr_provider_response_model.response_data
 
 
 @pytest.mark.asyncio
@@ -656,10 +560,6 @@ async def test_get_guardrail_by_app_key_when_cache_does_not_have_app_version(
     gr_view_model.application_keys = ["mock_app_key3"]
     gr_view_model.guardrail_id = 1
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_view_model.guardrail_id = 1
-    gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
-
     gr_provider_response_model = GRProviderResponseModel(
         id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS,
         response_data={"success": True, "response": {"guardrail_id": 1}})
@@ -667,7 +567,7 @@ async def test_get_guardrail_by_app_key_when_cache_does_not_have_app_version(
     with patch.object(
             mock_guardrail_view_repository, 'get_all', return_value=[gr_view_model]
     ) as mock_guardrail_get_all, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_view_model]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
         mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
     ) as mock_gr_provider_response_get_all:
@@ -682,12 +582,13 @@ async def test_get_guardrail_by_app_key_when_cache_does_not_have_app_version(
         assert result.version == 1
         assert result.guardrails[0].id == 1
         assert result.guardrails[0].name == guardrail_view_data.name
+        assert result.guardrails[0].guardrail_provider == guardrail_view_data.guardrail_provider
+        assert result.guardrails[0].guardrail_connection_name == guardrail_view_data.guardrail_connection_name
         assert result.guardrails[0].guardrail_configs[0].config_type == gr_config_view_data.config_type
         assert result.guardrails[0].guardrail_configs[0].config_data == gr_config_view_data.config_data
-        assert result.guardrails[0].guardrail_configs[0].guardrail_provider == gr_config_view_data.guardrail_provider
         assert result.guardrails[0].guardrail_configs[0].response_message == gr_config_view_data.response_message
-        assert result.guardrails[0].guardrail_connections == {gr_connection_view_model.guardrail_provider: gr_connection_view_model.connection_details}
-        assert result.guardrails[0].guardrail_provider_response['AWS'] == gr_provider_response_model.response_data
+        assert result.guardrails[0].guardrail_connection_details == gr_connection_view.connection_details
+        assert result.guardrails[0].guardrail_provider_response == gr_provider_response_model.response_data
 
 
 @pytest.mark.asyncio
@@ -746,7 +647,8 @@ async def test_update_guardrail(
     update_guardrail_view.guardrail_configs = [gr_config_view_to_update, gr_config_view_to_add]
     update_guardrail_view.application_keys = ["mock_app_key1", "mock_app_key3"]
 
-    guardrail_model = GuardrailModel(id=1, name="mock_guardrail", description="mock description", version=1)
+    guardrail_model = GuardrailModel()
+    guardrail_model.set_attribute(update_guardrail_view.model_dump())
 
     gr_app_model_existing = GRApplicationModel(id=1, guardrail_id=1, application_key="mock_app_key1")
     gr_app_model_to_delete = GRApplicationModel(id=2, guardrail_id=1, application_key="mock_app_key2")
@@ -757,9 +659,6 @@ async def test_update_guardrail(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_view_model.guardrail_id = 1
-    gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
     gr_app_version_model_to_bump2 = GRApplicationVersionModel(id=2, application_key="mock_app_key2", version=1)
     gr_app_version_model_to_add = GRApplicationVersionModel(id=3, application_key="mock_app_key3", version=1)
@@ -793,7 +692,7 @@ async def test_update_guardrail(
     ) as mock_gr_config_update_record, patch.object(
         mock_gr_config_repository, 'delete_record', return_value=gr_config_model_to_delete
     ) as mock_gr_config_delete_record, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_view_model]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'update_guardrail', return_value={"AWS": {"success": True, "response": {"guardrailId": "mock_aws_gr_1"}}}
     ) as mock_bedrock_guardrail_update, patch.object(
@@ -808,7 +707,9 @@ async def test_update_guardrail(
         gr_config_view_to_delete.id = 2
         assert result.guardrail_configs == update_guardrail_view.guardrail_configs
         assert result.application_keys == update_guardrail_view.application_keys
-        assert result.guardrail_connections == update_guardrail_view.guardrail_connections
+        assert result.guardrail_provider == update_guardrail_view.guardrail_provider
+        assert result.guardrail_connection_name == update_guardrail_view.guardrail_connection_name
+        assert result.guardrail_connection_details == update_guardrail_view.guardrail_connection_details
         assert result.guardrail_provider_response == update_guardrail_view.guardrail_provider_response
         assert mock_guardrail_update_record.called
         assert mock_get_record_by_id.called
@@ -838,26 +739,20 @@ async def test_update_guardrail_when_connection_is_updated(
     gr_conf_view = GRConfigView(**guardrail_config_json)
     gr_conf_view.id = 1
 
+    guardrail_model = GuardrailModel()
+    guardrail_model.set_attribute(update_guardrail_view.model_dump())
+
     update_guardrail_view.guardrail_configs = [gr_conf_view]
     update_guardrail_view.application_keys = ["mock_app_key1"]
-    update_guardrail_view.guardrail_connections = {"AWS": {"connectionName": "gr_connection_2"}}
+    update_guardrail_view.guardrail_connection_name = "gr_connection_2"
 
-    guardrail_model = GuardrailModel(id=1, name="mock_guardrail", description="mock description", version=1)
     gr_app_model = GRApplicationModel(id=1, guardrail_id=1, application_key="mock_app_key1")
 
     gr_config_model_updated_with_new_connection = GRConfigModel(**gr_conf_view.model_dump())
     gr_config_model_existing_with_old_connection = GRConfigModel(**gr_conf_view.model_dump())
 
-    gr_connection_model_to_detach = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_model_to_detach.guardrail_id = 1
-    gr_connection_model_to_detach.guardrail_provider = gr_connection_model_to_detach.guardrail_provider.name
-
-    gr_connection_model_to_attach = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_model_to_attach.guardrail_id = 1
-    gr_connection_model_to_attach.id = 2
-    gr_connection_model_to_attach.name = "gr_connection_2"
-
-    gr_connection_mapping = GRConnectionMappingModel(id=1, guardrail_id=1, gr_connection_id=1, guardrail_provider=GuardrailProvider.AWS)
+    gr_connection_view2 = GRConnectionView(**gr_connection_view_json)
+    gr_connection_view2.name = "gr_connection_2"
 
     gr_app_version_model = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
 
@@ -880,12 +775,8 @@ async def test_update_guardrail_when_connection_is_updated(
     ) as mock_gr_config_get_all, patch.object(
         mock_gr_config_repository, 'update_record', return_value=gr_config_model_updated_with_new_connection
     ) as mock_gr_config_update_record, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_model_to_detach]
-    ) as mock_gr_connection_get_by_guardrail_id, patch.object(
-        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_model_to_attach]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view, gr_connection_view2]
     ) as mock_gr_connection_get_all, patch.object(
-        mock_guardrail_connection_service, 'get_guardrail_connection_mappings', return_value=[gr_connection_mapping]
-    ) as mock_get_guardrail_connection_mappings, patch.object(
         GuardrailProviderManager, 'create_guardrail', return_value={"AWS": {"success": True, "response": {"guardrailId": "mock_aws_gr_1"}}}
     ) as mock_bedrock_guardrail_create, patch.object(
         GuardrailProviderManager, 'delete_guardrail', return_value={"AWS": {"success": True, "response": {"guardrailId": "mock_aws_gr_1"}}}
@@ -900,7 +791,9 @@ async def test_update_guardrail_when_connection_is_updated(
         assert result.name == update_guardrail_view.name
         assert result.guardrail_configs == update_guardrail_view.guardrail_configs
         assert result.application_keys == update_guardrail_view.application_keys
-        assert result.guardrail_connections == update_guardrail_view.guardrail_connections
+        assert result.guardrail_provider == update_guardrail_view.guardrail_provider
+        assert result.guardrail_connection_name == update_guardrail_view.guardrail_connection_name
+        assert result.guardrail_connection_details == update_guardrail_view.guardrail_connection_details
         assert result.guardrail_provider_response == update_guardrail_view.guardrail_provider_response
         assert mock_guardrail_update_record.called
         assert mock_get_record_by_id.called
@@ -909,9 +802,7 @@ async def test_update_guardrail_when_connection_is_updated(
         assert mock_gr_app_version_get_all.called
         assert mock_gr_config_get_all.called
         assert mock_gr_config_update_record.called
-        assert mock_gr_connection_get_by_guardrail_id.called
         assert mock_gr_connection_get_all.called
-        assert mock_get_guardrail_connection_mappings.called
         assert mock_bedrock_guardrail_create.called
         assert mock_bedrock_guardrail_delete.called
         assert mock_gr_provider_response_get_all.called
@@ -946,6 +837,9 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
         mock_gr_provider_response_repository):
     update_guardrail_view = GuardrailView(**guardrail_view_json)
 
+    guardrail_model = GuardrailModel()
+    guardrail_model.set_attribute(update_guardrail_view.model_dump())
+
     gr_config_view_to_update = GRConfigView(**guardrail_config_json)
     gr_config_view_to_update.id = 1
 
@@ -957,8 +851,6 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
     update_guardrail_view.guardrail_configs = [gr_config_view_to_update, gr_config_view_to_add]
     update_guardrail_view.application_keys = ["mock_app_key1", "mock_app_key3"]
 
-    guardrail_model = GuardrailModel(id=1, name="mock_guardrail", description="mock description", version=1)
-
     gr_app_model_existing = GRApplicationModel(id=1, guardrail_id=1, application_key="mock_app_key1")
     gr_app_model_to_delete = GRApplicationModel(id=2, guardrail_id=1, application_key="mock_app_key2")
     gr_app_model_to_add = GRApplicationModel(id=3, guardrail_id=1, application_key="mock_app_key3")
@@ -968,9 +860,6 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_view_model.guardrail_id = 1
-    gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
     gr_app_version_model_to_bump2 = GRApplicationVersionModel(id=2, application_key="mock_app_key2", version=1)
     gr_app_version_model_to_add = GRApplicationVersionModel(id=3, application_key="mock_app_key3", version=1)
@@ -1003,7 +892,7 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
     ) as mock_gr_config_update_record, patch.object(
         mock_gr_config_repository, 'delete_record', return_value=gr_config_model_to_delete
     ) as mock_gr_config_delete_record, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_view_model]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'update_guardrail', side_effect=InternalServerError("AWS Error")
     ) as mock_bedrock_guardrail_update, patch.object(
@@ -1040,6 +929,9 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
         mock_gr_provider_response_repository):
     update_guardrail_view = GuardrailView(**guardrail_view_json)
 
+    guardrail_model = GuardrailModel()
+    guardrail_model.set_attribute(update_guardrail_view.model_dump())
+
     gr_config_view_to_update = GRConfigView(**guardrail_config_json)
     gr_config_view_to_update.id = 1
 
@@ -1051,8 +943,6 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
     update_guardrail_view.guardrail_configs = [gr_config_view_to_update, gr_config_view_to_add]
     update_guardrail_view.application_keys = ["mock_app_key1", "mock_app_key3"]
 
-    guardrail_model = GuardrailModel(id=1, name="mock_guardrail", description="mock description", version=1)
-
     gr_app_model_existing = GRApplicationModel(id=1, guardrail_id=1, application_key="mock_app_key1")
     gr_app_model_to_delete = GRApplicationModel(id=2, guardrail_id=1, application_key="mock_app_key2")
     gr_app_model_to_add = GRApplicationModel(id=3, guardrail_id=1, application_key="mock_app_key3")
@@ -1062,9 +952,6 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
     gr_config_model_to_add = GRConfigModel(**gr_config_view_to_add.model_dump())
     gr_config_model_to_add.id = 3
 
-    gr_connection_view_model = GRConnectionViewModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
-    gr_connection_view_model.guardrail_id = 1
-    gr_connection_view_model.guardrail_provider = gr_connection_view_model.guardrail_provider.name
     gr_app_version_model_to_bump1 = GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)
     gr_app_version_model_to_bump2 = GRApplicationVersionModel(id=2, application_key="mock_app_key2", version=1)
     gr_app_version_model_to_add = GRApplicationVersionModel(id=3, application_key="mock_app_key3", version=1)
@@ -1097,7 +984,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
     ) as mock_gr_config_update_record, patch.object(
         mock_gr_config_repository, 'delete_record', return_value=gr_config_model_to_delete
     ) as mock_gr_config_delete_record, patch.object(
-        mock_guardrail_connection_service, 'get_connections_by_guardrail_id', return_value=[gr_connection_view_model]
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'update_guardrail', return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
     ) as mock_bedrock_guardrail_update, patch.object(
@@ -1129,25 +1016,46 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
 
 
 @pytest.mark.asyncio
-async def test_delete_guardrail(guardrail_service, mock_guardrail_repository):
+async def test_delete_guardrail(guardrail_service, mock_guardrail_connection_service,
+                                mock_gr_provider_response_repository, mock_guardrail_repository):
+    response_data = {"success": True, "response": {"guardrailId": 1}}
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS,response_data=response_data)
     with patch.object(
             mock_guardrail_repository, 'delete_record', return_value=None
     ) as mock_delete_record, patch.object(
         mock_guardrail_repository, 'get_record_by_id', return_value=guardrail_view
-    ) as mock_get_record_by_id:
+    ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all, patch.object(
+        GuardrailProviderManager, 'delete_guardrail', return_value={"AWS": response_data}
+    ) as mock_bedrock_guardrail_delete:
         # Call the method under test
         await guardrail_service.delete(1)
 
         # Assertions
         assert mock_delete_record.called
         assert mock_get_record_by_id.called
+        assert mock_gr_connection_get_all.called
+        assert mock_gr_provider_response_get_all.called
+        assert mock_bedrock_guardrail_delete.called
 
 
 @pytest.mark.asyncio
-async def test_delete_guardrail_when_guardrail_provider_gives_error(guardrail_service, mock_guardrail_repository):
+async def test_delete_guardrail_when_guardrail_provider_gives_error(guardrail_service, mock_guardrail_connection_service,
+                                                                    mock_gr_provider_response_repository, mock_guardrail_repository):
+    response_data = {"success": True, "response": {"guardrailId": 1}}
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS, response_data=response_data)
     with patch.object(
         mock_guardrail_repository, 'get_record_by_id', return_value=guardrail_view
     ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all, patch.object(
         GuardrailProviderManager, 'delete_guardrail', side_effect=InternalServerError("AWS Error")
     ) as mock_guardrail_provider_manager:
         # Call the method under test
@@ -1159,13 +1067,23 @@ async def test_delete_guardrail_when_guardrail_provider_gives_error(guardrail_se
         assert exc_info.value.message == "Failed to delete guardrails. Error - AWS Error"
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
+        assert mock_gr_connection_get_all.called
+        assert mock_gr_provider_response_get_all.called
 
 
 @pytest.mark.asyncio
-async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success(guardrail_service, mock_guardrail_repository):
+async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success(guardrail_service, mock_guardrail_connection_service,
+                                                                               mock_gr_provider_response_repository, mock_guardrail_repository):
+    response_data = {"success": True, "response": {"guardrailId": 1}}
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS, response_data=response_data)
     with patch.object(
         mock_guardrail_repository, 'get_record_by_id', return_value=guardrail_view
     ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all, patch.object(
         GuardrailProviderManager, 'delete_guardrail',
         return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
     ) as mock_guardrail_provider_manager:
@@ -1179,3 +1097,5 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success(g
         assert exc_info.value.details == "AWS Error"
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
+        assert mock_gr_connection_get_all.called
+        assert mock_gr_provider_response_get_all.called

@@ -24,7 +24,10 @@ class GuardrailTransformer:
         """
         try:
             gr_transformer = GuardrailTransformerFactory.get_transformer(guardrail_provider.name)
-            return {guardrail_provider.name: gr_transformer.transform(guardrail_configs)}
+            result = gr_transformer.transform(guardrail_configs)
+            if not result:
+                return {}
+            return {guardrail_provider.name: result}
         except Exception as e:
             msg = f"{[e]}" if isinstance(e, KeyError) else str(e)
             raise BadRequestException(f"Failed to process guardrail configurations: {msg}")

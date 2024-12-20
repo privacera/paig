@@ -22,6 +22,8 @@ async def test_get_guardrail(mock_guardrail_repository):
         id=1,
         name="mock_name",
         description="mock_description",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection_name",
         version=1
     )
 
@@ -30,6 +32,8 @@ async def test_get_guardrail(mock_guardrail_repository):
         assert len(result) == 1
         assert result[0].name == "mock_name"
         assert result[0].description == "mock_description"
+        assert result[0].guardrail_provider == GuardrailProvider.AWS
+        assert result[0].guardrail_connection_name == "mock_connection_name"
         assert result[0].version == 1
 
 
@@ -40,6 +44,8 @@ async def test_get_guardrail_by_id(mock_guardrail_repository):
         id=key_id,
         name="mock_name",
         description="mock_description",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection_name",
         version=1
     )
 
@@ -48,6 +54,8 @@ async def test_get_guardrail_by_id(mock_guardrail_repository):
         assert result.id == key_id
         assert result.name == "mock_name"
         assert result.description == "mock_description"
+        assert result.guardrail_provider == GuardrailProvider.AWS
+        assert result.guardrail_connection_name == "mock_connection_name"
         assert result.version == 1
 
 
@@ -68,6 +76,8 @@ async def test_create_guardrail(mock_guardrail_repository):
         id=1,
         name="mock_name",
         description="mock_description",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection_name",
         version=1
     )
 
@@ -76,6 +86,8 @@ async def test_create_guardrail(mock_guardrail_repository):
         assert result.id == 1
         assert result.name == "mock_name"
         assert result.description == "mock_description"
+        assert result.guardrail_provider == GuardrailProvider.AWS
+        assert result.guardrail_connection_name == "mock_connection_name"
         assert result.version == 1
 
 
@@ -86,6 +98,8 @@ async def test_update_guardrail(mock_guardrail_repository):
         id=key_id,
         name="mock_name",
         description="mock_description",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection_name",
         version=1
     )
 
@@ -94,6 +108,8 @@ async def test_update_guardrail(mock_guardrail_repository):
         assert result.id == key_id
         assert result.name == "mock_name"
         assert result.description == "mock_description"
+        assert result.guardrail_provider == GuardrailProvider.AWS
+        assert result.guardrail_connection_name == "mock_connection_name"
         assert result.version == 1
 
 
@@ -104,6 +120,8 @@ async def test_delete_guardrail(mock_guardrail_repository):
         id=key_id,
         name="mock_name",
         description="mock_description",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection_name",
         version=1
     )
 
@@ -320,7 +338,6 @@ async def test_get_guardrail_config(mock_guardrail_config_repository):
     mock_guardrail_config = GRConfigModel(
         id=1,
         guardrail_id=1,
-        guardrail_provider=GuardrailProvider.AWS,
         response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
@@ -330,7 +347,6 @@ async def test_get_guardrail_config(mock_guardrail_config_repository):
         result = await mock_guardrail_config_repository.get_all()
         assert len(result) == 1
         assert result[0].guardrail_id == 1
-        assert result[0].guardrail_provider == GuardrailProvider.AWS
         assert result[0].response_message == "mock_response_message"
         assert result[0].config_type == "mock_config_type"
         assert result[0].config_data == {"mock_key": "mock_value"}
@@ -342,7 +358,6 @@ async def test_get_guardrail_config_by_id(mock_guardrail_config_repository):
     mock_guardrail_config = GRConfigModel(
         id=key_id,
         guardrail_id=1,
-        guardrail_provider=GuardrailProvider.AWS,
         response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
@@ -352,7 +367,6 @@ async def test_get_guardrail_config_by_id(mock_guardrail_config_repository):
         result = await mock_guardrail_config_repository.get_record_by_id(key_id)
         assert result.id == key_id
         assert result.guardrail_id == 1
-        assert result.guardrail_provider == GuardrailProvider.AWS
         assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
@@ -374,7 +388,6 @@ async def test_create_guardrail_config(mock_guardrail_config_repository):
     mock_guardrail_config = GRConfigModel(
         id=1,
         guardrail_id=1,
-        guardrail_provider=GuardrailProvider.AWS,
         response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
@@ -384,7 +397,6 @@ async def test_create_guardrail_config(mock_guardrail_config_repository):
         result = await mock_guardrail_config_repository.create(mock_guardrail_config)
         assert result.id == 1
         assert result.guardrail_id == 1
-        assert result.guardrail_provider == GuardrailProvider.AWS
         assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
@@ -396,7 +408,6 @@ async def test_update_guardrail_config(mock_guardrail_config_repository):
     mock_guardrail_config = GRConfigModel(
         id=key_id,
         guardrail_id=1,
-        guardrail_provider=GuardrailProvider.AWS,
         response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}
@@ -406,7 +417,6 @@ async def test_update_guardrail_config(mock_guardrail_config_repository):
         result = await mock_guardrail_config_repository.update(mock_guardrail_config)
         assert result.id == key_id
         assert result.guardrail_id == 1
-        assert result.guardrail_provider == GuardrailProvider.AWS
         assert result.response_message == "mock_response_message"
         assert result.config_type == "mock_config_type"
         assert result.config_data == {"mock_key": "mock_value"}
@@ -418,7 +428,6 @@ async def test_delete_guardrail_config(mock_guardrail_config_repository):
     mock_guardrail_config = GRConfigModel(
         id=key_id,
         guardrail_id=1,
-        guardrail_provider=GuardrailProvider.AWS,
         response_message="mock_response_message",
         config_type="mock_config_type",
         config_data={"mock_key": "mock_value"}

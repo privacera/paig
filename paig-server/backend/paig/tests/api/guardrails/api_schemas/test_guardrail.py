@@ -14,30 +14,24 @@ guardrail_data = {
     "description": "mock description",
     "version": 1,
     "applicationKeys": ["mock_app_key1", "mock_app_key2"],
-    "guardrailConnections": {
-        "AWS": {
-            "connectionName": "gr_connection_1"
-        }
-    },
+    "guardrailConnectionName": "gr_connection_1",
+    "guardrailProvider": "AWS",
     "guardrailConfigs": [
         {
             "id": 1,
             "status": 1,
             "createTime": "2024-12-05T10:17:04.662783",
             "updateTime": "2024-12-05T10:17:04.662832",
-            "guardrailProvider": "MULTIPLE",
             "configType": "CONTENT_MODERATION",
             "configData": {
                 "configs": [
                     {
                         "category": "Hate",
-                        "guardrailProvider": "AWS",
                         "filterStrengthPrompt": "high",
                         "filterStrengthResponse": "medium"
                     },
                     {
                         "category": "Insults",
-                        "guardrailProvider": "AWS",
                         "filterStrengthPrompt": "high",
                         "filterStrengthResponse": "medium"
                     }
@@ -50,7 +44,6 @@ guardrail_data = {
             "status": 1,
             "createTime": "2024-12-05T10:17:04.662783",
             "updateTime": "2024-12-05T10:17:04.662832",
-            "guardrailProvider": "AWS",
             "configType": "SENSITIVE_DATA",
             "configData": {
                 "configs": [
@@ -82,7 +75,6 @@ guardrail_data = {
             "status": 1,
             "createTime": "2024-12-05T10:17:04.662783",
             "updateTime": "2024-12-05T10:17:04.662832",
-            "guardrailProvider": "AWS",
             "configType": "OFF_TOPIC",
             "configData": {
                 "configs": [
@@ -104,7 +96,6 @@ guardrail_data = {
             "status": 1,
             "createTime": "2024-12-05T10:17:04.662783",
             "updateTime": "2024-12-05T10:17:04.662832",
-            "guardrailProvider": "AWS",
             "configType": "DENIED_TERMS",
             "configData": {
                 "configs": [
@@ -128,7 +119,6 @@ guardrail_data = {
             "status": 1,
             "createTime": "2024-12-05T10:17:04.662783",
             "updateTime": "2024-12-05T10:17:04.662832",
-            "guardrailProvider": "AWS",
             "configType": "PROMPT_SAFETY",
             "configData": {
                 "configs": [
@@ -161,10 +151,11 @@ def test_guardrail_view_valid_data():
     assert view.name == guardrail_data["name"]
     assert view.description == guardrail_data["description"]
     assert view.version == guardrail_data["version"]
+    assert view.guardrail_provider.value == guardrail_data["guardrailProvider"]
+    assert view.guardrail_connection_name == guardrail_data["guardrailConnectionName"]
     assert view.application_keys == guardrail_data["applicationKeys"]
     assert view.guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
     assert view.guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
-    assert view.guardrail_configs[0].guardrail_provider.value == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
     assert view.guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
     assert view.guardrail_provider_response == guardrail_data["guardrailProviderResponse"]
 
@@ -186,7 +177,7 @@ def test_guardrail_view_optional_fields():
 def test_guardrail_view_invalid_provider():
     import copy
     invalid_data = copy.deepcopy(guardrail_data)
-    invalid_data["guardrailConfigs"][0]["guardrailProvider"] = "INVALID_PROVIDER"
+    invalid_data["guardrailProvider"] = "INVALID_PROVIDER"
     with pytest.raises(ValidationError):
         GuardrailView(**invalid_data)
 
@@ -252,35 +243,6 @@ def test_guardrail_application_view_invalid_key_type():
         GRApplicationView(**invalid_data)
 
 
-def test_to_guardrail_config():
-    guardrail_config_data = {
-        "guardrailProvider": "MULTIPLE",
-        "configType": "CONTENT_MODERATION",
-        "configData": {
-            "configs": [
-                {
-                    "category": "Hate",
-                    "guardrailProvider": "AWS",
-                    "filterStrengthPrompt": "high",
-                    "filterStrengthResponse": "medium"
-                },
-                {
-                    "category": "Insults",
-                    "guardrailProvider": "AWS",
-                    "filterStrengthPrompt": "high",
-                    "filterStrengthResponse": "medium"
-                }
-            ]
-        },
-        "responseMessage": "I couldn't respond to that message."
-    }
-    view = GRConfigView(**guardrail_config_data)
-    guardrail_config = view.to_guardrail_config()
-    assert guardrail_config.guardrailProvider == guardrail_config_data["guardrailProvider"]
-    assert guardrail_config.configType == guardrail_config_data["configType"]
-    assert guardrail_config.configData == guardrail_config_data["configData"]
-
-
 def test_guardrails_data_view_valid_data():
     guardrails_data_for_app = {
         "applicationKey": "mock_app_key",
@@ -295,9 +257,10 @@ def test_guardrails_data_view_valid_data():
     assert view.guardrails[0].name == guardrail_data["name"]
     assert view.guardrails[0].description == guardrail_data["description"]
     assert view.guardrails[0].version == guardrail_data["version"]
+    assert view.guardrails[0].guardrail_provider.value == guardrail_data["guardrailProvider"]
+    assert view.guardrails[0].guardrail_connection_name == guardrail_data["guardrailConnectionName"]
     assert view.guardrails[0].application_keys == guardrail_data["applicationKeys"]
     assert view.guardrails[0].guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
     assert view.guardrails[0].guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
-    assert view.guardrails[0].guardrail_configs[0].guardrail_provider.value == guardrail_data["guardrailConfigs"][0]["guardrailProvider"]
     assert view.guardrails[0].guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
     assert view.guardrails[0].guardrail_provider_response == guardrail_data["guardrailProviderResponse"]

@@ -51,12 +51,11 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
             aws_gr_config = GuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={})
             filters_config = list(dict())
             for config in content_moderation_config.config_data['configs']:
-                if config['guardrailProvider'] == "AWS":
-                    filters_config.append({
-                        "type": config['category'].upper(),
-                        "inputStrength": config['filterStrengthPrompt'].upper(),
-                        "outputStrength": config['filterStrengthResponse'].upper()
-                    })
+                filters_config.append({
+                    "type": config['category'].upper(),
+                    "inputStrength": config['filterStrengthPrompt'].upper(),
+                    "outputStrength": config['filterStrengthResponse'].upper()
+                })
             if not filters_config:
                 return None
             aws_gr_config.configData['filtersConfig'] = filters_config
@@ -82,8 +81,9 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                         "pattern": config['pattern'],
                         "action": action
                     })
-            if regex_entities_config:
-                aws_gr_config.configData['regexesConfig'] = regex_entities_config
+            if not regex_entities_config:
+                return None
+            aws_gr_config.configData['regexesConfig'] = regex_entities_config
             return aws_gr_config
         except Exception as e:
             raise Exception(f"Invalid data in sensitive data config: {[e]}")
@@ -140,7 +140,6 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                 })
                 return None
             else:
-                prompt_attack_config.config_data['configs'][0]['guardrailProvider'] = prompt_attack_config.guardrail_provider.name
                 prompt_attack_config.config_data['configs'][0]['filterStrengthResponse'] = "NONE"
                 return self._transform_content_moderation(prompt_attack_config)
         except Exception as e:

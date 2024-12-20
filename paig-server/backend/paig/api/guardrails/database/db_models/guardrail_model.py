@@ -21,8 +21,8 @@ class GuardrailModel(BaseSQLModel):
     name = Column(String(255), nullable=False)
     description = Column(String(4000), nullable=True)
     version = Column(Integer, nullable=False, default=1)
-    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=False)
-    guardrail_connection_name = Column(String(255), nullable=False)
+    guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=True)
+    guardrail_connection_name = Column(String(255), nullable=True)
 
     gr_application = relationship("GRApplicationModel", back_populates="guardrail", cascade="all, delete-orphan")
     gr_config = relationship("GRConfigModel", back_populates="guardrail", cascade="all, delete-orphan")
