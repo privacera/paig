@@ -314,7 +314,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             gr_conf = await self.gr_config_repository.create_record(gr_config_model)
             guardrails_configs_list.append(GRConfigView.model_validate(gr_conf))
 
-        if request.guardrail_connection_name is not None:
+        if request.guardrail_connection_name is not None and request.guardrail_provider is not None:
             # Get Guardrail Connections
             guardrail_connections = await self._get_guardrail_connections_by_name(request.guardrail_connection_name)
             if request.guardrail_provider.name not in guardrail_connections:
@@ -773,12 +773,13 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Delete Guardrails from end service
         guardrail = await self.repository.get_record_by_id(id)
         gr_configs = await self.gr_config_repository.get_all(filters={"guardrail_id": id})
-        guardrail_configs_to_delete = GuardrailTransformer.transform(guardrail.guardrail_provider, gr_configs)
-        connections_to_delete_guardrails = await self._get_guardrail_connections_by_name(guardrail.guardrail_connection_name)
-        response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
-            id, {}, connections_to_delete_guardrails)
-        await self._delete_guardrail_to_external_provider(guardrail, connections_to_delete_guardrails,
-                                                          guardrail_configs_to_delete, response_to_delete_guardrail)
+        if guardrail.guardrail_provider is not None and guardrail.guardrail_connection_name is not None:
+            guardrail_configs_to_delete = GuardrailTransformer.transform(guardrail.guardrail_provider, gr_configs)
+            connections_to_delete_guardrails = await self._get_guardrail_connections_by_name(guardrail.guardrail_connection_name)
+            response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
+                id, {}, connections_to_delete_guardrails)
+            await self._delete_guardrail_to_external_provider(guardrail, connections_to_delete_guardrails,
+                                                              guardrail_configs_to_delete, response_to_delete_guardrail)
 
         # Delete the Guardrail
         await self.delete_record(id)
