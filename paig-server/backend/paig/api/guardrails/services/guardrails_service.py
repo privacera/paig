@@ -609,6 +609,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         gr_connections_to_delete = {}
         new_guardrails_configs = {}
         existing_guardrail_configs = {}
+        response_to_update_guardrail = {}
+        response_to_delete_guardrail = {}
 
         # Prepare config maps for existing and updated configurations
         if existing_guardrail.guardrail_provider is None and request.guardrail_provider is None:
@@ -636,7 +638,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Prepare the guardrail connections and configs to create, update, and delete
         if request.guardrail_connection_name == existing_guardrail.guardrail_connection_name:
             if request.guardrail_connection_name is not None:
-                gr_connections_to_update[request.guardrail_provider.name] = gr_connection_map[request.guardrail_connection_name]
+                if new_guardrails_configs and not existing_guardrail_configs:
+                    gr_connections_to_create[request.guardrail_provider.name] = gr_connection_map[request.guardrail_connection_name]
+                elif existing_guardrail_configs and not new_guardrails_configs:
+                    gr_connections_to_delete[request.guardrail_provider.name] = gr_connection_map[request.guardrail_connection_name]
+                else:
+                    gr_connections_to_update[request.guardrail_provider.name] = gr_connection_map[request.guardrail_connection_name]
         else:
             if existing_guardrail.guardrail_connection_name is not None:
                 gr_connections_to_delete[existing_guardrail.guardrail_provider.name] = gr_connection_map[existing_guardrail.guardrail_connection_name]
@@ -644,21 +651,22 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                 gr_connections_to_create[request.guardrail_provider.name] = gr_connection_map[request.guardrail_connection_name]
 
         # Get responses to update and delete guardrails
-        response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
-            guardrail.id, gr_connections_to_update, gr_connections_to_delete)
+        if (gr_connections_to_update or gr_connections_to_delete) and existing_guardrail_configs:
+            response_to_update_guardrail, response_to_delete_guardrail = await self._get_responses_to_update_delete(
+                guardrail.id, gr_connections_to_update, gr_connections_to_delete)
 
         # Delete guardrails in end service
-        if gr_connections_to_delete:
+        if gr_connections_to_delete and existing_guardrail_configs:
             await self._delete_guardrail_to_external_provider(
                 guardrail, gr_connections_to_delete, existing_guardrail_configs, response_to_delete_guardrail)
 
         # Create guardrails in end service and save the responses
-        if gr_connections_to_create:
+        if gr_connections_to_create and new_guardrails_configs:
             gr_resp_data = await self._create_guardrail_to_external_provider(guardrail, gr_connections_to_create, new_guardrails_configs)
             guardrail_response.update(gr_resp_data)
 
         # Update guardrails in end service and save the responses
-        if gr_connections_to_update:
+        if gr_connections_to_update and response_to_update_guardrail:
             gr_resp_data = await self._update_guardrail_to_external_provider(
                 guardrail, gr_connections_to_update, new_guardrails_configs, response_to_update_guardrail)
             guardrail_response.update(gr_resp_data)
