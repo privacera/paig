@@ -1,0 +1,24 @@
+{
+    "description": "This is a sales chatbot that will help users to find the right product for them.",
+    "targets": [
+        {
+            "id": "openai:gpt-4o-mini",
+            "label": "unsafe chatbot"
+        }
+    ],
+    "purpose": "To evaluate the performance of the chatbot",
+    "plugins": [
+        {
+            "id": "pii",
+            "numTests": 2
+        }
+    ],
+    "providers": ["openai:gpt-4o-mini"],
+    "numTests": 1,
+    "language": "English",
+    "strategies": [
+        "jailbreak"
+        ]
+
+
+}
