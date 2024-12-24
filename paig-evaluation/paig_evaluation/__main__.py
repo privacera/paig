@@ -3,7 +3,7 @@ import sys, os
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(ROOT_DIR)
 import click
-from base_paig_eval import run_process, setup_config
+from base_paig_eval import run_process, setup_config, init_setup_config
 
 
 @click.command()
@@ -30,10 +30,21 @@ def main(paig_eval_config: str,  application_config:str, openai_api_key: str, ac
     if action == 'run' or action == 'start':
         report = run_process(paig_eval_config, openai_api_key)
         print(f"Redteam Report:: {report}")
-    elif action == 'setup':
+    elif action == 'init_setup':
         if application_config is None or application_config == "":
             raise ValueError("Please provide the path to the application config file.")
 
+        application_config_dict = init_setup_config(application_config)
+        # make workdir and create output_with_plugins.json
+        os.makedirs('workdir', exist_ok=True)
+
+        with open('workdir/application_config_with_plugins.json', 'w') as file:
+            json.dump(application_config_dict, file, indent=2)
+    elif action == 'setup':
+        application_config = "workdir/application_config_with_plugins.json"
+        # check if the application config file exists
+        if not os.path.exists(application_config):
+            sys.exit("Please run init_setup action to create the application config file.")
         eval_config_dict = setup_config(application_config)
         eval_config = json.dumps(eval_config_dict, indent=2)
         print(f"PAIG Eval Config: {eval_config}")

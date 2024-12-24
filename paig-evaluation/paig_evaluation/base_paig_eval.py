@@ -5,6 +5,7 @@ import os
 import uuid
 from typing import Optional
 from typing import Dict, Any
+from utils import get_suggested_plugins
 
 
 def create_yaml_from_dict(config_dict, file_name):
@@ -138,16 +139,15 @@ def generate_config(
     redteam_dict = {}
 
     # Get redteam configuration
+    redteam_dict["numTests"] = numTests if numTests else 5
+    redteam_dict["language"] = language if language else "English"
+
     if purpose:
         redteam_dict["purpose"] = purpose
     if plugins:
         redteam_dict["plugins"] = plugins
-    if numTests:
-        redteam_dict["numTests"] = numTests
     if providers:
         redteam_dict["providers"] = providers
-    if language:
-        redteam_dict["language"] = language
     if strategies:
         redteam_dict["strategies"] = strategies
 
@@ -163,7 +163,7 @@ def generate_config(
     return config_dict
 
 
-def setup(
+def setup_conf(
         description: str = None,
         targets: Any = None,
         purpose: str = None,
@@ -184,31 +184,45 @@ def setup(
         strategies=strategies
     )
 
+def init_setup_config(application_config):
+    with open(application_config, 'r') as file:
+        config = json.load(file)
+        application_name = config.get("application_name")
+        application_purpose = config.get("purpose")
+        application_client = config.get("application_client")
+    if not application_purpose or application_purpose == "":
+        raise ValueError("Application purpose not found in the configuration file.")
+
+    suggested_plugins = get_suggested_plugins(application_purpose=application_purpose)
+    suggested_plugins_dict = json.loads(suggested_plugins)
+    plugins = suggested_plugins_dict['plugins']
+    application_config_dict = {
+        "application_name": application_name,
+        "purpose": application_purpose,
+        "application_client": application_client,
+        "categories": plugins
+    }
+    return application_config_dict
+
 
 def setup_config(application_config):
     with open(application_config, 'r') as file:
         config = json.load(file)
-        description = config.get('description', 'My Eval')
-        purpose = config.get('purpose', 'To evaluate the performance of the chatbot')
-        plugins = config.get('plugins', ["pii"])
-        providers = config.get('providers', ["openai:gpt-4o-mini"])
-        numTests = config.get('numTests', 1)
-        language = config.get('language', 'English')
-        targets = config.get('targets', [
-            {
-                "id": "openai:gpt-4o-mini",
-                "label": "unsafe chat"
-            }
-        ])
-        strategies = config.get('strategies', [])
+        application_name = config.get("application_name")
+        application_purpose = config.get("purpose")
+        application_client = config.get("application_client")
+        categories = config.get("categories")
+    if not application_purpose or application_purpose == "":
+        raise ValueError("Application purpose not found in the configuration file.")
 
-    return setup(
-        description=description,
+    targets = {
+        "id": application_client,
+        "label": application_name
+    }
+
+    return setup_conf(
+        description=application_name,
         targets=targets,
-        purpose=purpose,
-        plugins=plugins,
-        providers=providers,
-        numTests=numTests,
-        language=language,
-        strategies=strategies
+        purpose=application_purpose,
+        plugins=categories,
     )
