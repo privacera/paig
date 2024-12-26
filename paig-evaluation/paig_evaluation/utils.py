@@ -1,4 +1,5 @@
 import openai
+import json
 
 def get_suggested_plugins(application_purpose):
     prompt = f"""
@@ -66,3 +67,14 @@ def get_suggested_plugins(application_purpose):
         return response.choices[0].message.content
     except openai.OpenAIError as e:
         return f"Error: {e}"
+
+
+
+def json_to_dict(input_data):
+    if isinstance(input_data, dict):
+        return input_data
+    elif input_data.endswith('.json'):
+        with open(input_data, 'r') as file:
+            return json.load(file)
+    elif isinstance(input_data, str):
+        return json.loads(input_data)

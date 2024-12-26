@@ -5,7 +5,7 @@ import os
 import uuid
 from typing import Optional
 from typing import Dict, Any
-from utils import get_suggested_plugins
+from utils import get_suggested_plugins, json_to_dict
 
 
 def create_yaml_from_dict(config_dict, file_name):
@@ -20,7 +20,7 @@ def create_yaml_from_dict(config_dict, file_name):
         raise RuntimeError(f"Error creating YAML file: {e}")
 
 
-def run_promptfoo_command_in_background(config_dict):
+def run_promptfoo_command_in_background(config_path):
     """
     Run the `promptfoo redteam run` command in the background and return the process object along with paths.
     """
@@ -29,11 +29,11 @@ def run_promptfoo_command_in_background(config_dict):
         unique_id = str(uuid.uuid4())
 
         # Define paths for the config and output files
-        config_path = os.path.join(os.getcwd(), f"config_{unique_id}.yaml")
         output_path = os.path.join(os.getcwd(), f"output_{unique_id}.json")
 
         # Create the YAML config file
-        create_yaml_from_dict(config_dict, config_path)
+        # create_yaml_from_dict(config_dict, config_path)
+
 
         # Command to run
         command = [
@@ -68,17 +68,30 @@ def check_process_status(process):
         raise RuntimeError(f"Error checking process status: {e}")
 
 
-def get_output_from_process(output_path: str, config_path: Optional[str] = None):
+def read_output_data(output_path):
+    if output_path.endswith('.json'):
+        with open(output_path, 'r') as file:
+            return json.load(file)
+    elif output_path.endswith('.yaml'):
+        with open(output_path, 'r') as file:
+            return yaml.safe_load(file)
+
+def remove_temporary_file(file_path):
+    try:
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception as e:
+        raise RuntimeError(f"Error removing temporary file: {e}")
+
+
+def get_output_from_process(output_path: str):
     """
     Retrieve the output JSON file content after the process is completed and clean up files.
     """
     try:
-        with open(output_path, 'r') as output_file:
-            output_data = json.load(output_file)
+        output_data = read_output_data(output_path)
 
         # Clean up temporary files
-        if config_path and os.path.exists(config_path):
-            os.remove(config_path)
         if os.path.exists(output_path):
             os.remove(output_path)
 
@@ -91,21 +104,11 @@ def get_output_from_process(output_path: str, config_path: Optional[str] = None)
         raise RuntimeError(f"Unexpected error retrieving output: {e}")
 
 
-def run_process(paig_eval_config: str,  openai_api_key: str):
+def run_process(paig_eval_config: str):
     try:
-        if paig_eval_config is None or paig_eval_config == "":
-            raise ValueError("Please provide the path to the PAIG evaluation config file.")
-
-        # Set the OpenAI API key as an environment variable
-        if openai_api_key and openai_api_key != "":
-            os.environ["OPENAI_API_KEY"] = openai_api_key
-
-        # Load the config file
-        with open(paig_eval_config, "r") as file:
-            eval_config = json.load(file)
 
         # Run the command in the background
-        process, config_path, output_path = run_promptfoo_command_in_background(eval_config)
+        process, config_path, output_path = run_promptfoo_command_in_background(paig_eval_config)
 
         # Check the process status
         while True:
@@ -118,7 +121,10 @@ def run_process(paig_eval_config: str,  openai_api_key: str):
                 if output:
                     print(output.strip())
 
-        report = get_output_from_process(output_path, config_path)
+        # copy the output file content to paig_eval_output_report.jso
+        with open('workdir/paig_eval_output_report.json', 'w') as file:
+            file.write(open(output_path).read())
+        report = get_output_from_process(output_path)
         return json.dumps(report, indent=2)
 
     except Exception as e:
@@ -185,11 +191,11 @@ def setup_conf(
     )
 
 def init_setup_config(application_config):
-    with open(application_config, 'r') as file:
-        config = json.load(file)
-        application_name = config.get("application_name")
-        application_purpose = config.get("purpose")
-        application_client = config.get("application_client")
+    config = json_to_dict(application_config)
+    application_name = config.get("application_name")
+    application_purpose = config.get("purpose")
+    application_client = config.get("application_client")
+
     if not application_purpose or application_purpose == "":
         raise ValueError("Application purpose not found in the configuration file.")
 
@@ -206,19 +212,18 @@ def init_setup_config(application_config):
 
 
 def setup_config(application_config):
-    with open(application_config, 'r') as file:
-        config = json.load(file)
-        application_name = config.get("application_name")
-        application_purpose = config.get("purpose")
-        application_client = config.get("application_client")
-        categories = config.get("categories")
+    config = json_to_dict(application_config)
+    application_name = config.get("application_name")
+    application_purpose = config.get("purpose")
+    application_client = config.get("application_client")
+    categories = config.get("categories")
     if not application_purpose or application_purpose == "":
         raise ValueError("Application purpose not found in the configuration file.")
 
-    targets = {
+    targets = [{
         "id": application_client,
         "label": application_name
-    }
+    }]
 
     return setup_conf(
         description=application_name,
@@ -226,3 +231,66 @@ def setup_config(application_config):
         purpose=application_purpose,
         plugins=categories,
     )
+
+
+def run_generate_prompts_command_in_background(config_dict):
+    try:
+        # Generate a unique identifier for file names
+        unique_id = str(uuid.uuid4())
+
+        # Define paths for the config and output files
+        config_path = os.path.join(os.getcwd(), f"config_with_plugins_{unique_id}.yaml")
+        output_path = os.path.join(os.getcwd(), f"output_with_plugins_{unique_id}.yaml")
+
+        # Create the YAML config file
+        create_yaml_from_dict(config_dict, config_path)
+
+        # Command to run
+        command = [
+            "promptfoo", "redteam", "generate",
+            "--no-cache",
+            "--max-concurrency", "5",
+            "--config", config_path,
+            "--output", output_path
+        ]
+
+        # Set the environment variable for OpenAI API key
+        env = os.environ.copy()
+        # env["OPENAI_API_KEY"] = "your_openai_api_key_here"  # Replace with your actual API key
+
+        # Start the process
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env)
+        return process, config_path, output_path
+    except Exception as e:
+        raise RuntimeError(f"Error starting background process: {e}")
+
+
+
+
+
+
+def generate_prompts(config_with_plugins):
+    try:
+        eval_config = json_to_dict(config_with_plugins)
+        # Run the command in the background
+        process, config_path, output_path = run_generate_prompts_command_in_background(eval_config)
+        # Check the process status
+        while True:
+            status = check_process_status(process)
+            if status == 0:
+                print("Process completed.")
+                break
+            else:
+                output = process.stdout.readline()
+                if output:
+                    print(output.strip())
+
+        # copy the output file content to workdir/paig_eval_config.yaml
+        with open('workdir/paig_eval_config_with_prompts.yaml', 'w') as file:
+            file.write(open(output_path).read())
+        remove_temporary_file(config_path)
+        report = get_output_from_process(output_path)
+        return report
+
+    except Exception as e:
+        print(f"Error generating prompts: {e}")

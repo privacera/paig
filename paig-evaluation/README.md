@@ -29,66 +29,87 @@ You can install the PAIG Evaluation Python library using pip:
 pip install paig_evaluation
 ```
 
----
 
+__TODO__ : After publishing the package on pypi, we need to update below usage commands.
 ## Usage
+### 1. Setup Development Environment
+To setup the development environment, follow the steps below:
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:privacera/paig.git
+   ```
+
+2. Change the directory to the `paig-evaluation` folder:
+   ```bash
+   cd paig/paig-evaluation
+   ```
+
+3. Create a virtual environment:
+   ```bash
+    python -m venv venv
+    ```
+   OR
+   ```bash
+    python3 -m venv venv
+    ```
+4. Activate the virtual environment
+    ```bash
+    source venv/bin/activate
+    ```
+
+5. Change the directory to the `paig_evaluation` and Install the dependencies:
+    ```bash
+    cd paig_evaluation
+   ```
+   Install the dependencies
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+
+### 2. Generate Configs and Run Evaluation
 
 PAIG Evaluation provides multiple commands for generating configurations and running evaluations. Below are the steps to use the library effectively:
 
 #### 1. Generate Intermediate Application Config with Suggested Plugins
+This command generates an intermediate application configuration with suggested plugins and saves it as `application_config_with_plugins.json` in the `workdir` directory.
 
-Run the following command to create an intermediate application configuration file with suggested plugins:  
 ```bash
-python __main__.py init_setup --application_config <your_application_config_file_path>
+python __main__.py init_setup
 ```
-
-- This command generates an intermediate application configuration with suggested plugins and saves it as `application_config_with_plugins.json` in the `workdir` directory.  
+Default configuration file is `application_config.json`. You can pass the configuration file path as an argument to the command.
+```bash
+python __main__.py init_setup --application_config <your_config_json_file_path> --openai_api_key <your_openai_api_key>
+```
+__Note__: You can set OPENAI_API_KEY as an environment variable to avoid passing it as an argument.
+```bash
+export OPENAI_API_KEY=<your_openai_api_key>
+```
 - You can refer to a sample configuration file here: [application_config.json](paig_evaluation/application_config.json).
-
 ---
 
 #### 2. Generate Setup Config
 
-To generate a setup configuration, use:  
+To generate a setup configuration, use:
+This command uses intermediate application configuration and generate a setup configuration. 
+The generated setup config is saved into `application_setup_config.json` in the `workdir` directory.
 ```bash
 python __main__.py setup
 ```
-
-- This command outputs the setup configuration to the console using the generated `application_config_with_plugins.json` file.
-
 ---
-
-#### 3. Save the Setup Config
-
-Copy the setup configuration from the console output and save it into a JSON file.  
-
----
+#### 3. Generate Evaluation Config with prompts
+This command uses setup configuration and generate evaluation configuration with prompts.
+The generated evaluation config is saved into `paig_eval_config_with_prompts.yaml` in the `workdir` directory.
+```bash
+python __main__.py generate
+```
 
 #### 4. Run the Evaluation
 
-Run the evaluation using the following command:  
+Run the evaluation using the following command: 
+This command uses evaluation configuration and runs the evaluation.
 ```bash
-python __main__.py run --paig_eval_config <your_config_json_file_path>
+python __main__.py run
 ```
 
-- This command executes the evaluation and outputs the results in JSON format on the console.  
-
----
-
-## Example Workflow
-
-1. Create the intermediate application configuration:  
-   ```bash
-   python __main__.py init_setup --application_config application_config.json
-   ```
-2. Generate the setup configuration:  
-   ```bash
-   python __main__.py setup
-   ```
-3. Save the setup configuration to a JSON file (e.g., `setup_config.json`).  
-4. Run the evaluation:  
-   ```bash
-   python __main__.py run --paig_eval_config setup_config.json
-   ```
-
-The evaluation report will be displayed in JSON format on the console.
+- This command executes the evaluation and outputs report write into `paig_eval_output_report.json` under `workdir` directory.  
