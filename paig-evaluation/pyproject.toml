@@ -26,7 +26,8 @@ classifiers = [
 
 dependencies = [
     "click",
-    "pyyaml"
+    "pyyaml",
+    "openai"
 ]
 
 
