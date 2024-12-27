@@ -31,6 +31,66 @@ pip install paig_evaluation
 
 
 __TODO__ : After publishing the package on pypi, we need to update below usage commands.
+### 3. Build locally and use as library
+To build the package locally and use it as a library, follow the steps below:
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:privacera/paig.git
+   ```
+
+2. Change the directory to the `paig-evaluation` folder:
+   ```bash
+   cd paig/paig-evaluation
+   ```
+
+3. Create a virtual environment:
+   ```bash
+    python -m venv venv
+    ```
+
+4. Activate the virtual environment
+    ```bash
+    source venv/bin/activate
+    ```
+5. Install build package
+    ```bash
+    pip install build
+    ```
+
+6. Build paig_evaluation package locally:
+    ```bash
+   python -m build -w
+    ```
+
+7. Install build package:
+    ```bash
+    pip install dist/*
+    ```
+
+8. Import and use as library:
+    ```python
+    from paig_evaluation.paig_eval import PaigEval
+   
+   # Initialise the PaigEval object, pass the output directory where the evaluation report will be saved.
+   # The output directory is optional, if not provided, the report will be saved in the workdir in current working directory.
+   eval_obj = PaigEval(output_directory='output')
+   
+   # Create application configuration json with suggested plugins
+   # This will generate application_config_with_plugins.json in output directory
+   eval_obj.init_setup(application_config='configs/application_config.json')
+   
+   # Generate paig_eval_config_with_prompts.yaml with prompts for evaluation
+   eval_obj.generate_prompts()
+   
+   # Run the evaluation using above generated configuration and save the report in output directory
+   eval_obj.run()
+   ```
+
+
+
+
+
+
 ## Usage
 ### 1. Setup Development Environment
 To setup the development environment, follow the steps below:

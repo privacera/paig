@@ -5,7 +5,7 @@ import os
 import uuid
 from typing import Optional
 from typing import Dict, Any
-from utils import get_suggested_plugins, json_to_dict
+from paig_evaluation.utils import get_suggested_plugins, json_to_dict
 
 
 def create_yaml_from_dict(config_dict, file_name):
@@ -104,7 +104,7 @@ def get_output_from_process(output_path: str):
         raise RuntimeError(f"Unexpected error retrieving output: {e}")
 
 
-def run_process(paig_eval_config: str):
+def run_process(paig_eval_config: str, output_directory: str):
     try:
 
         # Run the command in the background
@@ -122,7 +122,7 @@ def run_process(paig_eval_config: str):
                     print(output.strip())
 
         # copy the output file content to paig_eval_output_report.jso
-        with open('workdir/paig_eval_output_report.json', 'w') as file:
+        with open(f'{output_directory}/paig_eval_output_report.json', 'w') as file:
             file.write(open(output_path).read())
         report = get_output_from_process(output_path)
         return json.dumps(report, indent=2)
@@ -191,24 +191,32 @@ def setup_conf(
     )
 
 def init_setup_config(application_config):
-    config = json_to_dict(application_config)
-    application_name = config.get("application_name")
-    application_purpose = config.get("purpose")
-    application_client = config.get("application_client")
+    try:
+        config = json_to_dict(application_config)
+        application_name = config.get("application_name")
+        application_purpose = config.get("purpose")
+        application_client = config.get("application_client", "openai:gpt-4o-mini")
 
-    if not application_purpose or application_purpose == "":
-        raise ValueError("Application purpose not found in the configuration file.")
+        if not application_purpose or application_purpose == "":
+            raise ValueError("Application purpose not found in the configuration file.")
+        if not application_name or application_name == "":
+            raise ValueError("Application name not found in the configuration file.")
 
-    suggested_plugins = get_suggested_plugins(application_purpose=application_purpose)
-    suggested_plugins_dict = json.loads(suggested_plugins)
-    plugins = suggested_plugins_dict['plugins']
-    application_config_dict = {
-        "application_name": application_name,
-        "purpose": application_purpose,
-        "application_client": application_client,
-        "categories": plugins
-    }
-    return application_config_dict
+        suggested_plugins = get_suggested_plugins(application_purpose=application_purpose)
+        try:
+            suggested_plugins_dict = json.loads(suggested_plugins)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON string: {suggested_plugins}") from e
+        plugins = suggested_plugins_dict['plugins']
+        application_config_dict = {
+            "application_name": application_name,
+            "purpose": application_purpose,
+            "application_client": application_client,
+            "categories": plugins
+        }
+        return application_config_dict
+    except Exception as e:
+        print(f"Error setting up application config: {e}")
 
 
 def setup_config(application_config):
@@ -269,7 +277,7 @@ def run_generate_prompts_command_in_background(config_dict):
 
 
 
-def generate_prompts(config_with_plugins):
+def generate_prompts(config_with_plugins, output_directory):
     try:
         eval_config = json_to_dict(config_with_plugins)
         # Run the command in the background
@@ -286,7 +294,7 @@ def generate_prompts(config_with_plugins):
                     print(output.strip())
 
         # copy the output file content to workdir/paig_eval_config.yaml
-        with open('workdir/paig_eval_config_with_prompts.yaml', 'w') as file:
+        with open(f'{output_directory}/paig_eval_config_with_prompts.yaml', 'w') as file:
             file.write(open(output_path).read())
         remove_temporary_file(config_path)
         report = get_output_from_process(output_path)

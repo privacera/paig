@@ -30,7 +30,7 @@ def main(application_config:str, openai_api_key: str, action: str) -> None:
         if eval_config.endswith('.yaml'):
             if not os.path.exists(eval_config):
                 sys.exit("Please provide a valid path to the PAIG evaluation config file. Run 'paig-evaluation setup' to create the config file.")
-        report = run_process(eval_config)
+        report = run_process(eval_config, 'workdir')
     elif action == 'init_setup':
         application_config_json_file = "application_config.json"
         if application_config:
@@ -57,7 +57,7 @@ def main(application_config:str, openai_api_key: str, action: str) -> None:
                 sys.exit(
                     "Please provide a valid path to the PAIG evaluation config file. Run 'paig-evaluation setup' to create the config file.")
 
-        generate_prompts(application_setup_config)
+        generate_prompts(application_setup_config, 'workdir')
     else:
         print("Please provide an action. Options: run|start or setup")
 
