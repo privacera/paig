@@ -30,7 +30,14 @@ const SIDEBAR_MENU = [{
     isChild: true,
     sidebar: UI_CONSTANTS.VECTOR_DB,
     childrenRoutes: ["/vector_db/", "/vector_db/create", "/vector_db/:id"]
-  }]
+  }, {
+    to: "/evaluations",
+    name: "Evaluation",
+    isChild: true,
+    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
+    childrenRoutes: ["/evaluations/"]
+  }
+  ]
 }, {
    menuToggleAttrName: "audits",
    name: "Security",

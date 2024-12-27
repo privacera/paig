@@ -6,6 +6,7 @@ import {SIDEBAR_MENU} from 'components/site/sidebar_menu';
 import {configProperties} from 'utils/config_properties';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import stores from 'data/stores/all_stores';
+import { prop } from 'cheerio/lib/api/attributes';
 
 const {
 	DASHBOARD,
@@ -30,7 +31,8 @@ const {
     SAVED_REPORTS,
     REPORTING,
     AI_APPLICATIONS_PERMISSIONS,
-    VECTOR_DB_PERMISSIONS
+    VECTOR_DB_PERMISSIONS,
+    PAIG_EVALUATION
 } = UI_CONSTANTS
 
 const SIDEBAR_MENU_ITEMS = {
@@ -42,6 +44,9 @@ const SIDEBAR_MENU_ITEMS = {
             },
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
+            },
+            [PAIG_EVALUATION]: {
+                TABS: [PAIG_EVALUATION]
             }
         }
     },
@@ -78,11 +83,25 @@ const UI_FEATURE_SIDEBAR_TABS = {
             [SHIELD_CONFIGURATION]: {}
         }
     },
+
+    [PAIG_EVALUATION]: {
+        [APPLICATIONS]: {
+            [VECTOR_DB]: {
+                TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
+            },
+            [PAIG_EVALUATION] : {
+                TABS: [PAIG_EVALUATION]
+            }
+        }
+    },
     [VECTOR_DB]: {
         [APPLICATIONS]: {
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
             },
+            [PAIG_EVALUATION] : {
+                TABS: [PAIG_EVALUATION]
+            }
         },
         [ACCOUNT]: {
             [META_DATA]: {}
@@ -142,7 +161,13 @@ class UISidebarTabsUtil {
             },*/ {
                 "name": "VECTOR_DB",
                 "value": 'true'
-            }])
+            }, 
+            {
+                "name": "PAIG_EVALUATION",
+                "value": 'true'
+            }, 
+        
+        ])
         } catch (e) {
             console.error("Failed to fetch system properties", e);
         }
@@ -170,6 +195,9 @@ class UISidebarTabsUtil {
         this.properties.forEach(property => {
             let name = property.name.toUpperCase();
             let value = property.value;
+            console.log('evalPropertiesForAccessControl name', name);
+            console.log('evalPropertiesForAccessControl value', value);
+
             if (!value) {
                 return;
             }
@@ -197,9 +225,11 @@ class UISidebarTabsUtil {
         this._handleHierarchy(true, UI_DEFAULT_FEATURE_SIDEBAR_TABS);
 
         let list = permissionCheckerUtil.getUISidebarAndTabsDenyList();
+        console.log('denylist', list);
         if (list) {
             list.forEach(property => {
                 let uiProperty = featurePermissionUIMap[property];
+                console.log('uiProperty', uiProperty);
                 if (uiProperty && uiProperty.propertyForShowHide) {
                     this.hideUIForProperty(uiProperty.propertyForShowHide);
                 }
@@ -313,6 +343,9 @@ class UISidebarTabsUtil {
         if (Array.isArray(name)) {
             name = name.join('.');
         }
+        console.log('properties', properties);
+        console.log('name', name);
+        console.log('propertiesForShowHide', this.propertiesForShowHide);
         let foundProperty = get(properties, name);
         if (!foundProperty) {
             return;
@@ -362,15 +395,19 @@ class UISidebarTabsUtil {
 
     isSidebarVisibleFor = (sidebar) => {
         let property = this.getProperty(sidebar);
+        console.log('property', property);
         if (typeof property == 'object') {
+            console.log('object property', property);
             property = this._isTabsVisible(property);
         }
+        console.log('final', property);
         return property;
     }
     hasAccess = (sidebar) => {
         if (!sidebar) {
             return true
         }
+        console.log('hasaccess', sidebar);
         return this.isSidebarVisibleFor(sidebar);
     }
 }
@@ -387,6 +424,9 @@ const featurePermissionUIMap = {
     },
     'governance.vector_db': {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
+    },
+    'governance.paig_evaluation': {
+        propertyForShowHide: [`${APPLICATIONS}.${PAIG_EVALUATION}.${PAIG_EVALUATION}`]
     },
     'audits.security': {
         propertyForShowHide: [`${AUDITS}.${SECURITY}`]
