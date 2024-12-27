@@ -3,7 +3,6 @@ import json
 import subprocess
 import os
 import uuid
-from typing import Optional
 from typing import Dict, Any
 from paig_evaluation.utils import get_suggested_plugins, json_to_dict
 
@@ -31,14 +30,9 @@ def run_promptfoo_command_in_background(config_path):
         # Define paths for the config and output files
         output_path = os.path.join(os.getcwd(), f"output_{unique_id}.json")
 
-        # Create the YAML config file
-        # create_yaml_from_dict(config_dict, config_path)
-
-
         # Command to run
         command = [
-            "promptfoo", "redteam", "run",
-            "--no-cache",
+            "promptfoo", "redteam", "eval",
             "--max-concurrency", "5",
             "--config", config_path,
             "--output", output_path
@@ -76,6 +70,7 @@ def read_output_data(output_path):
         with open(output_path, 'r') as file:
             return yaml.safe_load(file)
 
+
 def remove_temporary_file(file_path):
     try:
         if file_path and os.path.exists(file_path):
@@ -106,6 +101,8 @@ def get_output_from_process(output_path: str):
 
 def run_process(paig_eval_config: str, output_directory: str):
     try:
+        # Generate a unique identifier for file names
+        unique_id = str(uuid.uuid4())
 
         # Run the command in the background
         process, config_path, output_path = run_promptfoo_command_in_background(paig_eval_config)
@@ -114,18 +111,17 @@ def run_process(paig_eval_config: str, output_directory: str):
         while True:
             status = check_process_status(process)
             if status == 0:
-                print("Process completed.")
+                print("Run process completed.")
                 break
-            else:
-                output = process.stdout.readline()
-                if output:
-                    print(output.strip())
 
-        # copy the output file content to paig_eval_output_report.jso
-        with open(f'{output_directory}/paig_eval_output_report.json', 'w') as file:
-            file.write(open(output_path).read())
-        report = get_output_from_process(output_path)
-        return json.dumps(report, indent=2)
+        # copy the output file content to paig_eval_output_report.json
+        output_report_file_name = f"{output_directory}/paig_eval_output_report_{unique_id}.json"
+        output_report = get_output_from_process(output_path)
+
+        with open(output_report_file_name, 'w') as file:
+            json.dump(output_report, file, indent=4)
+
+        return output_report, output_report_file_name
 
     except Exception as e:
         print(f"Error running evaluation: {e}")
@@ -225,6 +221,7 @@ def setup_config(application_config):
     application_purpose = config.get("purpose")
     application_client = config.get("application_client")
     categories = config.get("categories")
+    numTests = config.get("numTests", 5)
     if not application_purpose or application_purpose == "":
         raise ValueError("Application purpose not found in the configuration file.")
 
@@ -238,6 +235,7 @@ def setup_config(application_config):
         targets=targets,
         purpose=application_purpose,
         plugins=categories,
+        numTests=numTests
     )
 
 
@@ -256,7 +254,6 @@ def run_generate_prompts_command_in_background(config_dict):
         # Command to run
         command = [
             "promptfoo", "redteam", "generate",
-            "--no-cache",
             "--max-concurrency", "5",
             "--config", config_path,
             "--output", output_path
@@ -273,12 +270,10 @@ def run_generate_prompts_command_in_background(config_dict):
         raise RuntimeError(f"Error starting background process: {e}")
 
 
-
-
-
-
 def generate_prompts(config_with_plugins, output_directory):
     try:
+        # Generate a unique identifier for file names
+        unique_id = str(uuid.uuid4())
         eval_config = json_to_dict(config_with_plugins)
         # Run the command in the background
         process, config_path, output_path = run_generate_prompts_command_in_background(eval_config)
@@ -286,19 +281,16 @@ def generate_prompts(config_with_plugins, output_directory):
         while True:
             status = check_process_status(process)
             if status == 0:
-                print("Process completed.")
+                print("Generate prompts process completed.")
                 break
-            else:
-                output = process.stdout.readline()
-                if output:
-                    print(output.strip())
 
-        # copy the output file content to workdir/paig_eval_config.yaml
-        with open(f'{output_directory}/paig_eval_config_with_prompts.yaml', 'w') as file:
+        # copy the output file content to output_directory
+        config_file_name = f'{output_directory}/paig_eval_config_with_prompts_{unique_id}.yaml'
+        with open(config_file_name, 'w') as file:
             file.write(open(output_path).read())
         remove_temporary_file(config_path)
-        report = get_output_from_process(output_path)
-        return report
+        remove_temporary_file(output_path)
+        return config_file_name
 
     except Exception as e:
         print(f"Error generating prompts: {e}")

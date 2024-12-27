@@ -1,6 +1,8 @@
 from paig_evaluation.base_paig_eval import run_process, setup_config, init_setup_config, generate_prompts
 import os
 import json
+import yaml
+from typing import Dict
 
 
 class PaigEval:
@@ -16,6 +18,8 @@ class PaigEval:
                                             the key will not be set.
         """
         self.output_directory = output_directory if output_directory else 'workdir'
+        self.config_file = None
+        self.output_file = None
         if openai_api_key and openai_api_key != "":
             os.environ["OPENAI_API_KEY"] = openai_api_key
 
@@ -26,24 +30,23 @@ class PaigEval:
         on the provided application configuration JSON file, under the output directory.
 
         Args:
-            application_config (str): Path to the application configuration JSON file.
+            application_config: application configuration JSON.
 
         Raises:
             FileNotFoundError: If the provided configuration file does not exist.
         """
-        application_config_json_file = "application_config.json"
-        if application_config:
-            application_config_json_file = application_config
-        if application_config_json_file.endswith('.json'):
-            if not os.path.exists(application_config_json_file):
-                raise FileNotFoundError(f"Application config file not found: {application_config_json_file}")
-        application_config_dict = init_setup_config(application_config_json_file)
+        if isinstance(application_config, str) and application_config.endswith('.json'):
+            if not os.path.exists(application_config):
+                raise FileNotFoundError(f"Application config file not found: {application_config}")
         if self.output_directory == 'workdir':
             os.makedirs(self.output_directory, exist_ok=True)
-        with open(f'{self.output_directory}/application_config_with_plugins.json', 'w') as file:
-            json.dump(application_config_dict, file, indent=2)
+        elif not os.path.exists(self.output_directory):
+            raise FileNotFoundError(f"Output directory not found: {self.output_directory}")
+        application_config_dict = init_setup_config(application_config)
+        # Return JSON dict
+        return json.dumps(application_config_dict, indent=4)
 
-    def generate_prompts(self):
+    def generate_prompts(self, config_with_plugins):
         """
         Generate `paig_eval_config_with_prompts.yaml` config with prompts using an application configuration file and output directory.
 
@@ -56,11 +59,13 @@ class PaigEval:
             FileNotFoundError: If the application configuration JSON file is not found.
 
         """
-        application_config_with_plugins_json_file = f"{self.output_directory}/application_config_with_plugins.json"
-        if not os.path.exists(application_config_with_plugins_json_file):
-            raise FileNotFoundError(f"Application config with plugins file not found: {application_config_with_plugins_json_file}")
-        application_config_with_plugins_dict = setup_config(application_config_with_plugins_json_file)
-        generate_prompts(application_config_with_plugins_dict, self.output_directory)
+        if isinstance(config_with_plugins, str) and config_with_plugins.endswith('.json'):
+            if not os.path.exists(config_with_plugins):
+                raise FileNotFoundError(f"Application config with plugins file not found: {config_with_plugins}")
+        application_config_with_plugins_dict = setup_config(config_with_plugins)
+        config_file_name = generate_prompts(application_config_with_plugins_dict, self.output_directory)
+        self.config_file = config_file_name
+
 
     def run(self):
         """
@@ -73,10 +78,48 @@ class PaigEval:
         Raises:
             FileNotFoundError: If the PAIG evaluation configuration YAML file is not found
         """
-        paig_eval_config_file = f"{self.output_directory}/paig_eval_config_with_prompts.yaml"
+        paig_eval_config_file = self.config_file
         if not os.path.exists(paig_eval_config_file):
             raise FileNotFoundError(f"PAIG evaluation config file not found: {paig_eval_config_file}")
-        run_process(paig_eval_config_file, self.output_directory)
+        output_report, output_report_file_name = run_process(paig_eval_config_file, self.output_directory)
+        # Return Report in JSON format
+        self.output_file = output_report_file_name
+        report_json_data = {}
+        try:
+            with open(self.output_file, 'r') as f:
+                report_json_data =  json.load(f)
+        except Exception as e:
+            print(f"Error reading output report file: {e}")
+        return report_json_data
+
+
+    def append_user_prompts(self, user_prompts_list: list[Dict]):
+        """
+        Append user prompts to the existing prompts in the PAIG evaluation configuration file.
+
+        This method appends user prompts to the existing prompts in the PAIG evaluation configuration file.
+        The user prompts are provided as a dictionary with the key being the category and the value being a list of prompts.
+
+        Args:
+            user_prompts_dict (dict): A dictionary containing user prompts with categories as keys and lists of prompts as values.
+
+        Raises:
+            FileNotFoundError: If the PAIG evaluation configuration YAML file is not found.
+        """
+        try:
+            paig_eval_config_file = self.config_file
+            if not os.path.exists(paig_eval_config_file):
+                raise FileNotFoundError(f"PAIG evaluation config file not found: {paig_eval_config_file}")
+
+            with open(paig_eval_config_file, 'r') as f:
+                paig_eval_config = yaml.safe_load(f)
+
+            paig_eval_config['tests'].extend(user_prompts_list)
+            # Convert to YAML and write back to the file
+            with open(paig_eval_config_file, 'w') as f:
+                yaml.dump(paig_eval_config, f)
+        except Exception as e:
+            print(f"Error appending user prompts: {e}")
 
 
 

@@ -70,20 +70,87 @@ To build the package locally and use it as a library, follow the steps below:
 8. Import and use as library:
     ```python
     from paig_evaluation.paig_eval import PaigEval
+
+
+   # you can pass output_directory as variable where config and report files will be saved
+   # you can pass openai_api_key as variable to set OpenAI API Key or you can set it as environment variable
+   # if not provided, it will be saved under 'workdir' directory in current directory
+   # Example: PaigEval(output_directory="<output_dir>", openai_api_key="<your_openai_api_key>")
+   eval_obj = PaigEval(output_directory="new_workdir")
    
-   # Initialise the PaigEval object, pass the output directory where the evaluation report will be saved.
-   # The output directory is optional, if not provided, the report will be saved in the workdir in current working directory.
-   eval_obj = PaigEval(output_directory='output')
    
-   # Create application configuration json with suggested plugins
-   # This will generate application_config_with_plugins.json in output directory
-   eval_obj.init_setup(application_config='configs/application_config.json')
+   application_config = {
+       "application_name": "IT Support Chatbot",
+       "purpose": "To support IT helpdesk",
+       "application_client": "openai:gpt-4o-mini" # If not provided Default application cline is openai:gpt-4o-mini"
+   }
    
-   # Generate paig_eval_config_with_prompts.yaml with prompts for evaluation
-   eval_obj.generate_prompts()
+   # Input for init_setup method is the application configuration JSON file like above
+   config_plugins = eval_obj.init_setup(application_config=application_config)
+   print("Config plugins::::", config_plugins)
    
-   # Run the evaluation using above generated configuration and save the report in output directory
-   eval_obj.run()
+   # Output of the above code snippet will be:
+   """
+   Config plugins:::: {
+       "application_name": "IT Support Chatbot",
+       "purpose": "To support IT helpdesk",
+       "application_client": "openai:gpt-4o-mini",
+       "categories": [
+           "pii",
+           "excessive-agency",
+           "hallucination",
+           "hijacking",
+           "harmful:cybercrime",
+           "pii:api-db",
+           "pii:direct",
+           "pii:session",
+           "pii:social",
+           "harmful:privacy"
+       ]
+   }
+   """
+
+   
+   # Input for generate_prompts method is the config_with_plugins JSON file like above
+   # This will generate config yaml file with prompts and save it under output directory
+   # You can append "numTests": 2, in above config_plugins, If not provided then Default number of tests is 5
+   eval_obj.generate_prompts(config_with_plugins=config_plugins)
+   
+   
+   user_prompts_list = [
+       {
+           "vars": {
+               "prompt": "Can you tell me jokes about bananas?"
+           },
+           "assert": [
+               {
+                   "type": "llm-rubric",
+                   "value": "ensure that the output is funny"
+               }
+           ]
+       },
+       {
+           "vars": {
+               "prompt": "Can you tell me benefits of bananas?"
+           },
+           "assert": [
+               {
+                   "type": "llm-rubric",
+                   "value": "ensure that the output is informative"
+               }
+           ]
+       }
+   ]
+   
+   # Input for append_user_prompts method is the user_prompts_list like above
+   # Will append above tests in the config yaml file
+   eval_obj.append_user_prompts(user_prompts_list=user_prompts_list)
+   
+   
+   # Run the evaluation using the generated config yaml file
+   # This will run the evaluation and return the report in JSON format, and save it under output directory
+   report = eval_obj.run()
+   print("Evaluation report::::", report)
    ```
 
 
