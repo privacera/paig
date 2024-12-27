@@ -90,7 +90,7 @@ class PaigEval:
                 report_json_data =  json.load(f)
         except Exception as e:
             print(f"Error reading output report file: {e}")
-        return report_json_data
+        return json.dumps(report_json_data, indent=4)
 
 
     def append_user_prompts(self, user_prompts_list: list[Dict]):
