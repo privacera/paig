@@ -3,7 +3,7 @@ import sys, os
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(ROOT_DIR)
 import click
-from base_paig_eval import run_process, setup_config, init_setup_config, generate_prompts
+from .base_paig_eval import run_process, setup_config, init_setup_config, generate_prompts
 
 
 @click.command()
@@ -26,11 +26,11 @@ def main(application_config:str, openai_api_key: str, action: str) -> None:
         os.environ["OPENAI_API_KEY"] = openai_api_key
 
     if action == 'run' or action == 'start':
-        eval_config = "workdir/paig_eval_config_with_prompts.yaml"
+        eval_config = "workdir/paig_eval_config_with_prompts_cli.yaml"
         if eval_config.endswith('.yaml'):
             if not os.path.exists(eval_config):
                 sys.exit("Please provide a valid path to the PAIG evaluation config file. Run 'paig-evaluation setup' to create the config file.")
-        report = run_process(eval_config, 'workdir')
+        report = run_process(eval_config, 'workdir', verbose=False)
     elif action == 'init_setup':
         application_config_json_file = "application_config.json"
         if application_config:
@@ -57,7 +57,7 @@ def main(application_config:str, openai_api_key: str, action: str) -> None:
                 sys.exit(
                     "Please provide a valid path to the PAIG evaluation config file. Run 'paig-evaluation setup' to create the config file.")
 
-        generate_prompts(application_setup_config, 'workdir')
+        generate_prompts(application_setup_config, 'workdir', from_cli=True)
     else:
         print("Please provide an action. Options: run|start or setup")
 

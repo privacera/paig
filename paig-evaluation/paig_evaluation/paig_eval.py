@@ -1,4 +1,4 @@
-from paig_evaluation.base_paig_eval import run_process, setup_config, init_setup_config, generate_prompts
+from .base_paig_eval import run_process, setup_config, init_setup_config, generate_prompts
 import os
 import json
 import yaml
@@ -66,8 +66,20 @@ class PaigEval:
         config_file_name = generate_prompts(application_config_with_plugins_dict, self.output_directory)
         self.config_file = config_file_name
 
+        generated_prompts_config = {}
+        # Read the YAML file
+        with open(self.config_file, 'r') as file:
+            generated_prompts_config = yaml.safe_load(file)
+        return generated_prompts_config
 
-    def run(self):
+
+    def update_generated_prompts_config(self, updated_paig_eval_config: dict):
+        if updated_paig_eval_config:
+            with open(self.config_file, 'w') as file:
+                yaml.dump(updated_paig_eval_config, file)
+
+
+    def run(self, verbose=False):
         """
         Execute a process using the PAIG evaluation configuration file and output directory.
 
@@ -81,7 +93,7 @@ class PaigEval:
         paig_eval_config_file = self.config_file
         if not os.path.exists(paig_eval_config_file):
             raise FileNotFoundError(f"PAIG evaluation config file not found: {paig_eval_config_file}")
-        output_report, output_report_file_name = run_process(paig_eval_config_file, self.output_directory)
+        output_report, output_report_file_name = run_process(paig_eval_config_file, self.output_directory, verbose=verbose)
         # Return Report in JSON format
         self.output_file = output_report_file_name
         report_json_data = {}

@@ -4,7 +4,7 @@ import subprocess
 import os
 import uuid
 from typing import Dict, Any
-from paig_evaluation.utils import get_suggested_plugins, json_to_dict
+from .utils import get_suggested_plugins, json_to_dict
 
 
 def create_yaml_from_dict(config_dict, file_name):
@@ -99,7 +99,7 @@ def get_output_from_process(output_path: str):
         raise RuntimeError(f"Unexpected error retrieving output: {e}")
 
 
-def run_process(paig_eval_config: str, output_directory: str):
+def run_process(paig_eval_config: str, output_directory: str, verbose: bool = False):
     try:
         # Generate a unique identifier for file names
         unique_id = str(uuid.uuid4())
@@ -109,6 +109,10 @@ def run_process(paig_eval_config: str, output_directory: str):
 
         # Check the process status
         while True:
+            if verbose:
+                stdout_line = process.stdout.readline()
+                if stdout_line:
+                    print(stdout_line.strip())
             status = check_process_status(process)
             if status == 0:
                 print("Run process completed.")
@@ -270,10 +274,10 @@ def run_generate_prompts_command_in_background(config_dict):
         raise RuntimeError(f"Error starting background process: {e}")
 
 
-def generate_prompts(config_with_plugins, output_directory):
+def generate_prompts(config_with_plugins, output_directory, from_cli=False):
     try:
         # Generate a unique identifier for file names
-        unique_id = str(uuid.uuid4())
+        unique_id = "cli" if from_cli else str(uuid.uuid4())
         eval_config = json_to_dict(config_with_plugins)
         # Run the command in the background
         process, config_path, output_path = run_generate_prompts_command_in_background(eval_config)
