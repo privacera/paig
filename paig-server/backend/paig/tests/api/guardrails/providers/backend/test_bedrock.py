@@ -221,14 +221,36 @@ def test_create_bedrock_client_with_iam_web_identity(mock_boto3_client, iam_web_
 
 
 @patch('boto3.client')
-def test_create_bedrock_client_with_iam_role(mock_boto3_client, iam_role_details):
-    provider = BedrockGuardrailProvider(iam_role_details)
+def test_create_bedrock_client_with_region(mock_boto3_client):
+    provider = BedrockGuardrailProvider({'region': 'us-east-1'})
     provider.create_bedrock_client()
     mock_boto3_client.assert_called_once_with(
         'bedrock',
         region_name='us-east-1'
     )
 
+
+@patch('boto3.client')
+def test_create_bedrock_client_with_assume_iam_role(mock_boto3_client, iam_role_details):
+    mock_boto3_client.return_value = MagicMock()
+    mock_boto3_client.return_value.assume_role = MagicMock(
+        return_value={
+            'Credentials': {
+                'AccessKeyId': 'fake_temp_access_key',
+                'SecretAccessKey': 'fake_temp_secret_key',
+                'SessionToken': 'fake_temp_session_token'
+            }
+        }
+    )
+    provider = BedrockGuardrailProvider(iam_role_details)
+    provider.create_bedrock_client()
+    mock_boto3_client.assert_called_with(
+        'bedrock',
+        aws_access_key_id='fake_temp_access_key',
+        aws_secret_access_key='fake_temp_secret_key',
+        aws_session_token='fake_temp_session_token',
+        region_name='us-east-1'
+    )
 
 # Mock guardrail action
 @patch.object(BedrockGuardrailProvider, 'create_bedrock_client')

@@ -189,6 +189,22 @@ class BedrockGuardrailProvider(GuardrailProvider):
                 region_name=self.connection_details['region']
             )
 
+        if all(key in self.connection_details for key in self.REQUIRED_IAM_ROLE_KEYS):
+            # Use Assume Role credentials
+            sts_client = boto3.client('sts')
+            assumed_role = sts_client.assume_role(
+                RoleArn=self.connection_details['iam_role'],
+                RoleSessionName="bedrock-guardrail-session"
+            )
+            temp_credentials = assumed_role['Credentials']
+            return boto3.client(
+                'bedrock',
+                aws_access_key_id=temp_credentials['AccessKeyId'],
+                aws_secret_access_key=temp_credentials['SecretAccessKey'],
+                aws_session_token=temp_credentials['SessionToken'],
+                region_name=self.connection_details['region']
+            )
+
         return boto3.client('bedrock', region_name=self.connection_details['region'])
 
     def get_create_bedrock_guardrail_payload(self, request: GuardrailRequest, **kwargs) -> dict:
