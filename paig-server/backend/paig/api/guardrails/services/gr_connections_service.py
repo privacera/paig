@@ -304,9 +304,12 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
                 gr_connection.connection_details[key] = "GuardrailEncrypt:" + data_encryptor.encrypt(data=str(value))
 
     async def create_data_encryptor_obj(self):
-        gr_creds_key: EncryptionKeyView = await self.encryption_key_service.get_active_encryption_key_by_type(
-            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        gr_creds_key: EncryptionKeyView = await self.get_encryption_key()
         return DataEncryptor(public_key=gr_creds_key.public_key, private_key=gr_creds_key.private_key)
+
+    async def get_encryption_key(self):
+        return await self.encryption_key_service.get_active_encryption_key_by_type(
+            EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
 
     async def decrypt_connection_details(self, gr_connection):
         connection_details = gr_connection.connection_details

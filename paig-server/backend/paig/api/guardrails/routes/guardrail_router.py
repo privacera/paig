@@ -57,6 +57,7 @@ async def create(
 @guardrail_router.get("/{id}", response_model=GuardrailView, response_model_exclude_none=True, response_model_exclude_unset=True)
 async def get(
         id: int,
+        extended: Optional[bool] = Query(False, description="Include extended information"),
         guardrail_controller: GuardrailController = gr_controller_instance
 ) -> GuardrailView:
     """
@@ -64,12 +65,13 @@ async def get(
 
     Args:
         id (int): The ID of the Guardrail to retrieve.
+        extended (Optional[bool]): Include extended information of guardrail connection details and guardrail provider response.
         guardrail_controller (GuardrailController): The guardrail controller
 
     Returns:
         GuardrailView: The Guardrail view object corresponding to the ID.
     """
-    return await guardrail_controller.get_by_id(id)
+    return await guardrail_controller.get_by_id(id, extended)
 
 
 @guardrail_router.get("/application/{app_key}", response_model=GuardrailsDataView, response_model_exclude_none=True, response_model_exclude_unset=True)

@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy.exc import NoResultFound
 
+from api.encryption.api_schemas.encryption_key import EncryptionKeyView
 from api.guardrails.api_schemas.gr_connection import GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
@@ -494,7 +495,7 @@ async def test_get_guardrail_by_id(guardrail_service, mock_guardrail_view_reposi
             mock_guardrail_view_repository, 'get_all', return_value=[gr_view_model]
     ) as mock_guardrail_get_all:
         # Call the method under test
-        result = await guardrail_service.get_by_id(1)
+        result = await guardrail_service.get_by_id(1, False)
 
         # Assertions
         mock_guardrail_get_all.assert_called_once_with(filters={"guardrail_id": 1})
@@ -503,6 +504,49 @@ async def test_get_guardrail_by_id(guardrail_service, mock_guardrail_view_reposi
         assert result.application_keys == gr_view_model.application_keys
         assert result.guardrail_configs[0].config_type == gr_config_view_data.config_type
         assert result.guardrail_configs[0].config_data == gr_config_view_data.config_data
+
+
+@pytest.mark.asyncio
+async def test_get_guardrail_by_id_when_extended_true_provided(guardrail_service, mock_guardrail_view_repository,
+                                                               mock_gr_provider_response_repository,
+                                                               mock_guardrail_connection_service):
+    guardrail_view_data = GuardrailView(**guardrail_view_json)
+    gr_config_view_data = GRConfigView(**guardrail_config_json)
+    gr_view_model = GuardrailViewModel()
+    gr_view_model.set_attribute(gr_config_view_data.model_dump())
+    gr_view_model.set_attribute(guardrail_view_data.model_dump())
+    gr_view_model.application_keys = ["mock_app_key1", "mock_app_key2"]
+    gr_view_model.guardrail_id = 1
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS,
+        response_data={"success": True, "response": {"guardrail_id": 1}})
+    mock_encryption_key = EncryptionKeyView(id=3)
+    gr_connection_details = copy.deepcopy(gr_connection_view.connection_details)
+    gr_connection_details["encryption_key_id"] = 3
+    with patch.object(
+            mock_guardrail_view_repository, 'get_all', return_value=[gr_view_model]
+    ) as mock_guardrail_get_all, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_guardrail_connection_service, 'get_encryption_key', return_value=mock_encryption_key
+    ) as mock_gr_connection_get_encryption_key, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all:
+        # Call the method under test
+        result = await guardrail_service.get_by_id(1, True)
+
+        # Assertions
+        mock_guardrail_get_all.assert_called_once_with(filters={"guardrail_id": 1})
+        mock_gr_connection_get_all.assert_called_once()
+        mock_gr_connection_get_encryption_key.assert_called_once()
+        mock_gr_provider_response_get_all.assert_called_once_with(filters={"guardrail_id": 1})
+        assert result.id == 1
+        assert result.name == guardrail_view_data.name
+        assert result.application_keys == gr_view_model.application_keys
+        assert result.guardrail_configs[0].config_type == gr_config_view_data.config_type
+        assert result.guardrail_configs[0].config_data == gr_config_view_data.config_data
+        assert result.guardrail_connection_details == gr_connection_details
+        assert result.guardrail_provider_response == gr_provider_response_model.response_data
 
 
 @pytest.mark.asyncio
@@ -521,11 +565,17 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
         id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS,
         response_data={"success": True, "response": {"guardrail_id": 1}})
 
+    mock_encryption_key = EncryptionKeyView(id=3)
+    gr_connection_details = copy.deepcopy(gr_connection_view.connection_details)
+    gr_connection_details["encryption_key_id"] = 3
+
     with patch.object(
             mock_guardrail_view_repository, 'get_all', return_value=[gr_view_model]
     ) as mock_guardrail_get_all, patch.object(
         mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
+        mock_guardrail_connection_service, 'get_encryption_key', return_value=mock_encryption_key
+    ) as mock_gr_connection_get_encryption_key, patch.object(
         mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
     ) as mock_gr_provider_response_get_all:
         # Call the method under test
@@ -544,7 +594,7 @@ async def test_get_guardrail_by_app_key(guardrail_service, mock_guardrail_view_r
         assert result.guardrails[0].guardrail_configs[0].config_type == gr_config_view_data.config_type
         assert result.guardrails[0].guardrail_configs[0].config_data == gr_config_view_data.config_data
         assert result.guardrails[0].guardrail_configs[0].response_message == gr_config_view_data.response_message
-        assert result.guardrails[0].guardrail_connection_details == gr_connection_view.connection_details
+        assert result.guardrails[0].guardrail_connection_details == gr_connection_details
         assert result.guardrails[0].guardrail_provider_response == gr_provider_response_model.response_data
 
 
@@ -621,7 +671,7 @@ async def test_get_guardrail_by_id_when_not_found(guardrail_service, mock_guardr
     ) as mock_get_record_by_id:
         # Call the method under test
         with pytest.raises(NotFoundException) as exc_info:
-            await guardrail_service.get_by_id(1)
+            await guardrail_service.get_by_id(1, False)
 
         # Assertions
         mock_get_record_by_id.assert_called_once_with(1)

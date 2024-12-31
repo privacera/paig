@@ -52,17 +52,18 @@ class GuardrailController:
         return await self.guardrail_service.create(request)
         # await background_capture_event(event=CreateAIApplicationEvent())
 
-    async def get_by_id(self, id: int) -> GuardrailView:
+    async def get_by_id(self, id: int, extended: bool) -> GuardrailView:
         """
         Retrieve a Guardrail by its ID.
 
         Args:
             id (int): The ID of the Guardrail to retrieve.
+            extended (bool): Include extended information
 
         Returns:
             GuardrailView: The Guardrail view object corresponding to the ID.
         """
-        return await self.guardrail_service.get_by_id(id)
+        return await self.guardrail_service.get_by_id(id, extended)
 
     async def get_all_by_app_key(self, app_key: str, last_known_version: int = None) -> GuardrailsDataView:
         """

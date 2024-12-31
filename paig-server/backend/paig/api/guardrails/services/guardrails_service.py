@@ -359,12 +359,13 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return created_gr_apps
 
-    async def get_by_id(self, id: int) -> GuardrailView:
+    async def get_by_id(self, id: int, extended: bool) -> GuardrailView:
         """
         Retrieve a Guardrail by its ID.
 
         Args:
             id (int): The ID of the Guardrail to retrieve.
+            extended (bool): Include extended information
 
         Returns:
             GuardrailView: The Guardrail view object corresponding to the ID.
@@ -384,6 +385,19 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         for guardrail in guardrails:
             gr_config = GRConfigView.model_validate(guardrail)
             result.guardrail_configs.append(gr_config)
+
+        if extended:
+            # Fetch Guardrail Connections by Guardrail IDs
+            gr_connections = await self.guardrail_connection_service.get_all(GRConnectionFilter(name=guardrails[0].guardrail_connection_name))
+            result.guardrail_connection_details = gr_connections[0].connection_details if gr_connections else None
+
+            # Fetch encryption key
+            encryption_key = await self.guardrail_connection_service.get_encryption_key()
+            result.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+
+            # Fetch Guardrail Provider Responses by Guardrail IDs
+            gr_response = await self.gr_provider_response_repository.get_all(filters={"guardrail_id": id})
+            result.guardrail_provider_response = gr_response[0].response_data if gr_response else None
 
         # TODO: Uncomment below code once we have application data fetched from gov service to here
         # Populate guardrail applications
@@ -424,6 +438,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         gr_conn_details = {}
         gr_resp_data = {}
         gr_conn_names_set = set(guardrail.guardrail_connection_name for guardrail in guardrails if guardrail.guardrail_connection_name is not None)
+        encryption_key = None
         if gr_conn_names_set:
             # Fetch Guardrail Connections by Guardrail IDs
             gr_conn_names = ",".join(gr_conn_names_set)
@@ -434,6 +449,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             guardrail_ids = ",".join({str(gr.guardrail_id) for gr in guardrails})
             gr_response = await self.gr_provider_response_repository.get_all(filters={"guardrail_id": guardrail_ids})
             gr_resp_data = {gr_resp.guardrail_id: gr_resp.response_data for gr_resp in gr_response}
+
+            # Fetch encryption key
+            encryption_key = await self.guardrail_connection_service.get_encryption_key()
 
         # Initialize a dictionary to store guardrails by their ID
         result: Dict[int, GuardrailView] = {}
@@ -446,6 +464,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             # Check if guardrail ID is already in the result, if not, initialize it
             if guardrail_id not in result:
                 guardrail.guardrail_connection_details = gr_conn_details.get(guardrail.guardrail_connection_name)
+                guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
                 guardrail.guardrail_provider_response = gr_resp_data.get(guardrail_id)
                 guardrail_view = GuardrailView.model_validate(guardrail)
                 guardrail_view.application_keys = None

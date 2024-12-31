@@ -102,11 +102,11 @@ async def test_get_guardrail_by_id(mock_guardrail_service):
     controller = GuardrailController(guardrail_service=mock_guardrail_service)
 
     # Call the method under test
-    result = await controller.get_by_id(id=1)
+    result = await controller.get_by_id(id=1, extended=True)
 
     # Assertions
     assert result == mock_guardrail_view
-    mock_guardrail_service.get_by_id.assert_called_once_with(1)
+    mock_guardrail_service.get_by_id.assert_called_once_with(1, True)
 
 
 @pytest.mark.asyncio
