@@ -1,0 +1,82 @@
+name: paig-evaluation-ci
+
+on:
+  workflow_dispatch: # Allows manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4  # Ensure the repo is checked out
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Set sanitized branch name
+      run: |
+          # Get branch name and sanitize it
+          BRANCH_NAME="${GITHUB_REF_NAME//[^a-zA-Z0-9-]/-}"  # Replace invalid characters with '-'
+          
+          # Remove leading and trailing hyphens
+          BRANCH_NAME="${BRANCH_NAME##-}"  # Trim leading hyphens
+          BRANCH_NAME="${BRANCH_NAME%%-}"  # Trim trailing hyphens
+          
+          echo "SANITIZED_BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
+
+    - name: Install dependencies
+      run: |
+        python3 -m pip install virtualenv
+        virtualenv -p python3 venv && . venv/bin/activate
+        pip install twine build pytest pytest-cov
+        pip install -r paig-evaluation/paig_evaluation/requirements.txt
+
+#    - name: Test with pytest
+#      run: |
+#        filepath=$PWD
+#        . venv/bin/activate && cd paig-evaluation
+#        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml --junitxml=$filepath/junit-${{ env.SANITIZED_BRANCH_NAME }}.xml tests
+#
+#    - name: Upload coverage report
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: coverage-report-${{ env.SANITIZED_BRANCH_NAME }}
+#        path: coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml
+#
+#    - name: Upload test results
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: junit-results-${{ env.SANITIZED_BRANCH_NAME }}
+#        path: junit-${{ env.SANITIZED_BRANCH_NAME }}.xml
+
+    - name: Set build version to dev
+      id: version
+      run: |
+        FILE=paig-evaluation/paig_evaluation/VERSION
+        VERSION=$(awk -F= '{gsub(/^[ \t]+|[ \t]+$/, "", $2); gsub(/^['\''"]+|['\''"]+$/, "", $2); print $2}' $FILE)
+        DEV_VERSION="${VERSION}+${SANITIZED_BRANCH_NAME}$(date +%Y%m%d%H%M%S)"
+        echo "__version__ = '${DEV_VERSION}'" > $FILE
+
+    - name: Build the wheel
+      run: |
+        . venv/bin/activate
+        cd paig-evaluation
+        python3 -m build -w
+        cd ..
+
+    - name: Install created package
+      run: |
+          rm -rf venv
+          virtualenv -p python3 venv && . venv/bin/activate
+          cd paig-evaluation
+          pip install dist/*.whl
+
+    - name: Upload python package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paig-evaluation-${{ env.SANITIZED_BRANCH_NAME }}-build
+        path: paig-evaluation/dist/*.whl
