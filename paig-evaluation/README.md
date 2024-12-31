@@ -8,7 +8,7 @@
 
 Before using PAIG Evaluation, ensure the following dependencies are installed:
 
-- **Python**: >= 3.11  
+- **Python**: >= 3.10
 - **Node.js**: >= 18.20.5  
 
 ---
@@ -24,14 +24,51 @@ npm install promptfoo@0.102.4
 
 ### 2. Install the PAIG Evaluation Library
 
-You can install the PAIG Evaluation Python library using pip:  
-```bash
-pip install paig_evaluation
-```
+You can install the PAIG Evaluation Python library using pip:
+1. Create a virtual environment:
+   ```bash
+    python -m venv venv
+    ```
 
+2. Activate the virtual environment
+    ```bash
+    source venv/bin/activate
+    ```
+3. Download the wheel package from github workflow artifacts and install it using pip:
+   ```bash
+   pip install <path_to_wheel_file>
+   ```
+   
+   Example:
+   ```bash
+   pip install downlaod/paig_evaluation-0.0.1+test.paig.eval20241231073123-py3-none-any.whl
+   ```
+
+
+### 3. Use as standalone python library
+You can use PAIG Evaluation as a standalone python library. You can follow the below steps to use it as a library.
+1. Initialize default configuration file.
+   ```bash
+   paig_evaluation init
+   ```
+
+2. Generate plugin category suggestions.
+   ```bash
+   paig_evaluation suggest-categories
+   ```
+
+3. Create prompts from configurations.
+   ```bash
+   paig_evaluation generate-dynamic-prompts
+   ```
+
+4. Evaluate prompts and save results.
+   ```bash
+   paig_evaluation evaluate
+   ```
 
 __TODO__ : After publishing the package on pypi, we need to update below usage commands.
-### 3. Build locally and use as library
+### 4. Build locally and use as library
 To build the package locally and use it as a library, follow the steps below:
 1. Clone the repository:
    ```bash

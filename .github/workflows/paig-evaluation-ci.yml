@@ -1,7 +1,14 @@
 name: paig-evaluation-ci
 
 on:
-  workflow_dispatch: # Allows manual trigger
+  push:
+    branches: [ "paig-evaluation" ]
+    paths:
+      - 'paig-evaluation/**'
+  pull_request:
+    branches: [ "paig-evaluation" ]
+    paths:
+      - 'paig-evaluation/**'
 
 permissions:
   contents: read
