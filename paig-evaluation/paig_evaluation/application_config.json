@@ -1,5 +1,0 @@
-{
-    "application_name": "IT Support Chatbot",
-    "purpose": "To support IT helpdesk",
-    "application_client": "openai:gpt-4o-mini"
-}
