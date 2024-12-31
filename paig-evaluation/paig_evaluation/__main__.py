@@ -4,6 +4,8 @@ import sys
 import time
 
 import click
+
+from .promptfoo_utils import ensure_promptfoo_config
 from .file_utils import write_yaml_file, read_yaml_file, write_json_file
 from .command_utils import run_command_in_foreground
 from .paig_evaluator import PAIGEvaluator
@@ -96,6 +98,9 @@ def main(action: str, verbose: bool) -> None:
                 f"Required files not found. Ensure both {application_config_file} and {dynamic_prompts_file} exist.")
 
         application_config = read_yaml_file(application_config_file)
+        email = application_config.get("email", "support@privacera.com")
+        ensure_promptfoo_config(email)
+
         generated_prompts = read_yaml_file(dynamic_prompts_file)
 
         # Optional base and custom prompts

@@ -3,9 +3,38 @@ import os
 from typing import List, Dict
 
 import openai
+import yaml
 
 from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
+
+
+def ensure_promptfoo_config(email: str):
+    """
+    Ensures that the ~/.promptfoo/promptfoo.yaml file exists with the specified email.
+
+    Args:
+        email (str): The email address to store in the configuration.
+    """
+    # Define the file path
+    home_directory = os.path.expanduser("~")
+    config_directory = os.path.join(home_directory, ".promptfoo")
+    config_file_path = os.path.join(config_directory, "promptfoo.yaml")
+
+    # Define the content to write
+    content = {
+        "account": {
+            "email": email
+        }
+    }
+
+    # Ensure the directory exists
+    os.makedirs(config_directory, exist_ok=True)
+
+    # Create the file with the content if it doesn't exist
+    if not os.path.exists(config_file_path):
+        with open(config_file_path, "w") as file:
+            yaml.dump(content, file, default_flow_style=False)
 
 
 def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
