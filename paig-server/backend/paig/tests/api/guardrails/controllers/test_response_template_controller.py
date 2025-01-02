@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from unittest.mock import AsyncMock, create_autospec
 
@@ -39,8 +41,6 @@ def controller(mock_response_template_service):
 @pytest.mark.asyncio
 async def test_list_response_templates(controller, mock_response_template_service, mock_session, session_context, mocker):
     """Test listing response templates."""
-    mocker.patch("core.db_session.session", mock_session)
-    mocker.patch("core.db_session.session.session_context", session_context)
 
     mock_filter = ResponseTemplateFilter()  # Adjust with actual filter fields as needed
     mock_pageable = create_pageable_response(
@@ -60,6 +60,7 @@ async def test_list_response_templates(controller, mock_response_template_servic
     assert result == mock_pageable
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_create_response_template(controller, mock_response_template_service, mock_session, session_context, mocker):
     """Test creating a response template."""
@@ -79,8 +80,6 @@ async def test_create_response_template(controller, mock_response_template_servi
 @pytest.mark.asyncio
 async def test_get_response_template_by_id(controller, mock_response_template_service, mock_session, session_context, mocker):
     """Test retrieving a response template by ID."""
-    mocker.patch("core.db_session.session", mock_session)
-    mocker.patch("core.db_session.session.session_context", session_context)
 
     mock_response = ResponseTemplateView(id=1, name="Test Template", content="Sample Content")
     mock_response_template_service.get_response_template_by_id.return_value = mock_response
@@ -91,6 +90,7 @@ async def test_get_response_template_by_id(controller, mock_response_template_se
     assert result == mock_response
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_update_response_template(controller, mock_response_template_service, mock_session, session_context, mocker):
     """Test updating a response template."""
@@ -107,6 +107,7 @@ async def test_update_response_template(controller, mock_response_template_servi
     assert result == mock_response
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_delete_response_template(controller, mock_response_template_service, mock_session, session_context, mocker):
     """Test deleting a response template."""

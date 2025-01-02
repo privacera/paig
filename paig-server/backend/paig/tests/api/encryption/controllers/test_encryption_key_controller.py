@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from unittest.mock import AsyncMock
 
@@ -69,6 +71,7 @@ async def test_list_encryption_keys(mock_encryption_key_service, mock_session):
     mock_encryption_key_service.list_encryption_keys.assert_called_once_with(filter, page_number, size, sort)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_create_encryption_key(mock_encryption_key_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -141,6 +144,7 @@ async def test_get_active_encryption_key_by_type(mock_encryption_key_service):
         EncryptionKeyType.MSG_PROTECT_SHIELD)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_delete_disabled_encryption_key(mock_encryption_key_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -159,6 +163,7 @@ async def test_delete_disabled_encryption_key(mock_encryption_key_service, mock_
     mock_encryption_key_service.delete_disabled_encryption_key.assert_called_once_with(1)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_disable_passive_encryption_key(mock_encryption_key_service, mock_session, session_context, mocker):
     # Mock return value from service

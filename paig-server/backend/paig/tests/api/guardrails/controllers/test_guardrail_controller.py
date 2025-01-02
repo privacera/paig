@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import AsyncMock
 
 import pytest
@@ -71,6 +72,7 @@ async def test_list_guardrail(mock_guardrail_service, mock_session):
     mock_guardrail_service.list.assert_called_once_with(filter=filter, page_number=page_number, size=size, sort=sort)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_create_guardrail(mock_guardrail_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -126,6 +128,7 @@ async def test_get_all_by_app_key(mock_guardrail_service):
     mock_guardrail_service.get_all_by_app_key.assert_called_once()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_update_guardrail(mock_guardrail_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -146,6 +149,7 @@ async def test_update_guardrail(mock_guardrail_service, mock_session, session_co
     mock_guardrail_service.update.assert_called_once_with(1, mock_guardrail_view)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_delete_guardrail(mock_guardrail_service, mock_session, session_context, mocker):
     # Mock return value from service

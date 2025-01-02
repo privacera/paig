@@ -1,3 +1,4 @@
+import sys
 from unittest.mock import AsyncMock
 
 import pytest
@@ -92,6 +93,7 @@ async def test_list_guardrail_connection_provider_names(mock_guardrail_connectio
     mock_guardrail_connection_service.list_connection_provider_names.assert_called_once()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_create_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -130,6 +132,7 @@ async def test_get_guardrail_connection_by_id(mock_guardrail_connection_service)
     mock_guardrail_connection_service.get_by_id.assert_called_once_with(1)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_update_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
@@ -150,6 +153,7 @@ async def test_update_guardrail_connection(mock_guardrail_connection_service, mo
     mock_guardrail_connection_service.update.assert_called_once_with(1, mock_guardrail_connection_view)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="Test requires Python 3.11 or higher")
 @pytest.mark.asyncio
 async def test_delete_guardrail_connection(mock_guardrail_connection_service, mock_session, session_context, mocker):
     # Mock return value from service
