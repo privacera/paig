@@ -35,6 +35,17 @@ def ensure_promptfoo_config(email: str):
     if not os.path.exists(config_file_path):
         with open(config_file_path, "w") as file:
             yaml.dump(content, file, default_flow_style=False)
+    else:
+        # Update the email address if the file exists
+        with open(config_file_path, "r") as file:
+            existing_content = yaml.safe_load(file)
+            if "account" not in existing_content:
+                existing_content["account"] = {}
+            if "email" not in existing_content["account"]:
+                existing_content["account"]["email"] = email
+
+        with open(config_file_path, "w") as file:
+            yaml.dump(existing_content, file, default_flow_style=False)
 
 
 def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:

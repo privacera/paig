@@ -35,6 +35,13 @@ pip install paig_evaluation
 
 This document provides details on how to use the library via command line and Python code.
 
+## Preparing the Evironment
+
+Export the OPENAI_API_KEY environment variable with your OpenAI API key:
+```bash
+export OPENAI_API_KEY="your-openai-api-key"
+```
+
 ## Command Line Usage
 
 ### 1. Initialize the application
