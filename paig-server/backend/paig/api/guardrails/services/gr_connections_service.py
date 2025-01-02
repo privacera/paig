@@ -8,21 +8,25 @@ from api.encryption.database.db_models.encryption_key_model import EncryptionKey
 from api.encryption.events.startup import create_encryption_keys_if_not_exists
 from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails.api_schemas.gr_connection import GRConnectionView, GRConnectionFilter
+from api.guardrails.api_schemas.guardrail import GuardrailFilter
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.database.db_operations.guardrail_repository import GuardrailRepository
 from api.guardrails.providers import GuardrailProviderManager, GuardrailConnection
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import NotFoundException, BadRequestException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND, \
-    ERROR_RESOURCE_ALREADY_EXISTS
+    ERROR_RESOURCE_ALREADY_EXISTS, ERROR_RESOURCE_IN_USE
 from core.utils import validate_id, SingletonDepends, validate_boolean, validate_string_data
 
 
 class GRConnectionRequestValidator:
 
-    def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository)):
+    def __init__(self, gr_connection_repository: GRConnectionRepository = SingletonDepends(GRConnectionRepository),
+                 guardrail_repository: GuardrailRepository = SingletonDepends(GuardrailRepository)):
         self.gr_connection_repository = gr_connection_repository
+        self.guardrail_repository = guardrail_repository
 
     async def validate_read_request(self, id: int):
         """
@@ -71,7 +75,8 @@ class GRConnectionRequestValidator:
             id (int): The ID of the Guardrail Connection to delete.
         """
         validate_id(id, "Guardrail Connection ID")
-        await self.validate_gr_connections_exists_by_id(id)
+        gr_connection = await self.validate_gr_connections_exists_by_id(id)
+        await self.validate_gr_connection_not_used_by_guardrails(gr_connection.name)
 
     def validate_status(self, status: int):
         """
@@ -121,7 +126,7 @@ class GRConnectionRequestValidator:
             id (int): The ID of the Guardrail Connection.
         """
         try:
-            await self.gr_connection_repository.get_record_by_id(id)
+            return await self.gr_connection_repository.get_record_by_id(id)
         except NoResultFound:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Guardrail Connection", "ID", [id]))
 
@@ -142,6 +147,18 @@ class GRConnectionRequestValidator:
         if total_count > 0:
             return records[0]
         return None
+
+    async def validate_gr_connection_not_used_by_guardrails(self, name: str):
+        """
+        Validate if a Guardrail Connection is not used by any Guardrails.
+
+        Args:
+            name (str): The name of the Guardrail Connection.
+        """
+        records, total_count = await self.guardrail_repository.list_records(filter=GuardrailFilter(guardrail_connection_name=name))
+        if total_count > 0:
+            guardrail_names = [record.name for record in records]
+            raise BadRequestException(get_error_message(ERROR_RESOURCE_IN_USE, "Connection", "Guardrail", guardrail_names))
 
 
 class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):

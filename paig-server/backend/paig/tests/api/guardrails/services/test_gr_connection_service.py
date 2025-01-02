@@ -9,7 +9,9 @@ from api.encryption.services.encryption_key_service import EncryptionKeyService
 from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
+from api.guardrails.database.db_models.guardrail_model import GuardrailModel
 from api.guardrails.database.db_operations.gr_connection_repository import GRConnectionRepository
+from api.guardrails.database.db_operations.guardrail_repository import GuardrailRepository
 from api.guardrails.providers import GuardrailConnection
 from api.guardrails.services.gr_connections_service import GRConnectionRequestValidator, GRConnectionService
 from core.exceptions import BadRequestException, NotFoundException
@@ -38,8 +40,14 @@ def mock_guardrail_connection_repository():
 
 
 @pytest.fixture
-def guardrail_connection_request_validator(mock_guardrail_connection_repository):
-    return GRConnectionRequestValidator(gr_connection_repository=mock_guardrail_connection_repository)
+def mock_guardrail_repository():
+    return AsyncMock(spec=GuardrailRepository)
+
+
+@pytest.fixture
+def guardrail_connection_request_validator(mock_guardrail_connection_repository, mock_guardrail_repository):
+    return GRConnectionRequestValidator(gr_connection_repository=mock_guardrail_connection_repository,
+                                        guardrail_repository=mock_guardrail_repository)
 
 
 @pytest.fixture
@@ -296,18 +304,43 @@ async def test_update_guardrail_connection_when_name_already_exists(guardrail_co
 
 
 @pytest.mark.asyncio
-async def test_delete_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository):
+async def test_delete_guardrail_connection(guardrail_connection_service, mock_guardrail_connection_repository, mock_guardrail_repository):
     with patch.object(
             mock_guardrail_connection_repository, 'delete_record', return_value=None
     ) as mock_delete_record, patch.object(
         mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel()
-    ) as mock_get_record_by_id:
+    ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_repository, 'list_records', return_value=(None, 0)
+    ) as mock_get_by_name:
         # Call the method under test
         await guardrail_connection_service.delete(1)
 
         # Assertions
         assert mock_delete_record.called
         assert mock_get_record_by_id.called
+        assert mock_get_by_name.called
+
+
+@pytest.mark.asyncio
+async def test_delete_guardrail_connection_when_guardrail_exists_with_connection(guardrail_connection_service, mock_guardrail_connection_repository, mock_guardrail_repository):
+    guardrail = GuardrailModel(id=1, name="gr_connection_1")
+    with patch.object(
+            mock_guardrail_connection_repository, 'delete_record', return_value=None
+    ) as mock_delete_record, patch.object(
+        mock_guardrail_connection_repository, 'get_record_by_id', return_value=GRConnectionModel()
+    ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_repository, 'list_records', return_value=([guardrail], 1)
+    ) as mock_get_by_name:
+        # Call the method under test
+        with pytest.raises(BadRequestException) as exc_info:
+            await guardrail_connection_service.delete(1)
+
+        # Assertions
+        assert exc_info.type == BadRequestException
+        assert exc_info.value.message == "This Connection is in use by Guardrail: ['gr_connection_1'] and can not be deleted"
+        assert not mock_delete_record.called
+        assert mock_get_record_by_id.called
+        assert mock_get_by_name.called
 
 
 @pytest.mark.asyncio
