@@ -98,7 +98,7 @@ class GRConnectionRequestValidator:
         Args:
             description (str): The description of the Guardrail Connection.
         """
-        validate_string_data(description, "Guardrail Connection description")
+        validate_string_data(description, "Guardrail Connection description", required=False, max_length=4000)
 
     async def validate_gr_connection_not_exists_by_name(self, name: str, id: int = None):
         """

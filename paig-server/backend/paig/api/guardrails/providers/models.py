@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
@@ -32,7 +32,7 @@ class GuardrailConnection(BaseModel):
         connectionDetails (dict): A dictionary containing connection details for the provider.
     """
     name: str  # The name of the connection
-    description: str  # A brief description of the connection
+    description: Optional[str]   # A brief description of the connection
     guardrailProvider: str  # The name of the guardrail provider
     connectionDetails: dict  # Connection details for the provider
 
@@ -47,7 +47,7 @@ class GuardrailRequest(BaseModel):
             guardrailConfigs (List[GuardrailConfig]): A list of guardrail configurations.
         """
     name: str  # The name of the guardrail
-    description: str
+    description: Optional[str] # A brief description of the guardrail
     connectionDetails: dict  # Connection details for the provider
     guardrailConfigs: List[GuardrailConfig]  # List of guardrail configurations
 

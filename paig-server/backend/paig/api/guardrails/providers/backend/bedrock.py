@@ -236,7 +236,9 @@ class BedrockGuardrailProvider(GuardrailProvider):
         if tags := kwargs.get('tags'):
             payload['tags'] = tags
 
-        return payload
+        cleaned_payload = dict((k, v) for k, v in payload.items() if v is not None)
+
+        return cleaned_payload
 
     def _perform_guardrail_action(self, action_func, payload: dict) -> Tuple[bool, dict]:
         """Perform a guardrail action (create/update/delete) and handle exceptions.

@@ -1,11 +1,10 @@
 import copy
-from collections import defaultdict
+import re
 from typing import List, Dict, Set
 
 import sqlalchemy
 from paig_common.lru_cache import LRUCache
 
-from api.guardrails import GuardrailProvider
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
     GuardrailsDataView
@@ -23,7 +22,7 @@ from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
-    ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED, ERROR_ALLOWED_VALUES
+    ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends
 
 config = load_config_file()
@@ -698,7 +697,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             delete_guardrail_map = {}
             for provider, configs in guardrails_configs.items():
                 delete_bedrock_guardrails_request = DeleteGuardrailRequest(
-                    name=guardrail.name,
+                    name=self.replace_invalid_chars(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs,
@@ -724,7 +723,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             update_guardrail_map = {}
             for provider, configs in guardrails_configs.items():
                 update_bedrock_guardrails_request = UpdateGuardrailRequest(
-                    name=guardrail.name,
+                    name=self.replace_invalid_chars(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs,
@@ -745,13 +744,29 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             await self.gr_provider_response_repository.update_record(gr_resp_model)
         return update_guardrail_response
 
+    def replace_invalid_chars(self, input_string: str) -> str:
+        """
+        Replace characters in the string that do not match the regex [0-9a-zA-Z-_]+ with an underscore.
+
+        Args:
+            input_string (str): The input string to process.
+
+        Returns:
+            str: The updated string with invalid characters replaced.
+        """
+        # Define the regex pattern for allowed characters
+        pattern = r'[^0-9a-zA-Z-_]'
+        # Replace characters not matching the pattern with an underscore
+        updated_string = re.sub(pattern, '_', input_string)
+        return updated_string
+
     async def _create_guardrail_to_external_provider(self, guardrail, guardrail_connections,
                                                      guardrails_configs):
         try:
             create_guardrails_request_map = {}
             for provider, configs in guardrails_configs.items():
                 create_bedrock_guardrails_request = CreateGuardrailRequest(
-                    name=guardrail.name,
+                    name=self.replace_invalid_chars(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs
