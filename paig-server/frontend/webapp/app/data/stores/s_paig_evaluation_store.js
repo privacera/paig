@@ -1,13 +1,19 @@
 import BaseStore from './base_store';
+import MEvaluation from '../models/m_evaluation';
 
 class EvaluationStore extends BaseStore {
     constructor() {
-        let baseUrl = 'governance-service/api/ai/evaluation';
+        let baseUrl = 'evaluation-service/api';
         super({
-            type: 'vector_db',
+            type: 'evaluation',
             baseUrl
         });
         this.baseUrl = baseUrl;
+    }
+    generateEvaluation(data, opts = {}) {
+        opts.path = `/init`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
     }
 }
 

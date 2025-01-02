@@ -32,6 +32,7 @@ import CReporting from 'containers/reports/c_reporting';
 import CSavedReportsListing from 'containers/reports/c_saved_reports_listing';
 
 import CEvaluation from  'containers/applications/evaluation/c_evaluation';
+import CEvaluationForm from '../containers/applications/evaluation/c_evaluation_form';
 
 history.listen((location, action) => {
     // scroll to top when route changes
@@ -61,7 +62,7 @@ const Routes = () => (
 
 
         <Route path="/evaluations" name="Evaluations" component={Authorization(CEvaluation, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.PAIG_EVALUATION])} />
-
+        <Route path="/evaluation/create" name="Generate Evaluations" component={Authorization(CEvaluationForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.PAIG_EVALUATION])} />
 
         <Route path="/vector_db/create" name="Create Vector DB" component={Authorization(CVectorDBCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />

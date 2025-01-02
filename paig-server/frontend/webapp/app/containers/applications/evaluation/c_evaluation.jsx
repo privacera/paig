@@ -7,6 +7,8 @@ import f from "common-ui/utils/f";
 import { AddButtonWithPermission } from "common-ui/components/action_buttons";
 import { PaginationComponent } from "common-ui/components/generic_components";
 import gdprLogo from "common-ui/images/gdpr.png";
+import {createFSForm} from 'common-ui/lib/form/fs_form';
+import {evaluation_details_form_def} from 'components/applications/evaluation/v_evaluation_details_form';
 
 @inject("evaluationStore")
 class CEvaluation extends Component {
@@ -14,6 +16,7 @@ class CEvaluation extends Component {
     super(props);
 
     this.permission = true; // Replace with actual permission logic if required.
+    this.form = createFSForm(evaluation_details_form_def);
 
     this.evaluationReports = f.initCollection();
     this.evaluationReports.params = {
@@ -98,19 +101,6 @@ class CEvaluation extends Component {
           sm: 8,
           md: 8,
         }}
-        headerChildren={
-          <AddButtonWithPermission
-            colAttr={{
-              xs: 12,
-              sm: 4,
-              md: 4,
-            }}
-            permission={this.permission}
-            label="CREATE REPORT"
-            onClick={handleReportCreate}
-            data-track-id="add-report"
-          />
-        }
       >
         <Card style={{ display: "flex", padding: 16 }}>
           <Box
@@ -147,7 +137,11 @@ class CEvaluation extends Component {
                 <li>View and review summary of scan</li>
               </ol>
             </Typography>
-            <Button variant="contained" color="primary">
+            <Button 
+              variant="contained" 
+              color="primary"
+              onClick={handleReportCreate}
+            >
               Configure
             </Button>
           </CardContent>
