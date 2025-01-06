@@ -140,17 +140,22 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
     """
 
     paig_evaluation_app_id = application_config.get("paig_eval_id")
-    application_name = application_config.get("name", "PAIG Evaluation Application")
+    application_name = application_config.get("application_name", "PAIG Evaluation Application")
     description = application_config.get("description", "PAIG Evaluation Application")
     purpose = application_config.get("purpose")
+    target_id = "openai:gpt-4o-mini"
+    application_client_config = application_config.get("application_client_config", {})
+    if "application_client" in application_config:
+        target_id = application_config.get('application_client')
 
     # Create promptfoo redteam config file
     readteam_config = {
         "description": description,
         "targets": [
             {
-                "id": "openai:gpt-4o-mini",
-                "label": application_name
+                "id": target_id,
+                "label": application_name,
+                "config": application_client_config
             }
         ],
         "redteam": {
