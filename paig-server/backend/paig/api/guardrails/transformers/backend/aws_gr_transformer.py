@@ -75,12 +75,15 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                 else:
                     continue
                 if 'type' in config and config['type'].upper() == "REGEX":
-                    regex_entities_config.append({
+                    regex_conf = {
                         "name": config['name'],
-                        "description": config['description'],
                         "pattern": config['pattern'],
                         "action": action
-                    })
+                    }
+                    if 'description' in config:
+                        regex_conf['description'] = config['description']
+                    regex_entities_config.append(regex_conf)
+
             if not regex_entities_config:
                 return None
             aws_gr_config.configData['regexesConfig'] = regex_entities_config
