@@ -155,7 +155,7 @@ class GRConnectionRequestValidator:
         Args:
             name (str): The name of the Guardrail Connection.
         """
-        records, total_count = await self.guardrail_repository.list_records(filter=GuardrailFilter(guardrail_connection_name=name))
+        records, total_count = await self.guardrail_repository.list_records(filter=GuardrailFilter(guardrailConnectionName=name, exactMatch=True))
         if total_count > 0:
             guardrail_names = [record.name for record in records]
             raise BadRequestException(get_error_message(ERROR_RESOURCE_IN_USE, "Connection", "Guardrail", guardrail_names))
