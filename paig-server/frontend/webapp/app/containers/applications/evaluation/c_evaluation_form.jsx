@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {observable} from 'mobx';
-import {inject} from "mobx-react";
+import {inject, observer} from "mobx-react";
 
 import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
@@ -15,21 +15,26 @@ import BaseContainer from 'containers/base_container';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import VEvaluationDetailsForm, {evaluation_details_form_def} from 'components/applications/evaluation/v_evaluation_details_form';
 import VEvaluationCategoriesForm, {evaluation_categories_form_def} from 'components/applications/evaluation/v_evaluation_categories_form'; 
-import VEvaluationCustomisedPromptsForm, {v_evaluation_customised_prompts_form_def} from 'components/applications/evaluation/v_evaluation_customised_prompts_form';
+import VEvaluationCustomisedPromptsForm, {evaluation_customised_prompts_form_def} from 'components/applications/evaluation/v_evaluation_customised_prompts_form';
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 
 @inject("evaluationStore")
+@observer
 class CEvaluationForm extends Component {
   @observable _vState = {
     application: '',
     saving: false,
     step1Response: null,
     step2Response: null,
-    categories: []
+    categories: [],
+    static_prompts: [{"prompt": "", "criteria": ""}]
   }
 	constructor(props) {
 		super(props);
 
     this.form = createFSForm(evaluation_details_form_def);
+    this.form1 = createFSForm(evaluation_categories_form_def);
+    this.form2 = createFSForm(evaluation_customised_prompts_form_def);
     this.state = {
       activeStep: 0
     };
@@ -49,23 +54,28 @@ class CEvaluationForm extends Component {
   }
 
   handleCreate = async () => {
-    await this.form.validate();
-    const form = this.form;
+    await this.form2.validate();
+    const form = this.form2;
     if (!form.valid) {
       return;
     }
     let data = form.toJSON();
-    if (this.form.model) {
-      data = Object.assign({}, this.form.model, data);
+    if (form.model) {
+      data = Object.assign({}, form.model, data);
     }
     if (this.Modal) {
       this.Modal.okBtnDisabled(true);
     }
+    let form1Data = this._vState.step1Response;
+    form1Data.categories = this._vState.categories;
+    form1Data.static_prompts = this._vState.static_prompts;
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.generateEvaluation(data);
+      let response = await this.props.evaluationStore.generateEvaluation(form1Data);
       f.notifySuccess('Evaluation generated successfully');
       this.handlePostCreate(response);
+      this._vState.saving = false;
+      this.props.history.push('/evaluation_reports');
     } catch(e) {
       this._vState.saving = false;
       f.handleError()(e);
@@ -77,6 +87,7 @@ class CEvaluationForm extends Component {
   }
 
   handleNext = async () => {
+    console.log(this._vState.saving);
     const { activeStep } = this.state;
     if (activeStep === 0) {
       await this.form.validate();
@@ -90,25 +101,7 @@ class CEvaluationForm extends Component {
       }
       try {
         this._vState.saving = true;
-        // Hardcoded response
-        let response = {
-          "run_id": "UUID",
-          "application_name": "IT Support Chatbot",
-          "purpose": "To support IT helpdesk",
-          "application_client": "openai:gpt-4o-mini",
-          "categories": [
-            "pii",
-            "excessive-agency",
-            "hallucination",
-            "hijacking",
-            "harmful:cybercrime",
-            "pii:api-db",
-            "pii:direct",
-            "pii:session",
-            "pii:social",
-            "harmful:privacy"
-          ]
-        };
+        let response = await this.props.evaluationStore.createEvaluation(data);
         this._vState.step1Response = response;
         this._vState.categories = response.categories;
         this._vState.saving = false;
@@ -141,16 +134,16 @@ class CEvaluationForm extends Component {
       case 0:
         return <VEvaluationDetailsForm _vState={this._vState} form={this.form} />;
       case 1:
-        return <VEvaluationCategoriesForm _vState={this._vState} form={this.form} categories={step1Response.categories} />;
+        return <VEvaluationCategoriesForm _vState={this._vState} form={this.form1} categories={step1Response.categories} />;
       case 2:
-        return <VEvaluationCustomisedPromptsForm _vState={this._vState} form={this.form} step2Response={step2Response} />;
+        return <VEvaluationCustomisedPromptsForm _vState={this._vState} form={this.form2} step2Response={step2Response} />;
       default:
         return 'Unknown step';
     }
   }
 
 	render() {
-    const {_vState, handleBackButton, handleCreate} = this;
+    const {handleBackButton, handleCreate} = this;
     const { activeStep } = this.state;
     const steps = this.getSteps();
 		return (
@@ -173,15 +166,13 @@ class CEvaluationForm extends Component {
           </Step>
         ))}
       </Stepper>
-      <Box component={Paper} className="m-t-sm">
-        <Grid container spacing={3} style={{padding: '5px 15px'}} data-track-id="application-info">
+      <Box component={Paper} sx={{ p: 2}} className="m-t-sm">
           {this.renderStepContent(activeStep)}
-        </Grid>
       </Box>
       <Grid container spacing={3} className="m-t-md">
         <Grid item xs={12}>
           <Button
-            disabled={activeStep === 0}
+            disabled={activeStep === 0 || this._vState.saving}
             onClick={this.handleBack}
             className="m-r-sm"
           >
@@ -193,8 +184,13 @@ class CEvaluationForm extends Component {
             onClick={activeStep === steps.length - 1 ? handleCreate : this.handleNext}
             data-testid="create-app-btn"
             data-track-id="create-app-btn"
+            disabled={this._vState.saving}
           >
             {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+            {
+              this._vState.saving &&
+              <CircularProgress size="15px" className="m-r-xs" />
+            }
           </Button>
           {activeStep === steps.length && (
             <Button onClick={this.handleReset}>

@@ -1,57 +1,60 @@
+import asyncio
 import json
-from typing import List
-from fastapi import APIRouter, Depends, status, Query
+from typing import List, Optional
+from fastapi import APIRouter, Request, Response, Depends, Query, BackgroundTasks, HTTPException
+
 from core.controllers.paginated_response import Pageable
-from api.evaluation.api_schemas.evluation_schema import EvaluationCommonModel, EvaluationConfigPlugins
+from api.evaluation.api_schemas.evaluation_schema import EvaluationCommonModel, EvaluationConfigPlugins, IncludeQueryParams,\
+include_query_params, exclude_query_params, QueryParamsBase
 from core.utils import SingletonDepends
-from paig_evaluation.paig_eval import PaigEval
-import os
+from core.security.authentication import get_auth_user
+from api.evaluation.controllers.evaluation_controllers import EvaluationController
 evaluation_router = APIRouter()
 
-eval_obj = PaigEval(output_directory="new_workdir")
-if not os.path.exists("new_workdir"):
-    os.mkdir("new_workdir")
+evaluator_controller_instance = Depends(SingletonDepends(EvaluationController, called_inside_fastapi_depends=True))
+
 
 @evaluation_router.post("/init")
 async def evaluation_init(
-    application_config: EvaluationCommonModel,
+    eval_params: EvaluationCommonModel,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user)
 ):
-    """
-    Setuo evaluations
-    """
-    try:
-        application_config = application_config.dict()
-        config_plugins = eval_obj.init_setup(application_config=json.dumps(application_config))
-        config_plugins = json.loads(config_plugins)
-        if config_plugins is None:
-            return {"error": "Evaluation setup failed.Please check if promptfoo is installed and running."}
-        return config_plugins
-    except Exception as e:
-        return {"error": str(e)}
+    return await evaluation_controller.create_new_evaluation(eval_params, user)
 
 
 @evaluation_router.post("/generate")
-async def evaluation_init(
+async def evaluation_run(
+    background_tasks: BackgroundTasks,
     evaluation_config: EvaluationConfigPlugins,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
 ):
-    """
-    Setuo evaluations
-    """
-    eval_obj = PaigEval(output_directory="new_workdir")
-    config_plugins = evaluation_config.dict()
-    config_plugins.pop("static_prompts", None)
-    generated_prompts_config = eval_obj.generate_prompts(config_with_plugins=config_plugins)
-    eval_obj.update_generated_prompts_config(generated_prompts_config)
+    # return await evaluation_controller.run_evaluation(evaluation_config)
+    try:
+        return await evaluation_controller.run_evaluation(evaluation_config)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    user_prompts_list = evaluation_config.static_prompts
-    #prepare object
-    if user_prompts_list:
-        for prompt in user_prompts_list:
-            prompt_obj = {"vars": {"prompt": prompt['prompt']}, "assert": [
-                {"type": "llm-rubric", "value": prompt['criteria']}
-            ]}
-            user_prompts_list.append(prompt_obj)
 
-    eval_obj.append_user_prompts(user_prompts_list=user_prompts_list)
-    report = eval_obj.run(verbose=False)
-    return report
+@evaluation_router.get("/search")
+async def get_evaluation_results(
+        request: Request,
+        response: Response,
+        user: dict = Depends(get_auth_user),
+        page: int = Query(0, description="The page number to retrieve"),
+        size: int = Query(10, description="The number of items per page"),
+        sort: List[str] = Query([], description="The sort options"),
+        fromTime: Optional[int] = Query(None, description="The from time"),
+        toTime: Optional[int] = Query(None, description="The to time"),
+        includeQuery: IncludeQueryParams = Depends(include_query_params),
+        excludeQuery: QueryParamsBase = Depends(exclude_query_params),
+        evaluation_controller: EvaluationController = evaluator_controller_instance,
+):
+    return await evaluation_controller.get_evaluation_results(includeQuery, excludeQuery, page, size, sort,
+                                                                       fromTime, toTime)
+
+
+
+
+

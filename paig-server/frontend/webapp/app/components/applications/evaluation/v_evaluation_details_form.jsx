@@ -9,11 +9,18 @@ import {InputGroupSelect2} from 'common-ui/components/filters';
 import {aiApplicationLookup} from 'components/reports/fields_lookup';
 
 const VEvaluationDetailsForm = observer(({_vState, form}) => {
-  const { run_id, application_name, purpose, application_client } = form.fields;
+  const { eval_id, application_name, purpose, application_client } = form.fields;
   const handleApplicationChange = (value) => {
     _vState.application = value;
     form.fields.application_name.value = value;
   };
+
+  const targets = (searchString, callback) => {
+    let target =  aiApplicationLookup(searchString, callback, 'application');
+    return target
+  }
+
+
   return (
     <Fragment>
       <Grid item xs={12}>
@@ -28,7 +35,7 @@ const VEvaluationDetailsForm = observer(({_vState, form}) => {
           multiple={false}
           onChange={handleApplicationChange}
           loadOptions={(searchString, callback) => {
-            aiApplicationLookup(searchString, callback, 'application');
+            targets(searchString, callback);
           }}
           data-testid="reports-select-application"
         />
@@ -44,7 +51,7 @@ const VEvaluationDetailsForm = observer(({_vState, form}) => {
 })
 
 const evaluation_details_form_def = {
-  run_id: {},
+  eval_id: {},
   application_name: {},
   purpose: {},
   application_client: {

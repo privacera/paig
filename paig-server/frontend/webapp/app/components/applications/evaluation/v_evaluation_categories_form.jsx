@@ -7,7 +7,7 @@ import FormLabel from '@material-ui/core/FormLabel';
 import {FormGroupSelect2} from 'common-ui/components/form_fields';
 
 const VEvaluationCategoriesForm = observer(({_vState, form, categories}) => {
-  const categoryOptions = categories.map(category => ({ label: category, value: category }));
+  const categoryOptions = Array.isArray(categories) ? categories.map(category => ({ label: category, value: category })) : [];
   const handleCategoryChange = (selectedOptions) => {
     if (typeof selectedOptions === 'string') {
       selectedOptions = selectedOptions.split(',').map(option => ({ label: option, value: option }));
@@ -24,7 +24,7 @@ const VEvaluationCategoriesForm = observer(({_vState, form, categories}) => {
         <FormLabel>Categories</FormLabel>
       </Grid>
       <FormGroupSelect2
-        value={_vState.categories.map(category => ({ label: category, value: category }))}
+        value={Array.isArray(_vState.categories) ?  _vState.categories.map(category => ({ label: category, value: category })) : []}
         variant="standard"
         multiple={true}
         fieldKey={'categories'}

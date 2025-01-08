@@ -10,6 +10,8 @@ import gdprLogo from "common-ui/images/gdpr.png";
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import {evaluation_details_form_def} from 'components/applications/evaluation/v_evaluation_details_form';
 
+
+
 @inject("evaluationStore")
 class CEvaluation extends Component {
   constructor(props) {

@@ -83,6 +83,9 @@ export function aiApplicationLookup(searchString, callback, uniqKey = "uniq") {
       let models = [];
       if (resp && resp.models && Array.isArray(resp.models)) {
         models = resp.models.map(app => ({ label: app.name, value: app.name }));
+        console.log('getAIApplications', models);
+        models.push({ label: "OpenAI GPT-4o Mini", value: "openai-gpt4-mini" })
+        models.push({ label: "OpenAI GPT-4o", value:  "openai-gpt4" })
       }
       callback(models);
     })

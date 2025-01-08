@@ -36,6 +36,13 @@ const SIDEBAR_MENU = [{
     isChild: true,
     sidebar: UI_CONSTANTS.PAIG_EVALUATION,
     childrenRoutes: ["/evaluations/"]
+  },
+  {
+    to: "evaluation_reports",
+    name: "Evaluation Reports",
+    isChild: true,
+    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
+    childrenRoutes: ["/evaluation_reports"]
   }
   ]
 }, {
