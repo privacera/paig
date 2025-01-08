@@ -709,9 +709,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             raise InternalServerError(f"Failed to delete guardrails. Error - {e.__str__()}")
 
         for provider, response in delete_guardrail_response.items():
-            if not response['success']:
-                raise InternalServerError(f"Failed to delete guardrail in provider {provider}",
-                                          response['response']['details'])
+            self.handle_response_for_failure(provider, response, 'delete')
             gr_resp_model = resp_data.get(provider)
             gr_resp_model.response_data = response
             await self.gr_provider_response_repository.delete_record(gr_resp_model)
@@ -735,10 +733,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             raise InternalServerError(f"Failed to update guardrails. Error - {e.__str__()}")
 
         for provider, response in update_guardrail_response.items():
-            if not response['success']:
-                raise InternalServerError(
-                    f"Failed to update guardrail in provider {provider}",
-                    response['response']['details'])
+            self.handle_response_for_failure(provider, response, 'update')
             gr_resp_model = resp_data.get(provider)
             gr_resp_model.response_data = response
             await self.gr_provider_response_repository.update_record(gr_resp_model)
@@ -777,15 +772,30 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             raise InternalServerError(f"Failed to create guardrails. Error - {e.__str__()}")
 
         for provider, response in create_guardrail_response.items():
-            if not response['success']:
-                raise InternalServerError(
-                    f"Failed to create guardrail in external service for provider {provider}",
-                    response['response']['details'])
+            self.handle_response_for_failure(provider, response, 'create')
             gr_resp_model = GRProviderResponseModel(guardrail_id=guardrail.id, guardrail_provider=provider,
                                                     response_data=response)
             await self.gr_provider_response_repository.create_record(gr_resp_model)
 
         return create_guardrail_response
+
+    def handle_response_for_failure(self, provider, response, operation='update'):
+        if not response['success']:
+            if (operation == 'delete' and 'errorType' in response['response']['details'] and
+                    response['response']['details']['errorType'] == 'ResourceNotFoundException'):
+                return
+            if response['response']['details']['errorType'] == 'ClientError':
+                if 'ExpiredTokenException' in response['response']['details']['details']:
+                    raise InternalServerError(
+                        f"Failed to {operation} guardrail in {provider}: The security token included in the connection is expired")
+                error_messages = ('UnrecognizedClientException', 'InvalidSignatureException')
+                if any(error in response['response']['details']['details'] for error in error_messages):
+                    raise InternalServerError(
+                        f"Failed to {operation} guardrail in {provider}: The associated connection details(AWS Secret Access Key) are invalid")
+            if response['response']['details']['errorType'] == 'AccessDeniedException':
+                raise InternalServerError(
+                    f"Failed to create guardrail in {provider}: Access Denied for the associated connection")
+            raise InternalServerError(f"Failed to {operation} guardrail in {provider}", response['response']['details'])
 
     async def _get_responses_to_update_delete(self, guardrail_id, updated_connections, deleted_connections):
         response_to_delete_guardrail = {}

@@ -436,7 +436,7 @@ async def test_create_guardrail_when_guardrail_provider_gives_error(
 
 
 @pytest.mark.asyncio
-async def test_create_guardrail_when_guardrail_provider_does_not_give_success(
+async def test_create_guardrail_when_guardrail_provider_does_not_give_success_as_token_expired(
         guardrail_service, mock_guardrail_repository, mock_guardrail_application_repository,
         mock_guardrail_app_version_repository, mock_gr_config_repository, mock_guardrail_connection_service):
     create_guardrail_view = GuardrailView(**guardrail_view_json)
@@ -463,7 +463,7 @@ async def test_create_guardrail_when_guardrail_provider_does_not_give_success(
     ) as mock_gr_config_create_record, patch.object(
         mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))]
     ) as mock_gr_connection_get_all, patch.object(
-        GuardrailProviderManager, 'create_guardrail', return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
+        GuardrailProviderManager, 'create_guardrail', return_value={"AWS": {"success": False, "response": {"details": {"errorType": "ClientError", "details": "AWS Error ExpiredTokenException"}}}}
     ) as mock_bedrock_guardrail_create):
         # Call the method under test
         with pytest.raises(InternalServerError) as exc_info:
@@ -478,8 +478,7 @@ async def test_create_guardrail_when_guardrail_provider_does_not_give_success(
         assert mock_gr_connection_get_all.called
         assert mock_bedrock_guardrail_create.called
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to create guardrail in external service for provider AWS"
-        assert exc_info.value.details == "AWS Error"
+        assert exc_info.value.message == "Failed to create guardrail in AWS: The security token included in the connection is expired"
 
 
 @pytest.mark.asyncio
@@ -973,7 +972,7 @@ async def test_update_guardrail_when_guardrail_provider_gives_error(
 
 
 @pytest.mark.asyncio
-async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
+async def test_update_guardrail_when_guardrail_provider_does_not_gives_success_as_access_secret_key_invalid(
         guardrail_service, mock_guardrail_repository, mock_guardrail_application_repository,
         mock_guardrail_app_version_repository, mock_gr_config_repository, mock_guardrail_connection_service,
         mock_gr_provider_response_repository):
@@ -1036,7 +1035,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
     ) as mock_gr_config_delete_record, patch.object(
         mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
     ) as mock_gr_connection_get_all, patch.object(
-        GuardrailProviderManager, 'update_guardrail', return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
+        GuardrailProviderManager, 'update_guardrail', return_value={"AWS": {"success": False, "response": {"details": {"errorType": "ClientError", "details": "AWS Error UnrecognizedClientException"}}}}
     ) as mock_bedrock_guardrail_update, patch.object(
         mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
     ) as mock_gr_provider_response_get_all):
@@ -1046,8 +1045,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success(
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to update guardrail in provider AWS"
-        assert exc_info.value.details == "AWS Error"
+        assert exc_info.value.message == "Failed to update guardrail in AWS: The associated connection details(AWS Secret Access Key) are invalid"
         assert mock_guardrail_update_record.called
         assert mock_get_record_by_id.called
         assert mock_guardrail_get_by_name.called
@@ -1122,7 +1120,71 @@ async def test_delete_guardrail_when_guardrail_provider_gives_error(guardrail_se
 
 
 @pytest.mark.asyncio
-async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success(guardrail_service, mock_guardrail_connection_service,
+async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success_when_internal_failure(
+        guardrail_service, mock_guardrail_connection_service, mock_gr_provider_response_repository, mock_guardrail_repository):
+    response_data = {"success": True, "response": {"guardrailId": 1}}
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS, response_data=response_data)
+    with patch.object(
+        mock_guardrail_repository, 'get_record_by_id', return_value=guardrail_view
+    ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all, patch.object(
+        GuardrailProviderManager, 'delete_guardrail',
+        return_value={"AWS": {"success": False, "response": {
+            "details": {"errorType": "InternalFailure", "details": "AWS Error (InternalFailure)"}
+        }}}
+    ) as mock_guardrail_provider_manager:
+        # Call the method under test
+        with pytest.raises(InternalServerError) as exc_info:
+            await guardrail_service.delete(1)
+
+        # Assertions
+        assert exc_info.type == InternalServerError
+        assert exc_info.value.message == "Failed to delete guardrail in AWS"
+        assert exc_info.value.details == {"errorType": "InternalFailure", "details": "AWS Error (InternalFailure)"}
+        assert mock_get_record_by_id.called
+        assert mock_guardrail_provider_manager.called
+        assert mock_gr_connection_get_all.called
+        assert mock_gr_provider_response_get_all.called
+
+
+@pytest.mark.asyncio
+async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success_when_access_denied(
+        guardrail_service, mock_guardrail_connection_service, mock_gr_provider_response_repository, mock_guardrail_repository):
+    response_data = {"success": True, "response": {"guardrailId": 1}}
+    gr_provider_response_model = GRProviderResponseModel(
+        id=1, guardrail_id=1, guardrail_provider=GuardrailProvider.AWS, response_data=response_data)
+    with patch.object(
+        mock_guardrail_repository, 'get_record_by_id', return_value=guardrail_view
+    ) as mock_get_record_by_id, patch.object(
+        mock_guardrail_connection_service, 'get_all', return_value=[gr_connection_view]
+    ) as mock_gr_connection_get_all, patch.object(
+        mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
+    ) as mock_gr_provider_response_get_all, patch.object(
+        GuardrailProviderManager, 'delete_guardrail',
+        return_value={"AWS": {"success": False, "response": {
+            "message": "Access denied. Please ensure you have the correct permissions.",
+            "details": {"errorType": "AccessDeniedException", "details": "AWS Error (AccessDeniedException)"}
+        }}}
+    ) as mock_guardrail_provider_manager:
+        # Call the method under test
+        with pytest.raises(InternalServerError) as exc_info:
+            await guardrail_service.delete(1)
+
+        # Assertions
+        assert exc_info.type == InternalServerError
+        assert exc_info.value.message == "Failed to create guardrail in AWS: Access Denied for the associated connection"
+        assert mock_get_record_by_id.called
+        assert mock_guardrail_provider_manager.called
+        assert mock_gr_connection_get_all.called
+        assert mock_gr_provider_response_get_all.called
+
+
+@pytest.mark.asyncio
+async def test_delete_guardrail_when_guardrail_provider_does_not_have_resource(guardrail_service, mock_guardrail_connection_service,
                                                                                mock_gr_provider_response_repository, mock_guardrail_repository):
     response_data = {"success": True, "response": {"guardrailId": 1}}
     gr_provider_response_model = GRProviderResponseModel(
@@ -1135,16 +1197,14 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success(g
         mock_gr_provider_response_repository, 'get_all', return_value=[gr_provider_response_model]
     ) as mock_gr_provider_response_get_all, patch.object(
         GuardrailProviderManager, 'delete_guardrail',
-        return_value={"AWS": {"success": False, "response": {"details": "AWS Error"}}}
+        return_value={"AWS": {"success": False, "response": {
+            "details": {"errorType": "ResourceNotFoundException", "details": "AWS Error (ResourceNotFoundException)"}
+        }}}
     ) as mock_guardrail_provider_manager:
         # Call the method under test
-        with pytest.raises(InternalServerError) as exc_info:
-            await guardrail_service.delete(1)
+        await guardrail_service.delete(1)
 
         # Assertions
-        assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to delete guardrail in provider AWS"
-        assert exc_info.value.details == "AWS Error"
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
         assert mock_gr_connection_get_all.called
