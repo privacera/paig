@@ -119,9 +119,28 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
                 {"role": "system", "content": "You are an AI security expert."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000
+            max_tokens=1000,
+            temperature=0,
+            functions = [
+                {
+                    "name": "suggest_plugins",
+                    "description": "Suggests security plugins based on the application's purpose.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "plugins": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "List of suggested plugins for the application."
+                            }
+                        },
+                        "required": ["plugins"]
+                    }
+                }
+            ],
+            function_call = {"name": "suggest_plugins"}  # Explicitly call the function
         )
-        return json.loads(response.choices[0].message.content)
+        return json.loads(response.choices[0].message.function_call.arguments)
     except openai.OpenAIError as e:
         return f"Error: {e}"
 
