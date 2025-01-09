@@ -80,4 +80,8 @@ def set_up_standalone_mode(
     constants.ROOT_DIR = ROOT_DIR
     constants.MODE = "standalone"
     constants.SINGLE_USER_MODE = single_user_mode
+    if os.getenv("SINGLE_USER_MODE") in ['True', 'true', '1']:
+        constants.SINGLE_USER_MODE = True
+    if os.getenv("DEFAULT_USER_NAME") is not None and os.getenv("DEFAULT_USER_NAME") != "":
+        constants.DEFAULT_USER_NAME = os.getenv("DEFAULT_USER_NAME")
 
