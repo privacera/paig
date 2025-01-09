@@ -34,19 +34,20 @@ class PAIGEvaluator:
         """
         return suggest_promptfoo_redteam_plugins_with_openai(purpose)
 
-    def generate_prompts(self, application_config: dict, plugins: List[str], verbose: bool = False) -> dict:
+    def generate_prompts(self, application_config: dict, plugins: List[str], targets: List[Dict], verbose: bool = False) -> dict:
         """
         Generate prompts for the application.
 
         Args:
             application_config (dict): Application configuration.
             plugins (List[str]): List of plugins.
+            targets (List[Dict]): List of targets.
             verbose (bool): Verbose mode.
 
         Returns:
             dict: Generated prompts.
         """
-        return generate_promptfoo_redteam_config(application_config, plugins, verbose=verbose)
+        return generate_promptfoo_redteam_config(application_config, plugins, targets, verbose=verbose)
 
     def evaluate(self, eval_id: str, generated_prompts: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
         """

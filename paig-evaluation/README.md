@@ -149,8 +149,16 @@ paig_evaluator = PAIGEvaluator()
 suggested_plugins = paig_evaluator.get_suggested_plugins(application_config["purpose"])
 print(f"Suggested plugins: {suggested_plugins}")
 
+# Target application configuration list
+targets = [
+            {
+                "id": "openai:gpt-4o-mini",
+                "label": application_config["application_name"]
+            }
+        ]
+
 # Generate prompts for the application
-generated_prompts = paig_evaluator.generate_prompts(application_config, suggested_plugins["plugins"])
+generated_prompts = paig_evaluator.generate_prompts(application_config, suggested_plugins["plugins"], targets)
 print(f"Generated prompts: {generated_prompts}")
 
 # Define base prompts

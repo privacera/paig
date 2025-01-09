@@ -80,11 +80,18 @@ def main(action: str, verbose: bool) -> None:
 
         application_config = read_yaml_file(application_config_file)
         suggested_categories = read_yaml_file(suggested_categories_file)
+        targets = [
+            {
+                "id": "openai:gpt-4o-mini",
+                "label": application_config["application_name"]
+            }
+        ]
 
         paig_evaluator = PAIGEvaluator()
         generated_prompts = paig_evaluator.generate_prompts(
             application_config,
             suggested_categories["plugins"],
+            targets=targets,
             verbose=verbose
         )
 

@@ -126,13 +126,14 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
         return f"Error: {e}"
 
 
-def generate_promptfoo_redteam_config(application_config: dict, plugins: List[str], verbose: bool = False) -> dict:
+def generate_promptfoo_redteam_config(application_config: dict, plugins: List[str], targets: List[Dict], verbose: bool = False) -> dict:
     """
     Generate the promptfoo redteam configuration file based on the application configuration.
 
     Args:
         application_config (dict): Application configuration.
         plugins (List[str]): List of plugins.
+        targets (List[Dict]): List of targets.
         verbose (bool): Verbose mode.
 
     Returns:
@@ -147,12 +148,7 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
     # Create promptfoo redteam config file
     readteam_config = {
         "description": description,
-        "targets": [
-            {
-                "id": "openai:gpt-4o-mini",
-                "label": application_name
-            }
-        ],
+        "targets": targets,
         "redteam": {
             "numTests": 5,
             "language": "English",
