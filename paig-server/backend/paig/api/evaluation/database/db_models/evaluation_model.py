@@ -27,8 +27,8 @@ class EvaluationModel(CommonBase):
     custom_prompts = Column(String())
     eval_id = Column(String(255), nullable=False)
     cumulative_result = Column(String())
-    passed = Column(Integer, default=0)
-    failed = Column(Integer, default=0)
+    passed = Column(String(), default='0')
+    failed = Column(String(), default='0')
     report_id = Column(String(255), nullable=True, default='')
 
 

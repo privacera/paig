@@ -25,8 +25,8 @@ class BaseEvaluationView(BaseModel):
     status: str = Field(..., max_length=1024)
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
     categories: str = Field(..., max_length=1024)
-    passed: int
-    failed: int
+    passed: str
+    failed: str
     id: int
     report_id: str
     create_time: Optional[datetime]

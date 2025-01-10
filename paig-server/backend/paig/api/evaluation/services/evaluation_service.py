@@ -8,7 +8,7 @@ from api.evaluation.database.db_operations.evaluation_repository import Evaluati
 from core.config import load_config_file
 from paig_evaluation.paig_evaluator import PAIGEvaluator
 import logging
-from core.utils import current_utc_time
+from core.utils import current_utc_time, format_to_root_path
 logger = logging.getLogger(__name__)
 config = load_config_file()
 
@@ -16,8 +16,10 @@ config = load_config_file()
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields
 
-
-target_file = config['evaluation_targets']
+if 'evaluation_targets' in config:
+    target_file = config['evaluation_targets']
+else:
+    target_file = format_to_root_path('conf/evaluation_targets.json')
 
 with open(target_file, 'r') as f:
     targets = json.load(f)
@@ -29,19 +31,23 @@ def threaded_run_evaluation(evaluation_config, categories, static_prompts):
         # Update config in database
         update_eval_params = dict()
         proceed_to_eval = False
+        print(evaluation_config['application_name'])
+        if isinstance(evaluation_config['application_name'], str):
+            evaluation_config['application_name'] = evaluation_config['application_name'].split(',')
         try:
-            if evaluation_config['application_name'] in targets.keys():
-                target = targets[evaluation_config['application_name']]
-                logger.info(evaluation_config['application_name'] + ' target loaded')
-            else:
-                logger.info('securechat target loaded')
-                target = targets['securechat']
-                target_obj = target[0]
-                target_obj['label'] = evaluation_config['application_name']
-                target = [target_obj]
-            logger.info('Proceeding to generate prompts')
+            final_target = list()
+            for app_name in evaluation_config['application_name']:
+                if app_name in targets.keys():
+                    final_target.append(targets[app_name])
+                    logger.info(str(evaluation_config['application_name']) + ' target loaded')
+                else:
+                    logger.info('securechat target loaded')
+                    target_obj = targets['securechat']
+                    target_obj['label'] = app_name
+                    final_target.append(target_obj)
+            logger.info('Proceeding to generate prompts final_target' + str(final_target))
             eval_obj = PAIGEvaluator()
-            generated_prompts_config = eval_obj.generate_prompts(application_config=evaluation_config, plugins=categories, targets=target)
+            generated_prompts_config = eval_obj.generate_prompts(application_config=evaluation_config, plugins=categories, targets=final_target)
             update_eval_params['config'] = json.dumps(generated_prompts_config)
             update_eval_params['status'] = 'EVALUATING'
             update_eval_params['update_time'] = current_utc_time()
@@ -51,6 +57,7 @@ def threaded_run_evaluation(evaluation_config, categories, static_prompts):
             logger.info('Prompts generated')
         except Exception as err:
             logger.error('Error: ' + str(err))
+            print(traceback.print_exc())
             update_eval_params['status'] = 'FAILED'
 
         if proceed_to_eval:
@@ -81,13 +88,18 @@ def threaded_run_evaluation(evaluation_config, categories, static_prompts):
                 update_eval_params['update_time'] = current_utc_time()
                 update_eval_params['cumulative_result'] = str(cumulative_result)
                 # update pass counts
-                metrics = cumulative_result[0]['metrics']
-                update_eval_params['passed'] = metrics['testPassCount']
-                update_eval_params['failed'] = metrics['testFailCount']
+                total_passed = list()
+                total_failed = list()
+                for metric in cumulative_result:
+                    metrics = metric['metrics']
+                    total_passed.append(str(metrics['testPassCount']))
+                    total_failed.append(str(metrics['testFailCount']))
+                update_eval_params['passed'] = ', '.join(total_passed)
+                update_eval_params['failed'] = ', '.join(total_failed)
                 await update_table_fields('evaluation', update_eval_params, 'eval_id', eval_id)
             except Exception as err:
                 logger.error('Error while updating DB: ' + str(err))
-            print('report', report)
+            print('report genereted')
             return report
 
     # Run the async operations in a new event loop
@@ -129,9 +141,14 @@ def threaded_rerun_evaluation(eval_id, generated_prompts_config, static_prompts)
             update_eval_params['update_time'] = current_utc_time()
             update_eval_params['cumulative_result'] = str(cumulative_result)
             # update pass counts
-            metrics = cumulative_result[0]['metrics']
-            update_eval_params['passed'] = metrics['testPassCount']
-            update_eval_params['failed'] = metrics['testFailCount']
+            total_passed = list()
+            total_failed = list()
+            for metric in cumulative_result:
+                metrics = metric['metrics']
+                total_passed.append(str(metrics['testPassCount']))
+                total_failed.append(str(metrics['testFailCount']))
+            update_eval_params['passed'] = ', '.join(total_passed)
+            update_eval_params['failed'] = ', '.join(total_failed)
             await update_table_fields('evaluation', update_eval_params, 'eval_id', eval_id)
         except Exception as err:
             logger.error('Error while updating DB: ' + str(err))
@@ -216,9 +233,7 @@ class EvaluationService:
 
     async def rerun_evaluation_by_id(self, eval_id, owner):
         try:
-            print('eva;', eval_id)
             existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)
-            print(existing_evaluation)
             eval_obj = self.get_paig_evaluator()
             new_id = eval_obj.init()
             new_id = new_id['paig_eval_id']

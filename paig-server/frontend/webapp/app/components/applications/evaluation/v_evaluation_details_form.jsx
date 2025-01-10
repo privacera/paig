@@ -32,7 +32,7 @@ const VEvaluationDetailsForm = observer(({_vState, form}) => {
           valueKey={'value'}
           placeholder="Select GenAI Applications"
           allowCreate={false}
-          multiple={false}
+          multiple={true}
           onChange={handleApplicationChange}
           loadOptions={(searchString, callback) => {
             targets(searchString, callback);

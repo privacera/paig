@@ -35,8 +35,8 @@ def upgrade() -> None:
     sa.Column('create_time', sa.DateTime(), nullable=True),
     sa.Column('update_time', sa.DateTime(), nullable=True),
     sa.Column('status', sa.String(length=255), nullable=True),
-    sa.Column('passed', sa.Integer(), nullable=False),
-    sa.Column('failed', sa.Integer(), nullable=False),
+    sa.Column('passed', sa.String(), nullable=False),
+    sa.Column('failed', sa.String(), nullable=False),
     sa.Column('report_id', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )

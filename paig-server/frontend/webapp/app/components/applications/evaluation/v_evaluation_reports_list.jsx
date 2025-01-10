@@ -45,23 +45,51 @@ class VEvaluationReportTable extends Component{
   }
 
 
-  getResult = (model) => {
-      let total = model.passed + model.failed
-      let percentage = model.passed / (total);
-      percentage = percentage  ? this.formatPercentage(percentage * 100) : 0;
-      return (percentage + " (" + model.passed + "/" + total + ")")
-  }
+  getResultCell = (model) => {
+    if (!model.passed || !model.failed) return "--";
+  
+    // Convert `passed` and `failed` strings into arrays of numbers
+    const passedArray = model.passed.split(",").map((value) => parseInt(value.trim(), 10));
+    const failedArray = model.failed.split(",").map((value) => parseInt(value.trim(), 10));
+  
+    // Calculate percentages for corresponding indices
+    return passedArray.map((passed, index) => {
+      const failed = failedArray[index] || 0; // Default to 0 if no corresponding `failed` value
+      const total = passed + failed;
+      const percentage = total ? ((passed / total) * 100).toFixed(2) + "%" : "0%";
+  
+      return (
+        <Fragment key={index}>
+          <div>
+            {percentage} ({passed}/{total})
+          </div>
+          {index !== passedArray.length - 1 && <hr />}
+        </Fragment>
+      );
+    });
+  };
+
+  getApplicationNameCell = (applicationName) => {
+    if (!applicationName) return "--";
+    const names = applicationName.split(",").map((name, index) => (
+      <Fragment key={index}>
+        <div>{name.trim()}</div>
+        {index !== applicationName.split(",").length - 1 && <hr />}
+      </Fragment>
+    ));
+    return names;
+  };
 
   getRowData = (model) => {
     const {handleDelete, handleReRun, handleEdit, handleView, permission, importExportUtil, handleInvite} = this.props;
     let rows = [
-      <TableCell key="1">{model.application_name || "--"}</TableCell>,
+      <TableCell key="1">{this.getApplicationNameCell(model.application_name)}</TableCell>,
       <TableCell key="2">{model.create_time || "--"}</TableCell>,
       <TableCell key="3">{model.purpose || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
       <TableCell key="5">{model.owner || "--"}</TableCell>,
       <TableCell key="6">{model.status || "--"}</TableCell>,
-      <TableCell key="7">{  this.getResult(model) || "--"}</TableCell>,
+      <TableCell key="7">{this.getResultCell(model)}</TableCell>,
       <TableCell key="9" column="actions">
           <div className="d-flex">
             <ActionButtonsWithPermission
