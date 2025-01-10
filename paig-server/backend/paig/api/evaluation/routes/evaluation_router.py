@@ -1,7 +1,7 @@
 import asyncio
 import json
 from typing import List, Optional
-from fastapi import APIRouter, Request, Response, Depends, Query, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Request, Response, Depends, Query, HTTPException
 
 from core.controllers.paginated_response import Pageable
 from api.evaluation.api_schemas.evaluation_schema import EvaluationCommonModel, EvaluationConfigPlugins, IncludeQueryParams,\
@@ -25,7 +25,6 @@ async def evaluation_init(
 
 @evaluation_router.post("/generate")
 async def evaluation_run(
-    background_tasks: BackgroundTasks,
     evaluation_config: EvaluationConfigPlugins,
     evaluation_controller: EvaluationController = evaluator_controller_instance,
     user: dict = Depends(get_auth_user),
@@ -58,3 +57,28 @@ async def get_evaluation_results(
 
 
 
+@evaluation_router.post("/report/{eval_id}/rerun")
+async def evaluation_rerun(
+    eval_id: int,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+    # return await evaluation_controller.run_evaluation(evaluation_config)
+    try:
+        return await evaluation_controller.rerun_evaluation(eval_id, user)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@evaluation_router.delete("/report/{eval_id}")
+async def evaluation_delete(
+    eval_id: int,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+    # return await evaluation_controller.run_evaluation(evaluation_config)
+    try:
+        print('here')
+        return await evaluation_controller.delete_evaluation(eval_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

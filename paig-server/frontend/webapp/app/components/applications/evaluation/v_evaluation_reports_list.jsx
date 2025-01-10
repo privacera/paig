@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {observer, inject} from 'mobx-react';
 import { TableCell, Checkbox, Button } from '@material-ui/core';
 import DoneIcon from '@material-ui/icons/Done';
@@ -10,7 +10,7 @@ import Table from 'common-ui/components/table';
 import  {STATUS } from 'common-ui/utils/globals';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import UiState from 'data/ui_state';
-
+import {RefreshButton} from 'common-ui/components/action_buttons';
 
 @inject('evaluationStore')
 @observer
@@ -53,7 +53,7 @@ class VEvaluationReportTable extends Component{
   }
 
   getRowData = (model) => {
-    const {handleDelete, handleEdit, handleView, permission, importExportUtil, handleInvite} = this.props;
+    const {handleDelete, handleReRun, handleEdit, handleView, permission, importExportUtil, handleInvite} = this.props;
     let rows = [
       <TableCell key="1">{model.application_name || "--"}</TableCell>,
       <TableCell key="2">{model.create_time || "--"}</TableCell>,
@@ -71,6 +71,17 @@ class VEvaluationReportTable extends Component{
               onDeleteClick={() => handleDelete(model)}
               onPreviewClick={() => handleView(model)}
             />
+            <span>
+              <RefreshButton
+                data-testid="header-refresh-btn"
+                data-track-id="refresh-button"
+                wrapItem={false}
+                pullRight={false}
+                onClick={() => handleReRun(model)}
+                disabled={model.status !== 'COMPLETED'}
+              />
+            </span>
+
           </div>
         </TableCell>
     ]

@@ -46,3 +46,14 @@ class EvaluationController:
             raise NotFoundException("No results found")
         eval_results_list = [BaseEvaluationView.model_validate(eval_result) for eval_result in eval_results]
         return create_pageable_response(eval_results_list, total_count, page, size, sort)
+
+
+    async def rerun_evaluation(self, id, user):
+        print('here2')
+        return await self.evaluation_service.rerun_evaluation_by_id(id, user['username'])
+
+
+    async def delete_evaluation(self, eval_id):
+        print('here2')
+        return await self.evaluation_service.delete_evaluation(eval_id)
+

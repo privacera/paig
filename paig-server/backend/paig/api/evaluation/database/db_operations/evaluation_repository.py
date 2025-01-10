@@ -33,7 +33,7 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         return await self.get_all(**args)
 
 
-    async def get_evaluations_by_field(self, field: str, value: str):
+    async def get_evaluations_by_field(self, field: str, value):
         try:
             filters = {field: value}
             return await self.get_by(filters, unique=True)
@@ -47,6 +47,7 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete_evaluation(self, evaluation_id):
+        print('4', evaluation_id)
         return await self.delete(evaluation_id)
 
     async def get_eval_results_with_filters(self, include_filters, exclude_filters, page, size, sort, min_value, max_value):

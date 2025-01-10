@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, {Component, Fragment} from 'react';
 import {inject, observer} from 'mobx-react';
 import {action} from 'mobx';
 import {groupBy, sortBy} from "lodash";
@@ -12,7 +12,6 @@ import {DateRangePickerComponent} from 'common-ui/components/filters';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationReportTable from 'components/applications/evaluation/v_evaluation_reports_list';
 import {  Button } from "@material-ui/core";
-
 
 const CATEGORIES = {
     ID: { multi: false, category: "ID", type: "text", key: 'eval_id' },
@@ -172,8 +171,26 @@ class CEvaluationReportsList extends Component {
     }
 
     handleDelete = (model) => {
-        console.log('handle dleete called', model);
-    }
+        console.log('model', model);
+        f._confirm.show({
+          title: `Delete Report`,
+          children: <div>Are you sure you want to delete report ?</div>,
+          btnCancelText: 'Cancel',
+          btnOkText: 'Delete',
+          btnOkColor: 'secondary',
+          btnOkVariant: 'text'
+        })
+        .then((confirm) => {
+          this.props.evaluationStore.deleteReport(model.id,{
+            models: this.cEvalReports
+          })
+          .then(() => {
+              confirm.hide();
+              f.notifySuccess('Report Deleted');
+              this.fetchEvaluationReports();
+          }, f.handleError(null, null, {confirm}));
+        }, () => {});
+      }
 
     handleView = (model) => {
         console.log(model);
@@ -190,6 +207,29 @@ class CEvaluationReportsList extends Component {
             iframeUrl: null,
         });
     };
+
+    handleReRun = (model) => {
+        if(model) {
+            f._confirm.show({
+                title: `Rerun Report Evaluation`,
+                children: <div>Are you sure you want to re evaluate for application {model.application_name} ?</div>,
+                btnCancelText: 'Cancel',
+                btnOkText: 'ReRun',
+                btnOkColor: 'secondary',
+                btnOkVariant: 'text'
+              })
+              .then((confirm) => {
+                this.props.evaluationStore.reRunReport(model.id,{
+                  models: this.cEvalReports
+                })
+                .then(() => {
+                    confirm.hide();
+                    f.notifySuccess('Report evaluation submitted');
+                    this.fetchEvaluationReports();
+                }, f.handleError(null, null, {confirm}));
+              }, () => {});
+        }
+    }
 
     render() {
         const {_vState, dateRangeDetail, handleDateChange} = this;
@@ -225,6 +265,7 @@ class CEvaluationReportsList extends Component {
                             applicationKeyMap={this.applicationKeyMap}
                             handleDelete={this.handleDelete}
                             handleView={this.handleView}
+                            handleReRun={this.handleReRun}
                         />
                     </>
                 ) : (

@@ -35,6 +35,17 @@ class EvaluationStore extends BaseStore {
         return this.fetchAll('', opts);
     }
 
+    deleteReport(id, opts = {}) {
+        opts.path= `/report`;
+        return this.delete(id, opts);
+    }
+
+    reRunReport(id, opts = {}) {
+        opts.path= `/report/${id}/rerun`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create({}, opts);
+    }
+
 }
 
 const evaluationStore = new EvaluationStore();
