@@ -1,0 +1,58 @@
+{
+  "openai-gpt4": {
+    "id": "openai:gpt-4",
+    "label": "openai-gpt4"
+  },
+  "openai-gpt4-mini": {
+    "id": "openai:gpt-4o-mini",
+    "label": "openai-gpt4-mini"
+  },
+  "securechat": {
+    "id": "http://127.0.0.1:3535/securechat/api/v1/conversations/prompt",
+    "label": "<AI_APP_NAME>",
+    "config": {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        "body": {
+            "ai_application_name": "sales_model",
+            "prompt": "{{prompt}}"
+        },
+        "transformResponse": "json.messages && json.messages.length > 0 \n  ? (json.messages.find(message => message.type === 'reply') || {}).content || \"No reply found.\"\n  : \"No response from the server.\"\n"
+    }
+  },
+  "Sales Intel": {
+    "id": "http://127.0.0.1:3535/securechat/api/v1/conversations/prompt",
+    "label": "Sales Intel",
+    "config": {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        "body": {
+            "ai_application_name": "sales_model",
+            "prompt": "{{prompt}}"
+        },
+        "transformResponse": "json.messages && json.messages.length > 0 \n  ? (json.messages.find(message => message.type === 'reply') || {}).content || \"No reply found.\"\n  : \"No response from the server.\"\n"
+    }
+  },
+  "Sales Intel - Safe": {
+    "id": "http://127.0.0.1:2525/securechat/api/v1/conversations/prompt",
+    "label": "Sales Intel - Safe",
+    "config": {
+        "method": "POST",
+        "headers": {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        },
+        "body": {
+            "ai_application_name": "sales_model",
+            "prompt": "{{prompt}}"
+        },
+        "transformResponse": "json.messages && json.messages.length > 0 \n  ? (json.messages.find(message => message.type === 'reply') || {}).content || \"No reply found.\"\n  : \"No response from the server.\"\n"
+    }
+  }
+}

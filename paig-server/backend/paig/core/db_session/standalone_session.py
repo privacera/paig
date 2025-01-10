@@ -2,7 +2,7 @@
 from core import config
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import MetaData, select, func
+from sqlalchemy import MetaData, select, func, update
 from api.user.database.db_models.user_model import Tenant
 
 # Load config
@@ -56,4 +56,59 @@ async def get_tenant_uuid():
     if tenants:
         return tenants[0][0]
 
+
+# Function to execute an update query
+async def execute_update(query):
+    async with async_session() as session:
+        async with session.begin():
+            result = await session.execute(query)
+            await session.commit()
+            return result.rowcount  # Return the number of affected rows
+
+
+# Function to update multiple fields in one go
+async def update_table_fields(
+    table_name: str,
+    updates: dict,
+    condition_field: str,
+    condition_value
+):
+    """
+    Update multiple fields in a table.
+
+    :param table_name: Name of the table
+    :param updates: Dictionary of field names and their new values
+    :param condition_field: Field to filter rows
+    :param condition_value: Value to filter rows
+    :return: Number of rows updated or error message
+    """
+    try:
+        async with engine.connect() as conn:
+            metadata = MetaData()
+            # Reflect the database schema asynchronously
+            await conn.run_sync(metadata.reflect)
+
+            if table_name not in metadata.tables:
+                raise ValueError(f"Table '{table_name}' does not exist")
+
+            table = metadata.tables[table_name]
+
+            # Validate that all update fields exist in the table
+            for field in updates:
+                if field not in table.columns:
+                    raise ValueError(f"Field '{field}' does not exist in table '{table_name}'")
+
+            if condition_field not in table.columns:
+                raise ValueError(f"Condition field '{condition_field}' does not exist in table '{table_name}'")
+
+            # Construct the update query
+            query = (
+                update(table)
+                .where(table.c[condition_field] == condition_value)
+                .values(updates)  # Pass the updates dictionary
+            )
+            # Execute the update query
+            return await execute_update(query)
+    except Exception as e:
+        return f"Error: {e}"
 

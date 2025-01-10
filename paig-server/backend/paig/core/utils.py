@@ -65,6 +65,11 @@ def current_utc_time():
     return datetime.now().astimezone(pytz.utc)
 
 
+def epoch_to_utc(epoch_time, to_format='%Y-%m-%d %H:%M:%S.%f'):
+    utc_time = datetime.utcfromtimestamp(epoch_time/1000)
+    return utc_time.strftime(to_format)
+
+
 def generate_unique_identifier_key():
     return str(uuid.uuid4())
 
