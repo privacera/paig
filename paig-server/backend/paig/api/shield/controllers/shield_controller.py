@@ -128,3 +128,19 @@ class ShieldController:
             "status": 200,
         }
         return Response(content=json.dumps(response_data), media_type="application/json")
+
+    async def guardrail_test(self, request):
+        """
+        Handles the guardrail test request.
+        Args:
+            request: The incoming HTTP request.
+
+        Returns:
+            Response: A JSON response indicating the success of the guardrail test operation.
+        """
+        masked_req_obj = json_utils.mask_json_fields(json.dumps(request), ['messages'])
+        logger.debug(f"Incoming request: {masked_req_obj}")
+
+        response = await self.shield_service.guardrail_test(request)
+
+        return Response(content=json.dumps(response), media_type="application/json")
