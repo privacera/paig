@@ -100,9 +100,8 @@ class GuardrailService:
                         if key in connection:
                             result[provider][key] = connection[key]
 
-    async def get_guardrail_by_id(self, request):
+    async def get_guardrail_by_id(self, request, tenant_id):
         guardrail_id = request.get("guardrailId")
-        tenant_id = request.get("tenantId")
         from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
         guardrail_service = GuardrailServiceFactory().get_guardrail_service_client()
         response = await guardrail_service.get_guardrail_info(tenant_id, guardrail_id)
