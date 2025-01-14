@@ -86,12 +86,12 @@ class ShieldService:
 
         return stream_shield_audit
 
-    async def guardrail_test(self, request):
+    async def guardrail_test(self, request, tenant_id, user_role):
 
         import api.shield.services.guardrail_service as guardrail_service
 
         guardrail_service = guardrail_service.GuardrailService()
-        guardrail_response = await guardrail_service.get_guardrail_by_id(request)
+        guardrail_response = await guardrail_service.get_guardrail_by_id(request, tenant_id)
         processed_response = guardrail_service.process_guardrail_response(guardrail_response)
         response = guardrail_service.test_guardrail(processed_response, request.get("message"))
 

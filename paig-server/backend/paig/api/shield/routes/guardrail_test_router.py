@@ -10,6 +10,8 @@ shield_controller_instance = Depends(SingletonDepends(ShieldController, called_i
 
 @guardrail_test_router.post("")
 async def guardrail_test(request: Annotated[dict | None, Body()],
+                         x_tenant_id: Annotated[Optional[str], Header()] = None,
+                         x_user_role: Annotated[Optional[str], Header()] = None,
                          shield_controller: ShieldController = shield_controller_instance):
     """
     Handles POST requests to initialize an application.
@@ -20,4 +22,4 @@ async def guardrail_test(request: Annotated[dict | None, Body()],
     Returns:
         The result of the application initialization operation handled by `ShieldController`.
     """
-    return await shield_controller.guardrail_test(request)
+    return await shield_controller.guardrail_test(request, tenant_id=x_tenant_id, user_role=x_user_role)
