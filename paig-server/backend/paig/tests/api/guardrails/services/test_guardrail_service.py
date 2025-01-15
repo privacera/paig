@@ -1176,7 +1176,7 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success_w
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to create guardrail in AWS: Access Denied for the associated connection"
+        assert exc_info.value.message == "Failed to delete guardrail in AWS: Access Denied for the associated connection"
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
         assert mock_gr_connection_get_all.called

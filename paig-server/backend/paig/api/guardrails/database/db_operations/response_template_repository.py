@@ -14,8 +14,5 @@ class ResponseTemplateRepository(BaseOperations[ResponseTemplateModel]):
     def __init__(self):
         """
         Initialize the ResponseTemplateRepository.
-
-        Args:
-            db_session (Session): The database session to use for operations.
         """
         super().__init__(ResponseTemplateModel)

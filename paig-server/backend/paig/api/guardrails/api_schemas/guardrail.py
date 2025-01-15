@@ -85,7 +85,8 @@ class GuardrailView(BaseView):
 
 class GuardrailsDataView(BaseView):
     """
-    A model representing the Guardrails data.
+    A model representing the Guardrails data, this is used to return as response for the shield request.
+    This holds version, application key and list of guardrails.
 
     Inherits from:
         BaseView: The base model containing common fields.

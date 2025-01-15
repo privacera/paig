@@ -159,7 +159,7 @@ class GuardrailRequestValidator:
 
     async def validate_guardrail_not_exists_by_name(self, name: str):
         """
-        Check if a Guardrail already exists by its name.
+        Check if a Guardrail already not exists by its name.
 
         Args:
             name (str): The name of the Guardrail.
@@ -372,7 +372,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Validate the request
         await self.guardrail_request_validator.validate_read_request(id)
 
-        # Fetch all guardrails matching the given ID
+        # Fetch all guardrail view entries which contain same guardrail
+        # we are using view here as there are multiple entries for the same guardrail with multiple config types,
+        # this combined view enhance api speed and reduce database calls and that's why we are not directly using get_record_by_id method
         guardrails = await self.gr_view_repository.get_all(filters={"guardrail_id": id})
 
         # Initialize the result GuardrailView based on the first record
@@ -787,14 +789,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             if response['response']['details']['errorType'] == 'ClientError':
                 if 'ExpiredTokenException' in response['response']['details']['details']:
                     raise InternalServerError(
-                        f"Failed to {operation} guardrail in {provider}: The security token included in the connection is expired")
+                        f"Failed to {operation} guardrail in {provider}: The security token included in the connection is expired", response['response']['details'])
                 error_messages = ('UnrecognizedClientException', 'InvalidSignatureException')
                 if any(error in response['response']['details']['details'] for error in error_messages):
                     raise InternalServerError(
-                        f"Failed to {operation} guardrail in {provider}: The associated connection details(AWS Secret Access Key) are invalid")
+                        f"Failed to {operation} guardrail in {provider}: The associated connection details(AWS Secret Access Key) are invalid", response['response']['details'])
             if response['response']['details']['errorType'] == 'AccessDeniedException':
                 raise InternalServerError(
-                    f"Failed to create guardrail in {provider}: Access Denied for the associated connection")
+                    f"Failed to {operation} guardrail in {provider}: Access Denied for the associated connection", response['response']['details'])
             raise InternalServerError(f"Failed to {operation} guardrail in {provider}", response['response']['details'])
 
     async def _get_responses_to_update_delete(self, guardrail_id, updated_connections, deleted_connections):

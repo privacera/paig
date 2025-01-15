@@ -50,7 +50,6 @@ class GuardrailController:
             GuardrailView: The created Guardrail view object.
         """
         return await self.guardrail_service.create(request)
-        # await background_capture_event(event=CreateAIApplicationEvent())
 
     async def get_by_id(self, id: int, extended: bool) -> GuardrailView:
         """
@@ -91,7 +90,6 @@ class GuardrailController:
             GuardrailView: The updated Guardrail view object.
         """
         return await self.guardrail_service.update(id, request)
-        # await background_capture_event(event=UpdateAIApplicationEvent())
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete(self, id: int):
@@ -102,4 +100,3 @@ class GuardrailController:
             id (int): The ID of the Guardrail to delete.
         """
         await self.guardrail_service.delete(id)
-        # await background_capture_event(event=DeleteAIApplicationEvent())
