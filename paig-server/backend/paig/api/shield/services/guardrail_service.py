@@ -124,7 +124,7 @@ class GuardrailService:
                 redact_policies_dict.update({key: "<<"+key+">>"})
 
         if len(deny_policies_list) > 0:
-            return {"action": "DENY", "message": f"PII policies violated: {deny_policies_list}"}
+            return {"action": "DENY", "message": f"{transformed_response.get('response_message')}"}
 
         if len(redact_policies_dict) > 0:
             # check the scanner_result for analyzer results
