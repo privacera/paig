@@ -29,6 +29,13 @@ config = load_config_file()
 
 
 def get_gr_app_version_cache_config() -> dict | None:
+    """
+    Retrieves the cache configuration for Guardrail application versions.
+
+    This configuration ensures that when a Guardrail is updated, all associated
+    application versions are incremented. It helps minimize database calls,
+    thereby enhancing overall performance.
+    """
     if "guardrail" in config and "application_version" in config["guardrail"]:
         return config["guardrail"]["application_version"]
     else:
@@ -78,7 +85,7 @@ class GuardrailRequestValidator:
         self.validate_description(request.description)
         self.validate_guardrail_provider_connection(request)
         self.validate_configs(request)
-        await self.validate_guardrail_not_exists_by_name(request.name)
+        await self.validate_guardrail_name_availability(request.name)
 
     def validate_status(self, status: int):
         """
@@ -157,9 +164,9 @@ class GuardrailRequestValidator:
         """
         validate_string_data(description, "AI Application description", required=False, max_length=4000)
 
-    async def validate_guardrail_not_exists_by_name(self, name: str):
+    async def validate_guardrail_name_availability(self, name: str):
         """
-        Check if a Guardrail already not exists by its name.
+        Validate the availability of a Guardrail name.
 
         Args:
             name (str): The name of the Guardrail.
@@ -208,6 +215,9 @@ class GuardrailRequestValidator:
     def validate_guardrail_provider_connection(self, request):
         """
         Validate the Guardrail provider and connection.
+        This condition ensures that both guardrail_provider and connection are set to None
+        if the user opts to use only sensitive data with the default PAIG guardrail.
+        However, if a value is provided for either one, the other becomes mandatory.
 
         Args:
             request (GuardrailView): The Guardrail view object containing the provider and connection.
@@ -313,9 +323,11 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             gr_conf = await self.gr_config_repository.create_record(gr_config_model)
             guardrails_configs_list.append(GRConfigView.model_validate(gr_conf))
 
+        # Checking if Guardrail Provider and Connection are set before creating Guardrails in end service
         if request.guardrail_connection_name is not None and request.guardrail_provider is not None:
             # Get Guardrail Connections
             guardrail_connections = await self._get_guardrail_connections_by_name(request.guardrail_connection_name)
+            # Check if Guardrail Connection with name exists for the provider passed in the request
             if request.guardrail_provider.name not in guardrail_connections:
                 raise BadRequestException(f"Guardrail Connection with name {[request.guardrail_connection_name]} not found for provider {[request.guardrail_provider.name]}")
 
@@ -399,14 +411,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             # Fetch Guardrail Provider Responses by Guardrail IDs
             gr_response = await self.gr_provider_response_repository.get_all(filters={"guardrail_id": id})
             result.guardrail_provider_response = gr_response[0].response_data if gr_response else None
-
-        # TODO: Uncomment below code once we have application data fetched from gov service to here
-        # Populate guardrail applications
-        # result.guardrail_applications = []
-        # guardrail_applications = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
-        # for gr_app in guardrail_applications:
-        #     gr_application = GRApplicationView.model_validate(gr_app)
-        #     result.guardrail_applications.append(gr_application)
 
         return result
 
@@ -822,6 +826,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Fetch the existing Guardrail applications for the given ID
         gr_apps = await self.gr_app_repository.get_all(filters={"guardrail_id": id})
         gr_app_keys = {gr_app.application_key for gr_app in gr_apps}
+        # Incrementing the version in case of delete guardrail as well
+        # This is because one application can have multiple guardrail associated with it
+        # and if we delete this version it will impact the get_by_app_key API which is returning result based on lastKnownVersion
         await self._bump_up_version_in_gr_apps(gr_app_keys)
 
         # Delete Guardrails from end service
