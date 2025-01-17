@@ -91,7 +91,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
         return any(
             all(key in self.connection_details for key in keys)
             for keys in (self.REQUIRED_SESSION_KEYS, self.REQUIRED_ACCESS_KEYS, self.REQUIRED_IAM_WEB_IDENTITY_KEYS, self.REQUIRED_IAM_ROLE_KEYS)
-        )
+        ) or (len(self.connection_details) == 1 and 'region' in self.connection_details)
 
     def create_guardrail(self, request: CreateGuardrailRequest, **kwargs) -> Tuple[bool, dict]:
         """Create a guardrail using the provided configurations.
