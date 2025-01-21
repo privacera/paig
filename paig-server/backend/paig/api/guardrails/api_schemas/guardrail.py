@@ -118,4 +118,4 @@ class GuardrailFilter(BaseAPIFilter):
     version: Optional[int] = Field(default=None, description="Filter by version")
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
-    application_keys: Optional[List[str]] = Field(default=None, description="Filter by application keys", alias="applicationKey")
+    application_keys: Optional[str] = Field(default=None, description="Filter by application keys", alias="applicationKey")
