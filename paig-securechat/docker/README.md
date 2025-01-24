@@ -86,7 +86,7 @@ To configure docker, you need to provide the following details in the docker-com
       environment:
          OPENAI_API_KEY: "<INSERT YOU KEY HERE>"
        ```
-   3. User can use OpenAI proxy endpoint, set `OPENAI_API_BASE` is an environment variable used to specify a custom base URL for OpenAI API requests.
+   3. The user can use the OpenAI proxy endpoint. To set a custom base URL for OpenAI API requests, the user must configure the OPENAI_API_BASE environment variable with the desired proxy endpoint.
       ```yaml
       environment:
          OPENAI_API_BASE: "<INSERT YOU BASE URL HERE>"
