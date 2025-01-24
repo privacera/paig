@@ -92,6 +92,7 @@ This default configuration can be overridden by the user provided custom configu
    _Note_:- 
    1. ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/paig_securechat/configs/AI_applications.json).
    2. User can set up OPENAI_API_KEY in different ways(Refer Configure Docker Compose File in [Secure Chat Docker](docker/README.md))
+   3. User can use OpenAI proxy endpoint, set `OPENAI_API_BASE` is an environment variable used to specify a custom base URL for OpenAI API requests.
 
 ### Secure Chat with Bedrock configuration
 1. In custom configuration file ,user should provide new configuration key-values to override the existing configuration.

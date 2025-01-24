@@ -86,9 +86,14 @@ To configure docker, you need to provide the following details in the docker-com
       environment:
          OPENAI_API_KEY: "<INSERT YOU KEY HERE>"
        ```
-   3. Using openai.key file, Provide the OPENAI_API_KEY by adding openai.key file in custom-configs folder.
+   3. User can use OpenAI proxy endpoint, set `OPENAI_API_BASE` is an environment variable used to specify a custom base URL for OpenAI API requests.
+      ```yaml
+      environment:
+         OPENAI_API_BASE: "<INSERT YOU BASE URL HERE>"
+      ```
+   4. Using openai.key file, Provide the OPENAI_API_KEY by adding openai.key file in custom-configs folder.
 
-   4. Run the docker-compose file
+   5. Run the docker-compose file
       ```bash
       docker-compose up
       ```
