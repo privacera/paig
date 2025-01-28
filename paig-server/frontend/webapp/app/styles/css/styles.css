@@ -770,3 +770,192 @@ span.diff-danger>span {
       }
   }
 }
+
+.background-color {
+    background-color: #f4f9fc !important;
+}
+
+.appstore-landing-container .application-widget .app-icon .services-logo{
+    height: 100%;
+    width: 100%;
+    -o-object-fit: scale-down;
+       object-fit: scale-down;
+}
+
+.appstore-landing-container .application-widget{
+    height: 90px;
+    width: 90px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.appstore-landing-container .appstore-landing-label{
+    width: 90px;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
+.appstore-container-badge > .MuiBadge-badge{
+    background-color: #EBEBEB;
+    color: #000000;
+}
+
+.appstore-panel-container .appstore-panel-header{
+    font-weight: 400 !important;
+}
+
+.appstore-panel-container .app-panel-card-width{
+    width: 13.6666%;
+    min-width:95px;
+}
+
+.appstore-landing-container .application-widget{
+    position: relative;
+}
+
+.appstore-landing-container .application-widget .status-circle{
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: #48CA1A;
+}
+
+.appstore-landing-container .application-widget .appstore-app-count{
+    position: absolute;
+    top: -8px;
+    right: 1px;
+}
+
+.application-connector-modal {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+}
+
+.application-connector-modal .services-logo{
+    max-height: 24px;
+    height: auto;
+    width: 24px;
+    position: relative;
+    top: 5px;
+}
+
+.application-connector-left {
+    background-color: #EEEEEE;
+    min-width: 250px;
+    max-width: 250px;
+    z-index: 2;
+}
+
+.application-connector-left > div {
+    position: sticky;
+    top: 0px;
+}
+
+.connector-modal .MuiDialogContent-dividers {
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.connector-modal div[role=footer]{
+	position: sticky;
+    z-index: 5;
+    bottom: 0;
+    width: 100%;
+    background-color: white;
+}
+
+.connector-modal .custom-dialog > div{
+	overflow: hidden;
+}
+
+.connector-modal-tab-left{
+    padding: 5px 10px 8px 10px;
+    border-bottom: 1px solid #cccccc;
+}
+
+.connector-modal-tab-left.active{
+    background: #0A84F745;
+}
+
+.connector-modal-tab-left .connector-icon.enabled svg {
+    fill:#2F940C;
+}
+
+.connector-container{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    width: 100%;
+    -webkit-box-align:start;
+    -ms-flex-align:start;
+    align-items:flex-start;
+}
+
+.connector-icon{
+    display: table-cell;
+    width: 34px;
+    min-height: 36px;
+    text-align: center;
+}
+
+.connector-icon svg {
+    height: 34px;
+    width: 34px;
+    fill: #bbb;
+    position: relative;
+    top: 0;
+}
+
+.connector-text {
+    color: black;
+    display: table-cell;
+    text-transform: capitalize;
+    min-height: 36px;
+    vertical-align: middle;
+    word-break: break-word;
+    padding:6px 8px;
+}
+
+.application-nav-card-content {
+    background-color: #ffffff;
+    min-height: 370px;
+    -webkit-box-flex: 2;
+    -ms-flex-positive: 2;
+    flex-grow: 2;
+    height: auto;
+}
+.application-nav-card-content .content {
+    padding: 3rem 1.5rem;
+}
+
+.app-content-scroll .app-test-connection > div{
+	float: none !important;
+}
+
+.connector-widget{
+    height: 34px;
+    width: 34px;
+    background: white;
+    text-align: center;
+    border-radius: 6px;
+    -webkit-box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.25);
+    box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.25);
+}
+
+.border-radius-5 {
+    border-radius: 5px;
+}
+
+.card-border {
+    border: 1px solid #2e4ada;
+}
+
+.card-border-grey {
+    border: 1px solid #ddd;
+}
+
+.white-bg {
+  background-color: #ffffff;
+}

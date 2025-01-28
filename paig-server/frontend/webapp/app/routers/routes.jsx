@@ -31,6 +31,13 @@ import CMetaData from 'containers/metadata/c_metadata';
 import CReporting from 'containers/reports/c_reporting';
 import CSavedReportsListing from 'containers/reports/c_saved_reports_listing';
 
+import CGuardrailListing from 'containers/guardrail/c_guardrail_listing';
+import CResponseTemplate from 'containers/guardrail/c_response_template';
+import CGuardrailForm from 'containers/guardrail/forms/c_guardrail_form';
+
+import CGuardrailConnectionProvider from 'containers/guardrail/c_guardrail_connection_provider';
+import CGuardrailProviderConnectedList from 'containers/guardrail/c_guardrail_provider_connected_list';
+
 history.listen((location, action) => {
     // scroll to top when route changes
     window.scrollTo(0, 0);
@@ -52,6 +59,13 @@ const Routes = () => (
 		<Route exact path="/" component={RedirectToPath} />
 
         <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.DASHBOARD])} />
+
+        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
+        <Route path="/guardrail_connection_provider/:provider" name="Guardrail Connections" component={Authorization(CGuardrailProviderConnectedList, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
+        <Route path="/guardrail_connection_provider" name="Guardrail Connections" component={Authorization(CGuardrailConnectionProvider, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
 
         <Route path="/ai_application/create" name="Create Application" component={Authorization(CAIApplicationCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
         <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />

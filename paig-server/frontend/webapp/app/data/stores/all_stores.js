@@ -17,6 +17,10 @@ import vectorDBStore from './s_vector_db_store';
 import vectorDBPolicyStore from './s_vector_db_policy_store';
 import dataProtectStore from './s_data_protect_store';
 import shieldAuditsReportsStore from './s_shield_audits_reports_store';
+import guardrailStore from './s_guardrail_store';
+import guardrailResponseTemplateStore from './s_guardrail_response_template_store';
+import guardrailConnectionProviderStore from './s_guardrail_connection_provider_store';
+import shieldStore from './s_shield_store';
 
 const stores = {
 	generalStore,
@@ -37,7 +41,11 @@ const stores = {
 	vectorDBStore,
 	vectorDBPolicyStore,
 	dataProtectStore,
-	shieldAuditsReportsStore
+	shieldAuditsReportsStore,
+	guardrailStore,
+	guardrailResponseTemplateStore,
+	guardrailConnectionProviderStore,
+	shieldStore
 }
 
 export default stores;
