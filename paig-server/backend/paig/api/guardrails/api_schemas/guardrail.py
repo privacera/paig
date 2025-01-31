@@ -42,6 +42,8 @@ class GRConfigView(BaseView):
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
     response_message: str = Field(..., description="The response message", alias="responseMessage")
 
+    model_config = ConfigDict(json_encoders={GuardrailConfigType: lambda v: v.value})
+
 
 class GuardrailView(BaseView):
     """
@@ -68,8 +70,6 @@ class GuardrailView(BaseView):
     guardrail_connection_name: Optional[str] = Field(None, description="The connection name to guardrail provider", alias="guardrailConnectionName")
     application_keys: Optional[List[str]] = Field(None, description="The associated application keys",
                                         alias="applicationKeys")
-    guardrail_applications: Optional[List[GRApplicationView]] = Field(None, description="The guardrail applications",
-                                                                      alias="guardrailApplications")
     guardrail_configs: Optional[List[GRConfigView]] = Field(None, description="The guardrail details",
                                                             alias="guardrailConfigs")
     guardrail_provider_response: Optional[Dict] = Field(None, description="The guardrail response info",
