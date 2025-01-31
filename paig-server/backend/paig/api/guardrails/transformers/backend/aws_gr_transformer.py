@@ -10,6 +10,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._logger = logging.getLogger(__name__)
+        self.content_moderation_categories = ["HATE", "INSULTS", "SEXUAL", "VIOLENCE", "MISCONDUCT"]
 
     def transform(self, guardrail_configs: list[GuardrailConfig], **kwargs) -> list[GuardrailConfig]:
         """
@@ -50,12 +51,21 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
         try:
             aws_gr_config = GuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={})
             filters_config = list(dict())
+            added_categories = []
             for config in content_moderation_config.config_data['configs']:
+                category = config['category'].upper()
                 filters_config.append({
-                    "type": config['category'].upper(),
+                    "type": category,
                     "inputStrength": config['filterStrengthPrompt'].upper(),
                     "outputStrength": config['filterStrengthResponse'].upper()
                 })
+                added_categories.append(category)
+
+            if added_categories:
+                for category in self.content_moderation_categories:
+                    if category not in added_categories:
+                        filters_config.append({"type": category, "inputStrength": "NONE", "outputStrength": "NONE"})
+
             if not filters_config:
                 return None
             aws_gr_config.configData['filtersConfig'] = filters_config

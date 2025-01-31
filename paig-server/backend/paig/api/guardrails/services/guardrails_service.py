@@ -585,7 +585,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             delete_guardrail_map = {}
             for provider, configs in guardrails_configs.items():
                 delete_bedrock_guardrails_request = DeleteGuardrailRequest(
-                    name=self.replace_invalid_chars(guardrail.name),
+                    name=self.generate_guardrail_name(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs,
@@ -607,7 +607,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             update_guardrail_map = {}
             for provider, configs in guardrails_configs.items():
                 update_bedrock_guardrails_request = UpdateGuardrailRequest(
-                    name=self.replace_invalid_chars(guardrail.name),
+                    name=self.generate_guardrail_name(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs,
@@ -623,7 +623,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return update_guardrail_response
 
-    def replace_invalid_chars(self, input_string: str) -> str:
+    def generate_guardrail_name(self, input_string: str) -> str:
         """
         Replace characters in the string that do not match the regex [0-9a-zA-Z-_]+ with an underscore.
 
@@ -645,7 +645,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             create_guardrails_request_map = {}
             for provider, configs in guardrails_configs.items():
                 create_bedrock_guardrails_request = CreateGuardrailRequest(
-                    name=self.replace_invalid_chars(guardrail.name),
+                    name=self.generate_guardrail_name(guardrail.name),
                     description=guardrail.description,
                     connectionDetails=guardrail_connections[provider].connection_details,
                     guardrailConfigs=configs
