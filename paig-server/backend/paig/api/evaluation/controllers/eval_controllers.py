@@ -1,32 +1,32 @@
 import traceback
 
-from api.evaluation.services.evaluation_service import EvaluationService
+from api.evaluation.services.eval_config_service import EvaluationConfigService
+from api.evaluation.services.eval_service import EvaluationService
 from core.utils import SingletonDepends
 from core.exceptions import NotFoundException, BadRequestException
 from core.controllers.paginated_response import create_pageable_response
-from api.evaluation.api_schemas.evaluation_schema import BaseEvaluationView
+from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 
 class EvaluationController:
 
     def __init__(self,
-                 evaluation_service: EvaluationService = SingletonDepends(EvaluationService)):
+                 evaluation_service: EvaluationService = SingletonDepends(EvaluationService),
+                 evaluation_config_service: EvaluationConfigService = SingletonDepends(EvaluationConfigService)
+    ):
         self.evaluation_service = evaluation_service
+        self.evaluation_config_service = evaluation_config_service
 
-    async def create_new_evaluation(self, eval_params, user):
+    async def create_and_run_evaluation(self, eval_params, user):
         try:
-            resp = await self.evaluation_service.create_new_evaluation(eval_params.dict(), user['username'])
+            create_config = await self.evaluation_config_service.create_eval_config(eval_params)
+            resp = await self.run_evaluation(create_config.id, user['username'])
             return resp
         except Exception as e:
             return {"error": str(e)}
 
-    async def run_evaluation(self, evaluation_config):
+    async def run_evaluation(self, eval_config_id, username):
         try:
-            evaluation_config = evaluation_config.dict()
-            plugins = evaluation_config['categories']
-            static_prompts = evaluation_config['static_prompts']
-            evaluation_config.pop("static_prompts", None)
-            evaluation_config.pop("categories", None)
-            resp = await self.evaluation_service.run_evaluation(evaluation_config, plugins, static_prompts)
+            resp = await self.evaluation_service.run_evaluation(eval_config_id, username)
             return resp
         except Exception as e:
             print(traceback.print_exc())
@@ -35,12 +35,8 @@ class EvaluationController:
     async def get_evaluation_results(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):
         if include_filters.owner:
             include_filters.owner = include_filters.owner.strip("*")
-        if include_filters.application_name:
-            include_filters.application_name = include_filters.application_name.strip("*")
         if exclude_filters.owner:
             exclude_filters.owner = exclude_filters.owner.strip("*")
-        if exclude_filters.application_name:
-            exclude_filters.application_name = exclude_filters.application_name.strip("*")
         eval_results, total_count = await self.evaluation_service.get_eval_results_with_filters(include_filters, exclude_filters, page, size, sort, min_time, max_time)
         if eval_results is None:
             raise NotFoundException("No results found")
@@ -49,11 +45,9 @@ class EvaluationController:
 
 
     async def rerun_evaluation(self, id, user):
-        print('here2')
         return await self.evaluation_service.rerun_evaluation_by_id(id, user['username'])
 
 
     async def delete_evaluation(self, eval_id):
-        print('here2')
         return await self.evaluation_service.delete_evaluation(eval_id)
 

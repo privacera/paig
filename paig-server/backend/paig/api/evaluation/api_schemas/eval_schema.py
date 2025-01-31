@@ -13,7 +13,6 @@ REPORT_URL = os.environ.get('REPORT_SERVER_BASE_URL', 'http://localhost:15500')
 class EvaluationCommonModel(BaseModel):
     application_name: str = Field(..., max_length=1024)
     purpose: str = Field(..., max_length=1024)
-    application_client: str = Field(..., max_length=1024)
     eval_id: str = Field(..., max_length=1024)
 
 

@@ -1,5 +1,5 @@
 from sqlalchemy import and_
-from api.evaluation.api_schemas.evaluation_schema import BaseEvaluationView
+from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation

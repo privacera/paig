@@ -1,1 +1,3 @@
-from .evaluation_model import EvaluationModel
+from .eval_model import EvaluationModel
+from .eval_targets import EvaluationTargetModel
+from .eval_config import EvaluationConfigModel, EvaluationConfigHistoryModel
