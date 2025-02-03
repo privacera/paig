@@ -2,7 +2,8 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, status, Query
 
-from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView
+from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView, \
+    GRVersionHistoryFilter
 from api.guardrails.controllers.guardrail_controller import GuardrailController
 from core.controllers.paginated_response import Pageable
 from core.utils import SingletonDepends
@@ -34,6 +35,56 @@ async def list(
         Pageable: The paginated response containing the list of Guardrails.
     """
     return await guardrail_controller.list(filter, page, size, sort)
+
+
+@guardrail_router.get("/history", response_model=Pageable, response_model_exclude_none=True, response_model_exclude_unset=True)
+async def get_all_history(
+        filter: GRVersionHistoryFilter = Depends(),
+        page: int = Query(0, description="The page number to retrieve"),
+        size: int = Query(10, description="The number of items per page"),
+        sort: List[str] = Query([], description="The sort options"),
+        guardrail_controller: GuardrailController = gr_controller_instance
+) -> Pageable:
+    """
+    Get the history of all Guardrails.
+
+    Args:
+        filter (GRVersionHistoryFilter): The filter object containing the search parameters.
+        page (int): The page number to retrieve.
+        size (int): The number of records to retrieve per page.
+        sort (List[str]): The sorting parameters to apply.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        Pageable: The paginated response containing the list of Guardrail history.
+    """
+    return await guardrail_controller.get_history(filter=filter, page_number=page, size=size, sort=sort)
+
+
+@guardrail_router.get("/{id}/history", response_model=Pageable, response_model_exclude_none=True, response_model_exclude_unset=True)
+async def get_history(
+        id: int,
+        filter: GRVersionHistoryFilter = Depends(),
+        page: int = Query(0, description="The page number to retrieve"),
+        size: int = Query(10, description="The number of items per page"),
+        sort: List[str] = Query([], description="The sort options"),
+        guardrail_controller: GuardrailController = gr_controller_instance
+) -> Pageable:
+    """
+    Get the history of a Guardrail by ID.
+
+    Args:
+        id (int): The ID of the Guardrail to retrieve history.
+        filter (GRVersionHistoryFilter): The filter object containing the search parameters.
+        page (int): The page number to retrieve.
+        size (int): The number of records to retrieve per page.
+        sort (List[str]): The sorting parameters to apply.
+        guardrail_controller (GuardrailController): The guardrail controller
+
+    Returns:
+        Pageable: The paginated response containing the list of Guardrail history.
+    """
+    return await guardrail_controller.get_history(id, filter, page, size, sort)
 
 
 @guardrail_router.post("", response_model=GuardrailView, status_code=status.HTTP_201_CREATED, response_model_exclude_none=True, response_model_exclude_unset=True)

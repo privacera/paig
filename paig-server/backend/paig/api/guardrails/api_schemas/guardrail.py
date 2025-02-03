@@ -83,6 +83,19 @@ class GuardrailView(BaseView):
     )
 
 
+class GRVersionHistoryView(GuardrailView):
+    """
+    A model representing the Guardrail version history.
+
+    Inherits from:
+        GuardrailView: The model representing the Guardrail.
+
+    Attributes:
+        guardrail_id (int): The guardrail id.
+    """
+    guardrail_id: Optional[int] = Field(default=None, description="The guardrail id", alias="guardrailId")
+
+
 class GuardrailsDataView(BaseView):
     """
     A model representing the Guardrails data, this is used to return as response for the shield request.
@@ -119,3 +132,16 @@ class GuardrailFilter(BaseAPIFilter):
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
     application_keys: Optional[str] = Field(default=None, description="Filter by application keys", alias="applicationKey")
+
+
+class GRVersionHistoryFilter(GuardrailFilter):
+    """
+    Filter class for Guardrails version history.
+
+    Inherits from:
+        GuardrailFilter: The filter class for Guardrails.
+
+    Attributes:
+        version (int, optional): Filter by version.
+    """
+    guardrail_id: Optional[int] = Field(default=None, description="Filter by guardrail id", alias="guardrailId")

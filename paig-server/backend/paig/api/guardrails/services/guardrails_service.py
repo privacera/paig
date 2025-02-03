@@ -1,6 +1,6 @@
 import copy
 import re
-from typing import List, Dict, Set
+from typing import List, Set
 
 import sqlalchemy
 from paig_common.lru_cache import LRUCache
@@ -8,7 +8,7 @@ from paig_common.lru_cache import LRUCache
 from api.guardrails import model_to_dict
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
-    GuardrailsDataView
+    GuardrailsDataView, GRVersionHistoryFilter, GRVersionHistoryView
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationVersionModel, \
     GRVersionHistoryModel
 from api.guardrails.database.db_operations.guardrail_repository import GuardrailRepository, \
@@ -19,7 +19,7 @@ from api.guardrails.services.gr_connections_service import GRConnectionService
 from api.guardrails.transformers.guardrail_transformer import GuardrailTransformer
 from core.config import load_config_file
 from core.controllers.base_controller import BaseController
-from core.controllers.paginated_response import Pageable
+from core.controllers.paginated_response import Pageable, create_pageable_response
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
     ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
@@ -761,3 +761,27 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Delete the Guardrail
         await self.repository.delete_record(guardrail_model)
+
+    async def get_history(self, id, filter: GRVersionHistoryFilter, page_number: int, size: int, sort: List[str]) -> Pageable:
+        """
+        Get the history of a Guardrail by its ID.
+
+        Args:
+            id (int): The ID of the Guardrail to retrieve the history for.
+            filter (GRVersionHistoryFilter): The filter object containing the search parameters.
+            page_number (int): The page number to retrieve.
+            size (int): The number of items per page.
+            sort (List[str]): The fields to sort by.
+
+        Returns:
+            Pageable: A paginated response containing the Guardrail version history.
+        """
+        if id is not None:
+            # Validate the request
+            validate_id(id, "Guardrail ID")
+            filter.id = None
+            filter.guardrail_id = id
+        records, total_count = await self.gr_version_history_repository.list_records(
+            filter=filter, page_number=page_number, size=size, sort=sort)
+        v_records = [GRVersionHistoryView.model_validate(record) for record in records]
+        return create_pageable_response(v_records, total_count, page_number, size, sort)

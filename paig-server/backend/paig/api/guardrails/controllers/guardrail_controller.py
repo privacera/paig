@@ -1,6 +1,7 @@
 from typing import List
 
-from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView
+from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView, \
+    GRVersionHistoryFilter
 from api.guardrails.services.guardrails_service import GuardrailService
 from core.controllers.paginated_response import Pageable
 from core.db_session import Transactional, Propagation
@@ -100,3 +101,20 @@ class GuardrailController:
             id (int): The ID of the Guardrail to delete.
         """
         await self.guardrail_service.delete(id)
+
+    async def get_history(self, id: int = None, filter: GRVersionHistoryFilter = None, page_number: int = None,
+                          size: int = None, sort: List[str] = None) -> Pageable:
+        """
+        Get the history of a guardrail by its ID.
+
+        Args:
+            id (int): The ID of the Guardrail to retrieve the history for.
+            filter (GRVersionHistoryFilter): The filter object containing the search parameters.
+            page_number (int): The page number to retrieve.
+            size (int): The number of records to retrieve per page.
+            sort (List[str]): The sorting parameters to apply.
+
+        Returns:
+            Pageable: The paginated response containing the history of the Guardrail.
+        """
+        return await self.guardrail_service.get_history(id, filter, page_number, size, sort)
