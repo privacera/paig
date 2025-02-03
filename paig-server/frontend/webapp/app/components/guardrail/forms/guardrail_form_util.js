@@ -72,22 +72,6 @@ class GuardrailFormUtil {
 
 	// Validate the entire form
 	validate() {
-		/*const errors = validators.validateAll(this.data);
-		this.setErrors(errors);
-
-		let keys = Object.keys(errors)
-		let hasError = keys.some(key => {
-            if (typeof errors[key] === 'object' && Object.keys(errors[key]).length) {
-                return true;
-            }
-            if (typeof errors[key] === 'string') {
-                return true;
-            }
-            return false;
-        });
-
-		return !hasError;*/
-
 		return this.validateAll(this.data);
 	}
 	validateAll() {
@@ -239,61 +223,7 @@ const validators = {
         }
 
         return {promptSafetyFilters: errors};
-    },
-
-	/*validateConfig(config) {
-		const errors = {};
-		if (!config.guardrailProvider) errors.guardrailProvider = 'Guardrail provider is required.';
-		if (!config.configType) errors.configType = 'Config type is required.';
-		if (typeof config.status !== 'number') errors.status = 'Status must be a number.';
-		if (!config.responseMessage) errors.responseMessage = 'Response message is required.';
-
-		if (config.configData?.configs?.length) {
-			config.configData.configs.forEach((conf, index) => {
-				const configErrors = {};
-				if (!conf.category && !conf.type && !conf.topic && !conf.term) {
-					configErrors.general = 'Config must have a category, type, topic, or term.';
-				}
-				if (conf.pattern && !conf.name) {
-					configErrors.name = 'Name is required for regex patterns.';
-				}
-				if (conf.action && !['ALLOW', 'DENY', 'REDACT'].includes(conf.action)) {
-					configErrors.action = 'Action must be ALLOW, DENY, or REDACT.';
-				}
-				if (Object.keys(configErrors).length) {
-					errors[`configs[${index}]`] = configErrors;
-				}
-			});
-		} else {
-			errors.configData = 'Config data must contain configs.';
-		}
-
-		return errors;
-	},
-
-	validateGuardrailConfigs(guardrailConfigs) {
-		const errors = [];
-		guardrailConfigs.forEach((config, index) => {
-			const configErrors = this.validateConfig(config);
-			if (Object.keys(configErrors).length) {
-				errors[index] = configErrors;
-			}
-		});
-		return errors.length ? {
-			guardrailConfigs: errors
-		} : {};
-	},*/
-
-	validateAll(data) {
-		/*return {
-			...this.validateBasicInfo(data),
-			...this.validateContentModeration(data),
-			...this.validateSensitiveDataFilters(data),
-			...this.validateOffTopicFilters(data),
-			...this.validateDeniedTerms(data),
-			...this.validatePromptSafety(data)
-		};*/
-	}
+    }
 };
 
 const initialData = {
