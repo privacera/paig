@@ -30,6 +30,18 @@ const SIDEBAR_MENU = [{
     isChild: true,
     sidebar: UI_CONSTANTS.VECTOR_DB,
     childrenRoutes: ["/vector_db/", "/vector_db/create", "/vector_db/:id"]
+  }, {
+    to: "/guardrails",
+    name: "Guardrails",
+    isChild: true,
+    sidebar: UI_CONSTANTS.GUARDRAILS,
+    childrenRoutes: ["/guardrails", "/guardrails/create", "/guardrails/edit/:id"]
+  }, {
+    to: "/response_templates",
+    name: "Response Templates",
+    isChild: true,
+    sidebar: UI_CONSTANTS.RESPONSE_TEMPLATES,
+    childrenRoutes: []
   }]
 }, {
    menuToggleAttrName: "audits",
@@ -92,6 +104,12 @@ const SIDEBAR_MENU = [{
   //   isChild: true,
   //   sidebar: UI_CONSTANTS.SHIELD_CONFIGURATION
   // },
+  {
+    to: "/guardrail_connection_provider",
+    name: "Guardrail Connections",
+    isChild: true,
+    sidebar: UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER
+  },
   {
     to: "/user_management",
     name: "User Management",

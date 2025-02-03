@@ -23,3 +23,26 @@
 //
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
+
+Cypress.Commands.add('login', (email, password) => {
+    console.log('Browser', Cypress.browser);
+    cy.clearSession();
+    cy.visit("/");
+
+    if (!Cypress.env('isLocal')) {
+        let login = Cypress.env('login');
+        console.log('login', login);
+
+        cy.get("#userName").type(login.username);
+        cy.get("#password").type(login.password);
+        cy.get("#kc-form-buttons").click();
+    }
+
+    cy.url().should("include", "/dashboard");
+});
+
+Cypress.Commands.add('clearSession', () => {
+    cy.clearAllLocalStorage();
+    cy.clearAllSessionStorage();
+    cy.clearAllCookies();
+})
