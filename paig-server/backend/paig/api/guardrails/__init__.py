@@ -14,3 +14,8 @@ class GuardrailConfigType(Enum):
     OFF_TOPIC = 'OFF_TOPIC'
     DENIED_TERMS = 'DENIED_TERMS'
     PROMPT_SAFETY = 'PROMPT_SAFETY'
+
+
+def model_to_dict(model):
+    """Quickly convert a SQLAlchemy model instance to a dictionary."""
+    return {key: value for key, value in model.__dict__.items() if not key.startswith('_')}

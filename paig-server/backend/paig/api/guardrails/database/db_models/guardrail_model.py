@@ -38,15 +38,15 @@ class GuardrailModel(BaseGuardrailModel):
     SQLAlchemy model representing the guardrail table.
 
     Attributes:
-        gr_history (relationship): The guardrail history relationship.
+        gr_version_history (relationship): The guardrail history relationship.
     """
     __tablename__ = "guardrail"
-    gr_history = relationship("GuardrailHistoryModel", back_populates="guardrail", cascade="all, delete-orphan")
+    gr_version_history = relationship("GRVersionHistoryModel", back_populates="guardrail", cascade="all, delete-orphan")
 
 
-class GuardrailHistoryModel(BaseGuardrailModel):
+class GRVersionHistoryModel(BaseGuardrailModel):
     """
-    SQLAlchemy model representing the guardrail_history table.
+    SQLAlchemy model representing the guardrail_version_history table.
 
     Attributes:
         guardrail_id (int): The guardrail id.
@@ -54,11 +54,11 @@ class GuardrailHistoryModel(BaseGuardrailModel):
         guardrail (relationship): The guardrail relationship.
     """
 
-    __tablename__ = "guardrail_history"
-    guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_history_guardrail_id'), nullable=False)
+    __tablename__ = "guardrail_version_history"
+    guardrail_id = Column(Integer, ForeignKey('guardrail.id', ondelete='CASCADE', name='fk_guardrail_version_history_guardrail_id'), nullable=False)
     version = Column(Integer, nullable=False, default=1)
 
-    guardrail = relationship("GuardrailModel", back_populates="gr_history")
+    guardrail = relationship("GuardrailModel", back_populates="gr_version_history")
 
 
 class GRApplicationVersionModel(BaseSQLModel):
