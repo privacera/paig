@@ -5,7 +5,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailsDataView
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailsDataView, GRVersionHistoryView
 from api.guardrails.controllers.guardrail_controller import GuardrailController
 from core.controllers.paginated_response import create_pageable_response
 
@@ -32,12 +32,35 @@ guardrail_data_view_json = {
 guardrail_data_view = GuardrailsDataView(**guardrail_data_view_json)
 
 
+gr_version_history_view_json = {
+        "id": 1,
+        "status": 1,
+        "createTime": "2024-10-29T13:03:27.000000",
+        "updateTime": "2024-10-29T13:03:27.000000",
+        "name": "mock_guardrail",
+        "description": "mock description",
+        "version": 1,
+        "guardrailConnectionName": "gr_connection_1",
+        "guardrailProvider": "AWS",
+        "guardrailId": 1
+    }
+guardrail_version_history_view = GRVersionHistoryView(**gr_version_history_view_json)
+
+
 @pytest.fixture()
 def mock_guardrail_controller():
     mock_guardrail_controller = AsyncMock(spec=GuardrailController)
 
     mock_guardrail_controller.list.return_value = create_pageable_response(
         content=[guardrail_view],
+        total_elements=1,
+        page_number=1,
+        size=10,
+        sort=["id"]
+    )
+
+    mock_guardrail_controller.get_history.return_value = create_pageable_response(
+        content=[guardrail_version_history_view],
         total_elements=1,
         page_number=1,
         size=10,
@@ -82,6 +105,20 @@ def guardrail_app_client(guardrail_app):
 
 def test_list_guardrail_success(guardrail_app_client):
     response = guardrail_app_client.get("http://localhost:9090/guardrail")
+    assert response.status_code == status.HTTP_200_OK
+    assert "content" in response.json()
+    assert len(response.json()["content"]) == 1
+
+
+def test_get_guardrail_history_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail/1/history")
+    assert response.status_code == status.HTTP_200_OK
+    assert "content" in response.json()
+    assert len(response.json()["content"]) == 1
+
+
+def test_get_all_guardrail_history_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail/history")
     assert response.status_code == status.HTTP_200_OK
     assert "content" in response.json()
     assert len(response.json()["content"]) == 1

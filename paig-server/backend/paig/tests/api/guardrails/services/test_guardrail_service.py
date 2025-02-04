@@ -6,9 +6,9 @@ from sqlalchemy.exc import NoResultFound
 
 from api.encryption.api_schemas.encryption_key import EncryptionKeyView
 from api.guardrails.api_schemas.gr_connection import GRConnectionView
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRVersionHistoryFilter, \
+    GRVersionHistoryView
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails import GuardrailProvider
 from api.guardrails.database.db_models.guardrail_model import GRApplicationVersionModel, GuardrailModel, \
     GRVersionHistoryModel
 from api.guardrails.database.db_operations.guardrail_repository import GuardrailRepository, \
@@ -117,11 +117,26 @@ gr_connection_view_json = {
     }
 }
 
+guardrail_version_history_view_json = {
+    "id": 1,
+    "status": 1,
+    "createTime": "2024-10-29T13:03:27.000000",
+    "updateTime": "2024-10-29T13:03:27.000000",
+    "name": "mock_guardrail",
+    "description": "mock description",
+    "version": 1,
+    "guardrailConnectionName": "gr_connection_1",
+    "guardrailProvider": "AWS",
+    "guardrailId": 1
+}
+
 gr_connection_view = GRConnectionView(**gr_connection_view_json)
 
 gr_config_view = GRConfigView(**guardrail_config_json)
 
 guardrail_view = GuardrailView(**guardrail_view_json)
+
+guardrail_version_history_view = GRVersionHistoryView(**guardrail_version_history_view_json)
 
 
 @pytest.fixture
@@ -174,6 +189,26 @@ async def test_list_guardrails(guardrail_service, mock_guardrail_repository):
     ) as mock_list_records:
         # Call the method under test
         result = await guardrail_service.list(filter=mock_filter, page_number=1, size=10, sort=mock_sort)
+
+        # Assertions
+        mock_list_records.assert_called_once_with(filter=mock_filter, page_number=1, size=10, sort=mock_sort)
+        assert result.content == expected_records
+        assert result.totalElements == expected_total_count
+
+
+@pytest.mark.asyncio
+async def test_get_guardrail_version_history(guardrail_service, mock_guardrail_version_history_repository):
+    guardrail_id = 1
+    mock_filter = GRVersionHistoryFilter()
+    mock_sort = ["create_time"]
+    expected_records = [guardrail_version_history_view]
+    expected_total_count = 100
+    # Patch the list_records method on the repository
+    with patch.object(
+            mock_guardrail_version_history_repository, 'list_records', return_value=(expected_records, expected_total_count)
+    ) as mock_list_records:
+        # Call the method under test
+        result = await guardrail_service.get_history(guardrail_id, mock_filter, 1, 10, mock_sort)
 
         # Assertions
         mock_list_records.assert_called_once_with(filter=mock_filter, page_number=1, size=10, sort=mock_sort)
