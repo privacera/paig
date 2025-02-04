@@ -322,15 +322,16 @@ def test_aws_guardrail_transform_off_topic_config_gives_error():
 def test_aws_guardrail_transform_prompt_safety_config():
     expected_config = GuardrailConfig(configType="contentPolicyConfig", guardrailProvider="AWS", configData={
         "filtersConfig": [
-            {
-                "inputStrength": "HIGH",
-                "outputStrength": "NONE",
-                "type": "PROMPT_ATTACK"
-            }
+            {'inputStrength': 'HIGH', 'outputStrength': 'NONE', 'type': 'PROMPT_ATTACK'},
+            {'inputStrength': 'NONE', 'outputStrength': 'NONE', 'type': 'HATE'},
+            {'inputStrength': 'NONE', 'outputStrength': 'NONE', 'type': 'INSULTS'},
+            {'inputStrength': 'NONE', 'outputStrength': 'NONE', 'type': 'SEXUAL'},
+            {'inputStrength': 'NONE', 'outputStrength': 'NONE', 'type': 'VIOLENCE'},
+            {'inputStrength': 'NONE', 'outputStrength': 'NONE', 'type': 'MISCONDUCT'}
         ]
     })
     transformed_config = GuardrailTransformer.transform(GuardrailProvider.AWS, [gr_prompt_safety_config])
-    assert transformed_config == {"AWS": [expected_config]}
+    assert {"AWS": [expected_config]} == transformed_config
 
 
 def test_aws_guardrail_transform_prompt_safety_config_with_empty_config_data():

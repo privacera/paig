@@ -18,4 +18,4 @@ class GuardrailConfigType(Enum):
 
 def model_to_dict(model):
     """Quickly convert a SQLAlchemy model instance to a dictionary."""
-    return {key: value for key, value in model.__dict__.items() if not key.startswith('_')}
+    return {key: value for key, value in model.__dict__.items() if value and not key.startswith('_')}

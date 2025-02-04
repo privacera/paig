@@ -4,9 +4,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from api.guardrails.database.db_models.gr_connection_model import GRConnectionModel
-from api.guardrails import GuardrailProvider, GuardrailConfigType
-from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationModel, \
-    GRApplicationVersionModel, GRConfigModel, GRProviderResponseModel
+from api.guardrails import GuardrailProvider, GuardrailConfigType, model_to_dict
+from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationVersionModel, \
+    GRVersionHistoryModel
 from core.db_models.BaseSQLModel import BaseSQLModel
 
 
@@ -30,51 +30,69 @@ def test_guardrail_model_attributes(mock_sqlalchemy_session):
     name = "mock_name"
     description = "mock_description"
     version = 1
+    guardrail_connection_name = "mock_connection",
+    response_message = "I couldn't respond to that message."
+    config_type = GuardrailConfigType.CONTENT_MODERATION
+    config_data = {"mock_key": "mock_value"}
+    guardrail_configs = [{
+        "config_type": config_type,
+        "config_data": config_data,
+        "response_message": response_message
+    }]
+    guardrail_provider_response = {
+        "AWS": {"success": True, "response": {"mock_key": "mock_value"}}
+    }
+    application_keys = ["mock_app_key"]
 
     guardrail_model = GuardrailModel(
         name=name,
         description=description,
-        version=version
+        version=version,
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name=guardrail_connection_name,
+        guardrail_configs=guardrail_configs,
+        guardrail_provider_response=guardrail_provider_response,
+        application_keys=application_keys
     )
 
     assert guardrail_model.name == name
     assert guardrail_model.description == description
     assert guardrail_model.version == version
+    assert guardrail_model.guardrail_provider == GuardrailProvider.AWS
+    assert guardrail_model.guardrail_connection_name == guardrail_connection_name
+    assert guardrail_model.application_keys == application_keys
+    assert guardrail_model.guardrail_configs == guardrail_configs
+    assert guardrail_model.guardrail_provider_response == guardrail_provider_response
 
     # Test nullable constraints
     assert guardrail_model.name is not None
     assert guardrail_model.description is not None
     assert guardrail_model.version is not None
+    assert guardrail_model.guardrail_provider is not None
+    assert guardrail_model.guardrail_connection_name is not None
+    assert guardrail_model.application_keys is not None
+    assert guardrail_model.guardrail_configs is not None
+    assert guardrail_model.guardrail_provider_response is not None
 
 
-def test_gr_application_model_init():
-    gr_application_model = GRApplicationModel()
-    assert gr_application_model
+def test_gr_version_history_model_init():
+    gr_version_history_model = GRVersionHistoryModel()
+    assert gr_version_history_model
 
 
-def test_gr_application_model_attributes(mock_sqlalchemy_session):
+def test_gr_version_history_model_attributes(mock_sqlalchemy_session):
     guardrail_id = 1
-    application_id = 1
-    application_name = "mock_application_name"
-    application_key = "mock_application_key"
-
-    gr_application_model = GRApplicationModel(
+    gr_application_model = GRVersionHistoryModel(
         guardrail_id=guardrail_id,
-        application_id=application_id,
-        application_name=application_name,
-        application_key=application_key
+        version=1
     )
 
     assert gr_application_model.guardrail_id == guardrail_id
-    assert gr_application_model.application_id == application_id
-    assert gr_application_model.application_name == application_name
-    assert gr_application_model.application_key == application_key
+    assert gr_application_model.version == 1
 
     # Test nullable constraints
     assert gr_application_model.guardrail_id is not None
-    assert gr_application_model.application_id is not None
-    assert gr_application_model.application_name is not None
-    assert gr_application_model.application_key is not None
+    assert gr_application_model.version is not None
 
 
 def test_guardrail_application_version_model_init():
@@ -99,107 +117,30 @@ def test_guardrail_application_version_model_attributes(mock_sqlalchemy_session)
     assert gr_application_version_model.version is not None
 
 
-def test_guardrail_config_model_init():
-    guardrail_config_model = GRConfigModel()
-    assert guardrail_config_model
-
-
-def test_guardrail_config_model_attributes():
-    guardrail_id = 1
-    response_message = "I couldn't respond to that message."
-    config_type = "mock_config_type"
-    config_data = {"mock_key": "mock_value"}
-
-    guardrail_config_model = GRConfigModel(
-        guardrail_id=guardrail_id,
-        response_message=response_message,
-        config_type=config_type,
-        config_data=config_data
-    )
-
-    assert guardrail_config_model.guardrail_id == guardrail_id
-    assert guardrail_config_model.response_message == response_message
-    assert guardrail_config_model.config_type == config_type
-    assert guardrail_config_model.config_data == config_data
-
-    # Test nullable constraints
-    assert guardrail_config_model.guardrail_id is not None
-    assert guardrail_config_model.response_message is not None
-    assert guardrail_config_model.config_type is not None
-    assert guardrail_config_model.config_data is not None
-
-
-def test_gr_provider_response_model_init():
-    gr_provider_response_model = GRProviderResponseModel()
-    assert gr_provider_response_model
-
-
-def test_gr_provider_response_model_attributes(mock_sqlalchemy_session):
-    guardrail_id = 1
-    guardrail_provider = GuardrailProvider.AWS
-    response_data = {"mock_key": "mock_value"}
-
-    gr_provider_response_model = GRProviderResponseModel(
-        guardrail_id=guardrail_id,
-        guardrail_provider=guardrail_provider,
-        response_data=response_data
-    )
-
-    assert gr_provider_response_model.guardrail_id == guardrail_id
-    assert gr_provider_response_model.guardrail_provider == guardrail_provider
-    assert gr_provider_response_model.response_data == response_data
-
-    # Test nullable constraints
-    assert gr_provider_response_model.guardrail_id is not None
-    assert gr_provider_response_model.guardrail_provider is not None
-    assert gr_provider_response_model.response_data is not None
-
-
 @pytest.fixture
 def guardrail(mock_sqlalchemy_session):
-    guardrail_instance = GuardrailModel(name="Mock Guardrail", description="A mock guardrail", version=1,
-                                        guardrail_provider=GuardrailProvider.AWS, guardrail_connection_name="mock_connection")
+    response_message = "I couldn't respond to that message."
+    config_type = GuardrailConfigType.CONTENT_MODERATION.name
+    config_data = {"mock_key": "mock_value"}
+    guardrail_instance = GuardrailModel(
+        name="mock_name",
+        description="mock_description",
+        version=1,
+        guardrail_connection_name="mock_connection",
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_configs=[{
+            "config_type": config_type,
+            "config_data": config_data,
+            "response_message": response_message
+        }],
+        guardrail_provider_response={
+            "AWS": {"success": True, "response": {"mock_key": "mock_value"}}
+        },
+        application_keys=["mock_app_key"]
+    )
     mock_sqlalchemy_session.add(guardrail_instance)
     mock_sqlalchemy_session.commit()
     return guardrail_instance
-
-
-@pytest.fixture
-def guardrail_application(mock_sqlalchemy_session, guardrail):
-    application_instance = GRApplicationModel(
-        guardrail_id=guardrail.id,
-        application_id=1001,
-        application_name="Mock Application",
-        application_key="mock_app_key"
-    )
-    mock_sqlalchemy_session.add(application_instance)
-    mock_sqlalchemy_session.commit()
-    return application_instance
-
-
-@pytest.fixture
-def guardrail_config(mock_sqlalchemy_session, guardrail):
-    config_instance = GRConfigModel(
-        guardrail_id=guardrail.id,
-        response_message="I couldn't respond to that message.",
-        config_type=GuardrailConfigType.CONTENT_MODERATION,
-        config_data={"mock_key": "mock_value"}
-    )
-    mock_sqlalchemy_session.add(config_instance)
-    mock_sqlalchemy_session.commit()
-    return config_instance
-
-
-@pytest.fixture
-def guardrail_provider_response(mock_sqlalchemy_session, guardrail):
-    response_instance = GRProviderResponseModel(
-        guardrail_id=guardrail.id,
-        guardrail_provider=GuardrailProvider.AWS,
-        response_data={"mock_key": "mock_value"}
-    )
-    mock_sqlalchemy_session.add(response_instance)
-    mock_sqlalchemy_session.commit()
-    return response_instance
 
 
 @pytest.fixture
@@ -216,74 +157,62 @@ def guardrail_connection(mock_sqlalchemy_session):
     return guardrail_connection_instance
 
 
-def test_guardrail_has_applications(mock_sqlalchemy_session, guardrail, guardrail_application):
+@pytest.fixture
+def guardrail_version_history(mock_sqlalchemy_session, guardrail):
+    response_message = "I couldn't respond to that message."
+    config_type = GuardrailConfigType.CONTENT_MODERATION.name
+    config_data = {"mock_key": "mock_value"}
+    guardrail_model_instance = GuardrailModel(
+        name="mock_name",
+        description="mock_description",
+        version=1,
+        guardrail_provider=GuardrailProvider.AWS,
+        guardrail_connection_name="mock_connection",
+        guardrail_configs=[{
+            "config_type": config_type,
+            "config_data": config_data,
+            "response_message": response_message
+        }],
+        guardrail_provider_response={
+            "AWS": {"success": True, "response": {"mock_key": "mock_value"}}
+        },
+        application_keys=["mock_app_key"]
+    )
+    gr_version_history_instance = GRVersionHistoryModel(**model_to_dict(guardrail_model_instance))
+    gr_version_history_instance.id = None
+    gr_version_history_instance.create_time = guardrail.update_time
+    gr_version_history_instance.guardrail_id = 1
+
+    mock_sqlalchemy_session.add(gr_version_history_instance)
+    mock_sqlalchemy_session.commit()
+    return gr_version_history_instance
+
+
+def test_guardrail_has_version_history(mock_sqlalchemy_session, guardrail, guardrail_version_history):
     # Retrieve the guardrail from the database
-    guardrail_from_db = mock_sqlalchemy_session.query(GuardrailModel).filter_by(name="Mock Guardrail").one()
-
-    # Assert that the guardrail has the application associated with it
-    assert len(guardrail_from_db.gr_application) == 1
-    assert guardrail_from_db.gr_application[0].application_name == "Mock Application"
-    assert guardrail_from_db.gr_application[0].application_key == "mock_app_key"
-
-
-def test_application_has_guardrail(mock_sqlalchemy_session, guardrail_application):
-    # Retrieve the application from the database
-    application_from_db = mock_sqlalchemy_session.query(GRApplicationModel).filter_by(
-        application_key="mock_app_key").one()
-
-    # Assert that the application has the correct guardrail associated with it
-    assert application_from_db.guardrail is not None
-    assert application_from_db.guardrail.name == "Mock Guardrail"
-    assert application_from_db.guardrail.description == "A mock guardrail"
-    assert application_from_db.guardrail.version == 1
-
-
-def test_guardrail_has_config(mock_sqlalchemy_session, guardrail, guardrail_config):
-    # Retrieve the guardrail from the database
-    guardrail_from_db = mock_sqlalchemy_session.query(GuardrailModel).filter_by(name="Mock Guardrail").one()
+    guardrail_from_db = mock_sqlalchemy_session.query(GuardrailModel).filter_by(name="mock_name").one()
 
     # Assert that the guardrail has the configuration associated with it
-    assert len(guardrail_from_db.gr_config) == 1
-    assert guardrail_from_db.gr_config[0].config_type == GuardrailConfigType.CONTENT_MODERATION
-    assert guardrail_from_db.gr_config[0].config_data == {"mock_key": "mock_value"}
+    assert len(guardrail_from_db.gr_version_history) == 1
+    assert guardrail_from_db.gr_version_history is not None
+    assert guardrail_from_db.gr_version_history[0].guardrail_id == guardrail_from_db.id
+    assert guardrail_from_db.gr_version_history[0].version == 1
 
 
-def test_config_has_guardrail(mock_sqlalchemy_session, guardrail_config):
+def test_config_has_guardrail(mock_sqlalchemy_session, guardrail, guardrail_version_history):
     # Retrieve the configuration from the database
-    config_from_db = mock_sqlalchemy_session.query(GRConfigModel).filter_by(
-        config_type=GuardrailConfigType.CONTENT_MODERATION).one()
+    gr_version_history = mock_sqlalchemy_session.query(GRVersionHistoryModel).filter_by(name="mock_name").one()
 
     # Assert that the configuration has the correct guardrail associated with it
-    assert config_from_db.guardrail is not None
-    assert config_from_db.guardrail.name == "Mock Guardrail"
-    assert config_from_db.guardrail.description == "A mock guardrail"
-    assert config_from_db.guardrail.version == 1
-    assert config_from_db.guardrail.guardrail_provider == GuardrailProvider.AWS
-    assert config_from_db.guardrail.guardrail_connection_name == "mock_connection"
-    assert config_from_db.guardrail.gr_config[0].response_message == "I couldn't respond to that message."
-    assert config_from_db.guardrail.gr_config[0].config_type == GuardrailConfigType.CONTENT_MODERATION
-    assert config_from_db.guardrail.gr_config[0].config_data == {"mock_key": "mock_value"}
-
-
-def test_guardrail_has_provider_response(mock_sqlalchemy_session, guardrail, guardrail_provider_response):
-    # Retrieve the guardrail from the database
-    guardrail_from_db = mock_sqlalchemy_session.query(GuardrailModel).filter_by(name="Mock Guardrail").one()
-
-    # Assert that the guardrail has the provider response associated with it
-    assert len(guardrail_from_db.gr_response) == 1
-    assert guardrail_from_db.gr_response[0].guardrail_provider == GuardrailProvider.AWS
-    assert guardrail_from_db.gr_response[0].response_data == {"mock_key": "mock_value"}
-
-
-def test_provider_response_has_guardrail(mock_sqlalchemy_session, guardrail_provider_response):
-    # Retrieve the provider response from the database
-    response_from_db = mock_sqlalchemy_session.query(GRProviderResponseModel).filter_by(
-        guardrail_provider=GuardrailProvider.AWS).one()
-
-    # Assert that the provider response has the correct guardrail associated with it
-    assert response_from_db.guardrail is not None
-    assert response_from_db.guardrail.name == "Mock Guardrail"
-    assert response_from_db.guardrail.description == "A mock guardrail"
-    assert response_from_db.guardrail.version == 1
-    assert response_from_db.guardrail.gr_response[0].guardrail_provider == GuardrailProvider.AWS
-    assert response_from_db.guardrail.gr_response[0].response_data == {"mock_key": "mock_value"}
+    assert gr_version_history.guardrail is not None
+    assert gr_version_history.guardrail.name == "mock_name"
+    assert gr_version_history.guardrail.description == "mock_description"
+    assert gr_version_history.guardrail.version == 1
+    assert gr_version_history.guardrail.guardrail_provider == GuardrailProvider.AWS
+    assert gr_version_history.guardrail.guardrail_connection_name == "mock_connection"
+    assert gr_version_history.guardrail.guardrail_configs[0]["response_message"] == "I couldn't respond to that message."
+    assert gr_version_history.guardrail.guardrail_configs[0]["config_type"] == GuardrailConfigType.CONTENT_MODERATION.name
+    assert gr_version_history.guardrail.guardrail_configs[0]["config_data"] == {"mock_key": "mock_value"}
+    assert gr_version_history.guardrail.guardrail_provider_response == {
+        "AWS": {"success": True, "response": {"mock_key": "mock_value"}}
+    }
