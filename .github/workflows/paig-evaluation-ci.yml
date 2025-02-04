@@ -42,23 +42,23 @@ jobs:
         pip install twine build pytest pytest-cov
         pip install -r paig-evaluation/paig_evaluation/requirements.txt
 
-#    - name: Test with pytest
-#      run: |
-#        filepath=$PWD
-#        . venv/bin/activate && cd paig-evaluation
-#        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml --junitxml=$filepath/junit-${{ env.SANITIZED_BRANCH_NAME }}.xml tests
-#
-#    - name: Upload coverage report
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: coverage-report-${{ env.SANITIZED_BRANCH_NAME }}
-#        path: coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml
-#
-#    - name: Upload test results
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: junit-results-${{ env.SANITIZED_BRANCH_NAME }}
-#        path: junit-${{ env.SANITIZED_BRANCH_NAME }}.xml
+    - name: Test with pytest
+      run: |
+        filepath=$PWD
+        . venv/bin/activate && cd paig-evaluation
+        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml --junitxml=$filepath/junit-${{ env.SANITIZED_BRANCH_NAME }}.xml tests
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-${{ env.SANITIZED_BRANCH_NAME }}
+        path: coverage-${{ env.SANITIZED_BRANCH_NAME }}.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: junit-results-${{ env.SANITIZED_BRANCH_NAME }}
+        path: junit-${{ env.SANITIZED_BRANCH_NAME }}.xml
 
     - name: Set build version to dev
       id: version

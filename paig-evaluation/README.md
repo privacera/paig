@@ -130,7 +130,7 @@ You can integrate `paig_evaluation` in your Python code for more customized cont
 
 ```python
 import uuid
-from paig_evaluation.paig_evaluator import PAIGEvaluator
+from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins
 
 # Generate PAIG evaluation ID
 paig_eval_id = str(uuid.uuid4())
@@ -146,7 +146,7 @@ application_config = {
 paig_evaluator = PAIGEvaluator()
 
 # Get suggested plugins and update the list of plugins as per your requirements
-suggested_plugins = paig_evaluator.get_suggested_plugins(application_config["purpose"])
+suggested_plugins = get_suggested_plugins(application_config["purpose"])
 print(f"Suggested plugins: {suggested_plugins}")
 
 # Target application configuration list
@@ -158,8 +158,14 @@ targets = [
         ]
 
 # Generate prompts for the application
-generated_prompts = paig_evaluator.generate_prompts(application_config, suggested_plugins["plugins"], targets)
-print(f"Generated prompts: {generated_prompts}")
+generated_prompts = {}
+if suggested_plugins["status"] == "success":
+   suggested_plugins_names_list = [plugin['Name'] for plugin in suggested_plugins["plugins"]]
+   generated_prompts = paig_evaluator.generate_prompts(application_config, suggested_plugins_names_list, targets)
+   print(f"Generated prompts: {generated_prompts}")
+else:
+    print(f"Failed to get suggested plugins, {suggested_plugins['message']}")
+
 
 # Define base prompts
 base_prompts = {
@@ -218,8 +224,11 @@ custom_prompts = {
 }
 
 # Evaluate and generate the report
-report_json = paig_evaluator.evaluate(paig_eval_id, generated_prompts, base_prompts, custom_prompts)
-print(f"Report JSON: {report_json}")
+if generated_prompts:
+   report_json = paig_evaluator.evaluate(paig_eval_id, generated_prompts, base_prompts, custom_prompts)
+   print(f"Report JSON: {report_json}")
+else:
+    print("Generated prompts are empty.")
 ```
 
 ---

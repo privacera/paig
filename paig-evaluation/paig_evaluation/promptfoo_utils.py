@@ -4,9 +4,11 @@ from typing import List, Dict
 
 import openai
 import yaml
+import sys
 
 from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
+import subprocess
 
 
 def ensure_promptfoo_config(email: str):
@@ -48,7 +50,162 @@ def ensure_promptfoo_config(email: str):
             yaml.dump(existing_content, file, default_flow_style=False)
 
 
-def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
+def check_command_exists(command: str) -> bool:
+    """
+    Check if a command exists in the system.
+
+    Args:
+        command (str): The command to check.
+
+    Returns:
+        bool: True if the command exists, False otherwise.
+    """
+    try:
+        subprocess.run([command, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except FileNotFoundError:
+        return False
+
+
+def check_npm_dependency(package_name: str, version: str) -> bool:
+    """
+    Check if an npm package with a specific version is globally installed.
+
+    Args:
+        package_name (str): The name of the package to check.
+        version (str): The version of the package to check.
+
+    Returns:
+        bool: True if the package and version are installed, False otherwise.
+    """
+    try:
+        result = subprocess.run(
+            ["npm", "list", "-g", f"{package_name}@{version}", "--depth", "0"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        return f"{package_name}@{version}" in result.stdout
+    except FileNotFoundError:
+        sys.exit("npm is not installed. Please install Node.js first.")
+
+
+def install_npm_dependency(package_name: str, version: str) -> None:
+    """
+    Install an npm package globally.
+
+    Args:
+        package_name (str): The name of the package to install.
+        version (str): The version of the package to install.
+    """
+    try:
+        command = f"npm install -g {package_name}@{version}"
+        process = run_command_in_background(command)
+        wait_for_process_complete(process, verbose=True)
+        if process.returncode == 0:
+            print("Successfully installed npm package.")
+        else:
+            sys.exit("Failed to install npm package.")
+    except Exception as e:
+        sys.exit(f"Error installing npm package: {e}")
+
+
+def get_suggested_plugins_with_description(plugins) -> List:
+    """
+    Get suggested plugins with description.
+
+    Args:
+        plugins (List[Dict]): List of plugins.
+
+    Returns:
+        List: List of suggested plugins with description.
+    """
+    suggested_security_plugins = []
+    security_plugins = get_all_security_plugins()
+    for plugin in plugins:
+        suggested_security_plugins.append(
+            {
+                "Name": plugin,
+                "Description": security_plugins[plugin]
+            }
+        )
+
+    return suggested_security_plugins
+
+
+def get_plugins_response(plugins) -> Dict:
+    """
+    Plugins response.
+
+    Args:
+        plugins (List[str]): List of plugins.
+        status (str): Status.
+
+    Returns:
+        Dict: Plugins response.
+    """
+    suggested_plugins_response = {}
+    if isinstance(plugins, dict) and "plugins" in plugins:
+        suggested_plugins_response['plugins'] = get_suggested_plugins_with_description(plugins['plugins'])
+        suggested_plugins_response['status'] = 'success'
+    else:
+        suggested_plugins_response['status'] = 'failed'
+        suggested_plugins_response['message'] = str(plugins)
+        suggested_plugins_response['plugins'] = []
+    return suggested_plugins_response
+
+
+def read_security_plugins(plugin_file_path: str = None) -> Dict:
+    """
+    Reads the security plugins from the specified file.
+
+    Args:
+        plugin_file_path (str): The path to the security plugins file.
+
+    Returns:
+        Dict: The security plugins.
+    """
+    if not plugin_file_path:
+        plugin_file_path = os.path.join(os.path.dirname(__file__), "conf/security_plugins.json")
+    if not os.path.exists(plugin_file_path):
+        return f"Error: Security plugins file not found, file_path={plugin_file_path}"
+    return read_json_file(plugin_file_path)
+
+
+
+def get_all_security_plugins(plugin_file_path: str = None) -> List[Dict]:
+    """
+    Returns a list of all available security plugins.
+
+    Returns:
+        List[Dict]:  A list of dictionaries containing the plugin name and description.
+    """
+
+    security_plugins = read_security_plugins(plugin_file_path)
+    if isinstance(security_plugins, str):
+        return security_plugins
+
+    return get_security_plugins_list(security_plugins)
+
+
+def get_security_plugins_list(security_plugins_dict):
+    """
+    Get the security plugins from the list of security plugins.
+
+    Args:
+        security_plugins_list (List[Dict]): List of security plugins.
+
+    Returns:
+        List[Dict]: List of security plugins.
+    """
+    all_plugins_dict = security_plugins_dict['local_plugins']
+    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') not in {'1', 'true', 'True'}:
+        all_plugins_dict.update(security_plugins_dict['remote_plugins'])
+
+    return all_plugins_dict
+
+
+def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, plugin_file_path: str = None) -> Dict | str:
     """
     Suggests plugins to test security vulnerabilities based on the purpose of the application using OpenAI.
 
@@ -56,47 +213,23 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
         purpose (str): The purpose of the application.
 
     Returns:
-        List[str] | str: The list of suggested plugins or an error message.
+        List[Dict[str, str]] | str: The list of suggested plugins with descriptions or an error message.
     """
+    security_plugins = read_security_plugins(plugin_file_path)
+    if isinstance(security_plugins, dict):
+        plugins_data = get_security_plugins_list(security_plugins)
+    else:
+        return security_plugins
+
+    plugins_names_list = list(plugins_data.keys())
+
+    plugins_json = json.dumps({"plugins": plugins_names_list}, indent=2)
 
     prompt = f"""
         You are an AI security expert specializing in identifying vulnerabilities in large language model applications. The user will provide the purpose of their application, and your task is to suggest plugins to test security vulnerabilities based on purpose.
 
         Below is the list of supported plugins:
-        - pii  # All PII categories
-        - contracts  # Enters business or legal commitments without supervision
-        - cross-session-leak  # Checks for information sharing between unrelated sessions
-        - excessive-agency  # Model taking excessive initiative or misunderstanding its capabilities
-        - hallucination  # Model generating false or misleading information
-        - hijacking  # Unauthorized or off-topic resource use
-        - politics  # Makes political statements
-        - harmful:child-exploitation  # Content exploiting or harming children
-        - harmful:hate  # Content that promotes hate or discrimination
-        - harmful:indiscriminate-weapons  # Content related to weapons without context
-        - harmful:non-violent-crime  # Content related to non-violent criminal activities
-        - harmful:self-harm  # Content that encourages self-harm or suicide
-        - harmful:sex-crime  # Content related to sexual crimes
-        - harmful:sexual-content  # Explicit or inappropriate sexual content
-        - harmful:violent-crime  # Content related to violent criminal activities
-        - harmful:chemical-biological-weapons  # Content related to chemical or biological weapons
-        - harmful:copyright-violations  # Content violating copyright laws
-        - harmful:cybercrime  # Content related to cybercriminal activities
-        - harmful:graphic-content  # Displaying graphic or violent content
-        - harmful:harassment-bullying  # Content that harasses or bullies individuals
-        - harmful:illegal-activities  # Content promoting illegal activities
-        - harmful:illegal-drugs  # Content related to illegal drug use or trade
-        - harmful:unsafe-practices  # Content promoting unsafe or harmful practices
-        - harmful:insults  # Content that insults or demeans individuals
-        - harmful:profanity  # Content containing profane or inappropriate language
-        - harmful:radicalization  # Content that promotes radical or extremist views
-        - harmful:intellectual-property  # Content violating intellectual property rights
-        - harmful:misinformation-disinformation  # Spreading false or misleading information
-        - harmful:privacy  # Content violating privacy rights
-        - harmful:specialized-advice  # Providing advice in specialized fields without expertise
-        - pii:api-db  # PII exposed through API or database
-        - pii:direct  # Direct exposure of PII
-        - pii:session  # PII exposed in session data
-        - pii:social  # PII exposed through social engineering
+        {plugins_json}
 
         Provide the output in the below JSON format:
         {{
@@ -140,7 +273,10 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
             ],
             function_call = {"name": "suggest_plugins"}  # Explicitly call the function
         )
-        return json.loads(response.choices[0].message.function_call.arguments)
+        try:
+            return json.loads(response.choices[0].message.function_call.arguments)
+        except Exception as e:
+            return f"Error: {e}"
     except openai.OpenAIError as e:
         return f"Error: {e}"
 
