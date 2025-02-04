@@ -9,6 +9,7 @@ import sys
 from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
 import subprocess
+from typing import Union
 
 
 def ensure_promptfoo_config(email: str):
@@ -50,7 +51,7 @@ def ensure_promptfoo_config(email: str):
             yaml.dump(existing_content, file, default_flow_style=False)
 
 
-def check_command_exists(command: str) -> bool:
+def check_package_exists(package_name: str) -> bool:
     """
     Check if a command exists in the system.
 
@@ -61,7 +62,7 @@ def check_command_exists(command: str) -> bool:
         bool: True if the command exists, False otherwise.
     """
     try:
-        subprocess.run([command, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run([package_name, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except FileNotFoundError:
         return False
@@ -110,6 +111,23 @@ def install_npm_dependency(package_name: str, version: str) -> None:
         sys.exit(f"Error installing npm package: {e}")
 
 
+def check_and_install_npm_dependency(package_name, version):
+    """
+    Check and install the npm dependency if it is not already installed.
+    """
+    if not check_package_exists("node"):
+        sys.exit("Node.js is not installed. Please install it first.")
+
+    if not check_package_exists("npm"):
+        sys.exit("npm is not installed. Please install Node.js, which includes npm.")
+
+    if check_npm_dependency(package_name, version):
+        print(f"Dependent npm package is already installed.")
+    else:
+        print(f"Installing npm package...")
+        install_npm_dependency(package_name, version)
+
+
 def get_suggested_plugins_with_description(plugins) -> List:
     """
     Get suggested plugins with description.
@@ -121,86 +139,68 @@ def get_suggested_plugins_with_description(plugins) -> List:
         List: List of suggested plugins with description.
     """
     suggested_security_plugins = []
-    security_plugins = get_all_security_plugins()
+    security_plugins = read_and_get_security_plugins()
     for plugin in plugins:
-        suggested_security_plugins.append(
-            {
-                "Name": plugin,
-                "Description": security_plugins[plugin]
-            }
-        )
+        if plugin in security_plugins:
+            suggested_security_plugins.append(
+                {
+                    "Name": plugin,
+                    "Description": security_plugins[plugin]
+                }
+            )
 
     return suggested_security_plugins
 
 
-def get_plugins_response(plugins) -> Dict:
+def get_all_security_plugins_with_description(plugin_file_path: str = None) -> List[Dict]:
     """
-    Plugins response.
-
-    Args:
-        plugins (List[str]): List of plugins.
-        status (str): Status.
-
-    Returns:
-        Dict: Plugins response.
-    """
-    suggested_plugins_response = {}
-    if isinstance(plugins, dict) and "plugins" in plugins:
-        suggested_plugins_response['plugins'] = get_suggested_plugins_with_description(plugins['plugins'])
-        suggested_plugins_response['status'] = 'success'
-    else:
-        suggested_plugins_response['status'] = 'failed'
-        suggested_plugins_response['message'] = str(plugins)
-        suggested_plugins_response['plugins'] = []
-    return suggested_plugins_response
-
-
-def read_security_plugins(plugin_file_path: str = None) -> Dict:
-    """
-    Reads the security plugins from the specified file.
-
-    Args:
-        plugin_file_path (str): The path to the security plugins file.
-
-    Returns:
-        Dict: The security plugins.
-    """
-    if not plugin_file_path:
-        plugin_file_path = os.path.join(os.path.dirname(__file__), "conf/security_plugins.json")
-    if not os.path.exists(plugin_file_path):
-        return f"Error: Security plugins file not found, file_path={plugin_file_path}"
-    return read_json_file(plugin_file_path)
-
-
-
-def get_all_security_plugins(plugin_file_path: str = None) -> List[Dict]:
-    """
-    Returns a list of all available security plugins.
+    Returns a list of all available security plugins with descriptions.
 
     Returns:
         List[Dict]:  A list of dictionaries containing the plugin name and description.
     """
 
-    security_plugins = read_security_plugins(plugin_file_path)
-    if isinstance(security_plugins, str):
-        return security_plugins
+    security_plugins = read_and_get_security_plugins(plugin_file_path)
+    security_plugins_with_description = []
+    for plugin_name, plugin_description in security_plugins.items():
+        security_plugins_with_description.append(
+            {
+                "Name": plugin_name,
+                "Description": plugin_description
+            }
+        )
+    return security_plugins_with_description
 
-    return get_security_plugins_list(security_plugins)
 
-
-def get_security_plugins_list(security_plugins_dict):
+def read_and_get_security_plugins(plugin_file_path: str = None) -> Union[str, List[Dict]]:
     """
-    Get the security plugins from the list of security plugins.
+    Reads the security plugins from the specified file and returns a list of available plugins.
 
     Args:
-        security_plugins_list (List[Dict]): List of security plugins.
+        plugin_file_path (str): The path to the security plugins file.
 
     Returns:
-        List[Dict]: List of security plugins.
+        Union[str, List[Dict]]: Error message if the file is not found or a list of security plugins.
     """
-    all_plugins_dict = security_plugins_dict['local_plugins']
+    # Default plugin file path
+    if not plugin_file_path:
+        plugin_file_path = os.path.join(os.path.dirname(__file__), "conf/security_plugins.json")
+
+    # Check if file exists
+    if not os.path.exists(plugin_file_path):
+        return f"Error: Security plugins file not found, file_path={plugin_file_path}"
+
+    # Read JSON content
+    security_plugins = read_json_file(plugin_file_path)
+
+    # Handle invalid JSON response
+    if not isinstance(security_plugins, dict):
+        return "Error: Invalid security plugins data."
+
+    # Extract plugins
+    all_plugins_dict = security_plugins.get('local_plugins', {})
     if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') not in {'1', 'true', 'True'}:
-        all_plugins_dict.update(security_plugins_dict['remote_plugins'])
+        all_plugins_dict.update(security_plugins.get('remote_plugins', {}))
 
     return all_plugins_dict
 
@@ -215,13 +215,11 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, plugin_file_path
     Returns:
         List[Dict[str, str]] | str: The list of suggested plugins with descriptions or an error message.
     """
-    security_plugins = read_security_plugins(plugin_file_path)
-    if isinstance(security_plugins, dict):
-        plugins_data = get_security_plugins_list(security_plugins)
-    else:
+    security_plugins = read_and_get_security_plugins(plugin_file_path)
+    if isinstance(security_plugins, str):
         return security_plugins
 
-    plugins_names_list = list(plugins_data.keys())
+    plugins_names_list = list(security_plugins.keys())
 
     plugins_json = json.dumps({"plugins": plugins_names_list}, indent=2)
 

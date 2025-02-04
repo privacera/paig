@@ -1,17 +1,16 @@
+import sys
 import uuid
 from typing import List, Dict
-import sys
 
 from .promptfoo_utils import (
     suggest_promptfoo_redteam_plugins_with_openai,
     generate_promptfoo_redteam_config,
     run_promptfoo_redteam_evaluation,
-    get_all_security_plugins,
-    get_plugins_response,
-    check_command_exists,
-    check_npm_dependency,
-    install_npm_dependency
+    get_all_security_plugins_with_description,
+    get_suggested_plugins_with_description,
+    check_and_install_npm_dependency
 )
+from .config import load_config_file
 
 
 def get_suggested_plugins(purpose: str) -> Dict:
@@ -24,8 +23,18 @@ def get_suggested_plugins(purpose: str) -> Dict:
         Returns:
             List[str]: List of suggested plugins.
         """
+        suggested_plugins_response = {}
         suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
-        return get_plugins_response(suggested_plugins)
+
+        if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
+            suggested_plugins_response['status'] = 'success'
+            suggested_plugins_response['message'] = 'Suggested plugins fetched successfully.'
+            suggested_plugins_response['plugins'] = get_suggested_plugins_with_description(suggested_plugins['plugins'])
+        else:
+            suggested_plugins_response['status'] = 'failed'
+            suggested_plugins_response['message'] = str(suggested_plugins)
+            suggested_plugins_response['plugins'] = []
+        return suggested_plugins_response
 
 
 def get_all_plugins(plugin_file_path: str = None) -> Dict:
@@ -35,28 +44,22 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
     Returns:
         Dict: List of all security plugins.
     """
-    return get_all_security_plugins(plugin_file_path)
+    return get_all_security_plugins_with_description(plugin_file_path)
 
 
 def init_setup():
     """
     Initialize the setup by checking and installing the npm dependency.
     """
-    if not check_command_exists("node"):
-        sys.exit("Node.js is not installed. Please install it first.")
-
-    if not check_command_exists("npm"):
-        sys.exit("npm is not installed. Please install Node.js, which includes npm.")
-
-    package_name = "promptfoo"
-    version = "0.102.4"
-
-    if check_npm_dependency(package_name, version):
-        print(f"Dependent npm package is already installed.")
+    eval_config = load_config_file()
+    if 'npm_dependency' in eval_config:
+        if 'promptfoo' in eval_config['npm_dependency']:
+            version = eval_config['npm_dependency']['promptfoo']
+            check_and_install_npm_dependency('promptfoo', version)
+        else:
+            sys.exit('No promptfoo dependency found in the configuration file.')
     else:
-        print(f"Dependent npm package, Installing now...")
-        install_npm_dependency(package_name, version)
-
+        sys.exit('No npm dependency found in the configuration file.')
 
 
 class PAIGEvaluator:

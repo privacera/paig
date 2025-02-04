@@ -15,18 +15,18 @@ def run_command_in_foreground(command: str, verbose: bool = False):
         tuple: (stdout, stderr) of the command.
 
     """
-    splited_command = command.split(" ")
-    env = os.environ.copy()
-
-    process = subprocess.Popen(
-        splited_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env
-    )
-
-    stdout_lines = []
-    stderr_lines = []
-
-    # Read output line by line
     try:
+        splited_command = command.split(" ")
+        env = os.environ.copy()
+
+        process = subprocess.Popen(
+            splited_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env
+        )
+
+        stdout_lines = []
+        stderr_lines = []
+
+        # Read output line by line
         while True:
             output = process.stdout.readline()
             error = process.stderr.readline()

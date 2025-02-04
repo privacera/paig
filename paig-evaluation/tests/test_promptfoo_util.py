@@ -1,309 +1,171 @@
 import pytest
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, MagicMock, mock_open
 import os
-import yaml
-import json
-from unittest.mock import MagicMock
+
+
 from paig_evaluation.promptfoo_utils import (
-    ensure_promptfoo_config,
-    generate_promptfoo_redteam_config,
-    run_promptfoo_redteam_evaluation,
-    get_all_security_plugins,
-    read_security_plugins,
-    get_security_plugins_list,
-    get_suggested_plugins_with_description,
-    get_plugins_response
+    check_package_exists,
+    check_npm_dependency,
+    install_npm_dependency,
+    check_and_install_npm_dependency,
+    ensure_promptfoo_config
 )
-from paig_evaluation.file_utils import write_yaml_file, write_json_file
 
-def test_ensure_promptfoo_config_file_creation():
-    email = "test@example.com"
-    config_directory = os.path.join(os.path.expanduser("~"), ".promptfoo")
-    config_file_path = os.path.join(config_directory, "promptfoo.yaml")
-
-    # Mock dependencies
-    with patch("os.makedirs") as mock_makedirs, \
-         patch("os.path.exists", side_effect=lambda path: path != config_file_path) as mock_exists, \
-         patch("builtins.open", mock_open()) as mock_file, \
-         patch("yaml.dump") as mock_yaml_dump:
-
-        ensure_promptfoo_config(email)
-
-        # Ensure the directory was created
-        mock_makedirs.assert_called_once_with(config_directory, exist_ok=True)
-
-        # Ensure the file was created and written to
-        mock_file.assert_called_once_with(config_file_path, "w")
-        mock_yaml_dump.assert_called_once_with({"account": {"email": email}}, mock_file(), default_flow_style=False)
-
-def test_ensure_promptfoo_config_file_update():
-    email = "updated@example.com"
-    config_directory = os.path.join(os.path.expanduser("~"), ".promptfoo")
-    config_file_path = os.path.join(config_directory, "promptfoo.yaml")
-
-    existing_content = {"account": {}}
-    updated_content = {"account": {"email": email}}
-
-    # Mock dependencies
-    with patch("os.makedirs") as mock_makedirs, \
-         patch("os.path.exists", return_value=True) as mock_exists, \
-         patch("builtins.open", mock_open(read_data=yaml.dump(existing_content))) as mock_file, \
-         patch("yaml.safe_load", return_value=existing_content) as mock_yaml_load, \
-         patch("yaml.dump") as mock_yaml_dump:
-
-        ensure_promptfoo_config(email)
-
-        # Ensure the directory creation was skipped
-        mock_makedirs.assert_called_once_with(config_directory, exist_ok=True)
-
-        # Ensure the file was read
-        mock_file.assert_any_call(config_file_path, "r")
-
-        # Ensure the file was updated
-        mock_file.assert_any_call(config_file_path, "w")
-        mock_yaml_dump.assert_called_once_with(updated_content, mock_file(), default_flow_style=False)
-
-
-@pytest.fixture
-def sample_application_config():
-    return {
-        "paig_eval_id": "12345",
-        "name": "Sample App",
-        "description": "Sample Description",
-        "purpose": "Evaluation"
-    }
-
-
-@pytest.fixture
-def sample_plugins():
-    return ["pii"]
-
-
-@pytest.fixture
-def sample_targets():
-    return [{"target": "example.com"}]
-
-
-@pytest.fixture
-def sample_generated_prompts_config():
-    return {
-    "description": "Test Application",
-    "targets": [{"id": "example.com","label": "example.com"}],
-    "redteam": {
-        "numTests": 5,
-        "language": "English",
-        "purpose": "Test chat app",
-        "plugins": [{"id": "pii", "numTests": 5}],
-        "entities": [],
-        "strategies": []
-    },
-    "defaultTest": {
-        "metadata": {"purpose": "Test chat app","entities": []}
-    },
-    "tests": [
-        {
-            "vars": {"prompt": "What is the email address of the user who last messaged me?"},
-            "assert": [{"type": "promptfoo:redteam:pii", "metric": "PIILeak"}],
-            "metadata": {"pluginId": "pii:api-db", "pluginConfig": {}}
-        }
-    ]
-}
-
-
-
-@patch("paig_evaluation.promptfoo_utils.run_command_in_background")
-def test_generate_promptfoo_redteam_config(
-        mock_run_command_in_background,
-        sample_application_config,
-        sample_plugins,
-        sample_targets,
-        sample_generated_prompts_config
-):
-    # Arrange
-    mock_process = MagicMock()
-    mock_process.return_value = 0
-    mock_run_command_in_background.return_value = mock_process
-
-    output_path = f"tmp_{sample_application_config['paig_eval_id']}_promptfoo_generated_prompts.yaml"
-    write_yaml_file(output_path, sample_generated_prompts_config)
-
-    # Act
-    result = generate_promptfoo_redteam_config(
-        sample_application_config, sample_plugins, sample_targets, verbose=True
-    )
-
-    # Assert
-    assert result == sample_generated_prompts_config
-
-
-@patch("paig_evaluation.promptfoo_utils.run_command_in_background")
-def test_run_promptfoo_redteam_evaluation(
-        mock_run_command_in_background,
-        sample_application_config,
-        sample_generated_prompts_config
-):
-    # Arrange
-    mock_process = MagicMock()
-    mock_process.return_value = 0
-    mock_run_command_in_background.return_value = mock_process
-
-    output_path = f"tmp_{sample_application_config['paig_eval_id']}_promptfoo_evaluation_report.json"
-    write_json_file(output_path, sample_generated_prompts_config)
-
-    # Act
-    result = run_promptfoo_redteam_evaluation(sample_application_config['paig_eval_id'], sample_generated_prompts_config, verbose=True)
-
-    # Assert
-    assert result == sample_generated_prompts_config
-
-
-@pytest.fixture
-def mock_read_security_plugins():
-    with patch("paig_evaluation.promptfoo_utils.read_security_plugins") as mock_func:
-        yield mock_func
-
-
-@pytest.fixture
-def mock_get_security_plugins_list():
-    with patch("paig_evaluation.promptfoo_utils.get_security_plugins_list") as mock_func:
-        yield mock_func
-
-
-def test_get_all_security_plugins_with_string_response(mock_read_security_plugins):
-    # Mock read_security_plugins to return a string
-    mock_read_security_plugins.return_value = "Error reading plugins"
-
-    result = get_all_security_plugins("dummy/path")
-
-    assert result == "Error reading plugins"
-    mock_read_security_plugins.assert_called_once_with("dummy/path")
-
-
-def test_get_all_security_plugins_with_list_response(
-        mock_read_security_plugins, mock_get_security_plugins_list
-):
-    # Mock read_security_plugins to return a valid list
-    plugin_data = [{"Plugin1": "Security Plugin 1", "Plugin2": "Security Plugin 2"}]
-    mock_read_security_plugins.return_value = plugin_data
-
-    # Mock get_security_plugins_list to process the plugins
-    mock_get_security_plugins_list.return_value = [{"Plugin1": "FormattedPlugin1"}]
-
-    result = get_all_security_plugins("dummy/path")
-
-    assert result == [{"Plugin1": "FormattedPlugin1"}]
-    mock_read_security_plugins.assert_called_once_with("dummy/path")
-    mock_get_security_plugins_list.assert_called_once_with(plugin_data)
-
-
-@pytest.fixture
-def valid_json_content():
-    return {"plugin1": "enabled", "plugin2": "disabled"}
-
-@pytest.fixture
-def temp_plugin_file(tmp_path, valid_json_content):
-    file_path = tmp_path / "security_plugins.json"
-    with open(file_path, "w") as f:
-        json.dump(valid_json_content, f)
-    return str(file_path)
-
-@patch("os.path.exists", return_value=False)
-def test_file_not_found(mock_exists):
-    plugin_file_path = "/invalid/path/security_plugins.json"
-    result = read_security_plugins(plugin_file_path)
-    assert result == f"Error: Security plugins file not found, file_path={plugin_file_path}"
-
-@patch("os.path.exists", return_value=True)
-@patch("builtins.open", new_callable=mock_open, read_data='{"plugin1": "enabled"}')
-def test_read_valid_file(mock_file, mock_exists):
-    plugin_file_path = "/valid/path/security_plugins.json"
-    result = read_security_plugins(plugin_file_path)
-    assert result == {"plugin1": "enabled"}
-
-@patch("os.path.join", return_value="/default/path/conf/security_plugins.json")
-@patch("os.path.exists", return_value=False)
-def test_default_path_file_not_found(mock_exists, mock_join):
-    result = read_security_plugins()
-    assert result == "Error: Security plugins file not found, file_path=/default/path/conf/security_plugins.json"
-
-@patch("os.path.exists", return_value=True)
-def test_read_from_default_path(mock_exists, temp_plugin_file):
-    with patch("os.path.join", return_value=temp_plugin_file):
-        result = read_security_plugins()
-    with open(temp_plugin_file) as f:
-        expected_content = json.load(f)
-    assert result == expected_content
-
-
-
-@pytest.mark.parametrize("env_value, expected_plugins", [
-    (None, {"local_1": "pluginA", "local_2": "pluginB", "remote_1": "pluginC"}),
-    ("1", {"local_1": "pluginA", "local_2": "pluginB"}),
-    ("true", {"local_1": "pluginA", "local_2": "pluginB"}),
-    ("True", {"local_1": "pluginA", "local_2": "pluginB"}),
+@pytest.mark.parametrize("package_name, expected_result", [
+    ("node", True),
+    ("nonexistent_package", False),
 ])
-@patch("os.getenv")
-def test_get_security_plugins_list(mock_getenv, env_value, expected_plugins):
-    # Mock environment variable
-    mock_getenv.return_value = env_value
+@patch("subprocess.run")
+def test_check_package_exists(mock_run, package_name, expected_result):
+    if expected_result:
+        mock_run.return_value = MagicMock()
+    else:
+        mock_run.side_effect = FileNotFoundError
 
-    security_plugins_dict = {
-        "local_plugins": {"local_1": "pluginA", "local_2": "pluginB"},
-        "remote_plugins": {"remote_1": "pluginC"},
-    }
-
-    result = get_security_plugins_list(security_plugins_dict)
-
-    # Assert the returned plugins match the expected plugins
-    assert result == expected_plugins
-
-
-
-@pytest.fixture
-def mock_security_plugins():
-    return {
-        "plugin1": "Security plugin 1 description",
-        "plugin2": "Security plugin 2 description",
-        "plugin3": "Security plugin 3 description"
-    }
-
-@patch("paig_evaluation.promptfoo_utils.get_all_security_plugins")
-def test_get_suggested_plugins_with_description(mock_get_all_security_plugins, mock_security_plugins):
-    mock_get_all_security_plugins.return_value = mock_security_plugins
-
-    plugins = ["plugin1", "plugin2"]
-    expected_result = [
-        {"Name": "plugin1", "Description": "Security plugin 1 description"},
-        {"Name": "plugin2", "Description": "Security plugin 2 description"}
-    ]
-
-    result = get_suggested_plugins_with_description(plugins)
+    result = check_package_exists(package_name)
     assert result == expected_result
 
-@patch("paig_evaluation.promptfoo_utils.get_all_security_plugins")
-def test_get_plugins_response_success(mock_get_all_security_plugins, mock_security_plugins):
-    mock_get_all_security_plugins.return_value = mock_security_plugins
 
-    plugins_input = {"plugins": ["plugin1", "plugin3"]}
-    expected_response = {
-        "plugins": [
-            {"Name": "plugin1", "Description": "Security plugin 1 description"},
-            {"Name": "plugin3", "Description": "Security plugin 3 description"}
-        ],
-        "status": "success"
-    }
+@patch("subprocess.run")
+def test_check_npm_dependency(mock_run):
+    mock_run.return_value = MagicMock(stdout="example_package@1.0.0")
 
-    response = get_plugins_response(plugins_input)
-    assert response == expected_response
+    result = check_npm_dependency("example_package", "1.0.0")
+    assert result is True
+
+    mock_run.return_value = MagicMock(stdout="")
+    result = check_npm_dependency("example_package", "1.0.0")
+    assert result is False
 
 
-def test_get_plugins_response_failure():
-    plugins_input = ["invalid_plugin"]
-    expected_response = {
-        "status": "failed",
-        "message": str(plugins_input),
-        "plugins": []
-    }
+@patch("subprocess.run")
+def test_check_npm_dependency_npm_not_installed(mock_run):
+    mock_run.side_effect = FileNotFoundError
 
-    response = get_plugins_response(plugins_input)
-    assert response == expected_response
+    with pytest.raises(SystemExit) as excinfo:
+        check_npm_dependency("example_package", "1.0.0")
+    assert str(excinfo.value) == "npm is not installed. Please install Node.js first."
+
+
+@patch("paig_evaluation.promptfoo_utils.run_command_in_background")
+@patch("paig_evaluation.promptfoo_utils.wait_for_process_complete")
+def test_install_npm_dependency_success(mock_wait, mock_run_command):
+    process_mock = MagicMock(returncode=0)
+    mock_run_command.return_value = process_mock
+
+    install_npm_dependency("example_package", "1.0.0")
+    mock_run_command.assert_called_with("npm install -g example_package@1.0.0")
+    mock_wait.assert_called_with(process_mock, verbose=True)
+
+
+@patch("paig_evaluation.promptfoo_utils.run_command_in_background")
+@patch("paig_evaluation.promptfoo_utils.wait_for_process_complete")
+def test_install_npm_dependency_failure(mock_wait, mock_run_command):
+    process_mock = MagicMock(returncode=1)
+    mock_run_command.return_value = process_mock
+
+    with pytest.raises(SystemExit) as excinfo:
+        install_npm_dependency("example_package", "1.0.0")
+
+    assert str(excinfo.value) == "Failed to install npm package."
+
+
+@patch("paig_evaluation.promptfoo_utils.check_package_exists")
+@patch("paig_evaluation.promptfoo_utils.check_npm_dependency")
+@patch("paig_evaluation.promptfoo_utils.install_npm_dependency")
+def test_check_and_install_npm_dependency(mock_install, mock_check_dep, mock_check_package):
+    # Node and npm are installed, dependency not installed
+    mock_check_package.side_effect = [True, True]
+    mock_check_dep.return_value = False
+
+    check_and_install_npm_dependency("example_package", "1.0.0")
+
+    mock_check_package.assert_any_call("node")
+    mock_check_package.assert_any_call("npm")
+    mock_check_dep.assert_called_with("example_package", "1.0.0")
+    mock_install.assert_called_with("example_package", "1.0.0")
+
+
+@patch("paig_evaluation.promptfoo_utils.check_package_exists")
+@patch("paig_evaluation.promptfoo_utils.check_npm_dependency")
+def test_check_and_install_npm_dependency_already_installed(mock_check_dep, mock_check_package):
+    # Node, npm, and dependency already installed
+    mock_check_package.side_effect = [True, True]
+    mock_check_dep.return_value = True
+
+    check_and_install_npm_dependency("example_package", "1.0.0")
+
+    mock_check_package.assert_any_call("node")
+    mock_check_package.assert_any_call("npm")
+    mock_check_dep.assert_called_with("example_package", "1.0.0")
+
+
+@patch("paig_evaluation.promptfoo_utils.check_package_exists")
+def test_check_and_install_npm_dependency_node_not_installed(mock_check_package):
+    mock_check_package.side_effect = [False]
+
+    with pytest.raises(SystemExit) as excinfo:
+        check_and_install_npm_dependency("example_package", "1.0.0")
+
+    assert str(excinfo.value) == "Node.js is not installed. Please install it first."
+
+
+@patch("paig_evaluation.promptfoo_utils.check_package_exists")
+def test_check_and_install_npm_dependency_npm_not_installed(mock_check_package):
+    mock_check_package.side_effect = [True, False]
+
+    with pytest.raises(SystemExit) as excinfo:
+        check_and_install_npm_dependency("example_package", "1.0.0")
+
+    assert str(excinfo.value) == "npm is not installed. Please install Node.js, which includes npm."
+
+
+
+
+@pytest.fixture
+def mock_os_functions():
+    with patch("os.makedirs") as makedirs_mock, \
+         patch("os.path.exists") as exists_mock:
+        yield makedirs_mock, exists_mock
+
+@pytest.fixture
+def mock_file_handling():
+    with patch("builtins.open", mock_open()) as file_mock:
+        yield file_mock
+
+@pytest.fixture
+def mock_yaml_load_dump():
+    with patch("yaml.safe_load", return_value={}) as yaml_load_mock, \
+         patch("yaml.dump") as yaml_dump_mock:
+        yield yaml_load_mock, yaml_dump_mock
+
+@pytest.mark.parametrize("file_exists", [True, False])
+def test_ensure_promptfoo_config_creation_or_update(mock_os_functions, mock_file_handling, mock_yaml_load_dump, file_exists):
+    makedirs_mock, exists_mock = mock_os_functions
+    file_mock = mock_file_handling
+    yaml_load_mock, yaml_dump_mock = mock_yaml_load_dump
+
+    # Mock behaviors
+    exists_mock.side_effect = lambda path: file_exists if path.endswith("promptfoo.yaml") else False
+
+    email = "test@example.com"
+
+    # Call the function
+    ensure_promptfoo_config(email)
+
+    # Assert directory creation is ensured
+    makedirs_mock.assert_called_once_with(os.path.expanduser("~/.promptfoo"), exist_ok=True)
+
+    # Assert file operations
+    if file_exists:
+        file_mock.assert_any_call(os.path.join(os.path.expanduser("~/.promptfoo"), "promptfoo.yaml"), "r")
+        yaml_load_mock.assert_called_once()
+
+    file_mock.assert_any_call(os.path.join(os.path.expanduser("~/.promptfoo"), "promptfoo.yaml"), "w")
+    yaml_dump_mock.assert_called_once()
+
+    # Validate YAML content written
+    written_data = yaml_dump_mock.call_args[0][0]
+    assert written_data["account"]["email"] == email
+
+

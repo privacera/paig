@@ -1,48 +1,88 @@
 import pytest
-from unittest.mock import patch, MagicMock
 import subprocess
+import time
 from paig_evaluation.command_utils import (
     run_command_in_foreground,
     run_command_in_background,
     check_process_status,
-    wait_for_process_complete,
+    wait_for_process_complete
 )
 
-@pytest.fixture
-def mock_popen():
-    with patch('subprocess.Popen') as mock_popen:
-        mock_process = MagicMock()
-        mock_process.stdout.readline.side_effect = ["line1\n", "line2\n", ""]
-        mock_process.stderr.readline.side_effect = ["error1\n", "error2\n", ""]
-        mock_process.poll.side_effect = [None, None, 0]
-        mock_process.communicate.return_value = ("remaining_stdout", "remaining_stderr")
-        mock_popen.return_value = mock_process
-        yield mock_popen
-
-def test_run_command_in_foreground(mock_popen):
-    command = "echo test"
-    stdout, stderr = run_command_in_foreground(command, verbose=True)
-
-    assert stdout == "line1\nline2\nremaining_stdout"
-    assert stderr == "error1\nerror2\nremaining_stderr"
+@pytest.mark.parametrize("command, expected_output", [
+    ("echo Hello", "Hello"),
+    ("echo pytest", "pytest"),
+])
+def test_run_command_in_foreground(command, expected_output):
+    stdout, stderr = run_command_in_foreground(command)
+    assert stderr == "", f"Expected no stderr, got: {stderr}"
+    assert expected_output in stdout, f"Expected output '{expected_output}' not found in stdout: {stdout}"
 
 
-def test_run_command_in_background(mock_popen):
-    command = "echo background"
+def test_run_command_in_foreground_verbose(capfd):
+    command = "echo VerboseTest"
+    run_command_in_foreground(command, verbose=True)
+    captured = capfd.readouterr()
+    assert "VerboseTest" in captured.out
+
+
+def test_run_command_in_foreground_stderr_verbose(capfd):
+    command = "bash -c 'echo ErrorTest'"
+    run_command_in_foreground(command, verbose=True)
+    captured = capfd.readouterr()
+    assert "ErrorTest" in captured.err
+
+
+def test_run_command_in_foreground_exception():
+    with pytest.raises(RuntimeError) as exc_info:
+        run_command_in_foreground("invalid_command")
+    assert "Error running command" in str(exc_info.value)
+
+
+def test_run_command_in_background():
+    command = "sleep 0.1"
     process = run_command_in_background(command)
+    assert isinstance(process, subprocess.Popen), "Expected process to be an instance of subprocess.Popen"
+    assert check_process_status(process) == 1, "Process should be running initially"
 
-    assert process == mock_popen.return_value
+    # Wait for process to complete
+    time.sleep(0.3)
+    assert check_process_status(process) == 0, "Process should have completed"
 
 
-def test_check_process_status(mock_popen):
-    process = run_command_in_background("dummy command")
-    status = check_process_status(process)
-    assert status == 1
-    process.poll.assert_called()
+def test_run_command_in_background_exception():
+    with pytest.raises(FileNotFoundError) as exc_info:
+        run_command_in_background("invalid_command")
+    assert "No such file or directory" in str(exc_info.value)
 
-def test_wait_for_process_complete(mock_popen):
-    process = run_command_in_background("dummy command")
+
+def test_check_process_status():
+    process = subprocess.Popen(["sleep", "0.1"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    assert check_process_status(process) == 1, "Process should be running initially"
+    time.sleep(0.3)
+    assert check_process_status(process) == 0, "Process should have completed"
+
+
+def test_check_process_status_exception():
+    with pytest.raises(RuntimeError) as exc_info:
+        check_process_status(None)  # Passing invalid process
+    assert "Error checking process status" in str(exc_info.value)
+
+
+def test_wait_for_process_complete_verbose(capfd):
+    process = subprocess.Popen(["echo", "AsyncWaitTest"], stdout=subprocess.PIPE, text=True)
     wait_for_process_complete(process, verbose=True)
+    captured = capfd.readouterr()
+    assert "AsyncWaitTest" in captured.out
 
-    process.poll.assert_called()
-    process.stdout.readline.assert_called()
+
+def test_wait_for_process_complete():
+    process = subprocess.Popen(["echo", "WaitCompleteTest"], stdout=subprocess.PIPE, text=True)
+    wait_for_process_complete(process)
+    stdout, _ = process.communicate()
+    assert "WaitCompleteTest" in stdout.strip(), f"Expected output not found in stdout: {stdout.strip()}"
+
+
+def test_wait_for_process_complete_exception():
+    with pytest.raises(RuntimeError) as exc_info:
+        wait_for_process_complete(None)  # Passing invalid process
+    assert "Error checking process status" in str(exc_info.value)
