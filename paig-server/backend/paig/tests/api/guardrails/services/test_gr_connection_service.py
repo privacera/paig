@@ -242,7 +242,7 @@ async def test_get_all_guardrail_connections_decrypted(
 
         # Assertions
         mock_get_all_records.assert_called_once_with(gr_conn_filter.dict())
-        mock_decrypt.assert_called_once_with(EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+        mock_decrypt.assert_called_with(EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         assert result == [gr_connection_view_encrypted]
 
 

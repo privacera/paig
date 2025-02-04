@@ -212,7 +212,6 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The created Guardrail Connection view object.
         """
         await self.gr_connection_request_validator.validate_create_request(request)
-        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         await self.encrypt_connection_details(request)
 
         return await self.create_record(request, exclude_fields={"encrypt_fields"})
@@ -312,6 +311,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         return await self.delete_record(id)
 
     async def encrypt_connection_details(self, gr_connection):
+        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         connection_details = gr_connection.connection_details
         data_encryptor = None
         for key, value in connection_details.items():
@@ -329,6 +329,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
 
     async def decrypt_connection_details(self, gr_connection):
+        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         connection_details = gr_connection.connection_details
         data_encryptor = None
         for key, value in connection_details.items():
