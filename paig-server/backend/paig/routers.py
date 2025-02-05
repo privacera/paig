@@ -20,6 +20,6 @@ router.include_router(user_router, prefix="/account-service", tags=["User"])
 router.include_router(authz_router, prefix="/authz-service/api", tags=["Authorization"])
 router.include_router(data_service_router, prefix="/data-service", tags=["Data Service"])
 router.include_router(shield_router, prefix="/shield", tags=["Shield"])
-router.include_router(evaluation_router_paths, prefix="/evaluation-service", tags=["Evaluation"])
+router.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"])
 
 __all__ = ["router"]

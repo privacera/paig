@@ -91,7 +91,7 @@ def threaded_run_evaluation(eval_id, eval_config, target_hosts, application_name
             await update_table_fields('evaluation', update_eval_params, 'eval_id', eval_id)
         except Exception as err:
             logger.error('Error while updating DB: ' + str(err))
-        print('report genereted')
+        print('report generated')
         return report
 
     # Run the async operations in a new event loop
@@ -223,7 +223,7 @@ class EvaluationService:
 
     async def rerun_evaluation_by_id(self, eval_id, owner):
         try:
-            existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)
+            existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('eval_id', eval_id)
             eval_obj = self.get_paig_evaluator()
             new_id = eval_obj.init()
             new_id = new_id['paig_eval_id']

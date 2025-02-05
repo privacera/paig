@@ -54,16 +54,12 @@ async def get_evaluation_results(
                                                                        fromTime, toTime)
 
 
-
-
-
 @evaluation_router.post("/{eval_id}/rerun")
 async def evaluation_rerun(
-    eval_id: int,
+    eval_id: str,
     evaluation_controller: EvaluationController = evaluator_controller_instance,
     user: dict = Depends(get_auth_user),
 ):
-    # return await evaluation_controller.run_evaluation(evaluation_config)
     try:
         return await evaluation_controller.rerun_evaluation(eval_id, user)
     except Exception as e:

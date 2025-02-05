@@ -1,18 +1,21 @@
 from sqlalchemy import and_
 from api.evaluation.api_schemas.eval_config_schema import EvalConfigView
-from api.evaluation.database.db_models import EvaluationConfigModel, EvaluationConfigHistoryModel
+from api.evaluation.database.db_models import EvaluationConfigModel, EvaluationConfigHistoryModel, EvaluationModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
+from sqlalchemy import func, outerjoin
+from sqlalchemy.orm import aliased
 from core.db_session import session
 from core.controllers.paginated_response import Pageable, create_pageable_response
 import logging
 
 logger = logging.getLogger(__name__)
 
+EvalRun = aliased(EvaluationModel)
 
 class EvaluationConfigRepository(BaseOperations[EvaluationConfigModel]):
 
@@ -39,8 +42,10 @@ class EvaluationConfigRepository(BaseOperations[EvaluationConfigModel]):
         Returns:
             List[EvalConfigView]: The list of evaluation configurations.
         """
-        records, total_count =  await self.list_records(search_filters, page_number, size, sort)
-        v_records = [self.view_type.model_validate(record) for record in records]
+        records, total_count =  await self.list_records(search_filters, page_number, size, sort, relation_load_options=[selectinload(self.model_class.eval_runs)])
+        v_records = [
+            self.view_type.model_validate({**record.__dict__, "eval_run_count": len(record.eval_runs) if hasattr(record, "eval_runs") and record.eval_runs else 0 }) for record in records
+        ]
         return create_pageable_response(v_records, total_count, page_number, size, sort)
 
     async def create_eval_config(self, body_params: dict):

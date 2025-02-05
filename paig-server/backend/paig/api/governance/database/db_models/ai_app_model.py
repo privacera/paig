@@ -32,4 +32,9 @@ class AIApplicationModel(BaseSQLModel):
 
     app_config = relationship("AIApplicationConfigModel", back_populates="ai_app", uselist=False, cascade="all, delete-orphan")
     app_policies = relationship("AIApplicationPolicyModel", back_populates="ai_app", cascade="all, delete-orphan")
-    host = relationship("EvaluationTargetModel", back_populates="ai_app", cascade="all, delete-orphan")
+    host = relationship(
+        "EvaluationTargetModel",
+        back_populates="ai_app",
+        cascade="all, delete-orphan",
+        primaryjoin="AIApplicationModel.id == foreign(EvaluationTargetModel.application_id)"
+    )

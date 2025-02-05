@@ -35,7 +35,9 @@ async def save_eval_target(
         user: dict = Depends(get_auth_user),
         eval_config_controller: EvaluationConfigController = eval_config_controller_instance
 ):
-    return await eval_config_controller.create_eval_config(body_params=body_params.model_dump())
+    body_params = body_params.model_dump()
+    body_params['owner'] = user['username']
+    return await eval_config_controller.create_eval_config(body_params=body_params)
 
 
 @evaluation_config_router.put("/{config_id}")
