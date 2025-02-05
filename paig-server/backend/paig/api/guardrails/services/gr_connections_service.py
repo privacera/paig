@@ -212,7 +212,8 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The created Guardrail Connection view object.
         """
         await self.gr_connection_request_validator.validate_create_request(request)
-        await self.encrypt_connection_details(request)
+        if request.encrypt_fields:
+            await self.encrypt_connection_details(request)
 
         return await self.create_record(request, exclude_fields={"encrypt_fields"})
 
@@ -297,7 +298,8 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The updated configuration of the Guardrail Connection.
         """
         await self.gr_connection_request_validator.validate_update_request(id, request)
-        await self.encrypt_connection_details(request)
+        if request.encrypt_fields:
+            await self.encrypt_connection_details(request)
         return await self.update_record(id, request, exclude_fields={"encrypt_fields"})
 
     async def delete(self, id: int):
@@ -311,12 +313,12 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         return await self.delete_record(id)
 
     async def encrypt_connection_details(self, gr_connection):
-        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         connection_details = gr_connection.connection_details
         data_encryptor = None
         for key, value in connection_details.items():
-            if not value.startswith("GuardrailEncrypt:") and gr_connection.encrypt_fields and key in gr_connection.encrypt_fields:
+            if not value.startswith("GuardrailEncrypt:") and key in gr_connection.encrypt_fields:
                 if data_encryptor is None:
+                    await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
                     data_encryptor = await self.create_data_encryptor_obj()
                 gr_connection.connection_details[key] = "GuardrailEncrypt:" + data_encryptor.encrypt(data=str(value))
 
@@ -329,13 +331,13 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
 
     async def decrypt_connection_details(self, gr_connection):
-        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
         connection_details = gr_connection.connection_details
         data_encryptor = None
         for key, value in connection_details.items():
             if value.startswith("GuardrailEncrypt:"):
                 try:
                     if data_encryptor is None:
+                        await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
                         data_encryptor = await self.create_data_encryptor_obj()
                     gr_connection.connection_details[key] = data_encryptor.decrypt(data=value.replace("GuardrailEncrypt:", ""))
                 except Exception as e:

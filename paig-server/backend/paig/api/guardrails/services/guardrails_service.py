@@ -390,8 +390,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             result.guardrail_connection_details = gr_connections[0].connection_details if gr_connections else None
 
             # Fetch encryption key and add id of it to the connection details
-            encryption_key = await self.guardrail_connection_service.get_encryption_key()
-            result.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+            try:
+                encryption_key = await self.guardrail_connection_service.get_encryption_key()
+                if encryption_key:
+                    result.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+            except NotFoundException:
+                pass
         else:
             result.guardrail_connection_details = None
             result.guardrail_provider_response = None
@@ -435,7 +439,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             gr_conn_details = {gr_conn.name: gr_conn.connection_details for gr_conn in gr_connections}
 
             # Fetch encryption key
-            encryption_key = await self.guardrail_connection_service.get_encryption_key()
+            try:
+                encryption_key = await self.guardrail_connection_service.get_encryption_key()
+            except NotFoundException:
+                pass
 
         # Initialize a dictionary to store guardrails by their ID
         result: List[GuardrailView] = []
@@ -443,7 +450,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Iterate over the guardrails and process them
         for guardrail in guardrails:
             guardrail.guardrail_connection_details = gr_conn_details.get(guardrail.guardrail_connection_name)
-            guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+            if encryption_key:
+                guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
             guardrail_view = GuardrailView.model_validate(guardrail)
             guardrail_view.application_keys = None
             result.append(guardrail_view)  # Add it to the result
