@@ -1,8 +1,8 @@
 """Added evaluation tables
 
-Revision ID: 93ac09b41084
+Revision ID: e8185fbdc864
 Revises: a95b604c47fb
-Create Date: 2025-02-05 21:32:24.680157
+Create Date: 2025-02-06 14:29:22.152307
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '93ac09b41084'
+revision: str = 'e8185fbdc864'
 down_revision: Union[str, None] = 'a95b604c47fb'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,9 +38,12 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_eval_config_id'), 'eval_config', ['id'], unique=False)
     op.create_table('eval_run',
+    sa.Column('name', sa.String(length=255), nullable=True),
     sa.Column('owner', sa.String(length=255), nullable=False),
     sa.Column('eval_id', sa.String(length=255), nullable=False),
     sa.Column('config_id', sa.String(length=255), nullable=False),
+    sa.Column('config_name', sa.String(), nullable=True),
+    sa.Column('application_names', sa.String(), nullable=True),
     sa.Column('cumulative_result', sa.String(), nullable=True),
     sa.Column('passed', sa.String(), nullable=True),
     sa.Column('failed', sa.String(), nullable=True),

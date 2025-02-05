@@ -7,8 +7,8 @@ from core.factory.database_initiator import BaseAPIFilter
 class ConfigCommonModel(BaseModel):
     purpose: str = Field(..., max_length=1024)
     name: str = Field(..., max_length=1024)
-    categories: str = Field(..., max_length=1024)
-    custom_prompts: str = Field(..., max_length=1024)
+    categories: list[Any]
+    custom_prompts: list[Any]
 
 
 class ConfigCreateRequest(ConfigCommonModel):

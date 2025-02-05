@@ -34,3 +34,10 @@ class EvaluationConfigHistoryModel(CommonBase):
     eval_config_id = Column(Integer, ForeignKey('eval_config.id'), nullable=False)
 
     eval_config = relationship('EvaluationConfigModel', back_populates="history")
+
+    # Relationship with EvaluationModel based on config_id
+    eval_runs = relationship(
+        "EvaluationModel",
+        primaryjoin="EvaluationModel.config_id == foreign(EvaluationConfigHistoryModel.id)",
+        viewonly=True
+    )

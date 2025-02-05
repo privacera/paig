@@ -1,10 +1,11 @@
-from sqlalchemy import and_
+from sqlalchemy import and_, func, case, or_, union_all
 from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationTargetModel
+from api.governance.database.db_models.ai_app_model import AIApplicationModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
@@ -21,6 +22,82 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
         """
         super().__init__(EvaluationTargetModel)
 
+    async def get_application_list_with_filters(
+            self,
+            include_filters,
+            exclude_filters,
+            page: int,
+            size: int,
+            sort,
+            min_value,
+            max_value
+    ):
+        all_filters = []
+        skip = 0 if page is None else (page * size)
+        # Define common columns
+        columns = [
+            AIApplicationModel.id.label("ai_application_model_id"),
+            EvaluationTargetModel.id.label("eval_target_model_id"),
+            case(
+                (EvaluationTargetModel.application_id.isnot(None), AIApplicationModel.name),
+                # If matched, take AIApplicationModel.name
+                else_=EvaluationTargetModel.name
+            ).label("application_name"),
+            AIApplicationModel.description.label("ai_application_desc"),
+            EvaluationTargetModel.url.label("eval_target_model_url"),
+        ]
+
+        # Query 1: Get all AIApplicationModel entries (Left Join)
+        query1 = select(*columns).outerjoin(
+            EvaluationTargetModel, AIApplicationModel.id == EvaluationTargetModel.application_id
+        )
+
+        # Query 2: Get all EvaluationTargetModel entries (Right Join Simulation)
+        query2 = select(*columns).outerjoin(
+            AIApplicationModel, AIApplicationModel.id == EvaluationTargetModel.application_id
+        )
+        combined_query = union_all(query1, query2).subquery()
+        query = (
+            select(
+                combined_query.c.ai_application_model_id,
+                combined_query.c.eval_target_model_id,
+                combined_query.c.application_name,
+                combined_query.c.ai_application_desc,
+                combined_query.c.eval_target_model_url,
+            )
+            .distinct(combined_query.c.eval_target_model_id)
+            # Remove duplicates
+        )
+
+        # query = select(combined_query)
+        # Handle include_filters on application_name
+        if include_filters and "name" in include_filters.model_dump():
+            filter_value = include_filters.model_dump()["name"]
+            if filter_value:
+                query = query.filter(
+                    or_(
+                        combined_query.c.application_name.like(f"%{filter_value}%")
+                    )
+                )
+
+        # Handle exclude_filters on application_name
+        if exclude_filters and "name" in exclude_filters.model_dump():
+            filter_value = exclude_filters.model_dump()["name"]
+            if filter_value:
+                query = query.filter(
+                    combined_query.c.application_name.notlike(f"%{filter_value}%")
+                )
+
+        if all_filters:
+            query = query.filter(and_(*all_filters))
+        total_count_query = select(func.count()).select_from(query.subquery())
+        total_count = (await session.execute(total_count_query)).scalar()
+
+        query = query.limit(size).offset(skip)
+        results = await session.execute(query)
+        return results.all(), total_count
+
+
     async def get_target_by_app_id(self, app_id: int):
         try:
             filters = {'application_id': app_id}
@@ -28,10 +105,16 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
         except NoResultFound:
             return None
 
+    async def get_target_by_id(self, target_id):
+        try:
+            filters = {'id': target_id}
+            return await self.get_by(filters, unique=True)
+        except NoResultFound:
+            return None
+
     @Transactional(propagation=Propagation.REQUIRED)
-    async def create_app_target(self, app_id, eval_target):
-        target_data = {'application_id': app_id, 'config': eval_target}
-        target = EvaluationTargetModel(**target_data)
+    async def create_app_target(self, eval_target):
+        target = EvaluationTargetModel(**eval_target)
         session.add(target)
         await session.flush()
         return target
@@ -43,8 +126,8 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update_app_target(self, params, target_model):
-        target_data = {'config': params, 'update_time': current_utc_time()}
-        target_model.set_attribute(target_data)
+        params['update_time']  = current_utc_time()
+        target_model.set_attribute(params)
         return target_model
 
     async def get_target_hosts_by_in_list(self, field: str, values: list):
@@ -52,5 +135,13 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             apply_in_list_filter = True
             filters = {field: values}
             return await self.get_all(filters, apply_in_list_filter=apply_in_list_filter, columns=[EvaluationTargetModel.config, EvaluationTargetModel.application_id])
+        except NoResultFound:
+            return None
+
+    async def get_applications_by_in_list(self, field: str, values: list):
+        try:
+            apply_in_list_filter = True
+            filters = {field: values}
+            return await self.get_all(filters, apply_in_list_filter=apply_in_list_filter)
         except NoResultFound:
             return None

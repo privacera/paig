@@ -5,8 +5,8 @@ from fastapi import APIRouter, Request, Response, Depends, Query, HTTPException
 
 from api.evaluation.api_schemas.eval_config_schema import ConfigCreateRequest
 from core.controllers.paginated_response import Pageable
-from api.evaluation.api_schemas.eval_schema import EvaluationCommonModel, EvaluationConfigPlugins, IncludeQueryParams,\
-include_query_params, exclude_query_params, QueryParamsBase
+from api.evaluation.api_schemas.eval_schema import IncludeQueryParams,\
+include_query_params, exclude_query_params, QueryParamsBase, GetCategories
 from core.utils import SingletonDepends
 from core.security.authentication import get_auth_user
 from api.evaluation.controllers.eval_controllers import EvaluationController
@@ -31,12 +31,12 @@ async def evaluation_run(
     user: dict = Depends(get_auth_user),
 ):
     try:
-        return await evaluation_controller.run_evaluation(config_id)
+        return await evaluation_controller.run_evaluation(config_id, user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@evaluation_router.get("/search")
+@evaluation_router.get("/report/list")
 async def get_evaluation_results(
         request: Request,
         response: Response,
@@ -77,3 +77,11 @@ async def evaluation_delete(
         return await evaluation_controller.delete_evaluation(eval_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@evaluation_router.post("/categories")
+async def get_categories(
+    body_params: GetCategories,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+):
+    purpose = body_params.purpose
+    return await evaluation_controller.get_categories(purpose)

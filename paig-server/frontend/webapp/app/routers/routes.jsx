@@ -31,9 +31,9 @@ import CMetaData from 'containers/metadata/c_metadata';
 import CReporting from 'containers/reports/c_reporting';
 import CSavedReportsListing from 'containers/reports/c_saved_reports_listing';
 
-import CEvaluation from  'containers/applications/evaluation/c_evaluation';
-import CEvaluationForm from '../containers/applications/evaluation/c_evaluation_form';
-import CEvaluationReportsList from '../containers/applications/evaluation/c_evaluation_report_list';
+import CEvaluationForm from '../containers/audits/evaluation/c_evaluation_create_form';
+import CEvaluationConfigList from '../containers/audits/evaluation/c_evaluation_config_list';
+import CEvaluationReportsList from '../containers/audits/evaluation/c_evaluation_report_list';
 
 history.listen((location, action) => {
     // scroll to top when route changes
@@ -61,9 +61,9 @@ const Routes = () => (
         <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
         <Route path="/ai_applications" name="AI Applications" component={Authorization(CAIApplications, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
 
-        <Route path="/evaluation_reports" name="Evaluations" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.PAIG_EVALUATION])} />
-        <Route path="/evaluation/create" name="Generate Evaluations" component={Authorization(CEvaluationForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.PAIG_EVALUATION])} />
-        <Route path="/evaluations" name="Evaluations" component={Authorization(CEvaluation, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.PAIG_EVALUATION])} />
+        <Route path="/eval_reports" name="Evaluations" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.PAIG_EVALUATION])} />
+        <Route path="/eval/create" name="Create Evaluations" component={Authorization(CEvaluationForm, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.PAIG_EVALUATION])} />
+        <Route path="/eval_configs" name="Evaluations" component={Authorization(CEvaluationConfigList, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.PAIG_EVALUATION])} />
         
         <Route path="/vector_db/create" name="Create Vector DB" component={Authorization(CVectorDBCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />

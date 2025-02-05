@@ -1,5 +1,4 @@
 import os
-
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Literal, List, Optional
 from core.factory.database_initiator import BaseAPIFilter
@@ -9,21 +8,17 @@ from datetime import datetime
 
 REPORT_URL = os.environ.get('REPORT_SERVER_BASE_URL', 'http://localhost:15500')
 
-
-class EvaluationCommonModel(BaseModel):
-    application_name: str = Field(..., max_length=1024)
+class GetCategories(BaseModel):
     purpose: str = Field(..., max_length=1024)
-    eval_id: str = Field(..., max_length=1024)
-
 
 class BaseEvaluationView(BaseModel):
-    application_name: str = Field(..., max_length=1024)
+    application_names: str = Field(..., max_length=1024)
+    config_name: str = Field(..., max_length=1024)
     purpose: str = Field(..., max_length=1024)
-    application_client: str = Field(..., max_length=1024)
     eval_id: str = Field(..., max_length=1024)
+    config_id: int
     status: str = Field(..., max_length=1024)
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
-    categories: str = Field(..., max_length=1024)
     passed: str
     failed: str
     id: int
@@ -36,15 +31,9 @@ class BaseEvaluationView(BaseModel):
     )
 
 
-class EvaluationConfigPlugins(EvaluationCommonModel):
-    categories: List[str]
-    static_prompts: List[dict]
-
-
 class QueryParamsBase(BaseAPIFilter):
-    status: Optional[str] = Field(None, description="The status of the resource")
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
-    application_name: Optional[str] = Field(None, description="The Application name", alias="application_name")
+    application_names: Optional[str] = Field(None, description="The Application name", alias="application_names")
 
 
 
@@ -52,18 +41,18 @@ class IncludeQueryParams(QueryParamsBase):
     pass
 
 def include_query_params(
-        include_query_application_name: Optional[str] = Query(None, alias="includeQuery.applicationName"),
+        include_query_application_names: Optional[str] = Query(None, alias="includeQuery.application_names"),
 ) -> IncludeQueryParams:
     return IncludeQueryParams(
-        application_name=include_query_application_name,
+        application_names=include_query_application_names,
     )
 
 
 def exclude_query_params(
-        exclude_query_application_name: Optional[str] = Query(None, alias="excludeQuery.applicationName"),
+        exclude_query_application_names: Optional[str] = Query(None, alias="excludeQuery.application_names"),
 ) -> QueryParamsBase:
     return QueryParamsBase(
-      application_name=exclude_query_application_name,
+      application_names=exclude_query_application_names,
     )
 
 

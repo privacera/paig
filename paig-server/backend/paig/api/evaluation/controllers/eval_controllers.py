@@ -24,9 +24,9 @@ class EvaluationController:
         except Exception as e:
             return {"error": str(e)}
 
-    async def run_evaluation(self, eval_config_id, username):
+    async def run_evaluation(self, eval_config_id, user):
         try:
-            resp = await self.evaluation_service.run_evaluation(eval_config_id, username)
+            resp = await self.evaluation_service.run_evaluation(eval_config_id, user['username'])
             return resp
         except Exception as e:
             print(traceback.print_exc())
@@ -50,4 +50,7 @@ class EvaluationController:
 
     async def delete_evaluation(self, eval_id):
         return await self.evaluation_service.delete_evaluation(eval_id)
+
+    async def get_categories(self, purpose):
+        return await self.evaluation_service.get_categories(purpose)
 

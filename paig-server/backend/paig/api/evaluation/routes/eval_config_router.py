@@ -1,10 +1,6 @@
-import json
-from typing import List, Optional
-from fastapi import APIRouter, Request, Response, Depends, Query, HTTPException
-
+from typing import List
+from fastapi import APIRouter, Request, Response, Depends, Query
 from core.controllers.paginated_response import Pageable
-from api.evaluation.api_schemas.eval_schema import EvaluationCommonModel, EvaluationConfigPlugins, IncludeQueryParams,\
-include_query_params, exclude_query_params, QueryParamsBase
 from core.utils import SingletonDepends
 from core.security.authentication import get_auth_user
 from api.evaluation.controllers.eval_config_controller import EvaluationConfigController
@@ -28,15 +24,17 @@ async def get_eval_config(
 
 
 @evaluation_config_router.post("/save")
-async def save_eval_target(
+async def save_eval_config(
         request: Request,
         response: Response,
         body_params: ConfigCreateRequest,
         user: dict = Depends(get_auth_user),
         eval_config_controller: EvaluationConfigController = eval_config_controller_instance
 ):
+    print('here')
     body_params = body_params.model_dump()
     body_params['owner'] = user['username']
+    print('here2')
     return await eval_config_controller.create_eval_config(body_params=body_params)
 
 

@@ -44,9 +44,6 @@ const SIDEBAR_MENU_ITEMS = {
             },
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            },
-            [PAIG_EVALUATION]: {
-                TABS: [PAIG_EVALUATION]
             }
         }
     },
@@ -83,24 +80,10 @@ const UI_FEATURE_SIDEBAR_TABS = {
             [SHIELD_CONFIGURATION]: {}
         }
     },
-
-    [PAIG_EVALUATION]: {
-        [APPLICATIONS]: {
-            [VECTOR_DB]: {
-                TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            },
-            [PAIG_EVALUATION] : {
-                TABS: [PAIG_EVALUATION]
-            }
-        }
-    },
     [VECTOR_DB]: {
         [APPLICATIONS]: {
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            },
-            [PAIG_EVALUATION] : {
-                TABS: [PAIG_EVALUATION]
             }
         },
         [ACCOUNT]: {
@@ -117,7 +100,8 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
         }
     },
     [AUDITS]: {
-        [SECURITY]: {}
+        [SECURITY]: {},
+        [PAIG_EVALUATION] : {}
     },
     [COMPLIANCE]:{
         [ADMIN_AUDITS]:{}
@@ -426,7 +410,7 @@ const featurePermissionUIMap = {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
     },
     'governance.paig_evaluation': {
-        propertyForShowHide: [`${APPLICATIONS}.${PAIG_EVALUATION}.${PAIG_EVALUATION}`]
+        propertyForShowHide: [`${AUDITS}.${PAIG_EVALUATION}`]
     },
     'audits.security': {
         propertyForShowHide: [`${AUDITS}.${SECURITY}`]

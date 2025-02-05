@@ -11,10 +11,10 @@ from core.controllers.paginated_response import create_pageable_response
 logger = logging.getLogger(__name__)
 
 
-def transform_eval_target(app_name, eval_target):
+def transform_eval_target(eval_target):
     eval_target_dict = dict()
     eval_target_dict['id'] = eval_target['url']
-    eval_target_dict['label'] = app_name
+    eval_target_dict['label'] = eval_target["name"]
     eval_config = dict()
     eval_config['method'] = eval_target['method']
     if isinstance(eval_target['headers'], dict):
@@ -45,51 +45,75 @@ class EvaluationTargetService:
         self.ai_app_repository = ai_app_repository
 
 
-    async def get_all_ai_app_with_host(self, search_filters, page_number, size, sort):
+    async def get_all_ai_app_with_host(self, include_filters, exclude_filters, page_number, size, sort):
         try:
-            ai_apps, total_count = await self.ai_app_repository.get_ai_application_with_host(search_filters, page_number, size, sort)
+            if include_filters.name:
+                include_filters.name = include_filters.name.strip("*")
+            if exclude_filters.name:
+                exclude_filters.name = exclude_filters.name.strip("*")
+            ai_apps, total_count = await self.eval_target_repository.get_application_list_with_filters(include_filters, exclude_filters, page_number, size, sort, min_value=None,
+                                             max_value=None)
             if ai_apps is None:
                 raise NotFoundException("No applications found")
-            ai_app_list = list()
+            index = 1
+            final_apps = list()
             for ai_app in ai_apps:
-                hosted = False
-                if ai_app.host and len(ai_app.host) > 0:
-                    hosted = True
-                ai_app_dict = dict()
-                ai_app_dict['id'] = ai_app.id
-                ai_app_dict['name'] = ai_app.name
-                ai_app_dict['status'] = ai_app.status
-                ai_app_dict['hosted'] = hosted
-                ai_app_list.append(ai_app_dict)
-            return create_pageable_response(ai_app_list, total_count, page_number, size, sort)
+                app = dict()
+                app['id'] = index
+                index += 1
+                app['application_id'] = ai_app[0]
+                app['target_id'] = ai_app[1]
+                app['name'] = ai_app[2]
+                app['desc'] = ai_app[3]
+                app['url'] = ai_app[4]
+                final_apps.append(app)
+            return create_pageable_response(final_apps, total_count, page_number, size, sort)
         except Exception as e:
             logger.error(f"Error in get_all_ai_app_with_host: {e}")
             logger.error(traceback.format_exc())
             raise InternalServerError("Internal server error")
 
-    async def create_app_target(self, app_id, body_params):
-        ai_app = await self.ai_app_repository.get_record_by_id(app_id)
-        if ai_app is None:
-            raise NotFoundException(f"No AI application found with id {app_id}")
-        transformed_eval = transform_eval_target(ai_app.name, body_params)
+    async def create_app_target(self, body_params):
+        new_params = dict()
+        if 'ai_application_id' in body_params and body_params['ai_application_id']:
+            app_id = body_params['ai_application_id']
+            ai_app = await self.ai_app_repository.get_record_by_id(app_id)
+            if ai_app is None:
+                raise NotFoundException(f"No AI application found with id {app_id}")
+            # check for existing target
+            target_model = await self.eval_target_repository.get_target_by_app_id(app_id)
+            if target_model is not None:
+                raise BadRequestException(f"Target already exists for AI application {ai_app.name}")
+            body_params['name'] = ai_app.name
+            new_params['application_id'] = app_id
+        transformed_eval = transform_eval_target(body_params)
+        new_params['config'] = transformed_eval
+        new_params['name'] = body_params['name']
+        new_params['url'] = body_params['url']
         try:
-            eval_target = await self.eval_target_repository.create_app_target(app_id, transformed_eval)
+            eval_target = await self.eval_target_repository.create_app_target(new_params)
             return eval_target
         except Exception as e:
             logger.error(f"Error in create_app_target: {e}")
             logger.error(traceback.format_exc())
             raise InternalServerError("Internal server error")
 
-    async def update_app_target(self, app_id, body_params):
-        ai_app = await self.ai_app_repository.get_record_by_id(app_id)
-        if ai_app is None:
-            raise NotFoundException(f"No AI application found with id {app_id}")
-        transformed_eval = transform_eval_target(ai_app.name, body_params)
+    async def update_app_target(self, target_id, body_params):
+        new_params = dict()
+        target_model = await self.eval_target_repository.get_target_by_id(target_id)
+        if target_model is None:
+            raise NotFoundException(f"No  application found with id {target_id}")
+        if target_model.application_id:
+            ai_app = await self.ai_app_repository.get_record_by_id(target_model.application_id)
+            if ai_app is None:
+                raise NotFoundException(f"No AI application found with id {target_model.application_id}")
+            body_params['name'] = ai_app.name
+        transformed_eval = transform_eval_target(body_params)
+        new_params['config'] = transformed_eval
+        new_params['name'] = body_params['name']
+        new_params['url'] = body_params['url']
         try:
-            target_model = await self.eval_target_repository.get_target_by_app_id(app_id)
-            if target_model is None:
-                raise NotFoundException(f"No AI application found with id {app_id}")
-            eval_target = await self.eval_target_repository.update_app_target(transformed_eval, target_model)
+            eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
             return eval_target
         except Exception as e:
             logger.error(f"Error in update_app_target: {e}")
@@ -98,9 +122,9 @@ class EvaluationTargetService:
 
     async def delete_target(self, app_id):
         try:
-            target_model = await self.eval_target_repository.get_target_by_app_id(app_id)
+            target_model = await self.eval_target_repository.get_target_by_id(app_id)
             if target_model is None:
-                raise NotFoundException(f"No AI application found with id {app_id}")
+                raise NotFoundException(f"No application found with id {app_id}")
             eval_target = await self.eval_target_repository.delete_target(target_model)
             return eval_target
         except Exception as e:

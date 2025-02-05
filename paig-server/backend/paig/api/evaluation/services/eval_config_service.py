@@ -42,6 +42,8 @@ class EvaluationConfigService:
             app_names = []
             for app in apps:
                 app_names.append(app.name)
+            body_params['categories'] = json.dumps(body_params.get('categories', []))
+            body_params['custom_prompts'] = json.dumps(body_params.get('custom_prompts', []))
             body_params['version'] = 1
             body_params['application_names'] = ','.join(app_names)
             eval_config = await self.eval_config_repository.create_eval_config(body_params)
@@ -58,6 +60,10 @@ class EvaluationConfigService:
             eval_config_model = await self.eval_config_repository.get_eval_config_by_id(config_id)
             if eval_config_model is None:
                 raise NotFoundException("Evaluation configuration not found")
+            if 'categories' in body_params:
+                body_params['categories'] = json.dumps(body_params['categories'])
+            if 'custom_prompts' in body_params:
+                body_params['custom_prompts'] = json.dumps(body_params['custom_prompts'])
             body_params['version'] = eval_config_model.version + 1
             body_params['update_time']: current_utc_time()
             eval_updated_model = await self.eval_config_repository.update_eval_config(body_params, eval_config_model)

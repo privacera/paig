@@ -30,21 +30,7 @@ const SIDEBAR_MENU = [{
     isChild: true,
     sidebar: UI_CONSTANTS.VECTOR_DB,
     childrenRoutes: ["/vector_db/", "/vector_db/create", "/vector_db/:id"]
-  }, {
-    to: "/evaluations",
-    name: "Evaluation",
-    isChild: true,
-    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
-    childrenRoutes: ["/evaluations/"]
-  },
-  {
-    to: "evaluation_reports",
-    name: "Evaluation Reports",
-    isChild: true,
-    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
-    childrenRoutes: ["/evaluation_reports"]
-  }
-  ]
+  }]
 }, {
    menuToggleAttrName: "audits",
    name: "Security",
@@ -55,7 +41,19 @@ const SIDEBAR_MENU = [{
      name: "Access Audits",
      isChild: true,
      sidebar: UI_CONSTANTS.SECURITY
-   }]
+   }, {
+    to: "/eval_configs",
+    name: "Security Evaluation",
+    isChild: true,
+    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
+    childrenRoutes: ["/eval_configs/"]
+  }, {
+    to: "/eval_reports",
+    name: "Evaluation Reports",
+    isChild: true,
+    sidebar: UI_CONSTANTS.PAIG_EVALUATION,
+    childrenRoutes: ["/eval_reports"]
+  }]
  }, 
 // TODO: [PAIG-2025] Uncomment to enable Admin Audits
 //  {
