@@ -2,6 +2,8 @@
 ask_prompt_suffix: null
 client_error_msg: "[ERROR] Oops! Something went wrong. Our server encountered an unexpected error. Please try again later."
 shield_access_denied_msg: "Access Denied. You are not authorized to access this resource."
+# Update api token
+PAIG_SECURECHAT_API_TOKEN: "<api_token>"
 
 openai:
     key_file: "custom-configs/openai.key"
