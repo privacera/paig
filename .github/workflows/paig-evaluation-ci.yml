@@ -9,6 +9,7 @@ on:
     branches: [ "paig-evaluation" ]
     paths:
       - 'paig-evaluation/**'
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: read
