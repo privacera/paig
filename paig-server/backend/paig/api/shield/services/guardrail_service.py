@@ -4,7 +4,9 @@ from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
 from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
 from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
 from api.shield.scanners.PIIScanner import PIIScanner
-import api.shield.scanners.AWSBedrockGuardrailScanner as awsGuardrailScanner
+from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
+from api.shield.scanners.ToxicContentScanner import ToxicContentScanner
+from api.shield.model.scanner_result import ScannerResult
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +112,22 @@ def mask_message(message: str, redact_policies_dict: dict, analyzer_results: lis
 
     return masked_message
 
+def merge_scanner_results(scanner_results: list) -> ScannerResult:
+    traits = []
+    analyzer_results = []
+    for result in scanner_results:
+        traits.extend(result.get_traits())
+        analyzer_results.extend(result.get("analyzer_result", []))
+    return ScannerResult(traits=sorted(traits), analyzer_result=analyzer_results)
+
 def test_paig_guardrail(transformed_response: dict, message: str) -> dict:
-    scanner = PIIScanner(name="PIIScanner", model_path="_")
-    scanner_result = scanner.scan(message)
+    pii_scanner = PIIScanner(name="PIIScanner", model_path="_")
+    pii_scanner_result = pii_scanner.scan(message)
+
+    toxic_scanner = ToxicContentScanner(name="ToxicContentScanner", model_path="_", model_score_threshold=0.5, entity_type="TOXIC")
+    toxic_scanner_result = toxic_scanner.scan(message)
+
+    scanner_result = merge_scanner_results([pii_scanner_result, toxic_scanner_result])
 
     sensitive_data_config = transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {})
     deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
@@ -144,18 +159,21 @@ async def test_aws_guardrail(tenant_id: str, transformed_response: dict, message
         await decrypted_connection_details(tenant_id, aws_guardrail_connection_details)
         aws_guardrail_region = aws_guardrail_connection_details.get("region", "us-east-1")
 
-    aws_guardrail_scanner_instance = awsGuardrailScanner.AWSBedrockGuardrailScanner(guardrail_id=aws_guardrail_id,
-                                                                                      guardrail_version=aws_guardrail_version,
-                                                                                      region=aws_guardrail_region,
-                                                                                      connection_details=aws_guardrail_connection_details,
-                                                                                      scan_for_req_type="prompt")
+    aws_guardrail_scanner_instance = AWSBedrockGuardrailScanner(guardrail_id=aws_guardrail_id,
+                                                                  guardrail_version=aws_guardrail_version,
+                                                                  region=aws_guardrail_region,
+                                                                  connection_details=aws_guardrail_connection_details,
+                                                                  scan_for_req_type="prompt")
     scanner_result = aws_guardrail_scanner_instance.scan(message)
     if scanner_result.get("actions"):
         policies_identified = []
-        response_msg = scanner_result.get("output_text")
+        response_msg = ""
+        scanner_result.get_traits().sort()
         for key, value in transformed_response.get("config_type", {}).items():
             for category, action in value.get("configs", {}).items():
-                if category.replace(' ', '_').upper() in scanner_result.get_traits():
-                    response_msg = value.get("response_message")
+                if category.replace(' ', '_').upper() in scanner_result.get_traits() and action == "DENY":
                     policies_identified.append(key)
+                    if not response_msg:
+                        response_msg = value.get("response_message")
+
         return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": policies_identified, "message": response_msg }

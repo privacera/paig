@@ -60,6 +60,7 @@ class ApplicationManager(Singleton):
             application_key (str): The application key.
             request_type (str): The request type.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
+            auth_req (AuthorizeRequest): The request object.
 
         Returns:
             list: The list of scanners for the application key.
@@ -102,9 +103,8 @@ class ApplicationManager(Singleton):
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
         Args:
-            application_key (str): The application key.
             message (str): The message to scan.
-            request_type (str): The request type.
+            auth_req (AuthorizeRequest): The request object.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:

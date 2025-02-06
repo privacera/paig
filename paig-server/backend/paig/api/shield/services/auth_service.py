@@ -28,6 +28,7 @@ from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
+from api.shield.services.guardrail_service import process_guardrail_response
 from opentelemetry import metrics
 
 from core.utils import SingletonDepends
@@ -98,7 +99,7 @@ class AuthService:
         authorize_start_time = time.perf_counter()
         masked_messages = []
         original_masked_text_list = []
-        all_result_traits = set()
+        all_result_traits = []
         access_control_traits = set()
         analyzer_result_map = {}
         self.auth_req_context = auth_req.context
@@ -121,7 +122,7 @@ class AuthService:
         authz_start_time = time.perf_counter()
         logger.debug(f"Calling authz service with request: {auth_req} "
                      f"with traits for access control: {all_result_traits}")
-        authz_service_res = await self.do_authz_authorize(auth_req, list(all_result_traits))
+        authz_service_res = await self.do_authz_authorize(auth_req, all_result_traits)
         authz_time = f"{((time.perf_counter() - authz_start_time) * 1000):.3f}"
         logger.debug(f"Received authz service response: {authz_service_res.__dict__}")
         is_allowed = authz_service_res.authorized
@@ -204,7 +205,7 @@ class AuthService:
         scan_timings_per_message = []
         for request_text in auth_req.messages:
             # Analyze traits
-            scanners_result, message_scan_timings = self.application_manager.scan_messages(
+            scanners_results, message_scan_timings = self.application_manager.scan_messages(
                 request_text, auth_req, is_authz_scan)
             scan_timings = {scanner_name: f"{message_scan_time}ms" for scanner_name, message_scan_time in
                             message_scan_timings.items()}
@@ -212,11 +213,11 @@ class AuthService:
             scan_timings_per_message.append(scan_timings)
             # Update the set with traits and store analyzer results if present
             scanner_analyzer_results = analyzer_result_map.get(request_text, [])
-            for scanner_data in scanners_result.values():
-                all_result_traits.update(scanner_data.get_traits())
-                scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
-                access_control_traits.update(scanner_data.get("actions", []))
-                masked_traits_dict.update(scanner_data.get("masked_traits", {}))
+            for scanner_result in scanners_results.values():
+                all_result_traits.extend(set(scanner_result.get_traits()))
+                scanner_analyzer_results.extend(scanner_result.get("analyzer_result", []))
+                access_control_traits.update(scanner_result.get("actions", []))
+                masked_traits_dict.update(scanner_result.get("masked_traits", {}))
 
             analyzer_result_map[request_text] = scanner_analyzer_results
 
@@ -484,8 +485,9 @@ class AuthService:
             self.fluentd_audit_logger.start()
 
         return self.fluentd_audit_logger
-    
-    def generate_access_denied_message(self, all_traits: set) -> str:
+
+    @staticmethod
+    def generate_access_denied_message(all_traits: list, guardrail_info: dict) -> str:
         """
         Generates an access denied message based on the provided traits.
 
@@ -493,28 +495,29 @@ class AuthService:
         indicating that the request was denied due to the presence of certain traits.
 
         Args:
-            all_traits (set): A set of traits that were detected in the request.
+            all_traits (list): A list of traits that were detected in the request.
+            guardrail_info (dict): The guardrail information associated with the application.
 
         Returns:
             str: The access denied message indicating the reason for the denial.
         """
-        multi_trait_message = config_utils.get_property_value("default_access_denied_message_multi_trait",
-                                                                        "Access is denied for ")
-        mapped_messages = []
-        for trait in all_traits:
-            custom_text_message = config_utils.get_property_value(trait, None)
-            if custom_text_message:
-                mapped_messages.append(custom_text_message)
-            else:
-                mapped_messages.append(trait)
+        response_text_message = "Access is denied"
+        transformed_response = process_guardrail_response(guardrail_info)
 
-        if len(mapped_messages) == 1:
-            response_text_message = f'{multi_trait_message} {mapped_messages[0]}'
-        elif len(mapped_messages) > 1:
-            response_text_message = f'{multi_trait_message} {", ".join(mapped_messages[:-1])} or {mapped_messages[-1]}'
-        else:
-            response_text_message = config_utils.get_property_value("default_access_denied_message",
-                                                                    "Access is denied")
+        config_types = transformed_response.get("config_type", {}).copy()  # Copy to avoid modifying original
+
+        # Check SENSITIVE_DATA first
+        sensitive_data = config_types.pop("SENSITIVE_DATA", {})  # Remove to avoid rechecking
+        if sensitive_data:
+            for category, action in sensitive_data.get("configs", {}).items():
+                if category.replace(' ', '_').upper() in all_traits and action == "DENY":
+                    return sensitive_data.get("response_message") or response_text_message  # Early return
+
+        # Check remaining config types
+        for value in config_types.values():
+            for category, action in value.get("configs", {}).items():
+                if category.replace(' ', '_').upper() in all_traits and action == "DENY":
+                    return value.get("response_message") or response_text_message  # Early return
 
         return response_text_message
 
@@ -540,7 +543,7 @@ class AuthService:
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
                 authz_service_res.masked_traits = {}
-                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits, guardrail_info)
 
                 logger.debug(
                     f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
