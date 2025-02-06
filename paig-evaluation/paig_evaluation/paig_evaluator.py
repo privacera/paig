@@ -8,7 +8,10 @@ from .promptfoo_utils import (
     run_promptfoo_redteam_evaluation,
     get_all_security_plugins_with_description,
     get_suggested_plugins_with_description,
-    check_and_install_npm_dependency
+    check_and_install_npm_dependency,
+    get_response_object,
+    validate_generate_prompts_request_params,
+    validate_evaluate_request_params
 )
 from .config import load_config_file
 
@@ -23,18 +26,24 @@ def get_suggested_plugins(purpose: str) -> Dict:
         Returns:
             List[str]: List of suggested plugins.
         """
-        suggested_plugins_response = {}
-        suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
+        response = get_response_object()
+        response['result'] = []
+        try:
+            suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
+            if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
+                if isinstance(suggested_plugins['plugins'], list):
+                    response['result'] = get_suggested_plugins_with_description(suggested_plugins['plugins'])
+                    response['status'] = 'success'
+                    response['message'] = 'Suggested plugins fetched successfully'
+                else:
+                    response['message'] = 'Invalid response received from the OpenAI API for suggested plugins'
+            else:
+                response['message'] = str(suggested_plugins)
+        except Exception as e:
+            response['message'] = str(e)
+        finally:
+            return response
 
-        if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
-            suggested_plugins_response['status'] = 'success'
-            suggested_plugins_response['message'] = 'Suggested plugins fetched successfully.'
-            suggested_plugins_response['plugins'] = get_suggested_plugins_with_description(suggested_plugins['plugins'])
-        else:
-            suggested_plugins_response['status'] = 'failed'
-            suggested_plugins_response['message'] = str(suggested_plugins)
-            suggested_plugins_response['plugins'] = []
-        return suggested_plugins_response
 
 
 def get_all_plugins(plugin_file_path: str = None) -> Dict:
@@ -44,23 +53,43 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
     Returns:
         Dict: List of all security plugins.
     """
-    return get_all_security_plugins_with_description(plugin_file_path)
+    response = get_response_object()
+    response['result'] = []
+    try:
+        all_plugins = get_all_security_plugins_with_description(plugin_file_path)
+        if isinstance(all_plugins, list):
+            response['result'] = all_plugins
+            response['status'] = 'success'
+            response['message'] = 'All plugins fetched successfully'
+        else:
+            response['message'] = str(all_plugins)
+    except Exception as e:
+        response['message'] = str(e)
+    finally:
+        return response
 
 
 def init_setup():
     """
     Initialize the setup by checking and installing the npm dependency.
     """
-    eval_config = load_config_file()
-    if 'npm_dependency' in eval_config:
-        if 'promptfoo' in eval_config['npm_dependency']:
-            version = eval_config['npm_dependency']['promptfoo']
-            check_and_install_npm_dependency('promptfoo', version)
+    response = get_response_object()
+    try:
+        eval_config = load_config_file()
+        if 'npm_dependency' in eval_config:
+            if 'promptfoo' in eval_config['npm_dependency']:
+                version = eval_config['npm_dependency']['promptfoo']
+                check_and_install_npm_dependency('promptfoo', version)
+                response["status"] = 'success'
+                response["message"] = 'Setup initialized successfully'
+            else:
+                response["message"] = 'No promptfoo dependency found in the configuration file'
         else:
-            sys.exit('No promptfoo dependency found in the configuration file.')
-    else:
-        sys.exit('No npm dependency found in the configuration file.')
-
+            response["message"] = 'No npm dependency found in the configuration file'
+    except Exception as e:
+        response["message"] = f'Error occurred while initializing the setup: {e}'
+    finally:
+        return response
 
 class PAIGEvaluator:
 
@@ -91,7 +120,23 @@ class PAIGEvaluator:
         Returns:
             dict: Generated prompts.
         """
-        return generate_promptfoo_redteam_config(application_config, plugins, targets, verbose=verbose)
+        response = get_response_object()
+        response['result'] = {}
+        try:
+            is_validated, message = validate_generate_prompts_request_params(application_config, plugins, targets)
+            response['message'] = message
+            if is_validated:
+                generated_prompts = generate_promptfoo_redteam_config(application_config, plugins, targets, verbose=verbose)
+                if generated_prompts:
+                    response['result'] = generated_prompts
+                    response['status'] = 'success'
+                    response['message'] = 'Prompts generated successfully'
+                else:
+                    response['message'] = 'Failed to generate prompts'
+        except Exception as e:
+            response['message'] = str(e)
+        finally:
+            return response
 
     def evaluate(self, paig_eval_id: str, generated_prompts: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
         """
@@ -107,5 +152,20 @@ class PAIGEvaluator:
         Returns:
             dict: Evaluation results.
         """
-
-        return run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
+        response = get_response_object()
+        response['result'] = {}
+        try:
+            is_validated, message = validate_evaluate_request_params(paig_eval_id, generated_prompts, base_prompts, custom_prompts)
+            response['message'] = message
+            if is_validated:
+                eval_result = run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
+                if eval_result:
+                    response['result'] = run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
+                    response['status'] = 'success'
+                    response['message'] = 'Evaluation completed successfully'
+                else:
+                    response['message'] = 'Failed to run the evaluation'
+        except Exception as e:
+            response['message'] = str(e)
+        finally:
+            return response

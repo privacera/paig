@@ -160,7 +160,7 @@ targets = [
 # Generate prompts for the application
 generated_prompts = {}
 if suggested_plugins["status"] == "success":
-   suggested_plugins_names_list = [plugin['Name'] for plugin in suggested_plugins["plugins"]]
+   suggested_plugins_names_list = [plugin['Name'] for plugin in suggested_plugins["result"]]
    generated_prompts = paig_evaluator.generate_prompts(application_config, suggested_plugins_names_list, targets)
    print(f"Generated prompts: {generated_prompts}")
 else:
@@ -224,8 +224,8 @@ custom_prompts = {
 }
 
 # Evaluate and generate the report
-if generated_prompts:
-   report_json = paig_evaluator.evaluate(paig_eval_id, generated_prompts, base_prompts, custom_prompts)
+if generated_prompts['status'] == "success":
+   report_json = paig_evaluator.evaluate(paig_eval_id, generated_prompts['result'], base_prompts, custom_prompts)
    print(f"Report JSON: {report_json}")
 else:
     print("Generated prompts are empty.")

@@ -5,11 +5,16 @@ from typing import List, Dict
 import openai
 import yaml
 import sys
+import uuid
+import logging
 
 from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
 import subprocess
 from typing import Union
+
+
+logger = logging.getLogger(__name__)
 
 
 def ensure_promptfoo_config(email: str):
@@ -50,6 +55,19 @@ def ensure_promptfoo_config(email: str):
         with open(config_file_path, "w") as file:
             yaml.dump(existing_content, file, default_flow_style=False)
 
+def get_response_object() -> Dict:
+    """
+    Returns a response object with default values.
+
+    Returns:
+        Dict: The response object.
+    """
+    return {
+        "status": "failed",
+        "message": "",
+        "result": None
+    }
+
 
 def check_package_exists(package_name: str) -> bool:
     """
@@ -65,6 +83,7 @@ def check_package_exists(package_name: str) -> bool:
         subprocess.run([package_name, "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except FileNotFoundError:
+        logger.error(f"{package_name} is not installed.")
         return False
 
 
@@ -88,6 +107,7 @@ def check_npm_dependency(package_name: str, version: str) -> bool:
         )
         return f"{package_name}@{version}" in result.stdout
     except FileNotFoundError:
+        logger.error("npm is not installed.")
         sys.exit("npm is not installed. Please install Node.js first.")
 
 
@@ -108,7 +128,8 @@ def install_npm_dependency(package_name: str, version: str) -> None:
         else:
             sys.exit("Failed to install npm package.")
     except Exception as e:
-        sys.exit(f"Error installing npm package: {e}")
+        logger.error(f"Error installing npm package: {e}")
+        raise RuntimeError(f"Error installing npm package: {e}")
 
 
 def check_and_install_npm_dependency(package_name, version):
@@ -116,15 +137,17 @@ def check_and_install_npm_dependency(package_name, version):
     Check and install the npm dependency if it is not already installed.
     """
     if not check_package_exists("node"):
-        sys.exit("Node.js is not installed. Please install it first.")
+        logger.error("Node.js is not installed.")
+        raise RuntimeError("Node.js is not installed. Please install it first.")
 
     if not check_package_exists("npm"):
-        sys.exit("npm is not installed. Please install Node.js, which includes npm.")
+        logger.error("npm is not installed.")
+        raise RuntimeError("npm is not installed. Please install Node.js, which includes npm.")
 
     if check_npm_dependency(package_name, version):
-        print(f"Dependent npm package is already installed.")
+        logger.info(f"Dependent npm package is already installed.")
     else:
-        print(f"Installing npm package...")
+        logger.info(f"Installing npm package...")
         install_npm_dependency(package_name, version)
 
 
@@ -162,6 +185,8 @@ def get_all_security_plugins_with_description(plugin_file_path: str = None) -> L
 
     security_plugins = read_and_get_security_plugins(plugin_file_path)
     security_plugins_with_description = []
+    if isinstance(security_plugins, str):
+        return security_plugins
     for plugin_name, plugin_description in security_plugins.items():
         security_plugins_with_description.append(
             {
@@ -203,6 +228,72 @@ def read_and_get_security_plugins(plugin_file_path: str = None) -> Union[str, Li
         all_plugins_dict.update(security_plugins.get('remote_plugins', {}))
 
     return all_plugins_dict
+
+
+def validate_generate_prompts_request_params(application_config, plugins, targets):
+    """
+    Validate the request parameters for generating prompts.
+
+    Args:
+        application_config (dict): Application configuration.
+        plugins (List[str]): List of plugins.
+        targets (List[Dict]): List of targets.
+
+    Returns:
+        bool: True if the parameters are valid, False otherwise.
+    """
+    if not application_config or not isinstance(application_config, dict) or "paig_eval_id" not in application_config or "purpose" not in application_config:
+        logger.error("Invalid application configuration, required as dictionary with 'paig_eval_id' and 'purpose'")
+        return False, "Invalid application configuration, required as dictionary with 'paig_eval_id' and 'purpose'"
+
+    if not plugins or not isinstance(plugins, list):
+        logger.error("Invalid plugins, required valid list of strings")
+        return False, "Invalid plugins, required valid list of strings"
+
+    if not targets or not isinstance(targets, list) or not all(isinstance(target, dict) for target in targets):
+        logger.error("Invalid targets, required valid list of dictionary objects")
+        return False, "Invalid targets, required valid list of dictionary objects"
+    return True, ""
+
+
+def is_valid_uuid(value: str) -> bool:
+    try:
+        uuid.UUID(value)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+def validate_evaluate_request_params(paig_eval_id, generated_prompts, base_prompts: dict = None, custom_prompts: dict = None):
+    """
+    Validate the request parameters for evaluating prompts.
+
+    Args:
+        paig_eval_id (str): Evaluation ID.
+        generated_prompts (dict): Generated prompts.
+        base_prompts (dict): Base prompts.
+        custom_prompts (dict): Custom prompts.
+
+    Returns:
+        bool: True if the parameters are valid, False otherwise.
+    """
+    if not paig_eval_id or not isinstance(paig_eval_id, str) or not is_valid_uuid(paig_eval_id):
+        logger.error("Invalid evaluation ID, required as a valid UUID")
+        return False, "Invalid evaluation ID, required as a valid UUID"
+
+    if not generated_prompts or not isinstance(generated_prompts, dict):
+        logger.error("Invalid generated prompts, required valid dictionary")
+        return False, "Invalid generated prompts, required valid dictionary"
+
+    if base_prompts and not isinstance(base_prompts, dict):
+        logger.error("Invalid base prompts, required valid dictionary")
+        return False, "Invalid base prompts, required valid dictionary"
+
+    if custom_prompts and not isinstance(custom_prompts, dict):
+        logger.error("Invalid custom prompts, required valid dictionary")
+        return False, "Invalid custom prompts, required valid dictionary"
+
+    return True, ""
 
 
 def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, plugin_file_path: str = None) -> Dict | str:
@@ -292,41 +383,48 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
     Returns:
         dict: Promptfoo redteam configuration.
     """
+    generated_config = None
+    try:
+        paig_evaluation_app_id = application_config.get("paig_eval_id")
+        application_name = application_config.get("name", "PAIG Evaluation Application")
+        description = application_config.get("description", "PAIG Evaluation Application")
+        purpose = application_config.get("purpose")
 
-    paig_evaluation_app_id = application_config.get("paig_eval_id")
-    application_name = application_config.get("name", "PAIG Evaluation Application")
-    description = application_config.get("description", "PAIG Evaluation Application")
-    purpose = application_config.get("purpose")
-
-    # Create promptfoo redteam config file
-    readteam_config = {
-        "description": description,
-        "targets": targets,
-        "redteam": {
-            "numTests": 5,
-            "language": "English",
-            "purpose": purpose,
-            "plugins": plugins
+        # Create promptfoo redteam config file
+        readteam_config = {
+            "description": description,
+            "targets": targets,
+            "redteam": {
+                "numTests": 5,
+                "language": "English",
+                "purpose": purpose,
+                "plugins": plugins
+            }
         }
-    }
 
-    promptfoo_config_file_name = f"tmp_{paig_evaluation_app_id}_promptfoo_redteam_config.yaml"
-    write_yaml_file(promptfoo_config_file_name, readteam_config)
+        promptfoo_config_file_name = f"tmp_{paig_evaluation_app_id}_promptfoo_redteam_config.yaml"
+        write_yaml_file(promptfoo_config_file_name, readteam_config)
 
-    # Generate prompts for redteam
-    output_path = f"tmp_{paig_evaluation_app_id}_promptfoo_generated_prompts.yaml"
-    command = f"promptfoo redteam generate --max-concurrency 5 --config {promptfoo_config_file_name} --output {output_path}"
+        # Generate prompts for redteam
+        output_path = f"tmp_{paig_evaluation_app_id}_promptfoo_generated_prompts.yaml"
+        command = f"promptfoo redteam generate --max-concurrency 5 --config {promptfoo_config_file_name} --output {output_path}"
 
-    process = run_command_in_background(command)
-    wait_for_process_complete(process, verbose=verbose)
+        process = run_command_in_background(command)
+        wait_for_process_complete(process, verbose=verbose)
 
-    generated_config = read_yaml_file(output_path)
-
-    # Remove temporary files
-    os.remove(promptfoo_config_file_name)
-    os.remove(output_path)
-
-    return generated_config
+        if not os.path.exists(output_path):
+            error_message = f"Prompts generation failed for given config with ID {paig_evaluation_app_id}."
+            raise RuntimeError(error_message)
+        # Read generated prompts
+        generated_config = read_yaml_file(output_path)
+    except Exception as e:
+        logger.error(f"Error while generating prompts: {e}")
+    finally:
+        if os.path.exists(promptfoo_config_file_name):
+            os.remove(promptfoo_config_file_name)
+        if os.path.exists(output_path):
+            os.remove(output_path)
+        return generated_config
 
 
 def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
@@ -345,26 +443,35 @@ def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config
     """
 
     # Create updated promptfoo redteam configuration
-    promptfoo_generated_prompts_file_name = f"tmp_{paig_eval_id}_promptfoo_generated_prompts.yaml"
+    evaluation_report = None
+    try:
+        promptfoo_generated_prompts_file_name = f"tmp_{paig_eval_id}_promptfoo_generated_prompts.yaml"
 
-    base_tests = base_prompts.get("tests") if base_prompts else []
-    custom_tests = custom_prompts.get("tests") if custom_prompts else []
-    promptfoo_redteam_config["tests"] = base_tests + custom_tests + promptfoo_redteam_config["tests"]
+        base_tests = base_prompts.get("tests") if base_prompts else []
+        custom_tests = custom_prompts.get("tests") if custom_prompts else []
+        promptfoo_redteam_config["tests"] = base_tests + custom_tests + promptfoo_redteam_config["tests"]
 
-    write_yaml_file(promptfoo_generated_prompts_file_name, promptfoo_redteam_config)
+        write_yaml_file(promptfoo_generated_prompts_file_name, promptfoo_redteam_config)
 
-    # Run promptfoo redteam evaluation
-    output_path = f"tmp_{paig_eval_id}_promptfoo_evaluation_report.json"
-    command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_path}"
+        # Run promptfoo redteam evaluation
+        output_path = f"tmp_{paig_eval_id}_promptfoo_evaluation_report.json"
+        command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_path}"
 
-    process = run_command_in_background(command)
-    wait_for_process_complete(process, verbose=verbose)
+        process = run_command_in_background(command)
+        wait_for_process_complete(process, verbose=verbose)
 
-    # Read evaluation report
-    evaluation_report = read_json_file(output_path)
+        if not os.path.exists(output_path):
+            error_message = f"Evaluation failed for given config with ID {paig_eval_id}."
+            raise RuntimeError(error_message)
 
-    # Remove temporary files
-    os.remove(promptfoo_generated_prompts_file_name)
-    os.remove(output_path)
+        # Read evaluation report
+        evaluation_report = read_json_file(output_path)
+    except Exception as e:
+        logger.error(f"Error while running evaluation process: {e}")
+    finally:
+        if os.path.exists(promptfoo_generated_prompts_file_name):
+            os.remove(promptfoo_generated_prompts_file_name)
+        if os.path.exists(output_path):
+            os.remove(output_path)
+        return evaluation_report
 
-    return evaluation_report

@@ -1,6 +1,9 @@
 import os
 import subprocess
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def run_command_in_foreground(command: str, verbose: bool = False):
@@ -49,6 +52,7 @@ def run_command_in_foreground(command: str, verbose: bool = False):
         stdout_lines.extend(remaining_stdout.splitlines())
         stderr_lines.extend(remaining_stderr.splitlines())
     except Exception as e:
+        logger.error(f"Error running command: {e}")
         raise RuntimeError(f"Error running command: {e}")
 
     return "\n".join(stdout_lines), "\n".join(stderr_lines)
@@ -81,9 +85,10 @@ def check_process_status(process: subprocess.Popen):
         int: 1 if the process is running, 0 if the process is completed.
     """
     try:
-        if process.poll() is None:
+        status = process.poll()
+        if status is None:
             return 1  # Process is running
-        return 0  # Process is completed
+        return 0 if status == 0 else -1  # Process is completed
     except Exception as e:
         raise RuntimeError(f"Error checking process status: {e}")
 
@@ -104,6 +109,10 @@ def wait_for_process_complete(process: subprocess.Popen, verbose: bool = False):
     while True:
         status = check_process_status(process)
         if status == 0:
+            break
+        elif status == -1:
+            error_message = process.stderr.readline()
+            logger.error(f"Error running the process: {error_message.strip()}")
             break
         else:
             if verbose:

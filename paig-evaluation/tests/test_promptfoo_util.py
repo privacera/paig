@@ -104,7 +104,7 @@ def test_check_and_install_npm_dependency_already_installed(mock_check_dep, mock
 def test_check_and_install_npm_dependency_node_not_installed(mock_check_package):
     mock_check_package.side_effect = [False]
 
-    with pytest.raises(SystemExit) as excinfo:
+    with pytest.raises(RuntimeError) as excinfo:
         check_and_install_npm_dependency("example_package", "1.0.0")
 
     assert str(excinfo.value) == "Node.js is not installed. Please install it first."
@@ -114,7 +114,7 @@ def test_check_and_install_npm_dependency_node_not_installed(mock_check_package)
 def test_check_and_install_npm_dependency_npm_not_installed(mock_check_package):
     mock_check_package.side_effect = [True, False]
 
-    with pytest.raises(SystemExit) as excinfo:
+    with pytest.raises(RuntimeError) as excinfo:
         check_and_install_npm_dependency("example_package", "1.0.0")
 
     assert str(excinfo.value) == "npm is not installed. Please install Node.js, which includes npm."
