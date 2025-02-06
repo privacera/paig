@@ -24,7 +24,6 @@ class GRConnectionView(BaseView):
     description: Optional[str] = Field(default=None, description="The description of the Guardrail connection")
     guardrail_provider: Optional[GuardrailProvider] = Field(..., description="The guardrails provider", alias="guardrailsProvider")
     connection_details: dict = Field(..., description="The connection details", alias="connectionDetails")
-    encrypt_fields: Optional[list] = Field(default=None, description="The fields to encrypt", alias="encryptFields")
 
 
 class GRConnectionFilter(BaseAPIFilter):

@@ -176,6 +176,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         super().__init__(gr_connection_repository, GRConnectionModel, GRConnectionView)
         self.encryption_key_service = encryption_key_service
         self.gr_connection_request_validator = gr_connection_request_validator
+        self.encrypt_fields = ["secret_key", "session_token"]
 
     def get_repository(self) -> GRConnectionRepository:
         """
@@ -212,10 +213,8 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The created Guardrail Connection view object.
         """
         await self.gr_connection_request_validator.validate_create_request(request)
-        if request.encrypt_fields:
-            await self.encrypt_connection_details(request)
-
-        return await self.create_record(request, exclude_fields={"encrypt_fields"})
+        await self.encrypt_connection_details(request)
+        return await self.create_record(request)
 
     async def test_connection(self, request: GRConnectionView) -> Dict[str, Any]:
         """
@@ -298,9 +297,8 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
             GRConnectionView: The updated configuration of the Guardrail Connection.
         """
         await self.gr_connection_request_validator.validate_update_request(id, request)
-        if request.encrypt_fields:
-            await self.encrypt_connection_details(request)
-        return await self.update_record(id, request, exclude_fields={"encrypt_fields"})
+        await self.encrypt_connection_details(request)
+        return await self.update_record(id, request)
 
     async def delete(self, id: int):
         """
@@ -316,7 +314,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         connection_details = gr_connection.connection_details
         data_encryptor = None
         for key, value in connection_details.items():
-            if not value.startswith("GuardrailEncrypt:") and key in gr_connection.encrypt_fields:
+            if not value.startswith("GuardrailEncrypt:") and key in self.encrypt_fields:
                 if data_encryptor is None:
                     await create_encryption_keys_if_not_exists(self.encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
                     data_encryptor = await self.create_data_encryptor_obj()

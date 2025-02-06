@@ -227,7 +227,7 @@ async def test_create_guardrail(guardrail_service, mock_guardrail_repository, mo
     guardrail_model.set_attribute(create_guardrail_view.model_dump())
 
     gr_version_history_model = GRVersionHistoryModel(id=1, guardrail_id=1, version=1)
-    gr_connection_model = GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))
+    gr_connection_model = GRConnectionModel(**gr_connection_view.model_dump())
     gr_app_versions = [GRApplicationVersionModel(id=1, application_key="mock_app_key1", version=1)]
 
     with (patch.object(
@@ -408,7 +408,7 @@ async def test_create_guardrail_when_guardrail_provider_gives_error(
     ) as mock_guardrail_get_by_name, patch.object(
         mock_guardrail_app_version_repository, 'get_all', return_value=[]
     ) as mock_gr_version_history_get_all, patch.object(
-        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))]
+        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump())]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'create_guardrail', side_effect=InternalServerError("AWS Error")
     ) as mock_bedrock_guardrail_create):
@@ -445,7 +445,7 @@ async def test_create_guardrail_when_guardrail_provider_does_not_give_success_as
     ) as mock_guardrail_get_by_name, patch.object(
         mock_guardrail_app_version_repository, 'get_all', return_value=[]
     ) as mock_gr_version_history_get_all, patch.object(
-        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump(exclude={"encrypt_fields"}))]
+        mock_guardrail_connection_service, 'get_all', return_value=[GRConnectionModel(**gr_connection_view.model_dump())]
     ) as mock_gr_connection_get_all, patch.object(
         GuardrailProviderManager, 'create_guardrail', return_value={"AWS": {"success": False, "response": {"details": {"errorType": "ClientError", "details": "AWS Error ExpiredTokenException"}}}}
     ) as mock_bedrock_guardrail_create):
