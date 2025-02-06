@@ -220,6 +220,10 @@ class BaseOperations(Generic[ModelType]):
         if limit is not None:
             query = query.limit(limit)
 
+        cardinality = kwargs.get('cardinality')
+        if cardinality:
+            query = query.distinct(text(cardinality)).group_by(text(cardinality))
+
         return await self._all(query)
 
     async def get_count_with_filter(self, filters: dict):

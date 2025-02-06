@@ -1,13 +1,13 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from core.controllers.paginated_response import create_pageable_response
 from api.encryption.api_schemas.encryption_key import EncryptionKeyView
 from api.encryption.controllers.encryption_key_controller import EncryptionKeyController
 from api.encryption.database.db_models.encryption_key_model import EncryptionKeyType, EncryptionKeyStatus
+from core.controllers.paginated_response import create_pageable_response
 
 dummy_encryption_key_view = EncryptionKeyView(
     id=1,
@@ -43,24 +43,40 @@ def mock_encryption_key_controller():
     return mock_encryption_key_controller
 
 
-def test_list_encryption_keys_success(mock_encryption_key_controller):
+@pytest.fixture
+def encryption_app(mock_encryption_key_controller, mocker):
     def get_mock_controller():
         return mock_encryption_key_controller
 
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
+    mocker.patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller)
+    from api.encryption.routes.encryption_key_router import encryption_key_router
 
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
+    # Create client
+    from fastapi import FastAPI
+    app = FastAPI(
+        title="Paig",
+        description="Paig Application",
+        version="1.0.0",
+        docs_url="/docs",
+        redoc_url=None
+    )
 
-        response = client.get("http://localhost:9090/keys")
-        assert response.status_code == status.HTTP_200_OK
-        assert "content" in response.json()
+    app.include_router(encryption_key_router, prefix="/keys")
+    yield app
 
 
-def test_create_encryption_key_success(mock_encryption_key_controller):
+@pytest.fixture
+def encryption_app_client(encryption_app):
+    return TestClient(encryption_app)
+
+
+def test_list_encryption_keys_success(encryption_app_client):
+    response = encryption_app_client.get("http://localhost:9090/keys")
+    assert response.status_code == status.HTTP_200_OK
+    assert "content" in response.json()
+
+
+def test_create_encryption_key_success(mock_encryption_key_controller, encryption_app_client):
     mock_encryption_key_controller.create_encryption_key.return_value = {
         "id": 1,
         "key_type": EncryptionKeyType.MSG_PROTECT_SHIELD,
@@ -68,23 +84,12 @@ def test_create_encryption_key_success(mock_encryption_key_controller):
         # add more fields as needed based on EncryptionKey schema
     }
 
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.post("http://localhost:9090/keys/generate")
-        assert response.status_code == status.HTTP_201_CREATED
-        assert "id" in response.json()
+    response = encryption_app_client.post("http://localhost:9090/keys/generate")
+    assert response.status_code == status.HTTP_201_CREATED
+    assert "id" in response.json()
 
 
-def test_get_encryption_key_success(mock_encryption_key_controller):
+def test_get_encryption_key_success(mock_encryption_key_controller, encryption_app_client):
     mock_encryption_key_controller.get_encryption_key_by_id.return_value = {
         "id": 1,
         "key_type": EncryptionKeyType.MSG_PROTECT_SHIELD,
@@ -92,46 +97,24 @@ def test_get_encryption_key_success(mock_encryption_key_controller):
         # add more fields as needed based on EncryptionKey schema
     }
 
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/keys/1")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["id"] == 1
+    response = encryption_app_client.get("http://localhost:9090/keys/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == 1
 
 
-def test_get_public_encryption_key_by_id_success(mock_encryption_key_controller):
+def test_get_public_encryption_key_by_id_success(mock_encryption_key_controller, encryption_app_client):
     mock_encryption_key_controller.get_public_encryption_key_by_id.return_value = {
         "id": 1,
         "key_type": EncryptionKeyType.MSG_PROTECT_SHIELD,
         # add more fields as needed based on EncryptionKey schema
     }
 
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/keys/public/1")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["id"] == 1
+    response = encryption_app_client.get("http://localhost:9090/keys/public/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == 1
 
 
-def test_get_active_encryption_key_by_type_success(mock_encryption_key_controller):
+def test_get_active_encryption_key_by_type_success(mock_encryption_key_controller, encryption_app_client):
     mock_encryption_key_controller.get_active_encryption_key_by_type.return_value = {
         "id": 1,
         "key_type": EncryptionKeyType.MSG_PROTECT_SHIELD,
@@ -139,49 +122,16 @@ def test_get_active_encryption_key_by_type_success(mock_encryption_key_controlle
         # add more fields as needed based on EncryptionKey schema
     }
 
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.get("http://localhost:9090/keys/status/active")
-        assert response.status_code == status.HTTP_200_OK
-        assert response.json()["id"] == 1
+    response = encryption_app_client.get("http://localhost:9090/keys/status/active")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["id"] == 1
 
 
-def test_disable_passive_encryption_key_success(mock_encryption_key_controller):
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.put("http://localhost:9090/keys/disable/1")
-        assert response.status_code == status.HTTP_200_OK
+def test_disable_passive_encryption_key_success(mock_encryption_key_controller, encryption_app_client):
+    response = encryption_app_client.put("http://localhost:9090/keys/disable/1")
+    assert response.status_code == status.HTTP_200_OK
 
 
-def test_delete_encryption_key_success(mock_encryption_key_controller):
-    def get_mock_controller():
-        return mock_encryption_key_controller
-
-    with patch("api.encryption.controllers.encryption_key_controller.EncryptionKeyController", get_mock_controller):
-        from api.encryption.routes.encryption_key_router import encryption_key_router
-        from server import app
-
-        # Create client
-        app.include_router(encryption_key_router, prefix="/keys")
-        client = TestClient(app)
-
-        response = client.delete("http://localhost:9090/keys/1")
-        assert response.status_code == status.HTTP_204_NO_CONTENT
+def test_delete_encryption_key_success(mock_encryption_key_controller, encryption_app_client):
+    response = encryption_app_client.delete("http://localhost:9090/keys/1")
+    assert response.status_code == status.HTTP_204_NO_CONTENT
