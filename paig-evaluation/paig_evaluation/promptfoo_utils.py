@@ -329,12 +329,12 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
     return generated_config
 
 
-def run_promptfoo_redteam_evaluation(eval_id: str, promptfoo_redteam_config: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
+def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
     """
     Run the promptfoo redteam evaluation process.
 
     Args:
-        eval_id (str): Evaluation ID.
+        paig_eval_id (str): Evaluation ID.
         promptfoo_redteam_config (dict): Promptfoo redteam configuration.
         base_prompts (dict): Base prompts.
         custom_prompts (dict): Custom prompts.
@@ -345,7 +345,7 @@ def run_promptfoo_redteam_evaluation(eval_id: str, promptfoo_redteam_config: dic
     """
 
     # Create updated promptfoo redteam configuration
-    promptfoo_generated_prompts_file_name = f"tmp_{eval_id}_promptfoo_generated_prompts.yaml"
+    promptfoo_generated_prompts_file_name = f"tmp_{paig_eval_id}_promptfoo_generated_prompts.yaml"
 
     base_tests = base_prompts.get("tests") if base_prompts else []
     custom_tests = custom_prompts.get("tests") if custom_prompts else []
@@ -354,7 +354,7 @@ def run_promptfoo_redteam_evaluation(eval_id: str, promptfoo_redteam_config: dic
     write_yaml_file(promptfoo_generated_prompts_file_name, promptfoo_redteam_config)
 
     # Run promptfoo redteam evaluation
-    output_path = f"tmp_{eval_id}_promptfoo_evaluation_report.json"
+    output_path = f"tmp_{paig_eval_id}_promptfoo_evaluation_report.json"
     command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_path}"
 
     process = run_command_in_background(command)

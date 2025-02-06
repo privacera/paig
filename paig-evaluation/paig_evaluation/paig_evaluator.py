@@ -71,10 +71,8 @@ class PAIGEvaluator:
         Returns:
             dict: Initial configuration.
         """
-        eval_id = str(uuid.uuid4())
-
         initial_config = {
-            "paig_eval_id": eval_id
+            "paig_eval_id": str(uuid.uuid4())
         }
 
         return initial_config
@@ -95,12 +93,12 @@ class PAIGEvaluator:
         """
         return generate_promptfoo_redteam_config(application_config, plugins, targets, verbose=verbose)
 
-    def evaluate(self, eval_id: str, generated_prompts: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
+    def evaluate(self, paig_eval_id: str, generated_prompts: dict, base_prompts: dict = None, custom_prompts: dict = None, verbose: bool = False) -> dict:
         """
         Run the evaluation process.
 
         Args:
-            eval_id (str): Evaluation ID.
+            paig_eval_id (str): Evaluation ID.
             generated_prompts (dict): Promptfoo redteam configuration.
             base_prompts (dict): Base prompts.
             custom_prompts (dict): Custom prompts.
@@ -110,4 +108,4 @@ class PAIGEvaluator:
             dict: Evaluation results.
         """
 
-        return run_promptfoo_redteam_evaluation(eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
+        return run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
