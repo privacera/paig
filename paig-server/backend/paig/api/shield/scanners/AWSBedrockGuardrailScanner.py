@@ -1,5 +1,4 @@
 import logging
-import boto3
 import os
 
 from api.shield.enum.ShieldEnums import Guardrail, RequestType
@@ -44,13 +43,13 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         guardrail_id, guardrail_version, region = self._get_guardrail_details()
         if not guardrail_id or not guardrail_version or not region:
-            logger.error("AWSBedrockGuardrailScanner: Guardrail details not found. Hence skipping the scan.")
+            logger.debug("AWSBedrockGuardrailScanner: Guardrail details not found. Hence skipping the scan.")
             return ScannerResult(traits=[])
 
-        bedrock_client = boto3.client(
-            'bedrock-runtime',
-            region_name=region
-        )
+        from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
+        bedrock_client_provider = BedrockGuardrailProvider(self.get_property('connection_details'))
+        bedrock_client = bedrock_client_provider.create_bedrock_runtime_client()
+
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -94,11 +93,11 @@ class AWSBedrockGuardrailScanner(Scanner):
         region = os.environ.get('BEDROCK_REGION', default_region)
 
         if not guardrail_id:
-            logger.error("Bedrock Guardrail ID not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail ID not found in properties or environment variables.")
         if not guardrail_version:
-            logger.error("Bedrock Guardrail version not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail version not found in properties or environment variables.")
         if not region:
-            logger.error("Bedrock Guardrail region not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail region not found in properties or environment variables.")
 
         return guardrail_id, guardrail_version, region
 
