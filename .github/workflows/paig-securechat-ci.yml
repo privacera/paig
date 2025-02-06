@@ -9,6 +9,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'paig-securechat/**'
+  workflow_dispatch: # Allows manual trigger
 
 permissions:
   contents: read

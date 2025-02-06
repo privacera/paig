@@ -1,5 +1,5 @@
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, BigInteger
+from sqlalchemy import Boolean, Text, Column, ForeignKey, Integer, String, DateTime, BigInteger
 from uuid import uuid4
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -19,9 +19,9 @@ class Conversations(Base):
     created_on = Column(DateTime, index=True, default=func.now())
     modified_on = Column(DateTime, index=True, default=func.now())
     ai_application_name = Column(String(100), index=True, nullable=False)
-    title = Column(String(100), nullable=True)  # need to discuss uniqueness
+    title = Column(Text, nullable=True)  # need to discuss uniqueness
     is_deleted = Column(Boolean, default=False, nullable=False)
-    client_app_id = Column(String, nullable=True, index=True)
+    client_app_id = Column(String(100), nullable=True, index=True)
 
     user = relationship("User", back_populates="conversations", lazy='joined')
     messages = relationship("Messages", back_populates="conversation")
