@@ -24,23 +24,23 @@ jobs:
         pip install twine build pytest pytest-cov
         pip install -r paig-evaluation/paig_evaluation/requirements.txt
 
-#    - name: Test with pytest
-#      run: |
-#        filepath=$PWD
-#        . venv/bin/activate && cd paig-evaluation
-#        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
-#
-#    - name: Upload coverage report
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: coverage-report
-#        path: coverage.xml
-#
-#    - name: Upload test results
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: junit-results
-#        path: junit.xml
+    - name: Test with pytest
+      run: |
+        filepath=$PWD
+        . venv/bin/activate && cd paig-evaluation
+        python3 -m pytest --cov="." --cov-report term --cov-report xml:$filepath/coverage.xml --junitxml=$filepath/junit.xml tests
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: junit-results
+        path: junit.xml
 
     - name: Build the wheel
       run: |
