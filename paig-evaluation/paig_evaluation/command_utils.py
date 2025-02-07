@@ -3,7 +3,7 @@ import subprocess
 import sys
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("paig_eval")
 
 
 def run_command_in_foreground(command: str, verbose: bool = False):
@@ -12,7 +12,7 @@ def run_command_in_foreground(command: str, verbose: bool = False):
 
     Args:
         command (str): Command to run in the foreground.
-        verbose (bool): If True, print the output in real-time.
+        verbose (bool): If True, log the output in real-time.
 
     Returns:
         tuple: (stdout, stderr) of the command.
@@ -37,12 +37,12 @@ def run_command_in_foreground(command: str, verbose: bool = False):
             if output:
                 stdout_lines.append(output.strip())
                 if verbose:
-                    print(output.strip())
+                    logger.info(output.strip())
 
             if error:
                 stderr_lines.append(error.strip())
                 if verbose:
-                    print(error.strip(), file=sys.stderr)
+                    logger.error(error.strip())
 
             if process.poll() is not None and not output and not error:
                 break
@@ -90,6 +90,7 @@ def check_process_status(process: subprocess.Popen):
             return 1  # Process is running
         return 0 if status == 0 else -1  # Process is completed
     except Exception as e:
+        logger.error(f"Error checking process status: {e}")
         raise RuntimeError(f"Error checking process status: {e}")
 
 
@@ -111,11 +112,12 @@ def wait_for_process_complete(process: subprocess.Popen, verbose: bool = False):
         if status == 0:
             break
         elif status == -1:
-            error_message = process.stderr.readline()
-            logger.error(f"Error running the process: {error_message.strip()}")
             break
         else:
+            error_message = process.stderr.read()
+            if error_message:
+                logger.error(error_message)
             if verbose:
                 stdout_line = process.stdout.readline()
                 if stdout_line:
-                    print(stdout_line.strip())
+                    logger.info(stdout_line.strip())

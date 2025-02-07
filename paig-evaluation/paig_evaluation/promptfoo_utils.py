@@ -14,7 +14,7 @@ import subprocess
 from typing import Union
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("paig_eval")
 
 
 def ensure_promptfoo_config(email: str):
@@ -124,7 +124,7 @@ def install_npm_dependency(package_name: str, version: str) -> None:
         process = run_command_in_background(command)
         wait_for_process_complete(process, verbose=True)
         if process.returncode == 0:
-            print("Successfully installed npm package.")
+            logger.info("Successfully installed npm package.")
         else:
             sys.exit("Failed to install npm package.")
     except Exception as e:

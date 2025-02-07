@@ -5,7 +5,8 @@ from unittest.mock import patch
 from paig_evaluation.promptfoo_utils import (
     get_suggested_plugins_with_description,
     get_all_security_plugins_with_description,
-    read_and_get_security_plugins
+    read_and_get_security_plugins,
+    get_response_object
 )
 
 
@@ -53,6 +54,11 @@ def test_get_all_security_plugins_with_description(sample_plugin_file):
     assert result == expected_result
 
 
+def test_get_all_security_plugins_with_description_no_file_path():
+    result = get_all_security_plugins_with_description("non_existent_file.json")
+    assert result == "Error: Security plugins file not found, file_path=non_existent_file.json"
+
+
 def test_read_and_get_security_plugins_file_not_found():
     result = read_and_get_security_plugins("non_existent_file.json")
     assert result == "Error: Security plugins file not found, file_path=non_existent_file.json"
@@ -86,9 +92,20 @@ def test_read_and_get_security_plugins_with_no_file_path():
     assert result is not None
     assert type(result) == dict
 
+
 def test_read_and_get_security_plugins_with_invalid_json(sample_plugin_file):
     with patch("paig_evaluation.promptfoo_utils.read_json_file") as mock_load:
         mock_load.return_value = "Invalid JSON data"
         result = read_and_get_security_plugins(sample_plugin_file)
     assert result is not None
     assert type(result) == str
+
+
+def test_get_response_object():
+    expected_response = {
+        "status": "failed",
+        "message": "",
+        "result": None
+    }
+    response = get_response_object()
+    assert response == expected_response

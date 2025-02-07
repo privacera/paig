@@ -15,6 +15,8 @@ from .promptfoo_utils import (
 )
 from .config import load_config_file
 
+eval_config = load_config_file()
+
 
 def get_suggested_plugins(purpose: str) -> Dict:
         """
@@ -75,7 +77,6 @@ def init_setup():
     """
     response = get_response_object()
     try:
-        eval_config = load_config_file()
         if 'npm_dependency' in eval_config:
             if 'promptfoo' in eval_config['npm_dependency']:
                 version = eval_config['npm_dependency']['promptfoo']
@@ -160,7 +161,7 @@ class PAIGEvaluator:
             if is_validated:
                 eval_result = run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
                 if eval_result:
-                    response['result'] = run_promptfoo_redteam_evaluation(paig_eval_id, generated_prompts, base_prompts, custom_prompts, verbose)
+                    response['result'] = eval_result
                     response['status'] = 'success'
                     response['message'] = 'Evaluation completed successfully'
                 else:

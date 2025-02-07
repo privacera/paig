@@ -98,7 +98,7 @@ def main(
         application_config = read_yaml_file(application_config_file)
         suggested_categories = get_suggested_plugins(application_config["purpose"])
 
-        write_yaml_file(suggested_categories_file, suggested_categories)
+        write_yaml_file(suggested_categories_file, suggested_categories['result'])
         click.echo(f"Suggested categories saved to {suggested_categories_file}.")
 
     elif action == "generate-dynamic-prompts":
@@ -117,7 +117,7 @@ def main(
         ]
 
         paig_evaluator = PAIGEvaluator()
-        suggested_plugins_names_list = [plugin['Name'] for plugin in suggested_categories["plugins"]]
+        suggested_plugins_names_list = [plugin['Name'] for plugin in suggested_categories]
         generated_prompts = paig_evaluator.generate_prompts(
             application_config,
             suggested_plugins_names_list,
@@ -125,7 +125,7 @@ def main(
             verbose=verbose
         )
 
-        write_yaml_file(dynamic_prompts_file, generated_prompts)
+        write_yaml_file(dynamic_prompts_file, generated_prompts['result'])
         click.echo(f"Generated prompts saved to {dynamic_prompts_file}.")
 
     elif action == "evaluate":
@@ -170,7 +170,7 @@ def main(
         if os.path.exists(custom_prompts_file):
             shutil.copy(custom_prompts_file, f"{evaluation_dir}/{custom_prompts_file}")
 
-        write_json_file(f"{evaluation_dir}/{evaluation_report_file}", evaluation_results)
+        write_json_file(f"{evaluation_dir}/{evaluation_report_file}", evaluation_results['result'])
         click.echo(f"Evaluation report saved to {evaluation_dir}/{evaluation_report_file}.")
 
     elif action == "report":

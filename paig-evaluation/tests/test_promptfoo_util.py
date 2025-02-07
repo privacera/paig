@@ -70,6 +70,17 @@ def test_install_npm_dependency_failure(mock_wait, mock_run_command):
     assert str(excinfo.value) == "Failed to install npm package."
 
 
+@patch("paig_evaluation.promptfoo_utils.run_command_in_background", side_effect=Exception("Command failed"))
+def test_install_npm_dependency_runtime_error(mock_run_command):
+    process_mock = MagicMock(returncode=1)
+    mock_run_command.return_value = process_mock
+
+    with pytest.raises(RuntimeError) as excinfo:
+        install_npm_dependency("example_package", "1.0.0")
+
+    assert "Error installing npm package" in str(excinfo.value)
+
+
 @patch("paig_evaluation.promptfoo_utils.check_package_exists")
 @patch("paig_evaluation.promptfoo_utils.check_npm_dependency")
 @patch("paig_evaluation.promptfoo_utils.install_npm_dependency")
@@ -120,8 +131,6 @@ def test_check_and_install_npm_dependency_npm_not_installed(mock_check_package):
     assert str(excinfo.value) == "npm is not installed. Please install Node.js, which includes npm."
 
 
-
-
 @pytest.fixture
 def mock_os_functions():
     with patch("os.makedirs") as makedirs_mock, \
@@ -167,5 +176,3 @@ def test_ensure_promptfoo_config_creation_or_update(mock_os_functions, mock_file
     # Validate YAML content written
     written_data = yaml_dump_mock.call_args[0][0]
     assert written_data["account"]["email"] == email
-
-
