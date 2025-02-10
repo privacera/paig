@@ -6,7 +6,7 @@ import { FormGroupSwitch } from 'common-ui/components/form_fields';
 
 const VHeaderWithStatus = ({label, description, status, onChange}) => {
     return (
-        <Box component={Paper} p="15px">
+        <Box component={Paper} elevation={0} p="15px">
             <Grid container spacing={1}>
                 <Grid item xs={12}>
                     <Typography variant="h6" data-testid="header">{label}</Typography>

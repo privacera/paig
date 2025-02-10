@@ -43,7 +43,7 @@ class CTestGuardrail extends Component {
         let isDataChanged = this.props.formUtil.isDataChanged();
 
         return (
-            <Box component={Paper} p="15px">
+            <Box component={Paper} elevation={0} p="15px">
                 <FormHorizontal spacing={1} style={{}}>
                     <Grid item xs={12}>
                         <Typography variant="h6" data-testid="header">

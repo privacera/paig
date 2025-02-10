@@ -87,7 +87,7 @@ class CBasicInfo extends Component {
         let nonDefaultProviders = this._vState.providers.filter(p => !p.DEFAULT);
 
         return (
-            <Box component={Paper} p="15px">
+            <Box component={Paper} elevation={0} p="15px">
                 <FormHorizontal style={{}} data-testid="basic-form">
                     <Grid item xs={12}>
                         <Typography data-testid="basic-form-title">

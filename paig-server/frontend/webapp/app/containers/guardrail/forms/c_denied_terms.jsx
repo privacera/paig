@@ -168,7 +168,7 @@ class CDeniedTerms extends Component {
                 />
                 {
                     this._vState.status &&
-                    <Box component={Paper} p="15px" className="m-t-sm">
+                    <Box component={Paper} elevation={0} p="15px" className="border-top">
                         <CResponse
                             value={this.config.responseMessage}
                             onChange={this.handleResponse}

@@ -1,7 +1,7 @@
 import React from 'react';
 import {observer} from 'mobx-react';
 
-import {Stepper, Step, StepLabel, StepButton, Typography} from '@material-ui/core';
+import {Stepper, Step, StepLabel, StepButton, StepConnector, Typography} from '@material-ui/core';
 
 import CBasicInfo from 'containers/guardrail/forms/c_basic_info';
 import CContentModeration from 'containers/guardrail/forms/c_content_moderation';
@@ -137,8 +137,9 @@ const StepRenderer = ({ activeStep, providerName, formUtil, handleProviderChange
 
 const GuardrailStepper = observer(({_vState, stepper, onStepClick}) => {
     return (
-        <Stepper activeStep={_vState.activeStep} orientation="vertical" className="background-color"
+        <Stepper activeStep={_vState.activeStep} orientation="vertical"
             data-testid="guardrail-stepper"
+            connector={<StepConnector style={{padding: 0}} />}
         >
             {stepper.map((step, index) => {
                 let failed = _vState.failedSteps.includes(step.step);
@@ -149,7 +150,7 @@ const GuardrailStepper = observer(({_vState, stepper, onStepClick}) => {
                     >
                         <StepLabel error={failed}>
                             <Typography variant="body2" data-testid={`step-${index}-title`} >{step.title}</Typography>
-                            <Typography variant="caption" data-testid={`step-${index}-subtitle`}>{step.subtitle}</Typography>
+                            {/* <Typography variant="caption" data-testid={`step-${index}-subtitle`}>{step.subtitle}</Typography> */}
                         </StepLabel>
                     </Step>
                 )

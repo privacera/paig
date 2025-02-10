@@ -2,16 +2,69 @@ import React, {Fragment} from 'react';
 
 import {
     Grid, Typography, Chip, Box, Paper, Button, Slider,
-    TableContainer, Table, TableHead, TableBody, TableRow, TableCell
+    TableContainer, Table, TableHead, TableBody, TableRow, TableCell, Card, CardHeader, CardContent
 } from '@material-ui/core';
 import {Alert} from '@material-ui/lab';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import { makeStyles } from "@material-ui/core/styles";
 
 import {GUARDRAIL_PROVIDER, GUARDRAIL_CONFIG_TYPE} from 'utils/globals';
 import {FormHorizontal, FormGroupInput} from 'common-ui/components/form_fields';
 import {content_moderation_list} from 'components/guardrail/forms/content_moderation_list';
 
+const useStyles = makeStyles({
+  cardContent: {
+    padding: "12px",
+    "&:last-child": {
+      paddingBottom: "12px", // Override the extra padding
+    },
+  },
+});
+
 const HeaderWithEditButton = ({title, i, step, onEditClick, containerProps={}}) => {
+    return (
+        <CardHeader
+            title={title}
+            titleTypographyProps={{
+                variant: 'h6'
+            }}
+            action={
+                onEditClick &&
+                <Button
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => onEditClick(step, i)}
+                >
+                    Edit
+                </Button>
+            }
+            classes={{
+                action: 'guardrail-card'
+            }}
+            className="grey-color-class"
+            style={{
+                padding: '12px'
+            }}
+            {...containerProps}
+        />
+    )
+    return (
+        <Box display="flex" justifyContent="space-between" alignItems="center" {...containerProps}>
+            <Typography variant="h6">{title}</Typography>
+            {
+                onEditClick &&
+                <Button
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => onEditClick(step, i)}
+                >
+                    Edit
+                </Button>
+            }
+        </Box>
+    )
     return (
         <Fragment>
             <Grid container spacing={3} {...containerProps}>
@@ -41,6 +94,7 @@ const HeaderWithEditButton = ({title, i, step, onEditClick, containerProps={}}) 
 }
 
 const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     let guardrailProvider = Object.values(GUARDRAIL_PROVIDER).find(p => p.NAME === data.guardrailProvider);
 
     const error = formUtil.getErrors();
@@ -56,84 +110,49 @@ const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
                     'data-testid': 'basic-info'
                 }}
             />
-            <Grid container spacing={3}>
-                {
-                    (error.basicInfo?.name) &&
+            <CardContent className={classes.cardContent}>
+                <Grid container spacing={3}>
+                    {
+                        (error.basicInfo?.name) &&
+                        <Grid item xs={12}>
+                            <Alert severity="error" data-testid="guardrail-basic-alert">
+                                {error.basicInfo.name}
+                            </Alert>
+                        </Grid>
+                    }
+                    <FormGroupInput
+                        label="Name"
+                        value={data.name}
+                        textOnly={true}
+                    />
+                    <FormGroupInput
+                        as="textarea"
+                        label="Description"
+                        value={data.description}
+                        textOnly={true}
+                    />
+                </Grid>
+                <hr />
+                <Grid container spacing={3} className="m-b-sm">
                     <Grid item xs={12}>
-                        <Alert severity="error" data-testid="guardrail-basic-alert">
-                            {error.basicInfo.name}
+                        <Typography variant="h6">
+                            Connected Guardrails
+                        </Typography>
+                    </Grid>
+                </Grid>
+                {
+                    error.basicInfo?.guardrailConnections &&
+                    <Grid item xs={12}>
+                        <Alert severity="error">
+                            {error.basicInfo.guardrailConnections}
                         </Alert>
                     </Grid>
                 }
-                <FormGroupInput
-                    label="Name"
-                    value={data.name}
-                    textOnly={true}
-                />
-                <FormGroupInput
-                    as="textarea"
-                    label="Description"
-                    value={data.description}
-                    textOnly={true}
-                />
-            </Grid>
-            <hr />
-            <Grid container spacing={3} className="m-b-sm">
-                <Grid item xs={12}>
-                    <Typography variant="h6">
-                        Connected Guardrails
-                    </Typography>
-                </Grid>
-            </Grid>
-            {
-                error.basicInfo?.guardrailConnections &&
-                <Grid item xs={12}>
-                    <Alert severity="error">
-                        {error.basicInfo.guardrailConnections}
-                    </Alert>
-                </Grid>
-            }
-            <Grid container spacing={3} className="m-b-sm">
-                <Grid item xs={12} sm="auto" className="border-radius-5 card-border-grey m-b-sm m-l-sm m-r-xs" style={{minWidth: '48%'}}>
-                    <Grid container>
-                        {
-                            GUARDRAIL_PROVIDER.PAIG.IMG_URL &&
-                            <Grid item className="m-r-sm">
-                                <div style={{
-                                     width: '40px',
-                                     height: '40px',
-                                     backgroundColor: '#eaf3fa',
-                                     display: 'flex',
-                                     justifyContent: 'center',
-                                     alignItems: 'center'
-                                }}>
-                                    <img
-                                        className={"services-logo " + GUARDRAIL_PROVIDER.PAIG.NAME}
-                                        src={GUARDRAIL_PROVIDER.PAIG.IMG_URL}
-                                        alt="service-logo"
-                                        style={{
-                                            width: 'auto',
-                                            height: '30px'
-                                        }}
-                                    />
-                                </div>
-                            </Grid>
-                        }
-                        <Grid item>
-                            <Typography variant="subtitle2">{GUARDRAIL_PROVIDER.PAIG.LABEL}</Typography>
-                            <Chip
-                                size="small"
-                                label="Always Enabled"
-                            />
-                        </Grid>
-                    </Grid>
-                </Grid>
-                {
-                    guardrailProvider &&
+                <Grid container spacing={3} className="m-b-sm">
                     <Grid item xs={12} sm="auto" className="border-radius-5 card-border-grey m-b-sm m-l-sm m-r-xs" style={{minWidth: '48%'}}>
                         <Grid container>
                             {
-                                guardrailProvider.IMG_URL &&
+                                GUARDRAIL_PROVIDER.PAIG.IMG_URL &&
                                 <Grid item className="m-r-sm">
                                     <div style={{
                                          width: '40px',
@@ -144,8 +163,8 @@ const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
                                          alignItems: 'center'
                                     }}>
                                         <img
-                                            className={"services-logo " + guardrailProvider.NAME}
-                                            src={guardrailProvider.IMG_URL}
+                                            className={"services-logo " + GUARDRAIL_PROVIDER.PAIG.NAME}
+                                            src={GUARDRAIL_PROVIDER.PAIG.IMG_URL}
                                             alt="service-logo"
                                             style={{
                                                 width: 'auto',
@@ -156,18 +175,56 @@ const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
                                 </Grid>
                             }
                             <Grid item>
-                                <Typography variant="subtitle2">{guardrailProvider.LABEL}</Typography>
-                                <Typography variant="body2">Connection: {data.guardrailConnectionName}</Typography>
+                                <Typography variant="subtitle2">{GUARDRAIL_PROVIDER.PAIG.LABEL}</Typography>
+                                <Chip
+                                    size="small"
+                                    label="Always Enabled"
+                                />
                             </Grid>
                         </Grid>
                     </Grid>
-                }
-            </Grid>
+                    {
+                        guardrailProvider &&
+                        <Grid item xs={12} sm="auto" className="border-radius-5 card-border-grey m-b-sm m-l-sm m-r-xs" style={{minWidth: '48%'}}>
+                            <Grid container>
+                                {
+                                    guardrailProvider.IMG_URL &&
+                                    <Grid item className="m-r-sm">
+                                        <div style={{
+                                             width: '40px',
+                                             height: '40px',
+                                             backgroundColor: '#eaf3fa',
+                                             display: 'flex',
+                                             justifyContent: 'center',
+                                             alignItems: 'center'
+                                        }}>
+                                            <img
+                                                className={"services-logo " + guardrailProvider.NAME}
+                                                src={guardrailProvider.IMG_URL}
+                                                alt="service-logo"
+                                                style={{
+                                                    width: 'auto',
+                                                    height: '30px'
+                                                }}
+                                            />
+                                        </div>
+                                    </Grid>
+                                }
+                                <Grid item>
+                                    <Typography variant="subtitle2">{guardrailProvider.LABEL}</Typography>
+                                    <Typography variant="body2">Connection: {data.guardrailConnectionName}</Typography>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+                    }
+                </Grid>
+            </CardContent>
         </Fragment>
     )
 }
 
 const VContentModeration = ({data, formUtil, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     let contentModeration = formUtil.getConfigForType(GUARDRAIL_CONFIG_TYPE.CONTENT_MODERATION.NAME) || {};
     const { status, configData={} } = contentModeration;
 
@@ -198,7 +255,7 @@ const VContentModeration = ({data, formUtil, stepConfig, i, onEditClick}) => {
             />
             {
                 enabled &&
-                <Fragment>
+                <CardContent className={classes.cardContent}>
                     {
                         error.contentModerationFilters?.contentModeration &&
                         <Grid container spacing={3}>
@@ -247,13 +304,14 @@ const VContentModeration = ({data, formUtil, stepConfig, i, onEditClick}) => {
                            </TableContainer>
                         </Grid>
                     </Grid>
-                </Fragment>
+                </CardContent>
             }
         </Fragment>
     )
 }
 
 const VSensitiveDataFilters = ({formUtil, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     const data = formUtil.getData();
     let sensitiveData = formUtil.getConfigForType(GUARDRAIL_CONFIG_TYPE.SENSITIVE_DATA.NAME) || {};
     let elements = sensitiveData.configData?.configs?.filter(c => c.category) || [];
@@ -281,7 +339,7 @@ const VSensitiveDataFilters = ({formUtil, stepConfig, i, onEditClick}) => {
             />
             {
                 enabled &&
-                <Fragment>
+                <CardContent className={classes.cardContent}>
                     {
                         error.sensitiveDataFilters?.sensitiveData &&
                         <Grid container spacing={3}>
@@ -369,13 +427,14 @@ const VSensitiveDataFilters = ({formUtil, stepConfig, i, onEditClick}) => {
                             </Grid>
                         </Fragment>
                     }
-                </Fragment>
+                </CardContent>
             }
         </Fragment>
     )
 }
 
 const VOffTopicFilters = ({formUtil, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     let offTopics = formUtil.getConfigForType(GUARDRAIL_CONFIG_TYPE.OFF_TOPIC.NAME) || {};
     const { status, configData={} } = offTopics;
 
@@ -399,7 +458,7 @@ const VOffTopicFilters = ({formUtil, stepConfig, i, onEditClick}) => {
             />
             {
                 enabled &&
-                <Fragment>
+                <CardContent className={classes.cardContent}>
                     {
                         error.offTopicFilters?.offTopic &&
                         <Grid container spacing={3}>
@@ -457,13 +516,14 @@ const VOffTopicFilters = ({formUtil, stepConfig, i, onEditClick}) => {
                            </TableContainer>
                         </Grid>
                     </Grid>
-                </Fragment>
+                </CardContent>
             }
         </Fragment>
     )
 }
 
 const VDeniedTerms = ({formUtil, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     let deniedTerms = formUtil.getConfigForType(GUARDRAIL_CONFIG_TYPE.DENIED_TERMS.NAME) || {};
 
     const { status, configData={} } = deniedTerms;
@@ -491,7 +551,7 @@ const VDeniedTerms = ({formUtil, stepConfig, i, onEditClick}) => {
             />
             {
                 enabled &&
-                <Fragment>
+                <CardContent className={classes.cardContent}>
                     {
                         error.deniedTermsFilters?.deniedTerms &&
                         <Grid container spacing={3} className="m-b-xs">
@@ -542,13 +602,14 @@ const VDeniedTerms = ({formUtil, stepConfig, i, onEditClick}) => {
                             </Grid>
                         </Grid>
                     }
-                </Fragment>
+                </CardContent>
             }
         </Fragment>
     )
 }
 
 const VPromptSafety = ({formUtil, stepConfig, i, onEditClick}) => {
+    const classes = useStyles();
     let promptSafety = formUtil.getConfigForType(GUARDRAIL_CONFIG_TYPE.PROMPT_SAFETY.NAME) || {};
 
     const { status, configData={} } = promptSafety;
@@ -597,19 +658,21 @@ const VPromptSafety = ({formUtil, stepConfig, i, onEditClick}) => {
             />
             {
                 enabled &&
-                <Grid container spacing={3} className="justify-center">
-                    <Grid item xs={11} sm={8} style={{paddingLeft: '20px'}}>
-                        <Slider
-                            value={value}
-                            valueLabelFormat={val => `${val}%`}
-                            getAriaValueText={val => `${val}%`}
-                            aria-labelledby="prompt attack sensitivity"
-                            step={null}
-                            valueLabelDisplay="auto"
-                            marks={marks}
-                        />
+                <CardContent className={classes.cardContent}>
+                    <Grid container spacing={3} className="justify-center">
+                        <Grid item xs={11} sm={8} style={{paddingLeft: '20px'}}>
+                            <Slider
+                                value={value}
+                                valueLabelFormat={val => `${val}%`}
+                                getAriaValueText={val => `${val}%`}
+                                aria-labelledby="prompt attack sensitivity"
+                                step={null}
+                                valueLabelDisplay="auto"
+                                marks={marks}
+                            />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </CardContent>
             }
         </Fragment>
     )
@@ -635,14 +698,16 @@ const VReview = ({formUtil, onStepClick}) => {
         const ReviewComponent = reviewComponent[stepConfig.reviewComponent];
 
         return (
-            <Box component={Paper} p="15px" className="m-b-md" key={stepConfig.title}>
-                <ReviewComponent
-                    i={i}
-                    data={data}
-                    formUtil={formUtil}
-                    stepConfig={stepConfig}
-                    onEditClick={onStepClick}
-                />
+            <Box p="15px" key={stepConfig.title}>
+                <Card variant="outlined">
+                    <ReviewComponent
+                        i={i}
+                        data={data}
+                        formUtil={formUtil}
+                        stepConfig={stepConfig}
+                        onEditClick={onStepClick}
+                    />
+                </Card>
             </Box>
         )
     });

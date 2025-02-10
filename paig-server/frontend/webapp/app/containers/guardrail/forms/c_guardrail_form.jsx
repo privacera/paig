@@ -215,81 +215,83 @@ class CGuardrailForm extends Component {
                 showBackButton={true}
             >
                 <Loader isLoading={this._vState.editMode && !this._vState.guardrail} loaderContent={getSkeleton('THREE_SLIM_LOADER')}>
-                    <Grid container spacing={1} ref={ref => this.containerRef = ref}>
-                        <Grid item xs={12} sm={3}>
-                            <GuardrailStepper
-                                _vState={this._vState}
-                                stepper={this.stepper}
-                                onStepClick={this.handleStepClick}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={9} className="m-t-md">
-                            {/* <Box component={Paper} p="15px"> */}
-                                <StepRenderer
-                                    activeStep={this._vState.activeStep}
-                                    providerName={this._vState.providerName}
-                                    formUtil={this.formUtil}
-                                    handleProviderChange={this.handleProviderChange}
+                    <Paper>
+                        <Grid container spacing={1} ref={ref => this.containerRef = ref}>
+                            <Grid item xs={12} sm={3} className="border-right">
+                                <GuardrailStepper
+                                    _vState={this._vState}
+                                    stepper={this.stepper}
                                     onStepClick={this.handleStepClick}
                                 />
-                            {/* </Box> */}
-                            <Box component={Paper} p={1} className="sticky-actions m-t-sm" style={{zIndex: 10}}>
-                                <Grid container spacing={1} justify="space-between" data-testid="sticky-action-buttons">
-                                    <Grid item>
-                                        {
-                                            this._vState.activeStep > 0 &&
-                                            <Button
-                                                data-testid="back-button"
-                                                color="primary"
-                                                onClick={this.handleBack}
-                                            >
-                                                BACK
-                                            </Button>
-                                        }
-                                    </Grid>
-                                    <Grid item>
-                                        <Button
-                                            data-testid="cancel-button"
-                                            color="primary"
-                                            onClick={this.handleCancel}
-                                        >
-                                            CANCEL
-                                        </Button>
-                                        {
-                                            this._vState.activeStep > 0 && reviewIndex !== -1 && this._vState.activeStep < reviewIndex &&
-                                            <Button
-                                                data-testid="skip-to-review"
-                                                className="m-l-sm"
-                                                color="primary"
-                                                onClick={this.handleSkipToReview}
-                                            >
-                                                SKIP TO REVIEW
-                                            </Button>
-                                        }
-                                        <Button
-                                            data-testid="continue-button"
-                                            variant="contained"
-                                            color="primary"
-                                            className="m-l-sm"
-                                            disabled={this._vState.saving || (!data.id && reviewIndex !== -1 && this._vState.activeStep > reviewIndex)}
-                                            onClick={this.handleContinue}
-                                        >
-                                            {this._vState.saving ? <CircularProgress size={24} /> : null}
+                            </Grid>
+                            <Grid item xs={12} sm={9} className="m-t-xs">
+                                {/* <Box component={Paper} p="15px"> */}
+                                    <StepRenderer
+                                        activeStep={this._vState.activeStep}
+                                        providerName={this._vState.providerName}
+                                        formUtil={this.formUtil}
+                                        handleProviderChange={this.handleProviderChange}
+                                        onStepClick={this.handleStepClick}
+                                    />
+                                {/* </Box> */}
+                                <Box component={Paper} elevation={0} p={1} className="sticky-actions border-top" style={{zIndex: 10, opacity: '90%', top: 'calc(100vh - 100px)'}}>
+                                    <Grid container spacing={1} justify="space-between" data-testid="sticky-action-buttons">
+                                        <Grid item>
                                             {
-                                                this.isLastStep() ?
-                                                'FINISH' :
-                                                (
-                                                    this.isReviewStep()?
-                                                    'SAVE AND CONTINUE' :
-                                                    'CONTINUE'
-                                                )
+                                                this._vState.activeStep > 0 &&
+                                                <Button
+                                                    data-testid="back-button"
+                                                    color="primary"
+                                                    onClick={this.handleBack}
+                                                >
+                                                    BACK
+                                                </Button>
                                             }
-                                        </Button>
+                                        </Grid>
+                                        <Grid item>
+                                            <Button
+                                                data-testid="cancel-button"
+                                                color="primary"
+                                                onClick={this.handleCancel}
+                                            >
+                                                CANCEL
+                                            </Button>
+                                            {
+                                                this._vState.activeStep > 0 && reviewIndex !== -1 && this._vState.activeStep < reviewIndex &&
+                                                <Button
+                                                    data-testid="skip-to-review"
+                                                    className="m-l-sm"
+                                                    color="primary"
+                                                    onClick={this.handleSkipToReview}
+                                                >
+                                                    SKIP TO REVIEW
+                                                </Button>
+                                            }
+                                            <Button
+                                                data-testid="continue-button"
+                                                variant="contained"
+                                                color="primary"
+                                                className="m-l-sm"
+                                                disabled={this._vState.saving || (!data.id && reviewIndex !== -1 && this._vState.activeStep > reviewIndex)}
+                                                onClick={this.handleContinue}
+                                            >
+                                                {this._vState.saving ? <CircularProgress size={24} /> : null}
+                                                {
+                                                    this.isLastStep() ?
+                                                    'FINISH' :
+                                                    (
+                                                        this.isReviewStep()?
+                                                        'SAVE AND CONTINUE' :
+                                                        'CONTINUE'
+                                                    )
+                                                }
+                                            </Button>
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                            </Box>
+                                </Box>
+                            </Grid>
                         </Grid>
-                    </Grid>
+                    </Paper>
                 </Loader>
             </BaseContainer>
         );

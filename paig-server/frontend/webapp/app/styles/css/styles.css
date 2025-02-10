@@ -959,3 +959,8 @@ span.diff-danger>span {
 .white-bg {
   background-color: #ffffff;
 }
+
+.guardrail-card {
+    margin-top: 1px !important;
+    margin-right: 1px !important;
+}
