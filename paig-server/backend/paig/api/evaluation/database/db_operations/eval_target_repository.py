@@ -61,6 +61,7 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
                 combined_query.c.application_name,
                 combined_query.c.ai_application_desc,
                 combined_query.c.eval_target_model_url,
+                combined_query.c.eval_target_name,
             )
             .distinct(combined_query.c.eval_target_model_id)
             # Remove duplicates
@@ -73,7 +74,8 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             if filter_value:
                 query = query.filter(
                     or_(
-                        combined_query.c.application_name.like(f"%{filter_value}%")
+                        combined_query.c.application_name.like(f"%{filter_value}%"),
+                        combined_query.c.eval_target_name.like(f"%{filter_value}%")
                     )
                 )
 
@@ -82,7 +84,12 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             filter_value = exclude_filters.model_dump()["name"]
             if filter_value:
                 query = query.filter(
-                    combined_query.c.application_name.notlike(f"%{filter_value}%")
+                    and_(
+                        combined_query.c.application_name.is_(None) | combined_query.c.application_name.notlike(
+                            f"%{filter_value}%"),
+                        combined_query.c.eval_target_name.is_(None) | combined_query.c.eval_target_name.notlike(
+                            f"%{filter_value}%"),
+                    )
                 )
 
         if all_filters:
