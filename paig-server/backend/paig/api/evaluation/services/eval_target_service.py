@@ -63,9 +63,12 @@ class EvaluationTargetService:
                 index += 1
                 app['application_id'] = ai_app[0]
                 app['target_id'] = ai_app[1]
-                app['name'] = ai_app[2]
                 app['desc'] = ai_app[3]
                 app['url'] = ai_app[4]
+                if app['application_id'] is not None:
+                    app['name'] = ai_app[2]
+                else:
+                    app['name'] = ai_app[5]
                 final_apps.append(app)
             return create_pageable_response(final_apps, total_count, page_number, size, sort)
         except Exception as e:

@@ -38,13 +38,10 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
         columns = [
             AIApplicationModel.id.label("ai_application_model_id"),
             EvaluationTargetModel.id.label("eval_target_model_id"),
-            case(
-                (EvaluationTargetModel.application_id.isnot(None), AIApplicationModel.name),
-                # If matched, take AIApplicationModel.name
-                else_=EvaluationTargetModel.name
-            ).label("application_name"),
+            AIApplicationModel.name.label("application_name"),
             AIApplicationModel.description.label("ai_application_desc"),
             EvaluationTargetModel.url.label("eval_target_model_url"),
+            EvaluationTargetModel.name.label("eval_target_name"),
         ]
 
         # Query 1: Get all AIApplicationModel entries (Left Join)
