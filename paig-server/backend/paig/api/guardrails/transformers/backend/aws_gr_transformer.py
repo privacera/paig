@@ -90,7 +90,7 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
                         "pattern": config['pattern'],
                         "action": action
                     }
-                    if 'description' in config:
+                    if 'description' in config and config['description']:
                         regex_conf['description'] = config['description']
                     regex_entities_config.append(regex_conf)
 
