@@ -70,3 +70,15 @@ class EvaluationTargetController:
             dict: The response message.
         """
         return await self.eval_target_service.delete_target(app_id=app_id)
+
+    async def get_app_target_by_id(self, app_id: int):
+        """
+        Retrieve the evaluation target with the specified ID.
+
+        Args:
+            app_id (int): The ID of the evaluation target.
+
+        Returns:
+            dict: The response message.
+        """
+        return await self.eval_target_service.get_target_by_app_id(app_id=app_id)

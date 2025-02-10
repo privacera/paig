@@ -56,3 +56,14 @@ async def delete_application_target(
         eval_target_controller: EvaluationTargetController = eval_target_controller_instance
 ):
     return await eval_target_controller.delete_app_target(app_id=id)
+
+
+@evaluation_target_router.get("/application/{id}")
+async def get_application_target_by_id(
+        request: Request,
+        response: Response,
+        id: int,
+        user: dict = Depends(get_auth_user),
+        eval_target_controller: EvaluationTargetController = eval_target_controller_instance
+):
+    return await eval_target_controller.get_app_target_by_id(app_id=id)

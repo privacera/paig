@@ -35,6 +35,16 @@ def transform_eval_target(eval_target):
     eval_target_dict['config'] = eval_target
     return json.dumps(eval_target_dict)
 
+def transform_eval_target_to_dict(config):
+    config = json.loads(config)
+    eval_taget_config = dict()
+    eval_taget_config['method'] = config['method']
+    eval_taget_config['headers'] = config['headers']
+    eval_taget_config['body'] = config['body']
+    eval_taget_config['transformResponse'] = config['transformResponse']
+    eval_taget_config['url'] = config['id']
+    return eval_taget_config
+
 class EvaluationTargetService:
 
     def __init__(self,
@@ -132,5 +142,22 @@ class EvaluationTargetService:
             return eval_target
         except Exception as e:
             logger.error(f"Error in delete_target: {e}")
+            logger.error(traceback.format_exc())
+            raise InternalServerError("Internal server error")
+
+    async def get_app_target_by_id(self, app_id):
+        try:
+            target_model = await self.eval_target_repository.get_target_by_id(app_id)
+            if target_model is None:
+                raise NotFoundException(f"No application found with id {app_id}")
+            resp = dict()
+            resp['config'] = transform_eval_target_to_dict(target_model.config)
+            resp['name'] = target_model.name
+            resp['url'] = target_model.url
+            resp['id'] = target_model.id
+            resp['ai_application_id'] = target_model.application_id
+            return resp
+        except Exception as e:
+            logger.error(f"Error in get_app_target_by_id: {e}")
             logger.error(traceback.format_exc())
             raise InternalServerError("Internal server error")
