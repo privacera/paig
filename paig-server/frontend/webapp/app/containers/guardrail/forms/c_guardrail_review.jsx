@@ -22,7 +22,8 @@ class CGuardrailReview extends Component {
     }
     showModal = (model) => {
         this.Modal?.show({
-            title: 'Guardrail Preview'
+            title: 'Guardrail Preview',
+            showOkButton: false
         });
         if (model) {
             this.fetchGuardrail(model.id);
