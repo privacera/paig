@@ -1,6 +1,9 @@
 import os
 import subprocess
 import sys
+import logging
+
+logger = logging.getLogger("paig_eval")
 
 
 def run_command_in_foreground(command: str, verbose: bool = False):
@@ -9,24 +12,24 @@ def run_command_in_foreground(command: str, verbose: bool = False):
 
     Args:
         command (str): Command to run in the foreground.
-        verbose (bool): If True, print the output in real-time.
+        verbose (bool): If True, log the output in real-time.
 
     Returns:
         tuple: (stdout, stderr) of the command.
 
     """
-    splited_command = command.split(" ")
-    env = os.environ.copy()
-
-    process = subprocess.Popen(
-        splited_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env
-    )
-
-    stdout_lines = []
-    stderr_lines = []
-
-    # Read output line by line
     try:
+        splited_command = command.split(" ")
+        env = os.environ.copy()
+
+        process = subprocess.Popen(
+            splited_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env
+        )
+
+        stdout_lines = []
+        stderr_lines = []
+
+        # Read output line by line
         while True:
             output = process.stdout.readline()
             error = process.stderr.readline()
@@ -34,12 +37,12 @@ def run_command_in_foreground(command: str, verbose: bool = False):
             if output:
                 stdout_lines.append(output.strip())
                 if verbose:
-                    print(output.strip())
+                    logger.info(output.strip())
 
             if error:
                 stderr_lines.append(error.strip())
                 if verbose:
-                    print(error.strip(), file=sys.stderr)
+                    logger.error(error.strip())
 
             if process.poll() is not None and not output and not error:
                 break
@@ -49,6 +52,7 @@ def run_command_in_foreground(command: str, verbose: bool = False):
         stdout_lines.extend(remaining_stdout.splitlines())
         stderr_lines.extend(remaining_stderr.splitlines())
     except Exception as e:
+        logger.error(f"Error running command: {e}")
         raise RuntimeError(f"Error running command: {e}")
 
     return "\n".join(stdout_lines), "\n".join(stderr_lines)
@@ -81,10 +85,12 @@ def check_process_status(process: subprocess.Popen):
         int: 1 if the process is running, 0 if the process is completed.
     """
     try:
-        if process.poll() is None:
+        status = process.poll()
+        if status is None:
             return 1  # Process is running
-        return 0  # Process is completed
+        return 0 if status == 0 else -1  # Process is completed
     except Exception as e:
+        logger.error(f"Error checking process status: {e}")
         raise RuntimeError(f"Error checking process status: {e}")
 
 
@@ -105,8 +111,13 @@ def wait_for_process_complete(process: subprocess.Popen, verbose: bool = False):
         status = check_process_status(process)
         if status == 0:
             break
+        elif status == -1:
+            break
         else:
+            error_message = process.stderr.read()
+            if error_message:
+                logger.error(error_message)
             if verbose:
                 stdout_line = process.stdout.readline()
                 if stdout_line:
-                    print(stdout_line.strip())
+                    logger.info(stdout_line.strip())
