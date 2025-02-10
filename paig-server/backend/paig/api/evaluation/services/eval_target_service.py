@@ -32,17 +32,18 @@ def transform_eval_target(eval_target):
         except Exception as e:
             raise BadRequestException("Invalid body format")
     eval_config['transformResponse'] = eval_target['transformResponse']
-    eval_target_dict['config'] = eval_target
+    eval_target_dict['config'] = eval_config
     return json.dumps(eval_target_dict)
 
 def transform_eval_target_to_dict(config):
-    config = json.loads(config)
+    target = json.loads(config)
+    config = target['config']
     eval_taget_config = dict()
     eval_taget_config['method'] = config['method']
     eval_taget_config['headers'] = config['headers']
     eval_taget_config['body'] = config['body']
     eval_taget_config['transformResponse'] = config['transformResponse']
-    eval_taget_config['url'] = config['id']
+    eval_taget_config['url'] = target['id']
     return eval_taget_config
 
 class EvaluationTargetService:
