@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Tuple, Dict
 
 import boto3
@@ -179,6 +180,22 @@ class BedrockGuardrailProvider(GuardrailProvider):
                 RoleArn=self.connection_details['k8AwsRoleArn'],
                 RoleSessionName=self.connection_details['sessionName'],
                 WebIdentityToken=self.connection_details['k8AwsWebIdentityToken']
+            )
+            temp_credentials = assumed_role['Credentials']
+            return boto3.client(
+                'bedrock',
+                aws_access_key_id=temp_credentials['AccessKeyId'],
+                aws_secret_access_key=temp_credentials['SecretAccessKey'],
+                aws_session_token=temp_credentials['SessionToken'],
+                region_name=self.connection_details['region']
+            )
+
+        if os.getenv("AWS_ROLE_ARN") and os.getenv("AWS_WEB_IDENTITY_TOKEN_FILE"):
+            sts_client = boto3.client('sts')
+            assumed_role = sts_client.assume_role_with_web_identity(
+                RoleArn=os.getenv("AWS_ROLE_ARN"),
+                RoleSessionName="bedrock-guardrail-session",
+                WebIdentityToken=open(os.getenv("AWS_WEB_IDENTITY_TOKEN_FILE")).read().strip()
             )
             temp_credentials = assumed_role['Credentials']
             return boto3.client(
