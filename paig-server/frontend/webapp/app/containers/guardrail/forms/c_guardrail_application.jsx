@@ -51,7 +51,7 @@ class CGuardrailApplication extends Component {
         data.applicationKeys = f.models(this.cApplications).filter(m => m.selected).map(app => app.applicationKey);
     }
     render() {
-        let models = []; f.models(this.cApplications);
+        let models = f.models(this.cApplications);
 
         return (
             <Box component={Paper} elevation={0} p="15px" data-testid="ai-application-step">

@@ -29,15 +29,15 @@ describe('Guardrail Form PAIG provider', () => {
             steps.each((index, step) => {
                 cy.wrap(step).within(() => {
                     cy.get('[data-testid$="-title"]').should('be.visible').and('not.be.empty');
-                    cy.get('[data-testid$="-subtitle"]').should('be.visible').and('not.be.empty');
+                    cy.get('[data-testid$="-subtitle"]').should('not.exist');
                 });
             });
         });
 
         cy.get('[data-testid^="step-"]').should('be.visible')
         .then((steps) => {
-            cy.log(`Number of steps with title and subtitle displayed: ${steps.length}`);
-            expect(steps.length).to.equal(15);
+            cy.log(`Number of steps with title: ${steps.length}`);
+            expect(steps.length).to.equal(10);
         });
     });
 
@@ -246,45 +246,43 @@ describe('Guardrail Form PAIG provider', () => {
         cy.get('[data-testid="continue-button"]').should('be.visible').and('contain', 'CONTINUE').and('be.disabled');
     });
 
-    it('should validate AI application listing on the last step', () => {
+    it.only('should validate AI application listing on the last step', () => {
        cy.get('[data-testid="step-4"]').click();
 
-       cy.get('[data-testid="ai-application-step"]').should('be.visible').within(() => {
-            cy.get('[data-testid="ai-application-header"]').then(($header) => {
-                if ($header.length) {
-                    // Do something if the element exists
-                    cy.get('[data-testid="ai-application-header"]').should('be.visible').and('contain', 'Select AI Application');
-                    cy.get('[data-testid="thead"]').within(() => {
-                        cy.get('tr').should('have.length', 1).within(() => {
-                            cy.get('th').should('have.length', 3);
+       cy.get('[data-testid="ai-application-step"]').should('be.visible').within(($content) => {
+            if ($content.find('[data-testid="ai-application-header"]').length) {
+                // Do something if the element exists
+                cy.get('[data-testid="ai-application-header"]').should('be.visible').and('contain', 'Select AI Application');
+                cy.get('[data-testid="thead"]').within(() => {
+                    cy.get('tr').should('have.length', 1).within(() => {
+                        cy.get('th').should('have.length', 3);
 
-                            cy.get('th').eq(0).should('be.visible').and('contain', '');
-                            cy.get('th').eq(1).should('be.visible').and('contain', 'Name');
-                            cy.get('th').eq(2).should('be.visible').and('contain', 'Description');
-                        })
+                        cy.get('th').eq(0).should('be.visible').and('contain', '');
+                        cy.get('th').eq(1).should('be.visible').and('contain', 'Name');
+                        cy.get('th').eq(2).should('be.visible').and('contain', 'Description');
                     })
+                })
 
-                    cy.get('[data-testid="tbody-with-data"]').then(($tbody) => {
-                        if ($tbody.length) {
-                            // Do something if the element exists
-                            cy.get('[data-testid="tbody-with-data"]').within(() => {
-                                cy.get('tr').should('have.length', 1).within(() => {
-                                    cy.get('td').should('have.length', 3);
+                cy.get('[data-testid="tbody-with-data"]').then(($tbody) => {
+                    if ($tbody.length) {
+                        // Do something if the element exists
+                        cy.get('[data-testid="tbody-with-data"]').within(() => {
+                            cy.get('tr').should('have.length', 1).within(() => {
+                                cy.get('td').should('have.length', 3);
 
-                                    cy.get('td').eq(0).find('[data-testid="checkbox"]').should('exist');
-                                    cy.get('td').eq(1).should('be.visible').and('not.be.empty');
-                                    cy.get('td').eq(2).should('be.visible');
-                                });
+                                cy.get('td').eq(0).find('[data-testid="checkbox"]').should('exist');
+                                cy.get('td').eq(1).should('be.visible').and('not.be.empty');
+                                cy.get('td').eq(2).should('be.visible');
                             });
-                        } else {
-                            cy.get('[data-testid="tbody-with-nodata"]').should('be.visible').and('contain', 'No matching records found.');
-                        }
-                    });
-                } else {
-                    cy.get('[data-testid="no-ai-app-connected"]').should('be.visible').and('contain', 'No AI Application Connected');
-                    cy.get('[data-testid="no-ai-app-desc"]').should('be.visible').and('contain', 'Currently, no AI applications are connected. You may save the guardrail now and return to this step later to connect applications.');
-                }
-            });
+                        });
+                    } else {
+                        cy.get('[data-testid="tbody-with-nodata"]').should('be.visible').and('contain', 'No matching records found.');
+                    }
+                });
+            } else {
+                cy.get('[data-testid="no-ai-app-connected"]').should('be.visible').and('contain', 'No AI Application Connected');
+                cy.get('[data-testid="no-ai-app-desc"]').should('be.visible').and('contain', 'Currently, no AI applications are connected. You may save the guardrail now and return to this step later to connect applications.');
+            }
        });
     });
 

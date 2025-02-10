@@ -34,9 +34,10 @@ const HeaderWithEditButton = ({title, i, step, onEditClick, containerProps={}}) 
                     size="small"
                     variant="outlined"
                     color="primary"
+                    data-testid="edit-button"
                     onClick={() => onEditClick(step, i)}
                 >
-                    Edit
+                    EDIT
                 </Button>
             }
             classes={{
@@ -48,49 +49,7 @@ const HeaderWithEditButton = ({title, i, step, onEditClick, containerProps={}}) 
             }}
             {...containerProps}
         />
-    )
-    return (
-        <Box display="flex" justifyContent="space-between" alignItems="center" {...containerProps}>
-            <Typography variant="h6">{title}</Typography>
-            {
-                onEditClick &&
-                <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => onEditClick(step, i)}
-                >
-                    Edit
-                </Button>
-            }
-        </Box>
-    )
-    return (
-        <Fragment>
-            <Grid container spacing={3} {...containerProps}>
-                <Grid item xs={10}>
-                    <Typography variant="h6">
-                        {title}
-                    </Typography>
-                </Grid>
-                {
-                    onEditClick &&
-                    <Grid item xs={2}>
-                        <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            className="pull-right"
-                            data-testid="edit-button"
-                            onClick={() => onEditClick(step, i)}
-                        >
-                            EDIT
-                        </Button>
-                    </Grid>
-                }
-            </Grid>
-        </Fragment>
-    )
+    );
 }
 
 const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
