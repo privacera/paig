@@ -7,7 +7,7 @@ from paig_common.lru_cache import LRUCache
 
 from api.guardrails import model_to_dict
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRApplicationView, \
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, \
     GuardrailsDataView, GRVersionHistoryFilter, GRVersionHistoryView
 from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationVersionModel, \
     GRVersionHistoryModel
@@ -330,7 +330,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Save the guardrail in the history table
         await self.save_guardrail_version_history(guardrail)
 
-        result = GuardrailView(**request.dict())
+        result = GuardrailView(**request.model_dump(mode="json"))
         result.id = guardrail.id
         result.status = guardrail.status
         result.create_time = guardrail.create_time

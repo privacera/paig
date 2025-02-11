@@ -685,7 +685,6 @@ async def test_update_guardrail(
         # Assertions
         assert result.id == 1
         assert result.name == update_guardrail_view.name
-        gr_config_view_to_delete.id = 2
         assert result.guardrail_configs == update_guardrail_view.guardrail_configs
         assert result.application_keys == update_guardrail_view.application_keys
         assert result.guardrail_provider == update_guardrail_view.guardrail_provider

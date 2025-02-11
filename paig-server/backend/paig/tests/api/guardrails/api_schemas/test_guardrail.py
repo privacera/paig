@@ -1,9 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRApplicationView, GRConfigView, \
-    GuardrailsDataView
-from api.guardrails import GuardrailProvider
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GuardrailsDataView
 
 guardrail_data = {
     "id": 1,
@@ -210,37 +208,6 @@ def test_guardrail_filter_invalid_key_type():
     }
     with pytest.raises(ValidationError):
         GuardrailFilter(**invalid_data)
-
-
-def test_guardrail_application_view_valid_data():
-    application_data = {
-        "applicationKey": "mock_app_key",
-        "applicationId": 1,
-        "applicationName": "mock_app"
-    }
-    view = GRApplicationView(**application_data)
-    assert view.application_key == application_data["applicationKey"]
-    assert view.application_id == application_data["applicationId"]
-    assert view.application_name == application_data["applicationName"]
-
-
-def test_guardrail_application_view_optional_fields():
-    partial_data = {
-        "applicationKey": "mock_app_key",
-        "applicationName": "mock_app"
-    }
-    view = GRApplicationView(**partial_data)
-    assert view.application_key == partial_data["applicationKey"]
-    assert view.application_id is None
-    assert view.application_name == partial_data["applicationName"]
-
-
-def test_guardrail_application_view_invalid_key_type():
-    invalid_data = {
-        "applicationKey": 121,
-    }
-    with pytest.raises(ValidationError):
-        GRApplicationView(**invalid_data)
 
 
 def test_guardrails_data_view_valid_data():

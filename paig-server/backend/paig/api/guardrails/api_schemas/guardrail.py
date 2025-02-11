@@ -7,26 +7,7 @@ from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
 
 
-class GRApplicationView(BaseModel):
-    """
-    A model representing the Guardrail application.
-
-    Attributes:
-        application_key (str): The application key.
-        application_id (int, optional): The application id.
-        application_name (str): The application name.
-    """
-    application_key: Optional[str] = Field(..., description="The application key", alias="applicationKey")
-    application_id: Optional[int] = Field(None, description="The application id", alias="applicationId")
-    application_name: Optional[str] = Field(None, description="The application name", alias="applicationName")
-
-    model_config = ConfigDict(
-        from_attributes=True,
-        populate_by_name=True
-    )
-
-
-class GRConfigView(BaseView):
+class GRConfigView(BaseModel):
     """
     A model representing the Guardrail configuration.
 
@@ -42,7 +23,11 @@ class GRConfigView(BaseView):
     config_data: Dict = Field(..., description="The guardrail details", alias="configData")
     response_message: str = Field(..., description="The response message", alias="responseMessage")
 
-    model_config = ConfigDict(json_encoders={GuardrailConfigType: lambda v: v.value})
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True,
+        json_encoders={GuardrailConfigType: lambda v: v.value}
+    )
 
 
 class GuardrailView(BaseView):
