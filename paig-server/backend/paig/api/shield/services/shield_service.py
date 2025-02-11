@@ -87,10 +87,11 @@ class ShieldService:
 
         return stream_shield_audit
 
+    # noinspection PyMethodMayBeStatic
     async def guardrail_test(self, request, tenant_id, user_role):
 
         guardrail_response = await guardrail_service.get_guardrail_by_id(request, tenant_id)
         processed_response = guardrail_service.process_guardrail_response(guardrail_response)
-        response = guardrail_service.test_guardrail(processed_response, request.get("message"))
+        response = await guardrail_service.test_guardrail(processed_response, request.get("message"))
 
         return response
