@@ -2,11 +2,11 @@ name: paig-evaluation-ci
 
 on:
   push:
-    branches: [ "paig-evaluation" ]
+    branches: [ "main" ]
     paths:
       - 'paig-evaluation/**'
   pull_request:
-    branches: [ "paig-evaluation" ]
+    branches: [ "main" ]
     paths:
       - 'paig-evaluation/**'
   workflow_dispatch: # Allows manual trigger

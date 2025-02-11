@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
     "click",
     "pyyaml",
-    "openai"
+    "openai>=1.55.3"
 ]
 
 
