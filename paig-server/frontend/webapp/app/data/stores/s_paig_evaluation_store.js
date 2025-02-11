@@ -11,6 +11,24 @@ class EvaluationStore extends BaseStore {
         this.baseUrl = baseUrl;
     }
 
+    addConfig(data, opts = {}) {
+        opts.path = '/target/application';
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
+    }
+
+    updateConfig(data, opts = {}) {
+        opts.path = `/target/application/${data.target_id}`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.update(data.target_id, data, opts);
+    }
+
+    fetchTargetConfig(data, opts = {}) {
+        opts.path = `/target/application`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch(data.target_id, opts);
+    }
+
     evaluateConfig(id, opts = {}) {
         opts.path= `/eval/${id}/run`;
         opts.recordMapper = (json) => new MEvaluation(json);

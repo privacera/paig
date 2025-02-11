@@ -29,7 +29,7 @@ const VEvaluationDetailsForm = observer(({_vState, form}) => {
       <p>Select a connection method to proceed with evaluation. 
         Using a Pre-registered Application allows for a quicker setup with existing configurations,
          while adding a New Connection provides flexibility for custom integrations.</p>
-      <Grid item xs={12}>
+      <Grid item xs={12} className='m-b-md'>
         <FormLabel required="true">Evaluation Name</FormLabel>
         <TextField
             label=""
@@ -39,6 +39,7 @@ const VEvaluationDetailsForm = observer(({_vState, form}) => {
             fullWidth
 		    />
       </Grid>
+      Application Configurations
       <CEvaluationAppsList></CEvaluationAppsList>
     </box>
     </Fragment>

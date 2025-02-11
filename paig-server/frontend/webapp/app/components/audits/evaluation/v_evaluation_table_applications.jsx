@@ -14,14 +14,13 @@ import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 @inject('evaluationStore')
 @observer
 class VEvaluationAppsTable extends Component{
-    constructor(props) {
-        super(props);
-        this.state = {
-            expandedRows: [],
-            selectedRows: [],
-            showAlert: false
-        };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedRows: [],
+      showAlert: false
+    };
+  }
 
   handleSelectRow = (id) => {
     this.setState((prevState) => {
@@ -70,7 +69,7 @@ class VEvaluationAppsTable extends Component{
           data-test="select-all"
           checked={this.state.selectedRows.includes(model.id)}
           onChange={() => this.handleSelectRow(model.id)}
-          disabled={!model.hosted}
+          disabled={!model.target_id}
         />
       </TableCell>,
       <TableCell key="2">{model.name || "--"}</TableCell>,
@@ -96,10 +95,10 @@ class VEvaluationAppsTable extends Component{
     return (
       <>
         <Table
-            data={data}
-            getHeaders={this.getHeaders}
-            getRowData={this.getRowData}
-            pageChange={pageChange}
+          data={data}
+          getHeaders={this.getHeaders}
+          getRowData={this.getRowData}
+          pageChange={pageChange}
         />
         <Snackbar
           open={this.state.showAlert}

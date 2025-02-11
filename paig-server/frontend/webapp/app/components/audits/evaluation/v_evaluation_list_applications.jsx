@@ -1,20 +1,15 @@
 import React, {Component, createRef} from 'react';
 import {inject, observer} from 'mobx-react';
 import {action} from 'mobx';
+
 import {Grid} from '@material-ui/core';
-import BaseContainer from 'containers/base_container';
 import UiState from 'data/ui_state';
 import f from 'common-ui/utils/f';
-import {Utils} from 'common-ui/utils/utils';
 import {AddButton} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_table_applications';
 import FSModal,{Confirm} from 'common-ui/lib/fs_modal';
-import { FormHorizontal, FormGroupInput, FormGroupSelect2, Form } from 'common-ui/components/form_fields';
-import FormLabel from '@material-ui/core/FormLabel';
-import FormGroup from '@material-ui/core/FormGroup';
-import TextField from '@material-ui/core/TextField';
-import VEvalTargetForm, {eval_target_form_def} from "./v_evalutaion_target_form"
+import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
 import { createFSForm } from 'common-ui/lib/form/fs_form';
 
 
@@ -38,7 +33,7 @@ class CEvaluationAppsList extends Component {
         this.form = createFSForm(eval_target_form_def);
         this.cEvalAppsList = f.initCollection();
         this.cEvalAppsList.params = {
-            size: 10,
+            size: 5,
             sort: 'create_time,desc'
         }
 
@@ -150,63 +145,130 @@ class CEvaluationAppsList extends Component {
               this.fetchEvaluationAppsList();
           }, f.handleError(null, null, {confirm}));
         }, () => {});
-      }
+    }
 
-    handleEdit = (model) => {
-        console.log(model);
+    handleEdit = async (model) => {
+        this.form.clearForm();
+        if (!model?.target_id) {
+            this.form.model = model;
+            this.showEditModal();
+            return;
+        }
+        
+        try {
+            const response = await this.props.evaluationStore.fetchTargetConfig(model);
+            console.log(response, 'DATA')
+            this.form.refresh(response);
+        } catch (error) {
+            console.error("Error fetching target config:", error);
+            f.notifyError("Failed to load configuration.");
+            return;
+        }
+
+        this.showEditModal();
+    };
+
+    showEditModal = () => {
+        this.modalRef.current.show({
+            title: "Edit Configuration"
+        });
     };
 
     handleAddNew = () => {
+        this.form.clearForm();
         if (this.modalRef.current) {
             this.modalRef.current.show({
               title: 'Add Configuration',
-              btnOkText: 'Confirm',
-              btnCancelText: 'Cancel',
-        })
+              btnOkText: 'Save',
+              btnCancelText: 'Cancel'
+            })
+        }
     }
-    }
-    resolveForm = () => {
-        console.log('hetr')
+    resolveForm = async () => {
+        await this.form.validate();
+        if (!this.form.valid) {
+          return;
+        }
+        let data = this.form.toJSON();
+        data = Object.assign({}, this.form.model, data);
+
+        // Populate config object
+        data.config = {
+            method: data.method,
+            headers: data.headers.split('\n').reduce((acc, header) => {
+                const [key, value] = header.split(':').map(item => item.trim());
+                if (key && value) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {}),
+            body: JSON.parse(data.requestBody),
+            transformResponse: data.responseTransform
+        };
+
+        this.modalRef.current.okBtnDisabled(true);
+    
+        if (data.id) {
+          try {
+            await this.props.evaluationStore.updateConfig(data);
+            this.modalRef.current.hide();
+            f.notifySuccess("Configuration updated successfully");
+            this.fetchEvaluationAppsList();
+          } catch (e) {
+            f.handleError(null, null, {modal: this.modalRef.current})(e);
+            console.error("Error updating configuration:", e);
+          }
+        } else {
+          delete data.id;
+          try {
+            await this.props.evaluationStore.addConfig(data);
+            this.modalRef.current.hide();
+            f.notifySuccess("Configuration added successfully");
+            this.fetchEvaluationAppsList();
+          } catch (e) {
+            f.handleError(null, null, {modal: this.modalRef.current})(e);
+            console.error("Error creating configuration:", e);
+          }
+        }
     }
     render() {
         const {_vState } = this;
         
-
         return (
-                    <>
-                        <Grid container spacing={3}>
-                            <Grid item xs={6} sm={6} md={6} lg={6}>
-                                <IncludeExcludeComponent
-                                    _vState={_vState}
-                                    categoriesOptions={Object.values(CATEGORIES)}
-                                    onChange={this.handleSearchByField}
-                                />
-                            </Grid>
-                            <Grid item xs={6} sm={6} md={6} lg={6}>
-                            <AddButton
-                                data-track-id="add-new-eval"
-                                colAttr={{
-                                    xs: 12,
-                                    sm: 12,
-                                    md: 12
-                                }}
-                                label="New Configuration"
-                                onClick={this.handleAddNew}
-                            />
-                            </Grid>
-                        </Grid>
-                        <VEvaluationAppsTable
-                            data={this.cEvalAppsList}
-                            pageChange={this.handlePageChange}
+            <>
+                <Grid container spacing={3}>
+                    <Grid item xs={6} sm={6} md={6} lg={6}>
+                        <IncludeExcludeComponent
                             _vState={_vState}
-                            applicationKeyMap={this.applicationKeyMap}
-                            handleDelete={this.handleDelete}
-                            handleEdit={this.handleEdit}
+                            categoriesOptions={Object.values(CATEGORIES)}
+                            onChange={this.handleSearchByField}
                         />
-                        <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
-                            <VEvalTargetForm form={this.form} />
-                        </FSModal>
-                    </>
+                    </Grid>
+                    <Grid item xs={6} sm={6} md={6} lg={6}>
+                    <AddButton
+                        data-track-id="add-new-eval"
+                        colAttr={{
+                            xs: 12,
+                            sm: 12,
+                            md: 12
+                        }}
+                        label="New Configuration"
+                        onClick={this.handleAddNew}
+                    />
+                    </Grid>
+                </Grid>
+                <VEvaluationAppsTable
+                    data={this.cEvalAppsList}
+                    pageChange={this.handlePageChange}
+                    _vState={_vState}
+                    applicationKeyMap={this.applicationKeyMap}
+                    handleDelete={this.handleDelete}
+                    handleEdit={this.handleEdit}
+                />
+                <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
+                    <VEvalTargetForm form={this.form} />
+                </FSModal>
+            </>
         );
     }
 }
