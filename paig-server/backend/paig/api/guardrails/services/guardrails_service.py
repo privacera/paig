@@ -383,10 +383,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Initialize the result GuardrailView based on the first record
         result = GuardrailView.model_validate(guardrail)
 
-        if extended:
+        if extended and guardrail.guardrail_connection_name:
             # Fetch Guardrail Connections by Guardrail IDs
-            gr_connections = await self.guardrail_connection_service.get_all(
-                GRConnectionFilter(name=guardrail.guardrail_connection_name))
+            gr_connections = await self.guardrail_connection_service.get_all(GRConnectionFilter(name=guardrail.guardrail_connection_name))
             result.guardrail_connection_details = gr_connections[0].connection_details if gr_connections else None
 
             # Fetch encryption key and add id of it to the connection details
@@ -449,9 +448,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Iterate over the guardrails and process them
         for guardrail in guardrails:
-            guardrail.guardrail_connection_details = gr_conn_details.get(guardrail.guardrail_connection_name)
-            if encryption_key:
-                guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+            if guardrail.guardrail_connection_name:
+                guardrail.guardrail_connection_details = gr_conn_details.get(guardrail.guardrail_connection_name)
+                if encryption_key:
+                    guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
             guardrail_view = GuardrailView.model_validate(guardrail)
             guardrail_view.application_keys = None
             result.append(guardrail_view)  # Add it to the result
