@@ -3,8 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def process_guardrail_response(response: str):
-    input_data = json.loads(response)
+def process_guardrail_response(input_data: dict):
 
     result = {
         "config_type": {},
@@ -47,84 +46,15 @@ def process_guardrail_response(response: str):
 
     return result
 
+def transform_guardrail_response(input_data: dict):
 
-def transform_guardrail_response(response:str):
-    data = json.loads(response)
-
-    # Initialize output structure
-    result = {}
+    result = []
 
     # Process each guardrail
-    for guardrail in data["guardrails"]:
-        guardrail_provider_response = guardrail.get("guardrailProviderResponse", {})
-        guardrail_connections = guardrail.get("guardrailConnections", {})
+    for guardrail in input_data["guardrails"]:
+        result.append(process_guardrail_response(guardrail))
 
-        for guardrail_config in guardrail.get("guardrailConfigs", []):
-            if guardrail_config["guardrailProvider"] == "MULTIPLE":
-                for sub_config in guardrail_config["configData"]["configs"]:
-                    provider = sub_config["guardrailProvider"]
-
-                    # Initialize provider structure if not exists
-                    if provider not in result:
-                        result[provider] = {"configType": {}}
-
-                    # Add configType and categories
-                    config_type = guardrail_config["configType"]
-                    if "responseMessage" in guardrail_config:
-                        result[provider]["responseMessage"] = guardrail_config["responseMessage"]
-                    if config_type not in result[provider]["configType"]:
-                        result[provider]["configType"][config_type] = []
-
-                    category = sub_config.get("category")
-                    action = sub_config.get("action", "DENY")
-                    if category and category not in result[provider]["configType"][config_type]:
-                        result[provider]["configType"][config_type].append({category: action})
-
-                    # Add guardrail details if present
-                    provider_response = guardrail_provider_response.get(provider, {}).get("response", {})
-                    for key in ["guardrailId", "version"]:
-                        if key in provider_response:
-                            result[provider][key] = provider_response[key]
-
-                    # Add connection details if present
-                    connection = guardrail_connections.get(provider, {})
-                    for key in ["access_key", "secret_key", "session_token"]:
-                        if key in connection:
-                            result[provider][key] = connection[key]
-
-            else:
-                provider = guardrail_config["guardrailProvider"]
-
-                # Initialize provider structure if not exists
-                if provider not in result:
-                    result[provider] = {"configType": {}}
-
-                # Add configType and categories
-                config_type = guardrail_config["configType"]
-                if "responseMessage" in guardrail_config:
-                    result[provider]["responseMessage"] = guardrail_config["responseMessage"]
-                if config_type not in result[provider]["configType"]:
-                    result[provider]["configType"][config_type] = []
-
-                configs = guardrail_config["configData"]["configs"]
-                for config in configs:
-                    category = config.get("category", config.get("topic", config.get("term")))
-                    action = config.get("action", "DENY")
-                    if category and category not in result[provider]["configType"][config_type]:
-                        result[provider]["configType"][config_type].append({category: action})
-
-                # Add guardrail details if present
-                provider_response = guardrail_provider_response.get(provider, {}).get("response", {})
-                for key in ["guardrailId", "version"]:
-                    if key in provider_response:
-                        result[provider][key] = provider_response[key]
-
-                # Add connection details if present
-                connection = guardrail_connections.get(provider, {})
-                for key in ["access_key", "secret_key", "session_token"]:
-                    if key in connection:
-                        result[provider][key] = connection[key]
-
+    return result
 
 async def get_guardrail_by_id(request, tenant_id):
     guardrail_id = request.get("guardrailId")
@@ -166,35 +96,44 @@ async def test_guardrail(transformed_response:dict, message:str):
             return result
     return final_result
 
+def paig_pii_guardrail_evaluation(sensitive_data_config:dict, traits:list) -> (list, dict):
+    deny_policies_list = []
+    redact_policies_dict = {}
+    # evaluate the guardrail PII policies
+    sensitive_data_policies = sensitive_data_config.get("configs", {})
+    for key, value in sensitive_data_policies.items():
+        if value == "DENY" and key in traits:
+            deny_policies_list.append(key)
+        elif value == "REDACT" and key in traits:
+            redact_policies_dict.update({key: "<<"+key+">>"})
+
+    return deny_policies_list, redact_policies_dict
+
+def mask_message(message:str, redact_policies_dict:dict, analyzer_results: list) -> str:
+    # check the scanner_result for analyzer results
+    # update the input text message with redacted values
+    custom_mask_analyzer_result = [x for x in analyzer_results if
+                                   x.entity_type in redact_policies_dict.keys()]
+    from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
+    anonymizer = PresidioAnonymizerEngine()
+    masked_message = anonymizer.mask(message, redact_policies_dict, custom_mask_analyzer_result)
+
+    return masked_message
+
 def test_paig_guardrail(transformed_response:dict, message:str) -> dict:
     from api.shield.scanners.PIIScanner import PIIScanner
     scanner = PIIScanner(name="PIIScanner", model_path="_")
     scanner_result = scanner.scan(message)
 
-    deny_policies_list = []
-    redact_policies_dict = {}
-    # evaluate the guardrail PII policies
-    sensitive_data_policies = transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {}).get("configs", {})
-    for key, value in sensitive_data_policies.items():
-        if value == "DENY" and key in scanner_result.get_traits():
-            deny_policies_list.append(key)
-        elif value == "REDACT" and key in scanner_result.get_traits():
-            redact_policies_dict.update({key: "<<"+key+">>"})
+    sensitive_data_config = transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {})
+    deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
 
     if len(deny_policies_list) > 0:
-        return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": f'{transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {}).get("response_message")}'}
+        return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": f'{sensitive_data_config.get("response_message")}'}
 
     if len(redact_policies_dict) > 0:
-        # check the scanner_result for analyzer results
-        # update the input text message with redacted values
-        analyzer_results = scanner_result.get("analyzer_result")
-        custom_mask_analyzer_result = [x for x in analyzer_results if
-                                       x.entity_type in redact_policies_dict.keys()]
-        from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
-        anonymizer = PresidioAnonymizerEngine()
-        masked_text = anonymizer.mask(message, redact_policies_dict, custom_mask_analyzer_result)
-
-        return {"action": "REDACT", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": masked_text}
+        masked_message = mask_message(message, redact_policies_dict, scanner_result.get("analyzer_result", []))
+        return {"action": "REDACT", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": masked_message}
 
     return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
 

@@ -47,7 +47,8 @@ class AWSBedrockGuardrailScanner(Scanner):
             return ScannerResult(traits=[])
 
         from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
-        bedrock_client_provider = BedrockGuardrailProvider(self.get_property('connection_details'))
+        connection_details = self.get_property('connection_details')
+        bedrock_client_provider = BedrockGuardrailProvider(connection_details if connection_details else {})
         bedrock_client = bedrock_client_provider.create_bedrock_runtime_client()
 
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
@@ -63,7 +64,7 @@ class AWSBedrockGuardrailScanner(Scanner):
             source=guardrail_source,
             content=[{'text': {'text': message}}]
         )
-        logger.info(f"AWSBedrockGuardrailScanner: Response received: {response}")
+        logger.debug(f"AWSBedrockGuardrailScanner: Response received: {response}")
 
         if response.get('action') == Guardrail.GUARDRAIL_INTERVENED.value:
             outputs = response.get('outputs', [])
@@ -87,7 +88,7 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         default_guardrail_id = self.get_property('guardrail_id')
         default_guardrail_version = self.get_property('guardrail_version')
-        default_region = self.get_property('region')
+        default_region = getattr(self,'region', 'us-east-1')
         guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
         guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
         region = os.environ.get('BEDROCK_REGION', default_region)
@@ -112,7 +113,7 @@ class AWSBedrockGuardrailScanner(Scanner):
                 for data_key, policy_data_value in policy_data.items():
                     for value in policy_data_value:
                         # Extract the tag data from the policy
-                        tag_data = (value.get('type') or value.get('name') or value.get('match', '')).replace(' ', '_').upper()
+                        tag_data = (value.get('type') or value.get('name') or data_key).replace(' ', '_').upper()
                         # If the tag data is 'DENY' that indicates there's a off topic policy, hence extract the name of the policy
                         if tag_data == "DENY":
                             tag_data = value.get('name').replace(' ', '_').upper()

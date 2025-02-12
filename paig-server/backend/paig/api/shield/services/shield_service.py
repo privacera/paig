@@ -55,14 +55,14 @@ class ShieldService:
 
         authz_client_type = config_utils.get_property_value("authz_client", "local")
         if authz_client_type == "http":
-            # Initialize ranger plugin
+            # Initialize authz
             from api.shield.client.http_authz_service_client import HttpAuthzClient
             authz_rest_client = SingletonDepends(HttpAuthzClient)
             await authz_rest_client.post_init_authz(tenant_id=x_tenant_id, user_role=x_user_role, application_key=application_key)
 
-            logger.info(f"Ranger plugin initialization completed for tenant: {x_tenant_id}")
+            logger.info(f"authz initialization completed for tenant: {x_tenant_id}")
         else:
-            logger.info(f"Skipping Ranger plugin initialization for tenant {x_tenant_id} since shield running in local mode")
+            logger.info(f"Skipping authz initialization for tenant {x_tenant_id} since shield running in local mode")
 
     async def authorize(self, auth_req: AuthorizeRequest):
         logger.debug(f"Processing authorization request for tenant: {auth_req.tenant_id}")

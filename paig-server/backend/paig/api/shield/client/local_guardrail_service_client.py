@@ -22,6 +22,14 @@ class LocalGuardrailServiceClient(IGuardrailServiceClient):
         """"""
         result = await self.guardrail_service.get_by_id(guardrail_id, extended=True)
         if result:
-            return result.model_dump_json()
+            return result.model_dump(mode="json", exclude_none=True, exclude_unset=True)
+        else:
+            return {}
+
+    async def get_guardrail_info_by_application_key(self, tenant_id, application_key, last_known_version):
+        """"""
+        result = await self.guardrail_service.get_all_by_app_key(application_key, last_known_version)
+        if result:
+            return result.model_dump(mode="json", exclude_none=True, exclude_unset=True)
         else:
             return {}
