@@ -46,7 +46,7 @@ class CommaSeparatedList(TypeDecorator):
             str: Comma-separated string representation of the list.
         """
         if isinstance(value, list):
-            return ','.join(value)
+            return ','.join(str(item.value if hasattr(item, 'value') else item) for item in value)
         else:
             return value
 

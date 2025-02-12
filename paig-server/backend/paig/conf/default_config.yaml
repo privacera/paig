@@ -26,3 +26,9 @@ authz:
 # skip_default_user_creation: false
 # skip_default_application_creation: false
 # audit_storage_datasource: "<RDS or OPENSEARCH>"
+
+guardrail:
+  application_version:
+    cache_capacity: 100
+    cache_max_idle_time: 300
+    cache_cleanup_interval_sec: 60
