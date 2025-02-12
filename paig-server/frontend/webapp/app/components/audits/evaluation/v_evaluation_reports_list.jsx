@@ -12,6 +12,11 @@ import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import UiState from 'data/ui_state';
 import {RefreshButton} from 'common-ui/components/action_buttons';
 
+import { Tooltip, IconButton, LinearProgress } from "@material-ui/core";
+import CheckIcon from "@material-ui/icons/Check";
+import CloseIcon from "@material-ui/icons/Close";
+
+
 @inject('evaluationStore')
 @observer
 class VEvaluationReportTable extends Component{
@@ -21,6 +26,49 @@ class VEvaluationReportTable extends Component{
             expandedRows: []
         };
     }
+    
+    formatCreateTime = (dateString) => {
+      const date = new Date(dateString);
+      const now = new Date();
+      
+      // Get date difference in days
+      const diffTime = now - date;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+      if (diffDays === 0) {
+        return "Today";
+      } else if (diffDays === 1) {
+        return "Yesterday";
+      } else if (diffDays <= 7) {
+        return `${diffDays} days ago`;
+      } else {
+        return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+      }
+    }
+    
+    getStatus = (status = "") => {
+      const normalizedStatus = status.toLowerCase(); // Convert to lowercase for comparison
+    
+      if (normalizedStatus === "completed") {
+        return (
+          <Tooltip arrow placement="top" title="Completed">
+            <IconButton size="small" data-test="completed" aria-label="completed">
+              <CheckIcon color="success" fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+        );
+      } else if (normalizedStatus === "failed") {
+        return (
+          <Tooltip arrow placement="top" title="Failed">
+            <IconButton size="small" data-test="failed" aria-label="failed">
+              <CloseIcon color="error" fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+        );
+      } else {
+        return <LinearProgress style={{ width: "50%", margin: "auto" }} />;
+      }
+    };
 
   getHeaders = () => {
     const {permission, importExportUtil} = this.props;
@@ -86,9 +134,9 @@ class VEvaluationReportTable extends Component{
       <TableCell key="2">{model.config_name || "--"}</TableCell>,
       <TableCell key="3">{this.getApplicationNameCell(model.application_name) || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
-      <TableCell key="5">{model.status || "--"}</TableCell>,
+      <TableCell key="5">{this.getStatus(model.status) || "--"}</TableCell>,
       <TableCell key="7">{this.getResultCell(model)}</TableCell>,
-      <TableCell key="8">{model.create_time}</TableCell>,
+      <TableCell key="8">{this.formatCreateTime(model.create_time)}</TableCell>,
       <TableCell key="9" column="actions">
           <div className="d-flex">
             <ActionButtonsWithPermission

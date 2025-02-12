@@ -38,6 +38,25 @@ class VEvaluationConfigTable extends Component{
     return headers;
   }
 
+  formatCreateTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    
+    // Get date difference in days
+    const diffTime = now - date;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+    if (diffDays === 0) {
+      return "Today";
+    } else if (diffDays === 1) {
+      return "Yesterday";
+    } else if (diffDays <= 7) {
+      return `${diffDays} days ago`;
+    } else {
+      return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+    }
+  }
+
   getRowData = (model) => {
     const {handleDelete, handleRun, handleEdit, permission} = this.props;
     let rows = [
@@ -45,7 +64,7 @@ class VEvaluationConfigTable extends Component{
       <TableCell key="2">{model.application_names || "--"}</TableCell>,
       <TableCell key="3">{model.purpose || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
-      <TableCell key="5">{model.createTime || "--"}</TableCell>,
+      <TableCell key="5">{this.formatCreateTime(model.createTime) || "--"}</TableCell>,
       <TableCell key="6">{model.owner || "--"}</TableCell>,
       <TableCell key="7">{model.eval_run_count}</TableCell>,
       <TableCell key="9" column="actions">
