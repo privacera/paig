@@ -246,7 +246,7 @@ describe('Guardrail Form PAIG provider', () => {
         cy.get('[data-testid="continue-button"]').should('be.visible').and('contain', 'CONTINUE').and('be.disabled');
     });
 
-    it.only('should validate AI application listing on the last step', () => {
+    it('should validate AI application listing on the last step', () => {
        cy.get('[data-testid="step-4"]').click();
 
        cy.get('[data-testid="ai-application-step"]').should('be.visible').within(($content) => {

@@ -17,7 +17,7 @@ class VApplications extends Component {
         const {handleAccountSelection} = this.props;
 
         return [
-            <TableCell key="checkbox">
+            <TableCell key="checkbox" width="30px">
                 <FormGroupCheckbox
                     inputProps={{'data-testid': 'checkbox'}}
                     checked={model.selected}
