@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {observable} from 'mobx';
 import {inject, observer} from "mobx-react";
 
-import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
@@ -14,12 +13,8 @@ import f from "common-ui/utils/f";
 import BaseContainer from 'containers/base_container';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import VEvaluationDetailsForm, {evaluation_details_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
-import VEvaluationCategoriesForm, {evaluation_categories_form_def} from 'components/applications/evaluation/v_evaluation_categories_form'; 
-import VEvaluationCustomisedPromptsForm, {evaluation_customised_prompts_form_def} from 'components/applications/evaluation/v_evaluation_customised_prompts_form';
+import CEvaluationPurposeForm from "containers/audits/evaluation/c_evaluation_purpose_form";
 import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
-
-/* Details */
-
 
 @inject("evaluationStore")
 @observer
@@ -36,8 +31,6 @@ class CEvaluationForm extends Component {
 		super(props);
 
     this.form = createFSForm(evaluation_details_form_def);
-    this.form1 = createFSForm(evaluation_categories_form_def);
-    this.form2 = createFSForm(evaluation_customised_prompts_form_def);
     this.state = {
       activeStep: 0
     };
@@ -92,7 +85,7 @@ class CEvaluationForm extends Component {
   handleNext = async () => {
     console.log(this._vState.saving);
     const { activeStep } = this.state;
-    if (activeStep === 0) {
+    if (activeStep === 1) {
       await this.form.validate();
       const form = this.form;
       if (!form.valid) {
@@ -137,8 +130,7 @@ class CEvaluationForm extends Component {
       case 0:
         return <VEvaluationDetailsForm _vState={this._vState} form={this.form} />;
       case 1:
-        return <div></div>
-        // return <VEvaluationCategoriesForm _vState={this._vState} form={this.form1} categories={step1Response.categories} />;
+        return <CEvaluationPurposeForm _vState={this._vState}/>;
       case 2:
         return <div></div>
         // return <VEvaluationCustomisedPromptsForm _vState={this._vState} form={this.form2} step2Response={step2Response} />;

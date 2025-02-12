@@ -8,7 +8,7 @@ import f from 'common-ui/utils/f';
 import {AddButton} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_table_applications';
-import FSModal,{Confirm} from 'common-ui/lib/fs_modal';
+import FSModal from 'common-ui/lib/fs_modal';
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
 import { createFSForm } from 'common-ui/lib/form/fs_form';
 
@@ -158,7 +158,15 @@ class CEvaluationAppsList extends Component {
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
             console.log(response, 'DATA')
-            this.form.refresh(response);
+            const { config, name, url, id, ai_application_id } = response;
+            this.form.refresh({
+                ...response,
+                method: config.method,
+                headers: Object.entries(config.headers).map(([key, value]) => ({ key, value })),
+                requestBody: JSON.stringify(config.body, null, 2),
+                responseTransform: config.transformResponse,
+                url: config.url || url
+            });
         } catch (error) {
             console.error("Error fetching target config:", error);
             f.notifyError("Failed to load configuration.");
@@ -191,20 +199,6 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
-
-        // Populate config object
-        data.config = {
-            method: data.method,
-            headers: data.headers.split('\n').reduce((acc, header) => {
-                const [key, value] = header.split(':').map(item => item.trim());
-                if (key && value) {
-                    acc[key] = value;
-                }
-                return acc;
-            }, {}),
-            body: JSON.parse(data.requestBody),
-            transformResponse: data.responseTransform
-        };
 
         this.modalRef.current.okBtnDisabled(true);
     

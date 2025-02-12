@@ -12,38 +12,17 @@ import CardActions from "@material-ui/core/CardActions";
 import { FormGroupInput } from "common-ui/components/form_fields";
 import Chip from "@material-ui/core/Chip";
 
+import f from 'common-ui/utils/f';
 
-const templates = [
-  {
-    title: "Finance",
-    chip: "Auditor",
-    description:
-      "As a finance auditor member consider a comprehensive evaluation of the financial model to assess its accuracy, identify potential biases, and ensure compliance with relevant regulations.",
-  },
-  {
-    title: "Risk Management",
-    chip: "Risk Analyst",
-    description:
-      "As a risk analyst, evaluate the financial model to identify potential risks, assess their impact, and recommend mitigation strategies to safeguard financial stability.",
-  },
-  {
-    title: "Investment Strategy",
-    chip: "Investment Analyst",
-    description:
-      "As an investment strategist, assess the financial model’s projections, identify key growth opportunities, and validate assumptions to support data-driven investment decisions.",
-  },
-];
-
-const VEvaluationPurposeForm = observer(({ _vState, form }) => {
+const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
   const { purpose } = form.fields;
 
   const handleTemplateSelect = (description) => {
-    console.log("Selected Template:", description); // Debugging
-    if (purpose && typeof purpose.set === "function") {
-      purpose.set(description);
-    } else {
-      console.error("purpose.set is not defined or not a function");
-    }
+    purpose.value = description;
+  };
+
+  const handlePurposeChange = (e) => {
+    purpose.value = e.target.value;
   };
 
   return (
@@ -55,7 +34,12 @@ const VEvaluationPurposeForm = observer(({ _vState, form }) => {
 
       <Grid item xs={12}>
         <FormLabel required>Purpose</FormLabel>
-        <FormGroupInput as="textarea" fieldObj={purpose} data-testid="purpose" />
+        <FormGroupInput 
+          as="textarea" 
+          value={purpose.value}
+          onChange={handlePurposeChange}
+          data-testid="purpose"
+        />
       </Grid>
 
       <Typography variant="body2">
@@ -64,32 +48,42 @@ const VEvaluationPurposeForm = observer(({ _vState, form }) => {
 
       <Typography variant="h6">Templates</Typography>
       <Grid container spacing={2}>
-        {templates.map((template, index) => (
+        {f.models(data).map((template, index) => (
           <Grid item xs={12} sm={6} key={index}>
-          <Card>
-            <CardContent>
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <span>
-                  {template.title}
-                  <CallMadeIcon fontSize="small" color="primary" />
-                </span>
-                <Chip label={template.chip} sx={{ bgcolor: "#EAF2FF", color: "#000", borderRadius: "16px" }} />
-              </Typography>
-              <Typography variant="body2">{template.description}</Typography>
-            </CardContent>
-          </Card>
-        </Grid>
+            <Card onClick={() => handleTemplateSelect(template.description)} className="pointer">
+              <CardContent>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span>
+                    {template.title}
+                    <CallMadeIcon fontSize="small" color="primary" />
+                  </span>
+                  { template.chip && 
+                    <Chip label={template.chip} sx={{ bgcolor: "#EAF2FF", color: "#000", borderRadius: "16px" }} />
+                  }
+                </Typography>
+                <Typography variant="body2">{template.description}</Typography>
+              </CardContent>
+            </Card>
+          </Grid>
         ))}
       </Grid>
     </Fragment>
   );
 });
+
+const evaluation_purpose_form_def = {
+  purpose: {}
+}
+
+export {
+  evaluation_purpose_form_def
+}
 
 export default VEvaluationPurposeForm;

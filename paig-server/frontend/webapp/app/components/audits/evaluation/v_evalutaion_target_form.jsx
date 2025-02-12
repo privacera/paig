@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 
 import { Grid, Typography, IconButton, Button } from '@material-ui/core';
 import { Delete, Add } from '@material-ui/icons';
+import FormLabel from '@material-ui/core/FormLabel';
 
 import { FormHorizontal, FormGroupInput, FormGroupSelect2 } from 'common-ui/components/form_fields';
 
@@ -25,17 +26,37 @@ const VEvalTargetForm = ({form}) => {
         method
     } = form.fields;
 
-    const [headersList, setHeadersList] = useState([{ key: '', value: '' }]);
+    // Initialize headers list from form field or default to empty array
+    const initialHeaders = headers.value && headers.value.length > 0 ? headers.value : [{ key: '', value: '' }];
+    const [headersList, setHeadersList] = useState(initialHeaders);
+
+    // Update headers field in form
+    const updateFormHeaders = (updatedHeaders) => {
+        setHeadersList(updatedHeaders);
+        headers.value = updatedHeaders;
+    };
 
     const handleAddHeader = () => {
-        setHeadersList([...headersList, { key: '', value: '' }]);
+        updateFormHeaders([...headersList, { key: '', value: '' }]);
     };
 
     const handleRemoveHeader = (index) => {
         if (headersList.length > 1) {
             const updatedHeaders = headersList.filter((_, i) => i !== index);
-            setHeadersList(updatedHeaders);
+            updateFormHeaders(updatedHeaders);
+        } else {
+            const updatedHeaders = headersList.map((header, i) => 
+                i === index ? { key: '', value: '' } : header
+            );
+            updateFormHeaders(updatedHeaders);
         }
+    };
+
+    const handleHeaderChange = (index, key, value) => {
+        const updatedHeaders = headersList.map((header, i) => 
+            i === index ? { key, value } : header
+        );
+        updateFormHeaders(updatedHeaders);
     };
 
     const handleMethodChange = (method) => {
@@ -46,13 +67,22 @@ const VEvalTargetForm = ({form}) => {
         <FormHorizontal>
             <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                    <FormGroupInput
-                        required={true}
-                        label={id?.value ? "Name" : "Name (Auto Generated, Editable)"}
-                        placeholder="Enter name of the topic"
-                        fieldObj={name}
-                        inputProps={{ 'data-testid': 'name-input' }}
-                    />
+                    {id?.value ? (
+                        <Grid item xs={12}>
+                            <FormLabel>Name</FormLabel>
+                            <Typography variant="body1" data-testid="name-text">
+                                {name.value}
+                            </Typography>
+                        </Grid>
+                    ) : (
+                        <FormGroupInput
+                            required={true}
+                            label={"Name (Auto Generated, Editable)"}
+                            placeholder="Enter name of the topic"
+                            fieldObj={name}
+                            inputProps={{ 'data-testid': 'name-input' }}
+                        />
+                    )}
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
@@ -102,13 +132,16 @@ const VEvalTargetForm = ({form}) => {
                         <Grid container spacing={2} alignItems="center" key={index}>
                             <Grid item xs={5}>
                                 <FormGroupInput
-                                    fieldObj={header}
+                                    value={header.key}
+                                    onChange={(e) => handleHeaderChange(index, e.target.value, header.value)}
                                     placeholder="Authorization"
                                     inputProps={{ 'data-testid': `header-key-${index}` }}
                                 />
                             </Grid>
                             <Grid item xs={5}>
                                 <FormGroupInput
+                                    value={header.value}
+                                    onChange={(e) => handleHeaderChange(index, header.key, e.target.value)}
                                     placeholder="Bearer {{api_key}}"
                                     inputProps={{ 'data-testid': `header-value-${index}` }}
                                 />
@@ -187,7 +220,7 @@ const eval_target_form_def = {
         }
     },
     headers: {
-        defaultValue: 'Authorization: Bearer {{api_key}}'
+        defaultValue: [{ key: 'Authorization', value: 'Bearer {{api_key}}' }]
     },
     requestBody: {
         validators: {
