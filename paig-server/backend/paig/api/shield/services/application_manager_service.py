@@ -74,15 +74,25 @@ class ApplicationManager(Singleton):
             if getattr(scanner, 'enforce_access_control', False) == is_authz_scan and request_type in getattr(scanner, 'request_types', [])
         ]
 
+        guardrail_instance_infos = _extract_guardrail_instance_infos(auth_req.context)
+
         for scanner in scanners_list:
             setattr(scanner, 'scan_for_req_type', request_type)
             setattr(scanner, 'application_key', application_key)
 
-            if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
+            if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner' and guardrail_instance_infos:
                 for attr in ['guardrail_id', 'guardrail_version', 'region']:
-                    value = auth_req.context.get(attr)
+                    value = guardrail_instance_infos[0].get(attr)
                     if value:
                         setattr(scanner, attr, value)
+                    elif attr == 'guardrail_id' and hasattr(scanner, attr):
+                        delattr(scanner, attr)
+            if getattr(scanner, 'name') == 'PAIGPIIGuardrailScanner':
+                from api.shield.services.guardrail_service import transform_guardrail_response
+                guardrails_configs = transform_guardrail_response(auth_req.context.get("guardrail_info", {}))
+                sensitive_data_configs = guardrails_configs[0].get("config_type", {}).get("SENSITIVE_DATA", {})
+                setattr(scanner, 'sensitive_data_config', sensitive_data_configs)
+                setattr(scanner, 'pii_traits', auth_req.context.get('pii_traits'))
 
         return scanners_list
 
@@ -143,3 +153,22 @@ def scan_with_scanner(scanner: Scanner, message: str, tenant_id: str) -> (str, S
                                                      {"scanner": scanner.name,
                                                       "tenant_id": tenant_id})
     return scanner.name, result, message_scan_time
+
+def _extract_guardrail_instance_infos(context):
+    """
+    Extract the guardrail instance information from the context.
+
+    Args:
+        context (dict): The context.
+
+    Returns:
+        dict: The guardrail instance information.
+    """
+    result = []
+    for guardrail in context.get('guardrail_info', {}).get('guardrails', []):
+        if guardrail.get('guardrail_provider') == 'AWS':
+            aws_response = guardrail.get('guardrail_provider_response', {}).get('AWS', {}).get('response', {})
+            guardrail_id, version = aws_response.get('guardrailId'), aws_response.get('version')
+            if guardrail_id and version:
+                result.append({'guardrail_id': guardrail_id, 'guardrail_version': version})
+    return result
