@@ -1,12 +1,10 @@
 import React, {Component} from 'react';
 import {observer, inject} from 'mobx-react';
 import {observable, transaction} from 'mobx';
-import {isEmpty} from 'lodash';
 
 import {Grid, Box, Paper, Button, CircularProgress} from '@material-ui/core';
 
 import f from 'common-ui/utils/f';
-import {CanUpdate} from 'common-ui/components/action_buttons';
 import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
 import { Loader, getSkeleton } from 'common-ui/components/generic_components'
 import {FEATURE_PERMISSIONS} from 'utils/globals';
@@ -172,7 +170,7 @@ class CGuardrailForm extends Component {
         let data = this.formUtil.getSaveFormData();
 
         if (!data.guardrailConfigs?.length) {
-            f.notifyError('Please select at least one filter to continue');
+            f.notifyError('Please enable at least one filter to continue');
             return;
         }
 
