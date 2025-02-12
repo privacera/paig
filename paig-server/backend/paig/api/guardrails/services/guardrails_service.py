@@ -531,12 +531,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             bool: True if record is updated else False.
         """
-        if request.name and existing_guardrail.name != request.name: return True
-        if request.description and existing_guardrail.description != request.description: return True
+        if existing_guardrail.name != request.name: return True
+        if existing_guardrail.description != request.description: return True
         if request.status and existing_guardrail.status != request.status: return True
         if existing_guardrail.guardrail_provider != request.guardrail_provider: return True
         if existing_guardrail.guardrail_connection_name != request.guardrail_connection_name: return True
-        if request.application_keys and existing_guardrail.application_keys != request.application_keys: return True
+        if existing_guardrail.application_keys != request.application_keys: return True
         return request.guardrail_configs and existing_guardrail.guardrail_configs != request.guardrail_configs
 
     async def _bump_up_version_in_gr_apps(self, application_keys: Set[str]):

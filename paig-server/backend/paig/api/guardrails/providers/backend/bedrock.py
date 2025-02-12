@@ -151,7 +151,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
 
         return self._perform_guardrail_action(client.delete_guardrail, payload)
 
-    def create_bedrock_client(self):
+    def create_bedrock_client(self, client_name: str = 'bedrock'):
         """Create a Boto3 client for the Bedrock service based on the provided credentials.
 
         Returns:
@@ -159,7 +159,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
         """
         if all(key in self.connection_details for key in self.REQUIRED_SESSION_KEYS):
             return boto3.client(
-                'bedrock',
+                client_name,
                 aws_access_key_id=self.connection_details['access_key'],
                 aws_secret_access_key=self.connection_details['secret_key'],
                 aws_session_token=self.connection_details['session_token'],
@@ -168,7 +168,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
 
         if all(key in self.connection_details for key in self.REQUIRED_ACCESS_KEYS):
             return boto3.client(
-                'bedrock',
+                client_name,
                 aws_access_key_id=self.connection_details['access_key'],
                 aws_secret_access_key=self.connection_details['secret_key'],
                 region_name=self.connection_details['region']
@@ -183,7 +183,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
             )
             temp_credentials = assumed_role['Credentials']
             return boto3.client(
-                'bedrock',
+                client_name,
                 aws_access_key_id=temp_credentials['AccessKeyId'],
                 aws_secret_access_key=temp_credentials['SecretAccessKey'],
                 aws_session_token=temp_credentials['SessionToken'],
@@ -199,7 +199,7 @@ class BedrockGuardrailProvider(GuardrailProvider):
             )
             temp_credentials = assumed_role['Credentials']
             return boto3.client(
-                'bedrock',
+                client_name,
                 aws_access_key_id=temp_credentials['AccessKeyId'],
                 aws_secret_access_key=temp_credentials['SecretAccessKey'],
                 aws_session_token=temp_credentials['SessionToken'],
@@ -215,14 +215,14 @@ class BedrockGuardrailProvider(GuardrailProvider):
             )
             temp_credentials = assumed_role['Credentials']
             return boto3.client(
-                'bedrock',
+                client_name,
                 aws_access_key_id=temp_credentials['AccessKeyId'],
                 aws_secret_access_key=temp_credentials['SecretAccessKey'],
                 aws_session_token=temp_credentials['SessionToken'],
                 region_name=self.connection_details['region']
             )
 
-        return boto3.client('bedrock', region_name=self.connection_details['region'])
+        return boto3.client(client_name, region_name=self.connection_details['region'])
 
     def get_create_bedrock_guardrail_payload(self, request: GuardrailRequest, **kwargs) -> dict:
         """Construct the payload for creating a Bedrock guardrail.
