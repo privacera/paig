@@ -44,7 +44,11 @@ class EvaluationConfigRepository(BaseOperations[EvaluationConfigModel]):
         """
         records, total_count =  await self.list_records(search_filters, page_number, size, sort, relation_load_options=[selectinload(self.model_class.eval_runs)])
         v_records = [
-            self.view_type.model_validate({**record.__dict__, "eval_run_count": len(record.eval_runs) if hasattr(record, "eval_runs") and record.eval_runs else 0 }) for record in records
+            self.view_type.model_validate({
+                **record.__dict__,
+                "eval_run_count": len(record.eval_runs) if isinstance(record.eval_runs, list) else 0
+            })
+            for record in records
         ]
         return create_pageable_response(v_records, total_count, page_number, size, sort)
 

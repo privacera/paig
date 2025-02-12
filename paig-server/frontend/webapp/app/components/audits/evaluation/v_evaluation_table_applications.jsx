@@ -1,15 +1,10 @@
-import React, { Component, Fragment, useRef } from 'react';
+import React, { Component } from 'react';
 import {observer, inject} from 'mobx-react';
-import { TableCell, Checkbox, Button, Snackbar } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
+import { Grid, TableCell, Checkbox } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
+
 import { ActionButtonsWithPermission } from 'common-ui/components/action_buttons';
 import Table from 'common-ui/components/table';
-import  {STATUS } from 'common-ui/utils/globals';
-import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
-import UiState from 'data/ui_state';
-
-import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 
 @inject('evaluationStore')
 @observer
@@ -22,23 +17,30 @@ class VEvaluationAppsTable extends Component{
     };
   }
 
-  handleSelectRow = (id) => {
+  handleSelectRow = (id, target_id) => {
+    this.props.parent_vState.errorMsg = '';
     this.setState((prevState) => {
       let selectedRows = [...prevState.selectedRows];
-      
+      let selectedTargetIds = this.props.form.fields.application_ids.value;
+      if (selectedTargetIds === '') {
+        selectedTargetIds = [];
+      }
       if (selectedRows.includes(id)) {
         selectedRows = selectedRows.filter(rowId => rowId !== id);
+        selectedTargetIds = selectedTargetIds.filter(tid => tid !== target_id);
       } else if (selectedRows.length < 2) {
         selectedRows.push(id);
+        selectedTargetIds.push(target_id);
       } else {
         return { showAlert: true };
       }
+
+      this.props.form.fields.application_ids.value = selectedTargetIds;
       
       if (this.props.onSelectionChange) {
         this.props.onSelectionChange(selectedRows);
       }
-      
-      return { selectedRows };
+      return { selectedRows, showAlert: false };
     });
   }
   
@@ -47,8 +49,6 @@ class VEvaluationAppsTable extends Component{
   }
 
   getHeaders = () => {
-    const {permission, importExportUtil} = this.props;
-    
     let headers = ([
       <TableCell key="1">Select</TableCell>,
       <TableCell key="2">Name</TableCell>,
@@ -60,7 +60,7 @@ class VEvaluationAppsTable extends Component{
   }
 
   getRowData = (model) => {
-    const {handleDelete, handleEdit, permission, importExportUtil} = this.props;
+    const {handleDelete, handleEdit, permission} = this.props;
     
     let rows = [
       <TableCell column="select" key="1" className='p-xxs'>
@@ -68,43 +68,56 @@ class VEvaluationAppsTable extends Component{
           color='primary'
           data-test="select-all"
           checked={this.state.selectedRows.includes(model.id)}
-          onChange={() => this.handleSelectRow(model.id)}
+          onChange={() => this.handleSelectRow(model.id, model.target_id)}
           disabled={!model.target_id}
         />
       </TableCell>,
       <TableCell key="2">{model.name || "--"}</TableCell>,
       <TableCell key="3">{model.url || "--"}</TableCell>,
       <TableCell key="9" column="actions">
-          <div className="d-flex">
-            <ActionButtonsWithPermission
-              permission={permission}
-              hideEdit={false}
-              hideDelete={false}
-              onDeleteClick={() => handleDelete(model)}
-              onEditClick={() => handleEdit(model)}
-            />
-          </div>
-        </TableCell>
+        <div className="d-flex">
+          <ActionButtonsWithPermission
+            permission={permission}
+            hideEdit={false}
+            hideDelete={false}
+            onDeleteClick={() => handleDelete(model)}
+            onEditClick={() => handleEdit(model)}
+          />
+        </div>
+      </TableCell>
     ]
     return rows;
   }
   handleContextMenuSelection = () => {}
 
   render() {
-    const { data, pageChange, _vState } = this.props;
+    const { data, pageChange, parent_vState} = this.props;
     return (
       <>
+        {this.state.showAlert && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Alert severity="error">
+                Only two applications can be selected
+              </Alert>
+            </Grid>
+          </Grid>
+        )}
+        {parent_vState.errorMsg && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Alert severity="error">
+                {parent_vState.errorMsg}
+              </Alert>
+            </Grid>
+          </Grid>
+        )}
         <Table
+          hasElevation={false}
           data={data}
           getHeaders={this.getHeaders}
           getRowData={this.getRowData}
           pageChange={pageChange}
-        />
-        <Snackbar
-          open={this.state.showAlert}
-          autoHideDuration={3000}
-          onClose={this.handleCloseAlert}
-          message="Only 2 selections allowed"
         />
       </>
     )

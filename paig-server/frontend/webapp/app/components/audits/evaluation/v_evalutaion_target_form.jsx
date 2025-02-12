@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 
-import { Grid, Typography, IconButton, Button } from '@material-ui/core';
-import { Delete, Add } from '@material-ui/icons';
+import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
+import {Grid, Typography, IconButton, Button} from '@material-ui/core';
 
-import { FormHorizontal, FormGroupInput, FormGroupSelect2 } from 'common-ui/components/form_fields';
+import {FormHorizontal, FormGroupInput, FormGroupSelect2} from 'common-ui/components/form_fields';
 
 const SUPPORTED_METHODS = [
     { name: 'POST', value: 'POST' },
@@ -16,13 +16,13 @@ const VEvalTargetForm = ({form}) => {
 
     const {
         id,
+        ai_application_id,
         name,
         connectionType,
         url,
         headers,
-        requestBody,
-        responseTransform,
-        config,
+        body,
+        transformResponse,
         method
     } = form.fields;
 
@@ -63,37 +63,46 @@ const VEvalTargetForm = ({form}) => {
         form.fields.method.value = method;
     };
 
+    useEffect(() => {
+        const generateReportName = () => {
+            if (!id.value) {
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+                const formattedTime = now.toLocaleTimeString('en-GB', {
+                hour: '2-digit',
+                minute: '2-digit',
+                }).replace(' ', ''); // Format: HH:MM(am/pm)
+                return `eval-target-${formattedDate}${formattedTime}`;
+            }
+            return name.value;
+        };
+    
+        name.value = generateReportName();
+    }, [id.value, name]);
+
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                    {id?.value ? (
-                        <Grid item xs={12}>
-                            <FormLabel>Name</FormLabel>
-                            <Typography variant="body1" data-testid="name-text">
-                                {name.value}
-                            </Typography>
-                        </Grid>
-                    ) : (
-                        <FormGroupInput
+                    <FormGroupInput
+                        disabled={ai_application_id.value}
                             required={true}
-                            label={"Name (Auto Generated, Editable)"}
-                            placeholder="Enter name of the topic"
+                            label={id ? "Name" : "Name (Auto Generated, Editable)"}
+                            placeholder="Enter configuration name"
                             fieldObj={name}
                             inputProps={{ 'data-testid': 'name-input' }}
                         />
-                    )}
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
                 </Grid>
                 <Grid item xs={12} sm={4}>
                     <FormGroupInput
-                        required={true}
                         label="Connection type"
                         placeholder="HTTP/HTTPS-Endpoint"
                         fieldObj={connectionType}
                         inputProps={{'data-testid': 'connection-type'}}
+                        disabled={true}
                     />
                 </Grid>
                 <Grid item xs={12}>
@@ -171,11 +180,8 @@ const VEvalTargetForm = ({form}) => {
                     required={true}
                     as="textarea"
                     label="Request Body"
-                    placeholder={`{
-                    "ai_application_name": "sales_model",
-                    "prompt": "{{prompt}}"
-                }`}
-                    fieldObj={requestBody}
+                    placeholder={`{\n "ai_application_name": "sales_model",\n"prompt": "{{prompt}}"\n}`}
+                    fieldObj={body}
                     inputProps={{
                         'data-testid': 'request-body',
                         rows: 4
@@ -186,7 +192,7 @@ const VEvalTargetForm = ({form}) => {
                     as="textarea"
                     label="Response Transform"
                     placeholder={"json.messages && json.messages.length > 0 \n  ? (json.messages.find(message => message.type === 'reply') || {}).content || \"No reply found.\"\n  : \"No response from the server.\"\n"}
-                    fieldObj={responseTransform}
+                    fieldObj={transformResponse}
                     inputProps={{
                         'data-testid': 'response-transform',
                         rows: 4
@@ -200,7 +206,6 @@ const VEvalTargetForm = ({form}) => {
 const eval_target_form_def = {
     id: {},
     ai_application_id: {},
-    application_id: {},
     target_id: {},
     desc: {},
     name: {
@@ -212,7 +217,6 @@ const eval_target_form_def = {
     connectionType: {
         defaultValue: 'HTTP/HTTPS-Endpoint'
     },
-    config: {},
     url: {
         validators: {
             errorMessage: 'Endpoint URL is required!',
@@ -222,13 +226,13 @@ const eval_target_form_def = {
     headers: {
         defaultValue: [{ key: 'Authorization', value: 'Bearer {{api_key}}' }]
     },
-    requestBody: {
+    body: {
         validators: {
             errorMessage: 'Request body is required!',
             fn: (field) => (field.value || '').trim().length > 0
         }
     },
-    responseTransform: {},
+    transformResponse: {},
     method: {
         defaultValue: 'POST'
     }

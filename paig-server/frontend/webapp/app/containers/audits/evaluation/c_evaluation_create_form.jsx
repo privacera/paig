@@ -1,77 +1,74 @@
-import React, {Component} from 'react';
-import {observable} from 'mobx';
+import React, {Component, createRef} from 'react';
 import {inject, observer} from "mobx-react";
+import {observable} from 'mobx';
 
+import Box from '@material-ui/core/Box';
+import Grid from '@material-ui/core/Grid';
+import Step from '@material-ui/core/Step';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
 import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
+import StepConnector from '@material-ui/core/StepConnector';
+import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
 
 import f from "common-ui/utils/f";
+import FSModal from 'common-ui/lib/fs_modal';
 import BaseContainer from 'containers/base_container';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
-import VEvaluationDetailsForm, {evaluation_details_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
+import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
 import CEvaluationPurposeForm from "containers/audits/evaluation/c_evaluation_purpose_form";
-import CircularProgress from "@material-ui/core/CircularProgress/CircularProgress";
+import CEvaluationCategoriesForm from "containers/audits/evaluation/c_evaluation_categories_form";
+import VEvaluationDetailsForm, {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
 
 @inject("evaluationStore")
 @observer
 class CEvaluationForm extends Component {
+  runReportModalRef = createRef();
   @observable _vState = {
     application: '',
     saving: false,
-    step1Response: null,
-    step2Response: null,
-    categories: [],
-    static_prompts: [{"prompt": "", "criteria": ""}]
+    purposeResponse: null,
+    static_prompts: [{"prompt": "", "criteria": ""}],
+    errorMsg: "",
   }
 	constructor(props) {
 		super(props);
 
-    this.form = createFSForm(evaluation_details_form_def);
+    this.evalForm = createFSForm(evaluation_form_def);
     this.state = {
       activeStep: 0
     };
 	}
 
-  handleRedirect = () => {
-    this.props.history.push('/eval_configs');
+  handlePostCreate = () => {
+    this.props.history.replace('/eval_reports');
   }
 
-  handleBackButton = () => {
-    this.handleRedirect();
-  }
-
-  handlePostCreate = (response) => {
-    //handle post final form submission
-    this.props.history.replace('/eval_reports/');
+  handlePostSave = () => {
+    this.props.history.replace('/eval_configs');
   }
 
   handleCreate = async () => {
-    await this.form2.validate();
-    const form = this.form2;
-    if (!form.valid) {
-      return;
-    }
-    let data = form.toJSON();
-    if (form.model) {
-      data = Object.assign({}, form.model, data);
-    }
-    if (this.Modal) {
-      this.Modal.okBtnDisabled(true);
-    }
-    let form1Data = this._vState.step1Response;
-    form1Data.categories = this._vState.categories;
-    form1Data.static_prompts = this._vState.static_prompts;
+    const form = this.evalForm;
+    const formData = form.toJSON();
+    const data = {
+      purpose: formData.purpose,
+      name: formData.name,
+      categories: formData.categories,
+      custom_prompts: [],
+      application_ids: formData.application_ids.join(','),
+      report_name: formData.report_name
+    };
+
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.generateEvaluation(form1Data);
-      f.notifySuccess('Evaluation generated successfully');
+      let response = await this.props.evaluationStore.saveAndRunEvaluationConfig(data);
+      this._vState.saving = false;
+      this.runReportModalRef.current.hide();
+      f.notifySuccess('Your evaluation is triggered successfully');
       this.handlePostCreate(response);
       this._vState.saving = false;
-      this.props.history.push('/evaluation_reports');
     } catch(e) {
       this._vState.saving = false;
       f.handleError()(e);
@@ -82,24 +79,35 @@ class CEvaluationForm extends Component {
     return ['Details', 'Purpose', 'Categories'];
   }
 
+  scrollIntoView = () => {
+    this.containerRef?.scrollIntoView({behavior: 'smooth', top: 0});
+  }
+
   handleNext = async () => {
-    console.log(this._vState.saving);
     const { activeStep } = this.state;
-    if (activeStep === 1) {
-      await this.form.validate();
-      const form = this.form;
-      if (!form.valid) {
+    const form = this.evalForm;
+    if (activeStep === 0) {
+      const nameField = form.fields.name;
+      const application_ids = form.fields.application_ids;
+      await nameField.validate(true);
+      if (!nameField.valid) {
         return;
       }
-      let data = form.toJSON();
-      if (this.form.model) {
-        data = Object.assign({}, this.form.model, data);
+      if (application_ids.value.length === 0 || application_ids.value === '') {
+        this._vState.errorMsg = "Please select atleast one application"
+        return;
       }
+    } else if (activeStep == 1) {
+      const purposeField = form.fields.purpose;
+      await purposeField.validate(true);
+      if (!purposeField.valid) {
+        return;
+      }
+      const data = { purpose: form.fields.purpose.value };
       try {
         this._vState.saving = true;
-        let response = await this.props.evaluationStore.createEvaluation(data);
-        this._vState.step1Response = response;
-        this._vState.categories = response.categories;
+        let response = await this.props.evaluationStore.addCategories(data);
+        this._vState.purposeResponse = response;
         this._vState.saving = false;
       } catch (e) {
         this._vState.saving = false;
@@ -113,9 +121,14 @@ class CEvaluationForm extends Component {
   }
 
   handleBack = () => {
+    this.scrollIntoView();
     this.setState((prevState) => ({
       activeStep: prevState.activeStep - 1
     }));
+  }
+
+  handleCancel = () => {
+    this.props.history.push('/eval_configs');
   }
 
   handleReset = () => {
@@ -125,85 +138,147 @@ class CEvaluationForm extends Component {
   }
 
   renderStepContent = (step) => {
-    const { step1Response, step2Response } = this._vState;
     switch (step) {
       case 0:
-        return <VEvaluationDetailsForm _vState={this._vState} form={this.form} />;
+        return <VEvaluationDetailsForm form={this.evalForm} _vState={this._vState}/>;
       case 1:
-        return <CEvaluationPurposeForm _vState={this._vState}/>;
+        return <CEvaluationPurposeForm form={this.evalForm} _vState={this._vState}/>;
       case 2:
-        return <div></div>
-        // return <VEvaluationCustomisedPromptsForm _vState={this._vState} form={this.form2} step2Response={step2Response} />;
+        return <CEvaluationCategoriesForm form={this.evalForm} _vState={this._vState}/>;
       default:
         return 'Unknown step';
     }
   }
 
+  handleSaveConfiguration = async () => {
+    const form = this.evalForm;
+    const categories = form.fields.categories;
+    await categories.validate(true);
+    if (categories.value.length === 0) {
+      this._vState.errorMsg = "Please select atleast one category"
+      return;
+    }
+    const formData = form.toJSON();
+    const data = {
+      purpose: formData.purpose,
+      name: formData.name,
+      categories: formData.categories,
+      custom_prompts: [],
+      application_ids: formData.application_ids.join(',')
+    };
+
+    try {
+      this._vState.saving = true;
+      let response = await this.props.evaluationStore.saveEvaluationConfig(data);
+      this._vState.saving = false;
+      f.notifySuccess('Your evaluation is saved successfully');
+      this.handlePostSave(response);
+      this._vState.saving = false;
+    } catch(e) {
+      this._vState.saving = false;
+      f.handleError()(e);
+    }
+  } 
+
+  openRunReportModal = async () => {
+    const form = this.evalForm;
+    const categories = form.fields.categories;
+    await categories.validate(true);
+    if (categories.value.length === 0) {
+      this._vState.errorMsg = "Please select atleast one category"
+      return;
+    }
+    if (this.runReportModalRef.current) {
+      this.runReportModalRef.current.show({
+        title: 'Run Report',
+        btnOkText: 'Run',
+        btnCancelText: 'Cancel'
+      })
+    }
+  };
+
   render() {
-    const {handleBackButton, handleCreate} = this;
+    const { handleSaveConfiguration } = this;
     const { activeStep } = this.state;
     const steps = this.getSteps();
 	return (
 		<BaseContainer
-            showRefresh={false}
-            showBackButton={true}
-            backButtonProps={{
-            size: 'small',
-            onClick: handleBackButton
-            }}
-            titleColAttr={{
-                sm: 8,
-                md: 8
-            }}
+      showRefresh={false}
+      showBackButton={true}
 		>
       <Paper>
         <Grid container spacing={1} ref={ref => this.containerRef = ref}>
-            <Grid item xs={12} sm={3}>
-                <Stepper activeStep={activeStep} orientation="vertical" className="background-color">
-                    {steps.map((label, index) => (
-                    <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
-                    </Step>
-                    ))}
-                </Stepper>
-            </Grid>
-            <Grid item xs={12} sm={9}>
-                {this.renderStepContent(activeStep)}
-            
-            <Grid container spacing={3}>
-                <Grid item xs={12}>
+          <Grid item xs={12} sm={3} className='border-right'>
+            <Stepper activeStep={activeStep} orientation="vertical" connector={<StepConnector style={{padding: 0}} />} >
+              {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+              ))}
+            </Stepper>
+          </Grid>
+          <Grid item xs={12} sm={9} className="m-t-xs">
+            {this.renderStepContent(activeStep)}
+            <Box component={Paper} elevation={0} p={1} className="sticky-actions border-top" style={{zIndex: 10, opacity: '90%', top: 'calc(100vh - 100px)'}}>
+              <Grid container spacing={1} justify="space-between">
+                <Grid item>
+                  {
                     <Button
-                        disabled={activeStep === 0 || this._vState.saving}
-                        onClick={this.handleBack}
-                        className="m-r-sm"
+                      data-testid="cancel-button"
+                      color="primary"
+                      onClick={this.handleCancel}
                     >
-                        Back
+                      CANCEL
                     </Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={activeStep === steps.length - 1 ? handleCreate : this.handleNext}
-                        data-testid="create-app-btn"
-                        data-track-id="create-app-btn"
-                        disabled={this._vState.saving}
-                    >
-                        {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                        {
-                        this._vState.saving &&
-                        <CircularProgress size="15px" className="m-r-xs" />
-                        }
-                    </Button>
-                    {activeStep === steps.length && (
-                        <Button onClick={this.handleReset}>
-                        Reset
-                        </Button>
-                    )}
+                  }
                 </Grid>
-            </Grid>
-            </Grid>
+                <Grid item>
+                  {activeStep > 0 &&
+                    <Button
+                      disabled={activeStep === 0 || this._vState.saving}
+                      onClick={this.handleBack}
+                      className="m-r-sm"
+                    >
+                      Back
+                    </Button>
+                  }
+                  {activeStep === steps.length - 1 && (
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={handleSaveConfiguration}
+                      data-testid="save-config-btn"
+                      data-track-id="save-config-btn"
+                      disabled={this._vState.saving}
+                      className="m-r-sm"
+                    >
+                      Save Configuration
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={activeStep === steps.length - 1 ? this.openRunReportModal : this.handleNext}
+                    data-testid="create-app-btn"
+                    data-track-id="create-app-btn"
+                    disabled={this._vState.saving}
+                  >
+                    {activeStep === steps.length - 1 ? 'Save And Run' : 'Continue'}
+                    {
+                      this._vState.saving &&
+                      <CircularProgress size="15px" className="m-l-xs" />
+                    }
+                  </Button>
+                </Grid>
+              </Grid>
+            </Box>
+          </Grid>
         </Grid>
-        </Paper>
-	    </BaseContainer>
+      </Paper>
+      <FSModal ref={this.runReportModalRef} dataResolve={this.handleCreate}>
+        <VRunReportForm form={this.evalForm}/>
+      </FSModal>
+	  </BaseContainer>
 	)}
 }
 

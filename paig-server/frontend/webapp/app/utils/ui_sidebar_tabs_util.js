@@ -137,7 +137,6 @@ class UISidebarTabsUtil {
     async fetchProperties() {
         try {
             // let properties = await stores.publicStore.getFeatureFlags();
-            // console.log('1prop', properties);
             // this.properties = this.sortPropertiesInOrder(properties.models)
             this.properties = this.sortPropertiesInOrder([/*{
                 "name": "SHIELD_CONFIGURATION",
@@ -179,8 +178,6 @@ class UISidebarTabsUtil {
         this.properties.forEach(property => {
             let name = property.name.toUpperCase();
             let value = property.value;
-            console.log('evalPropertiesForAccessControl name', name);
-            console.log('evalPropertiesForAccessControl value', value);
 
             if (!value) {
                 return;
@@ -209,11 +206,9 @@ class UISidebarTabsUtil {
         this._handleHierarchy(true, UI_DEFAULT_FEATURE_SIDEBAR_TABS);
 
         let list = permissionCheckerUtil.getUISidebarAndTabsDenyList();
-        console.log('denylist', list);
         if (list) {
             list.forEach(property => {
                 let uiProperty = featurePermissionUIMap[property];
-                console.log('uiProperty', uiProperty);
                 if (uiProperty && uiProperty.propertyForShowHide) {
                     this.hideUIForProperty(uiProperty.propertyForShowHide);
                 }
@@ -327,9 +322,6 @@ class UISidebarTabsUtil {
         if (Array.isArray(name)) {
             name = name.join('.');
         }
-        console.log('properties', properties);
-        console.log('name', name);
-        console.log('propertiesForShowHide', this.propertiesForShowHide);
         let foundProperty = get(properties, name);
         if (!foundProperty) {
             return;
@@ -379,19 +371,15 @@ class UISidebarTabsUtil {
 
     isSidebarVisibleFor = (sidebar) => {
         let property = this.getProperty(sidebar);
-        console.log('property', property);
         if (typeof property == 'object') {
-            console.log('object property', property);
             property = this._isTabsVisible(property);
         }
-        console.log('final', property);
         return property;
     }
     hasAccess = (sidebar) => {
         if (!sidebar) {
             return true
         }
-        console.log('hasaccess', sidebar);
         return this.isSidebarVisibleFor(sidebar);
     }
 }

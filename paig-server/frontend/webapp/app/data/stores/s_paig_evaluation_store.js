@@ -18,7 +18,7 @@ class EvaluationStore extends BaseStore {
     }
 
     updateConfig(data, opts = {}) {
-        opts.path = `/target/application/${data.target_id}`;
+        opts.path = `/target/application`;
         opts.recordMapper = (json) => new MEvaluation(json);
         return this.update(data.target_id, data, opts);
     }
@@ -29,10 +29,35 @@ class EvaluationStore extends BaseStore {
         return this.fetch(data.target_id, opts);
     }
 
-    evaluateConfig(id, opts = {}) {
-        opts.path= `/eval/${id}/run`;
+    
+    addCategories(data, opts = {}) {
+        opts.path = `/eval/categories`;
         opts.recordMapper = (json) => new MEvaluation(json);
-        return this.create({}, opts);
+        return this.create(data, opts);
+    }
+
+    saveEvaluationConfig(data, opts = {}) {
+        opts.path = '/config/save';
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
+    }
+
+    saveAndRunEvaluationConfig(data, opts = {}) {
+        opts.path = '/eval/save_and_run';
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
+    }
+
+    evaluateConfig(data, opts = {}) {
+        opts.path= `/eval/${data.id}/run`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
+    }
+
+    reRunReport(data, opts = {}) {
+        opts.path= `/eval/${data.id}/rerun`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.create(data, opts);
     }
 
     fetchEvaluationConfigs(opts = {}) {
@@ -72,29 +97,15 @@ class EvaluationStore extends BaseStore {
         opts.path= `/target/application`;
         return this.delete(id, opts);
     }
-    // Cleanup below functions in the end 
-
-    generateEvaluation(data, opts = {}) {
-        opts.path = `/generate`;
-        opts.recordMapper = (json) => new MEvaluation(json);
-        return this.create(data, opts);
-    }
-
-    createEvaluation(data, opts = {}) {
-        opts.path = `/init`;
-        opts.recordMapper = (json) => new MEvaluation(json);
-        return this.create(data, opts);
-    }
-
+    
     deleteReport(id, opts = {}) {
-        opts.path= `/report`;
+        opts.path= `/eval/report`;
         return this.delete(id, opts);
     }
 
-    reRunReport(id, opts = {}) {
-        opts.path= `/report/${id}/rerun`;
-        opts.recordMapper = (json) => new MEvaluation(json);
-        return this.create({}, opts);
+    deleteEvalConfig(id, opts = {}) {
+        opts.path= `/config`;
+        return this.delete(id, opts);
     }
 
 }

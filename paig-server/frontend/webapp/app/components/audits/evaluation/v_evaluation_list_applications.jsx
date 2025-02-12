@@ -3,14 +3,15 @@ import {inject, observer} from 'mobx-react';
 import {action} from 'mobx';
 
 import {Grid} from '@material-ui/core';
-import UiState from 'data/ui_state';
+
 import f from 'common-ui/utils/f';
+import UiState from 'data/ui_state';
+import FSModal from 'common-ui/lib/fs_modal';
+import {createFSForm} from 'common-ui/lib/form/fs_form';
 import {AddButton} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_table_applications';
-import FSModal from 'common-ui/lib/fs_modal';
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
-import { createFSForm } from 'common-ui/lib/form/fs_form';
 
 
 const CATEGORIES = {
@@ -76,19 +77,9 @@ class CEvaluationAppsList extends Component {
         },  f.handleError(this.cEvalAppsList));
     }
 
-    handlePageChange = (isPrevious) => {
-        let page = this._vState.pageNumber;
-        if (isPrevious) {
-            page--;
-            this._vState.prevNextValueList.pop()
-        } else {
-            page++;
-            this._vState.prevNextValueList.push(page)
-        }
-        this._vState.pageNumber = page
-        this.cEvalAppsList.params.page = page || undefined;
+    handlePageChange = () => {
         this.fetchEvaluationAppsList();
-    }
+    };
 
     handleSearchByField = (filter, event) => {
         this._vState.prevNextValueList = [''];
@@ -128,15 +119,15 @@ class CEvaluationAppsList extends Component {
 
     handleDelete = (model) => {
         f._confirm.show({
-          title: `Delete Report`,
-          children: <div>Are you sure you want to delete report ?</div>,
+          title: `Delete Application Config`,
+          children: <div>Are you sure you want to delete application configs ?</div>,
           btnCancelText: 'Cancel',
           btnOkText: 'Delete',
           btnOkColor: 'secondary',
           btnOkVariant: 'text'
         })
         .then((confirm) => {
-          this.props.evaluationStore.deleteAppTarget(model.id,{
+          this.props.evaluationStore.deleteAppTarget(model.target_id,{
             models: this.cEvalAppsList
           })
           .then(() => {
@@ -150,21 +141,36 @@ class CEvaluationAppsList extends Component {
     handleEdit = async (model) => {
         this.form.clearForm();
         if (!model?.target_id) {
-            this.form.model = model;
+            this.form.refresh({
+                id: model.id || "",
+                ai_application_id: model.ai_application_id || "",
+                desc: model.desc || "",
+                name: model.name || "",
+                url: model.url || "",
+            });
             this.showEditModal();
             return;
         }
+        this.form.refresh({
+            id: model.id || "",
+            ai_application_id: model.ai_application_id || "",
+            desc: model.desc || "",
+            name: model.name || "",
+            url: model.url || "",
+            target_id: model.target_id || ""
+        });
+        this.showEditModal();
         
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
             console.log(response, 'DATA')
-            const { config, name, url, id, ai_application_id } = response;
+            const { config, name, url, id } = response;
             this.form.refresh({
                 ...response,
                 method: config.method,
                 headers: Object.entries(config.headers).map(([key, value]) => ({ key, value })),
-                requestBody: JSON.stringify(config.body, null, 2),
-                responseTransform: config.transformResponse,
+                body: JSON.stringify(config.body, null, 2),
+                transformResponse: config.transformResponse,
                 url: config.url || url
             });
         } catch (error) {
@@ -199,10 +205,17 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
+        // Transform headers array into an object
+        if (Array.isArray(data.headers)) {
+            data.headers = data.headers.reduce((acc, header) => {
+                acc[header.key] = header.value;
+                return acc;
+            }, {});
+        }
 
         this.modalRef.current.okBtnDisabled(true);
     
-        if (data.id) {
+        if (data.target_id) {
           try {
             await this.props.evaluationStore.updateConfig(data);
             this.modalRef.current.hide();
@@ -252,15 +265,17 @@ class CEvaluationAppsList extends Component {
                     </Grid>
                 </Grid>
                 <VEvaluationAppsTable
+                    form={this.props.form}
                     data={this.cEvalAppsList}
                     pageChange={this.handlePageChange}
                     _vState={_vState}
                     applicationKeyMap={this.applicationKeyMap}
                     handleDelete={this.handleDelete}
                     handleEdit={this.handleEdit}
+                    parent_vState={this.props._vState}
                 />
                 <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
-                    <VEvalTargetForm form={this.form} />
+                    <VEvalTargetForm form={this.form} _vState={this.props._vState}/>
                 </FSModal>
             </>
         );

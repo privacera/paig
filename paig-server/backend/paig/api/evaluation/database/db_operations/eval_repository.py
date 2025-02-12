@@ -47,7 +47,6 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete_evaluation(self, evaluation_id):
-        print('4', evaluation_id)
         return await self.delete(evaluation_id)
 
     async def get_eval_results_with_filters(self, include_filters, exclude_filters, page, size, sort, min_value, max_value):

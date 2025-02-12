@@ -1,21 +1,15 @@
-import React, { Component, Fragment } from 'react';
+import React, {Component, Fragment} from 'react';
 import {observer, inject} from 'mobx-react';
-import { TableCell, Checkbox, Button } from '@material-ui/core';
-import DoneIcon from '@material-ui/icons/Done';
-import ClearIcon from '@material-ui/icons/Clear';
-import GroupIcon from '@material-ui/icons/Group';
 
-import { ActionButtonsWithPermission } from 'common-ui/components/action_buttons';
-import Table from 'common-ui/components/table';
-import  {STATUS } from 'common-ui/utils/globals';
-import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
-import UiState from 'data/ui_state';
-import {RefreshButton} from 'common-ui/components/action_buttons';
-
-import { Tooltip, IconButton, LinearProgress } from "@material-ui/core";
+import {TableCell} from '@material-ui/core';
 import CheckIcon from "@material-ui/icons/Check";
 import CloseIcon from "@material-ui/icons/Close";
+import {Tooltip, IconButton, LinearProgress} from "@material-ui/core";
 
+import Table from 'common-ui/components/table';
+import RefreshIcon from '@material-ui/icons/Refresh';
+import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
+import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
 
 @inject('evaluationStore')
 @observer
@@ -53,7 +47,7 @@ class VEvaluationReportTable extends Component{
       return (
         <Tooltip arrow placement="top" title="Completed">
           <IconButton size="small" data-test="completed" aria-label="completed">
-            <CheckIcon color="success" fontSize="inherit" />
+            <CheckIcon className="text-success" fontSize="inherit" />
           </IconButton>
         </Tooltip>
       );
@@ -71,16 +65,14 @@ class VEvaluationReportTable extends Component{
   };
 
   getHeaders = () => {
-    const {permission, importExportUtil} = this.props;
-    
     let headers = ([
       <TableCell key="1">Report Name</TableCell>,
       <TableCell key="2">Configuration Used</TableCell>,
       <TableCell key="3">Applications Evaluated</TableCell>,
-      <TableCell key="5">Report Status</TableCell>,
+      <TableCell key="5" className="text-center">Report Status</TableCell>,
       <TableCell key="6">Score</TableCell>,
       <TableCell key="7">Created</TableCell>,
-      <TableCell width="100px" key="9">Actions</TableCell>
+      <TableCell width="110px" key="9">Actions</TableCell>
     ])
 
     return headers; 
@@ -128,37 +120,36 @@ class VEvaluationReportTable extends Component{
   };
 
   getRowData = (model) => {
-    const {handleDelete, handleReRun, handleEdit, handleView, permission, importExportUtil, handleInvite} = this.props;
+    const {handleReRun, handleView, permission, importExportUtil, handleDelete} = this.props;
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
       <TableCell key="2">{model.config_name || "--"}</TableCell>,
-      <TableCell key="3">{this.getApplicationNameCell(model.application_name) || "--"}</TableCell>,
+      <TableCell key="3">{this.getApplicationNameCell(model.application_names) || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
-      <TableCell key="5">{this.getStatus(model.status) || "--"}</TableCell>,
+      <TableCell key="5" className="text-center">{this.getStatus(model.status) || "--"}</TableCell>,
       <TableCell key="7">{this.getResultCell(model)}</TableCell>,
       <TableCell key="8">{this.formatCreateTime(model.create_time)}</TableCell>,
       <TableCell key="9" column="actions">
-          <div className="d-flex">
-            <ActionButtonsWithPermission
-              permission={permission}
-              showPreview={model.status == 'COMPLETED'}
-              hideDelete={false}
-              onDeleteClick={() => handleDelete(model)}
-              onPreviewClick={() => handleView(model)}
-            />
-            <span>
-              <RefreshButton
-                data-testid="header-refresh-btn"
-                data-track-id="refresh-button"
-                wrapItem={false}
-                pullRight={false}
-                onClick={() => handleReRun(model)}
-                disabled={model.status !== 'COMPLETED'}
-              />
-            </span>
-
-          </div>
-        </TableCell>
+        <ActionButtonsWithPermission
+          permission={permission}
+          showPreview={model.status == 'COMPLETED'}
+          hideDelete={true}
+          onPreviewClick={() => handleView(model)}
+        />
+        <CustomAnchorBtn
+          disabled={model.status !== 'COMPLETED'}
+          tooltipLabel="Re Run"
+          color="primary"
+          icon={<RefreshIcon fontSize="inherit"/>}
+          onClick={() => handleReRun(model)}
+        />
+        <ActionButtonsWithPermission
+          permission={permission}
+          showPreview={false}
+          hideDelete={false}
+          onDeleteClick={() => handleDelete(model)}
+        />
+      </TableCell>
     ]
     return rows;
   }
@@ -166,7 +157,6 @@ class VEvaluationReportTable extends Component{
 
   render() {
     const { data, pageChange, _vState } = this.props;
-    console.log('data', data);
     return (
         <Table
             data={data}

@@ -1,25 +1,22 @@
-import React, { Component, Fragment } from 'react';
+import React, {Component} from 'react';
 import {observer, inject} from 'mobx-react';
-import { TableCell, Checkbox, Button } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
-import IconButton from '@material-ui/core/IconButton';
-import { ActionButtonsWithPermission } from 'common-ui/components/action_buttons';
-import Table from 'common-ui/components/table';
-import  {STATUS } from 'common-ui/utils/globals';
-import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
-import UiState from 'data/ui_state';
 
+import {TableCell} from '@material-ui/core';
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
+
+import Table from 'common-ui/components/table';
+import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
+import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
 
 @inject('evaluationStore')
 @observer
 class VEvaluationConfigTable extends Component{
-    constructor(props) {
-        super(props);
-        this.state = {
-            expandedRows: []
-        };
-    }
+  constructor(props) {
+    super(props);
+    this.state = {
+      expandedRows: []
+    };
+  }
 
   getHeaders = () => {
     const {permission, importExportUtil} = this.props;
@@ -68,37 +65,36 @@ class VEvaluationConfigTable extends Component{
       <TableCell key="6">{model.owner || "--"}</TableCell>,
       <TableCell key="7">{model.eval_run_count}</TableCell>,
       <TableCell key="9" column="actions">
-          <div className="d-flex">
-            <Tooltip arrow placement="top" title="Run" aria-label="Run">
-            <IconButton  onClick={() => handleRun(model)}>
-              <PlayCircleOutlineIcon fontSize="small" />
-            </IconButton>
-            </Tooltip>
-            <ActionButtonsWithPermission
-              permission={permission}
-              hideEdit={true}
-              hideDelete={false}
-              onDeleteClick={() => handleDelete(model)}
-              onEditClick={() => handleEdit(model)}
-            />
-          </div>
-        </TableCell>
+        <CustomAnchorBtn
+          tooltipLabel="Run"
+          color="primary"
+          icon={<PlayCircleOutlineIcon fontSize="small" />}
+          onClick={() => handleRun(model)}
+        />
+        <ActionButtonsWithPermission
+          permission={permission}
+          hideEdit={true}
+          hideDelete={false}
+          onDeleteClick={() => handleDelete(model)}
+          onEditClick={() => handleEdit(model)}
+        />
+      </TableCell>
     ]
     return rows;
   }
   handleContextMenuSelection = () => {}
 
   render() {
-    const { data, pageChange, _vState } = this.props;
+    const { data, pageChange } = this.props;
     return (
-        <Table
-            data={data}
-            getHeaders={this.getHeaders}
-            getRowData={this.getRowData}
-            pageChange={pageChange}
-        />
+      <Table
+        data={data}
+        getHeaders={this.getHeaders}
+        getRowData={this.getRowData}
+        pageChange={pageChange}
+      />
     )
-}
+  }
 }
 
 export default VEvaluationConfigTable;

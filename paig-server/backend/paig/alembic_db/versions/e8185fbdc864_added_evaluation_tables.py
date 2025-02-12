@@ -38,8 +38,9 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_eval_config_id'), 'eval_config', ['id'], unique=False)
     op.create_table('eval_run',
-    sa.Column('name', sa.String(length=255), nullable=True),
+    sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('owner', sa.String(length=255), nullable=False),
+    sa.Column('purpose', sa.String(), nullable=True),
     sa.Column('eval_id', sa.String(length=255), nullable=False),
     sa.Column('config_id', sa.String(length=255), nullable=False),
     sa.Column('config_name', sa.String(), nullable=True),

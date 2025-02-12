@@ -28,7 +28,7 @@ def transform_eval_target(eval_target):
         eval_config['body'] = eval_target['body']
     else:
         try:
-            eval_target['body'] = json.loads(eval_target['body'])
+            eval_config['body'] = json.loads(eval_target['body'])
         except Exception as e:
             raise BadRequestException("Invalid body format")
     eval_config['transformResponse'] = eval_target['transformResponse']
@@ -57,26 +57,29 @@ class EvaluationTargetService:
 
 
     async def get_all_ai_app_with_host(self, include_filters, exclude_filters, page_number, size, sort):
+        if include_filters.name:
+            include_filters.name = include_filters.name.strip("*")
+        if exclude_filters.name:
+            exclude_filters.name = exclude_filters.name.strip("*")
+        ai_apps, total_count = await self.eval_target_repository.get_application_list_with_filters(include_filters,
+                                                                                                   exclude_filters,
+                                                                                                   page_number, size,
+                                                                                                   sort, min_value=None,
+                                                                                                   max_value=None)
+        if ai_apps is None:
+            raise NotFoundException("No applications found")
         try:
-            if include_filters.name:
-                include_filters.name = include_filters.name.strip("*")
-            if exclude_filters.name:
-                exclude_filters.name = exclude_filters.name.strip("*")
-            ai_apps, total_count = await self.eval_target_repository.get_application_list_with_filters(include_filters, exclude_filters, page_number, size, sort, min_value=None,
-                                             max_value=None)
-            if ai_apps is None:
-                raise NotFoundException("No applications found")
             index = 1
             final_apps = list()
             for ai_app in ai_apps:
                 app = dict()
                 app['id'] = index
                 index += 1
-                app['application_id'] = ai_app[0]
+                app['ai_application_id'] = ai_app[0]
                 app['target_id'] = ai_app[1]
                 app['desc'] = ai_app[3]
                 app['url'] = ai_app[4]
-                if app['application_id'] is not None:
+                if app['ai_application_id'] is not None:
                     app['name'] = ai_app[2]
                 else:
                     app['name'] = ai_app[5]
@@ -135,10 +138,10 @@ class EvaluationTargetService:
             raise InternalServerError("Internal server error")
 
     async def delete_target(self, app_id):
+        target_model = await self.eval_target_repository.get_target_by_id(app_id)
+        if target_model is None:
+            raise NotFoundException(f"No application found with id {app_id}")
         try:
-            target_model = await self.eval_target_repository.get_target_by_id(app_id)
-            if target_model is None:
-                raise NotFoundException(f"No application found with id {app_id}")
             eval_target = await self.eval_target_repository.delete_target(target_model)
             return eval_target
         except Exception as e:
@@ -147,15 +150,16 @@ class EvaluationTargetService:
             raise InternalServerError("Internal server error")
 
     async def get_app_target_by_id(self, app_id):
+        target_model = await self.eval_target_repository.get_target_by_id(app_id)
+        if target_model is None:
+            raise NotFoundException(f"No application found with id {app_id}")
         try:
-            target_model = await self.eval_target_repository.get_target_by_id(app_id)
-            if target_model is None:
-                raise NotFoundException(f"No application found with id {app_id}")
             resp = dict()
             resp['config'] = transform_eval_target_to_dict(target_model.config)
             resp['name'] = target_model.name
             resp['url'] = target_model.url
             resp['id'] = target_model.id
+            resp['target_id'] = target_model.id
             resp['ai_application_id'] = target_model.application_id
             return resp
         except Exception as e:

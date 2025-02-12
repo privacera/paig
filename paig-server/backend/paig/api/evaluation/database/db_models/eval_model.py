@@ -7,8 +7,9 @@ from api.evaluation.database.db_models.base_model import CommonBase
 
 class EvaluationModel(CommonBase):
     __tablename__ = "eval_run"
-    name = Column(String(255), nullable=True)
+    name = Column(String(255), nullable=False)
     owner = Column(String(255), nullable=False)
+    purpose = Column(String(), default='')
     eval_id = Column(String(255), nullable=False)
     config_id = Column(String(255), nullable=False)
     config_name = Column(String())

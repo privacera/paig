@@ -1,13 +1,11 @@
-from sqlalchemy import and_, func, case, or_, union_all
-from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
+from sqlalchemy import and_, func, or_, union_all
 from api.evaluation.database.db_models import EvaluationTargetModel
 from api.governance.database.db_models.ai_app_model import AIApplicationModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.future import select
-from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
+from core.utils import current_utc_time
 from core.db_session import session
 
 

@@ -11,7 +11,7 @@ class EvaluationConfigController:
                  eval_config_service: EvaluationConfigService = SingletonDepends(EvaluationConfigService)):
         self.eval_config_service = eval_config_service
 
-    async def get_all_eval_config(self, search_filters: EvalConfigFilter, page_number: int, size: int,
+    async def get_all_eval_config(self, includeQuery, excludeQuery, page_number: int, size: int,
                                    sort: List[str]) -> Pageable:
         """
         Get all evaluation configurations.
@@ -21,8 +21,19 @@ class EvaluationConfigController:
             size (int): The number of items per page.
             sort (List[str]): The sort options.
         """
+
+        if excludeQuery:
+            exclude_list = []
+            for key, value in excludeQuery.model_dump().items():
+                if value:
+                    exclude_list.append(key)
+                    if hasattr(includeQuery, key):
+                        setattr(includeQuery, key, value)
+            if len(exclude_list) > 0:
+                includeQuery.exclude_match = True
+                includeQuery.exclude_list = ','.join(exclude_list)
         return await self.eval_config_service.get_all_eval_config(
-            search_filters=search_filters,
+            search_filters=includeQuery,
             page_number=page_number,
             size=size,
             sort=sort

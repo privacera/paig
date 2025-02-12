@@ -1,57 +1,69 @@
-import React, {Fragment} from 'react';
+import React from 'react';
 import {observer} from 'mobx-react';
 
 import Grid from '@material-ui/core/Grid';
 import FormLabel from '@material-ui/core/FormLabel';
-import TextField from '@material-ui/core/TextField';
+import Paper from '@material-ui/core/Paper';
+import { Box } from '@material-ui/core';
+
 import {FormGroupInput} from 'common-ui/components/form_fields';
-import {InputGroupSelect2} from 'common-ui/components/filters';
-import {aiApplicationLookup} from 'components/reports/fields_lookup';
 import CEvaluationAppsList from  'components/audits/evaluation/v_evaluation_list_applications'
 import { Typography } from '@material-ui/core';
 
-const VEvaluationDetailsForm = observer(({_vState, form}) => {
-  const { eval_id, application_name, purpose, application_client } = form.fields;
-  const handleApplicationChange = (value) => {
-    _vState.application = value;
-    form.fields.application_name.value = value;
-  };
-
-  const targets = (searchString, callback) => {
-    let target =  aiApplicationLookup(searchString, callback, 'application');
-    return target
-  }
+const VEvaluationDetailsForm = observer(({form, _vState}) => {
+  const { name } = form.fields;
 
   return (
-    <Fragment>
-    <box>
-      <Typography>Details</Typography>
+    <Box component={Paper} elevation={0} p="15px">
+      <Typography variant="h6" data-testid="header">
+        Details 
+      </Typography>
       <p>Select a connection method to proceed with evaluation. 
         Using a Pre-registered Application allows for a quicker setup with existing configurations,
          while adding a New Connection provides flexibility for custom integrations.</p>
       <Grid item xs={12} className='m-b-md'>
         <FormLabel required="true">Evaluation Name</FormLabel>
-        <TextField
-            label=""
-            readOnly
-            variant="outlined"
-            value={_vState.name}
-            fullWidth
+        <FormGroupInput
+          label=""
+          readOnly
+          variant="outlined"
+          fieldObj={name}
+          fullWidth
 		    />
       </Grid>
-      Application Configurations
-      <CEvaluationAppsList></CEvaluationAppsList>
-    </box>
-    </Fragment>
+      <Typography variant="h6" data-testid="header" className='m-b-sm'>
+        Application Configurations
+      </Typography>
+      <CEvaluationAppsList form={form} _vState={_vState}></CEvaluationAppsList>
+    </Box>
   );
 })
 
-const evaluation_details_form_def = {
-  name: {},
-  application_names: {}
+const evaluation_form_def = {
+  id: {},
+  name: {
+    validators: {
+      errorMessage: 'Evaluation Name is required!',
+      fn: (field) => (field.value || '').trim().length > 0
+    }
+  },
+  application_ids: {},
+  purpose: {
+    validators: {
+      errorMessage: 'Purpose is required!',
+      fn: (field) => (field.value || '').trim().length > 0
+    }
+  },
+  categories: {},
+  report_name: {
+    validators: {
+      errorMessage: 'Report Name is required!',
+      fn: (field) => (field.value || '').trim().length > 0
+    }
+  }
 }
 
 export default VEvaluationDetailsForm;
 export {
-  evaluation_details_form_def
+  evaluation_form_def
 }

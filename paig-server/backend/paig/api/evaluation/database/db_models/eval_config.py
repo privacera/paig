@@ -17,7 +17,9 @@ class EvaluationConfigModel(CommonBase):
     history = relationship('EvaluationConfigHistoryModel', back_populates="eval_config", cascade="all, delete")
     eval_runs = relationship("EvaluationModel",
                              primaryjoin="EvaluationModel.config_id == foreign(EvaluationConfigModel.id)",
-                             viewonly=True)
+                             viewonly=True,
+                             uselist=True
+                             )
 
 
 class EvaluationConfigHistoryModel(CommonBase):
@@ -39,5 +41,6 @@ class EvaluationConfigHistoryModel(CommonBase):
     eval_runs = relationship(
         "EvaluationModel",
         primaryjoin="EvaluationModel.config_id == foreign(EvaluationConfigHistoryModel.id)",
-        viewonly=True
+        viewonly=True,
+        uselist=True
     )

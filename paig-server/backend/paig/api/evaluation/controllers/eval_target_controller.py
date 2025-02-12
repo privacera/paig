@@ -57,7 +57,7 @@ class EvaluationTargetController:
         Returns:
             dict: The response message.
         """
-        return await self.eval_target_service.update_app_target(app_id=app_id, body_params=body_params)
+        return await self.eval_target_service.update_app_target(target_id=app_id, body_params=body_params)
 
     async  def delete_app_target(self, app_id: int):
         """

@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from core.db_models.BaseSQLModel import BaseSQLModel
 from core.db_models.utils import CommaSeparatedList
-
+from api.evaluation.database.db_models.eval_targets import EvaluationTargetModel
 
 class AIApplicationModel(BaseSQLModel):
     """
