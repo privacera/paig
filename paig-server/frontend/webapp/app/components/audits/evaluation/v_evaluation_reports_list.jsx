@@ -46,7 +46,7 @@ class VEvaluationReportTable extends Component{
       }
     }
     
-    getStatus = (status = "") => {
+    getStatus = (status) => {
       const normalizedStatus = status.toLowerCase(); // Convert to lowercase for comparison
     
       if (normalizedStatus === "completed") {
