@@ -536,6 +536,7 @@ class PAIGApplication:
         if _logger.isEnabledFor(logging.DEBUG):
             _logger.debug(f"PAIGPlugin initialized with {self.__dict__}")
 
+    @classmethod
     def get_plugin_app_config(self, kwargs):
         """
         Get the plugin application config from the given kwargs. User could pass the entire application config
@@ -563,6 +564,7 @@ class PAIGApplication:
 
         return plugin_app_config_dict
 
+    @classmethod
     def fetch_application_config_from_server(self, api_key, kwargs):
         """
         Fetch the application configuration from the server using the given API key.
@@ -606,7 +608,7 @@ class PAIGApplication:
                 "apiKey": api_key
             })
         except Exception as e:
-            _logger.error(f"Error fetching configuration from the server: {e}")
+            _logger.debug(f"Error fetching configuration from the server: {e}")
             raise ValueError("Failed to fetch configuration from the server. Please ensure API key is valid.")
 
         return plugin_app_config_dict
