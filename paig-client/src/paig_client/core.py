@@ -613,6 +613,7 @@ class PAIGApplication:
 
         return plugin_app_config_dict
 
+    @classmethod
     def read_options_from_app_config(self, application_config_file=None):
         """
         Read the options from the application config file.
@@ -665,6 +666,7 @@ class PAIGApplication:
             raise PAIGException(
                 ErrorMessage.MULTIPLE_APP_CONFIG_FILES_FOUND.format(application_config_dir=application_config_dir))
 
+    @classmethod
     def load_plugin_application_configs_from_file(self, app_config_file_path: str):
         with open(app_config_file_path, 'r') as config_file:
             plugin_app_config_dict = json.load(config_file)
