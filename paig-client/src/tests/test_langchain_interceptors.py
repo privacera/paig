@@ -20,7 +20,9 @@ _logger = logging.getLogger(__name__)
 def test_langchain_llm_get_all_methods_to_intercept(setup_paig_plugin_with_app_config_file_name):
     langchain_llm_setup = paig_client.langchain_method_interceptor.LangChainMethodInterceptor()
     langchain_llm_setup.find_all_methods_to_intercept()
-    assert len(langchain_llm_setup.list_of_methods_to_intercept) == 120
+    # Verify that the number of intercepted methods matches the expected count.
+    # Note: This value may change if the LangChain dependency is updated
+    assert len(langchain_llm_setup.list_of_methods_to_intercept) == 122
     langchain_llm_setup.undo_setup_interceptors()
 
 
