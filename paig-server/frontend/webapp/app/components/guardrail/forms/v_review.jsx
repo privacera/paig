@@ -199,6 +199,11 @@ const VContentModeration = ({data, formUtil, stepConfig, i, onEditClick}) => {
 
     let missingList = content_moderation_list.filter(c => c.providers.includes(data.guardrailProvider)).filter(c => !categorySelected.includes(c.category));
 
+    let contentMap = content_moderation_list.filter(c => c.providers.includes(data.guardrailProvider)).reduce((acc, config) => {
+        acc[config.category] = config;
+        return acc;
+    }, {});
+
     const error = formUtil.getErrors();
 
     return (
@@ -240,9 +245,10 @@ const VContentModeration = ({data, formUtil, stepConfig, i, onEditClick}) => {
                                    <TableBody data-testid="tbody">
                                        {
                                            configData.configs.map(config => {
+                                               let label = contentMap[config.category] ? contentMap[config.category].label : config.category;
                                                return (
                                                    <TableRow className="table-search-row" key={config.category}>
-                                                        <TableCell>{config.category}</TableCell>
+                                                        <TableCell>{label}</TableCell>
                                                         <TableCell></TableCell>
                                                         <TableCell>{config.filterStrengthPrompt}</TableCell>
                                                         <TableCell>{config.filterStrengthResponse}</TableCell>

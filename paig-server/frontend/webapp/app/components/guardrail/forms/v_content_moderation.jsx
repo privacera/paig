@@ -71,7 +71,7 @@ class VContentModeration extends Component {
                 />
             </TableCell>,
             <TableCell key="category" data-testid="category">
-                {model.category}
+                {model.label}
             </TableCell>,
             <TableCell key="description" data-testid="description">
                 {model.description}
