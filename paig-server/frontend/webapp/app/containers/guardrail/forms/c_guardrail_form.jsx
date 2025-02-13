@@ -53,6 +53,9 @@ class CGuardrailForm extends Component {
         }
     }
     setGuardrail = (guardrail) => {
+        guardrail.guardrailConfigs?.forEach(c => {
+            c.status = 1;
+        })
         transaction(() => {
             this.formUtil.resetData(guardrail);
             this._vState.guardrail = guardrail;
