@@ -28,20 +28,28 @@ class PAIGShield:
                     logger.info(f"PAIG Shield configuration file used is {os.environ['PRIVACERA_SHIELD_CONF_FILE']}")
                     sys.exit('PAIG Shield plugin setup failed. Please confirm if the configuration file {} is correct and '
                              'exists'.format(os.environ['PRIVACERA_SHIELD_CONF_FILE']))
+                elif 'PAIG_API_KEY' in os.environ:
+                    logger.info(f"PAIG API key used is {os.environ['PAIG_API_KEY']}")
+                    sys.exit('PAIG Shield plugin setup failed. Please confirm if the API key is correct and exists')
 
     def get_paig_config_map(self, ai_application_name):
         return self.paig_config_map.get(ai_application_name)
 
     def set_paig_config_map(self, ai_application_name, ai_application_config):
-        if 'paig_shield_config_file' not in ai_application_config:
-            logger.info(f"paig_shield_config_file is missing in {ai_application_name} configuration")
+        if 'paig_shield_config_file' not in ai_application_config and 'application_config_api_key' not in ai_application_config:
+            logger.info(f"paig_shield_config_file or application_config_api_key is missing in {ai_application_name} configuration")
             return None
         paig_shield_config_file = ai_application_config.get('paig_shield_config_file')
-        if not os.path.isfile(paig_shield_config_file):
+        application_config_api_key = ai_application_config.get('application_config_api_key')
+        if paig_shield_config_file and not os.path.isfile(paig_shield_config_file):
             logger.error(f"paig_shield_config_file {paig_shield_config_file} does not exist found in {ai_application_name} configuration")
             sys.exit(f"paig_shield_config_file {paig_shield_config_file} does not exist found  in {ai_application_name} configuration")
+
         try:
-            ai_app = paig_shield_client.setup_app(application_config_file=paig_shield_config_file)
+            if paig_shield_config_file:
+                ai_app = paig_shield_client.setup_app(application_config_file=paig_shield_config_file)
+            elif application_config_api_key:
+                ai_app = paig_shield_client.setup_app(application_config_api_key=application_config_api_key)
             self.paig_config_map[ai_application_name] = ai_app
         except paig_client.exception.AccessControlException as err:
             logger.error(f"PAIG Shield plugin setup failed for {ai_application_name}  with error {err}")
