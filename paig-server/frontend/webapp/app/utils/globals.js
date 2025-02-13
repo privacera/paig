@@ -1,3 +1,6 @@
+import AWS_BEDROCK from 'common-ui/images/aws-bedrock.svg';
+import PAIG from 'common-ui/images/monogram-lp-logo.svg';
+
 const UI_CONSTANTS = {
     DASHBOARD: 'DASHBOARD',
     APPLICATIONS: 'APPLICATIONS',
@@ -23,7 +26,10 @@ const UI_CONSTANTS = {
     BUILT_IN_REPORTS: 'BUILT_IN_REPORTS',
     SAVED_REPORTS: 'SAVED_REPORTS',
     AI_APPLICATIONS_PERMISSIONS: 'AI_APPLICATIONS_PERMISSIONS',
-    VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS'
+    VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
+    GUARDRAILS: 'GUARDRAILS',
+    RESPONSE_TEMPLATES: 'RESPONSE_TEMPLATES',
+    GUARDRAIL_CONNECTION_PROVIDER: 'GUARDRAIL_CONNECTION_PROVIDER'
 }
 
 const PERMISSIONS = {
@@ -43,7 +49,8 @@ const FEATURE_PERMISSIONS = {
         AI_APPLICATIONS: {PROPERTY: 'governance.ai_applications'},
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
-        VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'}
+        VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
+        GUARDRAILS: {PROPERTY: 'governance.guardrails'}
     },
     AUDITS: {
         SECURITY: {PROPERTY: 'audits.security'}
@@ -237,6 +244,57 @@ const REPORT_GRID_LABELS = {
     TOP_REVIEWER_CONTENT_COMPLIANCE: {LABEL: "Top 20 Reviewers In Content Compliance", TOOLTIP: "Identifies the top 20 administrators active in content compliance reviews, crucial for understanding who is most engaged in monitoring sensitive user content."}
 }
 
+const GUARDRAIL_PROVIDER = {
+    PAIG: {
+        NAME: 'PAIG',
+        LABEL: 'PAIG Guardrails',
+        STATUS: 1,
+        DEFAULT: true,
+        EDITABLE: false,
+        IMG_URL: PAIG,
+        DESCRIPTION: 'This default guardrail provides moderate coverage in all key areas, offering a balanced solution for organizations looking for flexible, medium-level protections without heavy customization.'
+    },
+    AWS: {
+        NAME: 'AWS',
+        LABEL: 'AWS Bedrock',
+        STATUS: 0,
+        DEFAULT: false,
+        EDITABLE: true,
+        IMG_URL: AWS_BEDROCK,
+        DESCRIPTION: 'AWS offers strong security and scalability, making it ideal for businesses needing flexible yet powerful solutions. It supports highly regulated industries with global coverage.'
+    }/*,
+    OPEN_AI: {
+        NAME: 'OPEN_AI',
+        LABEL: 'Open AI',
+        STATUS: 0,
+        DEFAULT: false,
+        EDITABLE: true,
+        DESCRIPTION: 'This guardrail offers robust yet flexible protection across critical areas, providing organizations with moderate, out-of-the-box safeguards that balance comprehensive coverage and adaptability without requiring extensive customization.'
+    },
+    LLAMA: {
+        NAME: 'LLAMA',
+        LABEL: 'LLAMA',
+        STATUS: 0,
+        DEFAULT: false,
+        EDITABLE: true,
+        DESCRIPTION: 'This guardrail offers robust yet flexible protection across critical areas, providing organizations with moderate, out-of-the-box safeguards that balance comprehensive coverage and adaptability without requiring extensive customization.'
+    }*/
+}
+
+const GUARDRAIL_CONFIG_TYPE = {
+    CONTENT_MODERATION: {NAME: 'CONTENT_MODERATION', LABEL: 'Content Moderation'},
+    SENSITIVE_DATA: {NAME: 'SENSITIVE_DATA', LABEL: 'Sensitive Data'},
+    OFF_TOPIC: {NAME: 'OFF_TOPIC', LABEL: 'Off-topic'},
+    DENIED_TERMS: {NAME: 'DENIED_TERMS', LABEL: 'Denied Terms'},
+    PROMPT_SAFETY: {NAME: 'PROMPT_SAFETY', LABEL: 'Prompt Safety'}
+}
+
+const AWS_PROVIDER_CONNECTION_CONFIG_TYPE = {
+    IAM_ROLE: {TYPE: 'IAM_ROLE', LABEL: 'IAM Role'},
+    ACCESS_SECRET_KEY: {TYPE: 'ACCESS_SECRET_KEY', LABEL: 'Access Key & Secret Key'},
+    INSTANCE_ROLE: {TYPE: 'INSTANCE_ROLE', LABEL: 'Instance Role'}
+}
+
 export {
     UI_CONSTANTS,
     PERMISSIONS,
@@ -262,5 +320,8 @@ export {
     ACTION_TYPE,
     OBJECT_TYPE_MAPPING,
     ADMIN_AUDITS_FIELDS_TO_HIDE_MAPPING,
-    REPORT_GRID_LABELS
+    REPORT_GRID_LABELS,
+    GUARDRAIL_PROVIDER,
+    GUARDRAIL_CONFIG_TYPE,
+    AWS_PROVIDER_CONNECTION_CONFIG_TYPE
 }
