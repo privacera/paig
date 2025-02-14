@@ -12,7 +12,7 @@ import BaseContainer from 'containers/base_container';
 import GuardrailStepper, {StepRenderer, getStepsForProvider} from 'components/guardrail/forms/v_guardrail_stepper';
 import {GuardrailFormUtil, initialData} from 'components/guardrail/forms/guardrail_form_util';
 
-@inject('guardrailStore')
+@inject('guardrailStore', 'aiApplicationStore')
 @observer
 class CGuardrailForm extends Component {
     @observable _vState = {
@@ -180,6 +180,12 @@ class CGuardrailForm extends Component {
         try {
             this._vState.saving = true;
             if (data.id) {
+                let apps = this.formUtil.getApps();
+                await this.props.aiApplicationStore.associateGuardrailToApplication({
+                    guardrail: data.name,
+                    applications: apps
+                });
+
                 let model = await this.props.guardrailStore.updateGuardrail(data.id, data);
                 f.notifySuccess(`Guardrail ${data.name} updated successfully`);
                 this.setGuardrail(model);
@@ -226,29 +232,15 @@ class CGuardrailForm extends Component {
                                 />
                             </Grid>
                             <Grid item xs={12} sm={9} className="m-t-xs">
-                                {/* <Box component={Paper} p="15px"> */}
-                                    <StepRenderer
-                                        activeStep={this._vState.activeStep}
-                                        providerName={this._vState.providerName}
-                                        formUtil={this.formUtil}
-                                        handleProviderChange={this.handleProviderChange}
-                                        onStepClick={this.handleStepClick}
-                                    />
-                                {/* </Box> */}
+                                <StepRenderer
+                                    activeStep={this._vState.activeStep}
+                                    providerName={this._vState.providerName}
+                                    formUtil={this.formUtil}
+                                    handleProviderChange={this.handleProviderChange}
+                                    onStepClick={this.handleStepClick}
+                                />
                                 <Box component={Paper} elevation={0} p={1} className="sticky-actions border-top" style={{zIndex: 10, opacity: '90%', top: 'calc(100vh - 100px)'}}>
                                     <Grid container spacing={1} justify="space-between" data-testid="sticky-action-buttons">
-                                        <Grid item>
-                                            {
-                                                this._vState.activeStep > 0 &&
-                                                <Button
-                                                    data-testid="back-button"
-                                                    color="primary"
-                                                    onClick={this.handleBack}
-                                                >
-                                                    BACK
-                                                </Button>
-                                            }
-                                        </Grid>
                                         <Grid item>
                                             <Button
                                                 data-testid="cancel-button"
@@ -257,6 +249,8 @@ class CGuardrailForm extends Component {
                                             >
                                                 CANCEL
                                             </Button>
+                                        </Grid>
+                                        <Grid item>
                                             {
                                                 this._vState.activeStep > 0 && reviewIndex !== -1 && this._vState.activeStep < reviewIndex &&
                                                 <Button
@@ -266,6 +260,16 @@ class CGuardrailForm extends Component {
                                                     onClick={this.handleSkipToReview}
                                                 >
                                                     SKIP TO REVIEW
+                                                </Button>
+                                            }
+                                            {
+                                                this._vState.activeStep > 0 &&
+                                                <Button
+                                                    data-testid="back-button"
+                                                    color="primary"
+                                                    onClick={this.handleBack}
+                                                >
+                                                    BACK
                                                 </Button>
                                             }
                                             <Button

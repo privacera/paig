@@ -30,6 +30,12 @@ class GuardrailFormUtil {
 	getData() {
 		return this.data;
 	}
+	setApps(apps) {
+	    this.apps = apps;
+	}
+	getApps() {
+	    return this.apps || [];
+	}
 
 	getSaveFormData () {
 	    let data = cloneDeep(this.getData());

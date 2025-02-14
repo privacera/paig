@@ -1,6 +1,7 @@
 import commonUtils from "../common/common_utils";
 
 const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5);
+const description = 'Test Guardrail Description';
 
 describe('Guardrail Form PAIG provider', () => {
     before(() => {
@@ -267,7 +268,7 @@ describe('Guardrail Form PAIG provider', () => {
                     if ($tbody.length) {
                         // Do something if the element exists
                         cy.get('[data-testid="tbody-with-data"]').within(() => {
-                            cy.get('tr').should('have.length', 1).within(() => {
+                            cy.get('tr').eq(0).within(() => {
                                 cy.get('td').should('have.length', 3);
 
                                 cy.get('td').eq(0).find('[data-testid="checkbox"]').should('exist');
@@ -289,7 +290,7 @@ describe('Guardrail Form PAIG provider', () => {
     it('should create a guardrail with PAIG provider steps', () => {
         cy.get('[data-testid="basic-form"]').within(() => {
             cy.get('[data-testid="name"]').type(name);
-            cy.get('[data-testid="description"]').type('Test Guardrail Description');
+            cy.get('[data-testid="description"]').type(description);
         });
 
         cy.get('[data-testid="continue-button"]').click();
@@ -322,14 +323,42 @@ describe('Guardrail Form PAIG provider', () => {
             cy.wait(5000);
             cy.get('[data-testid="test-output"]').should('be.visible').and('not.be.empty');
 
+            cy.intercept('GET', '/governance-service/api/ai/application?size=*').as('getApplications');
+
             cy.get('[data-testid="continue-button"]').click();
 
-            cy.get('[data-testid="ai-application-step"]').within(() => {
-                cy.get('[data-testid="tbody-with-data"]').within(() => {
-                    cy.get('tr').eq(0).within(() => {
-                        cy.get('[data-testid="checkbox"]').click();
-                    });
-                });
+            cy.wait('@getApplications').then((interception) => {
+                expect(interception.response.statusCode).to.eq(200);
+
+                const {content} = interception.response.body
+
+                if (content.length) {
+                    // find index of application not associated with any guardrail
+                    let index = content.findIndex((app) => !app.guardrails?.length);
+
+                    if (index === -1) {
+                        // all checkbox should be disabled
+                        cy.get('[data-testid="ai-application-step"]').within(() => {
+                            cy.get('[data-testid="tbody-with-data"]').within(() => {
+                                cy.get('tr').each(($tr) => {
+                                    cy.wrap($tr).within(() => {
+                                        cy.get('[data-testid="checkbox"]').should('be.disabled');
+                                    });
+                                });
+                            });
+                        });
+                    } else {
+                        cy.get('[data-testid="ai-application-step"]').within(() => {
+                            cy.get('[data-testid="tbody-with-data"]').within(() => {
+                                cy.get('tr').eq(index).within(() => {
+                                    cy.get('[data-testid="checkbox"]').click();
+                                });
+                            });
+                        });
+                    }
+                } else {
+                    cy.log('No AI application found');
+                }
             });
 
             cy.intercept('PUT', '/guardrail-service/api/guardrail/*').as('updateGuardrail');
@@ -370,11 +399,12 @@ describe('Guardrail Form PAIG provider', () => {
 
         cy.url().should('match', /\/guardrails\/edit\/\d+/);
 
+        cy.wait(5000);
         cy.get('[data-testid="step-0"]').click();
 
-
         cy.get('[data-testid="basic-form"]').within(() => {
-            cy.get('[data-testid="name"]').type(' - Updated');
+            cy.get('[data-testid="name"] input').should('be.disabled');
+            cy.get('[data-testid="description"]').type(' - Updated');
         });
 
         cy.get('[data-testid="continue-button"]').click();
@@ -396,7 +426,7 @@ describe('Guardrail Form PAIG provider', () => {
         cy.intercept('GET', 'guardrail-service/api/guardrail?size=15&name=*').as('getGuardrails');
 
         // find last created guardrail using name
-        cy.get('[data-testid="guardrail-search"]').type(name + ' - Updated').type('{enter}');
+        cy.get('[data-testid="guardrail-search"]').type(name).type('{enter}');
 
         cy.wait('@getGuardrails').then((interception) => {
             cy.get('[data-testid="loader"]').should('not.exist');
@@ -408,8 +438,8 @@ describe('Guardrail Form PAIG provider', () => {
             expect(totalElements).to.eq(1);
 
             cy.get('[data-testid="table-row"]').eq(0).within(() => {
-                // check if the name is updated
-                cy.get('td').eq(0).should('contain', name + ' - Updated');
+                // check if the description is updated
+                cy.get('td').eq(1).should('contain', description + ' - Updated');
             });
         })
     });
@@ -420,7 +450,7 @@ describe('Guardrail Form PAIG provider', () => {
         cy.intercept('GET', 'guardrail-service/api/guardrail?size=15&name=*').as('getGuardrails');
 
         // find last created guardrail using name
-        cy.get('[data-testid="guardrail-search"]').type(name + ' - Updated').type('{enter}');
+        cy.get('[data-testid="guardrail-search"]').type(name).type('{enter}');
 
         cy.wait('@getGuardrails').then((interception) => {
             cy.get('[data-testid="loader"]').should('not.exist');
@@ -432,8 +462,8 @@ describe('Guardrail Form PAIG provider', () => {
             expect(totalElements).to.eq(1);
 
             cy.get('[data-testid="table-row"]').eq(0).within(() => {
-                // check if the name is updated
-                cy.get('td').eq(0).should('contain', name + ' - Updated');
+                // check if the description is updated
+                cy.get('td').eq(1).should('contain', description + ' - Updated');
 
                 cy.get('[data-test="delete"]').click();
             });
@@ -443,7 +473,7 @@ describe('Guardrail Form PAIG provider', () => {
             cy.get('[data-testid="custom-dialog"]').within(() => {
                 cy.get('[data-testid="confirm-dialog-title"]').should('be.visible').contains('Confirm Delete');
 
-                cy.get('[data-testid="dialog-content"]').should('contain.text', `Are you sure you want to delete ${name + ' - Updated'} guardrail?`);
+                cy.get('[data-testid="dialog-content"]').should('contain.text', `Are you sure you want to delete ${name} guardrail?`);
 
                 cy.get('[data-test="confirm-yes-btn"]').should('be.visible').contains('Delete').click();
             });

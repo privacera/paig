@@ -34,6 +34,9 @@ class CGuardrailReview extends Component {
             this.formUtil.resetData(initialData);
             this._vState.loading = true;
             const guardrail = await this.props.guardrailStore.getGuardrail(id);
+            guardrail.guardrailConfigs?.forEach(c => {
+                c.status = 1;
+            })
             this.formUtil.setData(guardrail);
 
             let stepper = getStepsForProvider(this.formUtil.getProvider());

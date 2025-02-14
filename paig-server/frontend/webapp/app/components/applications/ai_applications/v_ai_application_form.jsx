@@ -51,7 +51,7 @@ const VectorDBAssociate = ({form, editMode}) => {
     )
 }
 
-const VGuardrailForm = observer(({id, form, editMode}) => {
+/* const VGuardrailForm = observer(({id, form, editMode}) => {
     const {guardrail_enable, guardrail_id, guardrail_version, region} = form.fields;
 
     if (!id || editMode) {
@@ -127,10 +127,10 @@ const VGuardrailForm = observer(({id, form, editMode}) => {
             </Fragment>
         )
     }
-})
+}) */
 
-const VAIApplicationForm = observer(({form, guardrailForm, editMode}) => {
-    const { id, name, applicationKey, description, status, deploymentType, vectorDBs } = form.fields;
+const VAIApplicationForm = observer(({form, /* guardrailForm, */ editMode}) => {
+    const { id, name, applicationKey, description, status, deploymentType, vectorDBs, guardrails } = form.fields;
 
     return (
         <Fragment>
@@ -216,11 +216,18 @@ const VAIApplicationForm = observer(({form, guardrailForm, editMode}) => {
                 />
             </Grid>
 
-            <VGuardrailForm
+            <Grid item xs={12}>
+                <FormLabel>Associated Guardrail</FormLabel>
+                <div data-testid="guardrail-assiciation" style={{ marginBottom: '8px'}}>
+                    {guardrails?.value?.join(', ') || 'None'}
+                </div>
+            </Grid>
+
+            {/* <VGuardrailForm
                 id={id.value}
                 form={guardrailForm}
                 editMode={editMode}
-            />
+            /> */}
 
             <VectorDBAssociate
                 form={form}
@@ -305,10 +312,17 @@ const ai_application_form_def = {
     },
     vectorDBs: {
         defaultValue: []
+    },
+    guardrails: {
+        defaultValue: []
     }
+    /* ,
+    guardrailDetails: {
+        defaultValue: []
+    } */
 }
 
-const application_guardrail_form_def = {
+/* const application_guardrail_form_def = {
     guardrail_enable: {
         defaultValue: false
     },
@@ -345,10 +359,10 @@ const application_guardrail_form_def = {
             }
         }
     }
-}
+} */
 
 export {
     ai_application_form_def,
-    application_guardrail_form_def
+//     application_guardrail_form_def
 }
 export default VAIApplicationForm;

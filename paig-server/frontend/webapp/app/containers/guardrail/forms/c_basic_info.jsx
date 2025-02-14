@@ -14,6 +14,7 @@ import {GUARDRAIL_PROVIDER} from 'utils/globals';
 @observer
 class CBasicInfo extends Component {
     @observable _vState = {
+        id: '',
         name: '',
         description: '',
         guardrailProvider: '',
@@ -26,8 +27,9 @@ class CBasicInfo extends Component {
         const data = this.props.formUtil.getData() || {};
 
         Object.assign(this._vState, {
+            id: data.id,
             name: data.name,
-            description: data.description,
+            description: data.description
         });
 
         if (data.guardrailProvider) {
@@ -98,6 +100,7 @@ class CBasicInfo extends Component {
                         required={true}
                         value={this._vState.name}
                         label="Name"
+                        disabled={!!this._vState.id}
                         placeholder="Enter guardrail name"
                         onChange={({target}) => this.handleChange('name', target.value)}
                         errMsg={error.basicInfo?.name}

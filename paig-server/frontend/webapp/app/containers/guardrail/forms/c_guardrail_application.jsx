@@ -30,13 +30,16 @@ class CGuardrailApplication extends Component {
                 params: this.cApplications.params
             });
 
-            let applicationKeys = this.props.formUtil.getData().applicationKeys || [];
+            let guardrailName = this.props.formUtil.getData().name;
 
             let models = res.models.filter(app => {
-                if (applicationKeys.includes(app.applicationKey)) {
-                    extendObservable(app, {
-                        selected: true
-                    })
+                extendObservable(app, {
+                    selected: false
+                })
+                if (app.guardrails?.includes(guardrailName)) {
+                    app.selected = true;
+                } else if (app.guardrails?.length) {
+                    app.disabled = true;
                 }
                 return !app.default;
             });
@@ -48,7 +51,8 @@ class CGuardrailApplication extends Component {
     }
     handleAccountSelection = (model) => {
         let data = this.props.formUtil.getData();
-        data.applicationKeys = f.models(this.cApplications).filter(m => m.selected).map(app => app.applicationKey);
+        let apps = f.models(this.cApplications).filter(m => m.selected).map(app => app.name);
+        this.props.formUtil.setApps(apps);
     }
     render() {
         let models = f.models(this.cApplications);
