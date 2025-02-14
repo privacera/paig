@@ -384,6 +384,8 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
         dict: Promptfoo redteam configuration.
     """
     generated_config = None
+    promptfoo_config_file_name = None
+    output_file_name = None
     try:
         paig_evaluation_app_id = application_config.get("paig_eval_id")
         application_name = application_config.get("name", "PAIG Evaluation Application")
@@ -403,27 +405,27 @@ def generate_promptfoo_redteam_config(application_config: dict, plugins: List[st
         }
 
         promptfoo_config_file_name = f"tmp_{paig_evaluation_app_id}_promptfoo_redteam_config.yaml"
+        output_file_name = f"tmp_{paig_evaluation_app_id}_promptfoo_generated_prompts.yaml"
         write_yaml_file(promptfoo_config_file_name, readteam_config)
 
         # Generate prompts for redteam
-        output_path = f"tmp_{paig_evaluation_app_id}_promptfoo_generated_prompts.yaml"
-        command = f"promptfoo redteam generate --max-concurrency 5 --config {promptfoo_config_file_name} --output {output_path}"
+        command = f"promptfoo redteam generate --max-concurrency 5 --config {promptfoo_config_file_name} --output {output_file_name}"
 
         process = run_command_in_background(command)
         wait_for_process_complete(process, verbose=verbose)
 
-        if not os.path.exists(output_path):
+        if not os.path.exists(output_file_name):
             error_message = f"Prompts generation failed for given config with ID {paig_evaluation_app_id}."
             raise RuntimeError(error_message)
         # Read generated prompts
-        generated_config = read_yaml_file(output_path)
+        generated_config = read_yaml_file(output_file_name)
     except Exception as e:
         logger.error(f"Error while generating prompts: {e}")
     finally:
-        if os.path.exists(promptfoo_config_file_name):
+        if promptfoo_config_file_name and os.path.exists(promptfoo_config_file_name):
             os.remove(promptfoo_config_file_name)
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        if output_file_name and os.path.exists(output_file_name):
+            os.remove(output_file_name)
         return generated_config
 
 
@@ -444,9 +446,9 @@ def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config
 
     # Create updated promptfoo redteam configuration
     evaluation_report = None
+    promptfoo_generated_prompts_file_name = f"tmp_{paig_eval_id}_promptfoo_generated_prompts.yaml"
+    output_file_name = f"tmp_{paig_eval_id}_promptfoo_evaluation_report.json"
     try:
-        promptfoo_generated_prompts_file_name = f"tmp_{paig_eval_id}_promptfoo_generated_prompts.yaml"
-
         base_tests = base_prompts.get("tests") if base_prompts else []
         custom_tests = custom_prompts.get("tests") if custom_prompts else []
         promptfoo_redteam_config["tests"] = base_tests + custom_tests + promptfoo_redteam_config["tests"]
@@ -454,24 +456,23 @@ def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config
         write_yaml_file(promptfoo_generated_prompts_file_name, promptfoo_redteam_config)
 
         # Run promptfoo redteam evaluation
-        output_path = f"tmp_{paig_eval_id}_promptfoo_evaluation_report.json"
-        command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_path}"
+        command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_file_name}"
 
         process = run_command_in_background(command)
         wait_for_process_complete(process, verbose=verbose)
 
-        if not os.path.exists(output_path):
+        if not os.path.exists(output_file_name):
             error_message = f"Evaluation failed for given config with ID {paig_eval_id}."
             raise RuntimeError(error_message)
 
         # Read evaluation report
-        evaluation_report = read_json_file(output_path)
+        evaluation_report = read_json_file(output_file_name)
     except Exception as e:
         logger.error(f"Error while running evaluation process: {e}")
     finally:
         if os.path.exists(promptfoo_generated_prompts_file_name):
             os.remove(promptfoo_generated_prompts_file_name)
-        if os.path.exists(output_path):
-            os.remove(output_path)
+        if os.path.exists(output_file_name):
+            os.remove(output_file_name)
         return evaluation_report
 
