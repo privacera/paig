@@ -36,8 +36,7 @@ class PAIGShield:
     def paig_shield_setup_app_with_file(self, ai_application_name, paig_shield_config_file):
         """Handles PAIG Shield setup using a configuration file."""
         if not paig_shield_config_file:
-            logger.warning(
-                f"Neither application_config_api_key nor paig_shield_config_file found in {ai_application_name} configuration")
+            logger.warning(f"paig_shield_config_file is missing in {ai_application_name} configuration")
             return None
 
         if not os.path.isfile(paig_shield_config_file):
@@ -66,5 +65,5 @@ class PAIGShield:
                 sys.exit(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
             return
 
-        # Fallback to config file if API key is absent
+        logger.info("PAIG_API_KEY is not provided. Trying to setup PAIG Shield using configuration file.")
         self.paig_shield_setup_app_with_file(ai_application_name, ai_application_config.get('paig_shield_config_file'))

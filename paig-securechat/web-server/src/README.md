@@ -20,12 +20,7 @@ pip install paig_securechat
 
 ## Usage <a name="usage"></a>
 PAIG Secure chat can be used in following ways:
-<br>Before starting the securechat , please download PAIG_API_KEY for your PAIG application.
-<br> Set Environment variable `PAIG_API_KEY` with the value of the API key.
-```bash
-export PAIG_API_KEY=<Application PAIG_API_KEY>
-```
-If you have PAIG Shield Config file for PAIG application.Then run the following command to copy file to desired destination.
+Before starting the securechat , please download your PAIG Shield Config file.Then run the following command to copy file to desired destination.
 ```bash
 mkdir -p custom-configs
 cp <path to privacera-shield-app-name-config.json> custom-configs/privacera-shield-config.json
