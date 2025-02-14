@@ -608,7 +608,7 @@ class PAIGApplication:
                 "apiKey": api_key
             })
         except Exception as e:
-            _logger.error("Failed to retrieve application config. Error occurred while processing API key", e)
+            _logger.error("Failed to retrieve application config. Error occurred while processing API key: %s", e, exc_info=True)
             raise ValueError("Failed to fetch configuration from the server. Please ensure API key is valid.")
 
         return plugin_app_config_dict

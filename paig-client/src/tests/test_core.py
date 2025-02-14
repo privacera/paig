@@ -23,14 +23,14 @@ def test_fetch_application_config_from_server_invalid_api_key_format():
     invalid_api_key = base64.urlsafe_b64encode(b"invalid_key").decode("utf-8")
     with unittest.TestCase().assertRaises(ValueError) as context:
         PAIGApplication.fetch_application_config_from_server(invalid_api_key, {})
-    assert "Failed to fetch configuration from the server." in str(context.exception)
+    assert "Failed to fetch configuration from the server. Please ensure API key is valid." in str(context.exception)
 
 
 def test_fetch_application_config_from_server_invalid_url():
     invalid_url_key = base64.urlsafe_b64encode(b"test_api_key;invalid_url").decode("utf-8")
     with unittest.TestCase().assertRaises(ValueError) as context:
         PAIGApplication.fetch_application_config_from_server(invalid_url_key, {})
-    assert "Failed to fetch configuration from the server." in str(context.exception)
+    assert "Failed to fetch configuration from the server. Please ensure API key is valid." in str(context.exception)
 
 
 @patch("paig_client.core.HttpTransport.get_http")
@@ -42,7 +42,7 @@ def test_fetch_application_config_from_server_http_error(mock_http_transport):
     mock_http_transport.return_value.request.return_value = mock_response
     with unittest.TestCase().assertRaises(ValueError) as context:
         PAIGApplication.fetch_application_config_from_server(api_key, {})
-    assert "Failed to fetch configuration" in str(context.exception)
+    assert "Failed to fetch configuration from the server. Please ensure API key is valid." in str(context.exception)
 
 
 @patch("paig_client.core.HttpTransport.get_http")
@@ -51,7 +51,7 @@ def test_fetch_application_config_from_server_exception_handling(mock_http_trans
     mock_http_transport.return_value.request.side_effect = Exception("Network error")
     with unittest.TestCase().assertRaises(ValueError) as context:
         PAIGApplication.fetch_application_config_from_server(api_key, {})
-    assert "Failed to fetch configuration from the server" in str(context.exception)
+    assert "Failed to fetch configuration from the server. Please ensure API key is valid." in str(context.exception)
 
 
 def test_fetch_application_config_file_if_apikey_is_not_present(setup_curr_dir):
