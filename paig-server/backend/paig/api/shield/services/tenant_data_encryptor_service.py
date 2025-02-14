@@ -352,3 +352,10 @@ class TenantDataEncryptorService(Singleton):
             encrypted_messages.append(message_copy)
 
         auth_response.responseMessages = encrypted_messages
+
+    async def decrypt_guardrail_connection_details(self, tenant_id: str, connection_details: dict):
+        encryption_key_id = connection_details.get("encryption_key_id")
+        for key, value in connection_details.items():
+            connection_details_value = str(value)
+            if connection_details_value.startswith("GuardrailEncrypt:"):
+                    connection_details[key] = await self.decrypt(tenant_id, connection_details_value.replace("GuardrailEncrypt:", ""), encryption_key_id)

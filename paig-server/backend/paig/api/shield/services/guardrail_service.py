@@ -1,9 +1,9 @@
-import json
 import logging
+from api.shield.utils.custom_exceptions import BadRequestException
 
 logger = logging.getLogger(__name__)
 
-def process_guardrail_response(input_data: dict):
+def process_guardrail_response(input_data: dict) -> dict:
 
     result = {
         "config_type": {},
@@ -21,10 +21,18 @@ def process_guardrail_response(input_data: dict):
             }
 
         for sub_config in config["config_data"]["configs"]:
-            category = sub_config.get("category") or sub_config.get("type") or sub_config.get("term")
-            action = sub_config.get("action", "DENY") or sub_config.get("value")
-            if category:
-                result["config_type"][config_type]["configs"][category] = action
+            config_tag = sub_config.get("category") or sub_config.get("type") or sub_config.get("term") or sub_config.get("topic")
+            config_action = sub_config.get("action", "DENY") or sub_config.get("value")
+            if config_tag:
+                # Process regex
+                if config_tag == "regex":
+                    config_tag = sub_config.get("name")
+                result["config_type"][config_type]["configs"][config_tag] = config_action
+            # Process denied terms
+            if config_type == "DENIED_TERMS":
+                keywords = sub_config.get("keywords", [])
+                for keyword in keywords:
+                    result["config_type"][config_type]["configs"][keyword] = config_action
 
     # Process guardrail provider details
     provider_response = input_data.get("guardrail_provider_response", {})
@@ -46,7 +54,7 @@ def process_guardrail_response(input_data: dict):
 
     return result
 
-def transform_guardrail_response(input_data: dict):
+def transform_guardrail_response(input_data: dict) -> list:
 
     result = []
 
@@ -56,47 +64,36 @@ def transform_guardrail_response(input_data: dict):
 
     return result
 
-async def get_guardrail_by_id(request, tenant_id):
+async def get_guardrail_by_id(request: dict, tenant_id: str) -> dict:
     guardrail_id = request.get("guardrailId")
     from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
     guardrail_service = GuardrailServiceFactory().get_guardrail_service_client()
     response = await guardrail_service.get_guardrail_info(tenant_id, guardrail_id)
     return response
 
+async def decrypted_connection_details(tenant_id: str, connection_details: dict):
+    try:
+        from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
+        tenant_data_encryptor_service = TenantDataEncryptorService()
+        await tenant_data_encryptor_service.decrypt_guardrail_connection_details(tenant_id, connection_details)
+    except Exception as e:
+        raise BadRequestException(
+            f"Invalid guardrail connection details: {connection_details} for tenant {tenant_id}. Got error {e}")
 
-async def decrypted_connection_details(connection_details: dict):
-    from api.encryption.services.encryption_key_service import EncryptionKeyService
-    from api.encryption.api_schemas.encryption_key import EncryptionKeyView
-    from api.shield.utils.custom_exceptions import BadRequestException
-
-    encryption_service = EncryptionKeyService()
-    encryption_key_info: EncryptionKeyView = await encryption_service.get_encryption_key_by_id(connection_details.get("encryption_key_id"))
-
-    from paig_common.encryption import DataEncryptor
-    data_encryptor = DataEncryptor(public_key=encryption_key_info.public_key, private_key=encryption_key_info.private_key)
-    for key, value in connection_details.items():
-        connection_details_value = str(value)
-        if connection_details_value.startswith("GuardrailEncrypt:"):
-            try:
-                connection_details[key] = data_encryptor.decrypt(data=connection_details_value.replace("GuardrailEncrypt:", ""))
-            except Exception as e:
-                raise BadRequestException(
-                    f"Invalid connection details('{key}') for {connection_details_value}. Got error {e}")
-
-async def test_guardrail(transformed_response:dict, message:str):
+async def test_guardrail(tenant_id: str, transformed_response: dict, message: str) -> list:
 
     final_result = [test_paig_guardrail(transformed_response, message)]
     if isinstance(final_result[0], dict) and "DENY" not in final_result[0].get("action", ""):
-        test_aws_guardrail_result = await test_aws_guardrail(transformed_response, message)
+        test_aws_guardrail_result = await test_aws_guardrail(tenant_id, transformed_response, message)
         if test_aws_guardrail_result:
             final_result.append(test_aws_guardrail_result)
 
     for result in final_result:
         if result.get("action") == "DENY":
-            return result
+            return [result]
     return final_result
 
-def paig_pii_guardrail_evaluation(sensitive_data_config:dict, traits:list) -> (list, dict):
+def paig_pii_guardrail_evaluation(sensitive_data_config: dict, traits: list) -> (list, dict):
     deny_policies_list = []
     redact_policies_dict = {}
     # evaluate the guardrail PII policies
@@ -109,7 +106,7 @@ def paig_pii_guardrail_evaluation(sensitive_data_config:dict, traits:list) -> (l
 
     return deny_policies_list, redact_policies_dict
 
-def mask_message(message:str, redact_policies_dict:dict, analyzer_results: list) -> str:
+def mask_message(message: str, redact_policies_dict: dict, analyzer_results: list) -> str:
     # check the scanner_result for analyzer results
     # update the input text message with redacted values
     custom_mask_analyzer_result = [x for x in analyzer_results if
@@ -120,7 +117,7 @@ def mask_message(message:str, redact_policies_dict:dict, analyzer_results: list)
 
     return masked_message
 
-def test_paig_guardrail(transformed_response:dict, message:str) -> dict:
+def test_paig_guardrail(transformed_response: dict, message: str) -> dict:
     from api.shield.scanners.PIIScanner import PIIScanner
     scanner = PIIScanner(name="PIIScanner", model_path="_")
     scanner_result = scanner.scan(message)
@@ -137,7 +134,7 @@ def test_paig_guardrail(transformed_response:dict, message:str) -> dict:
 
     return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
 
-async def test_aws_guardrail(transformed_response:dict, message:str) -> None|dict:
+async def test_aws_guardrail(tenant_id: str, transformed_response: dict, message: str) -> None|dict:
 
     # check if AWS guardrail is present
     guardrail_provider_details = transformed_response.get("guardrail_provider_details", {})
@@ -153,7 +150,7 @@ async def test_aws_guardrail(transformed_response:dict, message:str) -> None|dic
 
     aws_guardrail_connection_details = aws_guardrail_details.get("connection_details", {})
     if aws_guardrail_connection_details:
-        await decrypted_connection_details(aws_guardrail_connection_details)
+        await decrypted_connection_details(tenant_id, aws_guardrail_connection_details)
         aws_guardrail_region = aws_guardrail_connection_details.get("region", "us-east-1")
 
     aws_guardrail_scanner_instance = awsGuardrailScanner.AWSBedrockGuardrailScanner(guardrail_id=aws_guardrail_id,
@@ -166,7 +163,7 @@ async def test_aws_guardrail(transformed_response:dict, message:str) -> None|dic
         response_msg = scanner_result.get("output_text")
         for key, value in transformed_response.get("config_type", {}).items():
             for category, action in value.get("configs", {}).items():
-                if category.upper() in scanner_result.get_traits():
+                if category.replace(' ', '_').upper() in scanner_result.get_traits():
                     response_msg = value.get("response_message")
                     policies_identified.append(key)
         return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": policies_identified, "message": response_msg }
