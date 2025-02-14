@@ -10,37 +10,33 @@ import base64
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
-
-
-def get_auth_user_and_token(api_key):
-    try:
-        decoded_key = base64.urlsafe_b64decode(api_key).decode()
-        username, api_token = decoded_key.split(":", 1)  # Extract username and token
-        return username, api_token
-    except Exception:
-        return None, None
-
-
-
-
 async def get_auth_user(
     request: Request,
     user_controller: UserController = Depends(ControllerInitiator().get_user_controller),
 ):
     if constants.SINGLE_USER_MODE:
         return await user_controller.get_user_by_user_name({"user_name": constants.DEFAULT_USER_NAME})
-    if hasattr(request, "headers") and "Authorization" in request.headers:
-        authorization = request.headers["Authorization"]
-        if "Bearer" not in authorization:
-            raise UnauthorizedException("Invalid authorization")
-        api_key = authorization.split("Bearer ")[1]
-        user_name, api_token = get_auth_user_and_token(api_key)
-        if api_token != conf["PAIG_SECURECHAT_API_TOKEN"]:
-            raise UnauthorizedException("Invalid authorization")
-        return await user_controller.get_user_by_user_name({"user_name": user_name})
 
-    cookies = request.cookies
-    session = cookies.get("session")
+    if hasattr(request, "headers") and "Authorization" in request.headers:
+        user_name = await __validate_token(request)
+        user = await user_controller.get_user_by_user_name({"user_name": user_name})
+        if user is None:
+            raise UnauthorizedException("Unauthorized user")
+        return user
+
+    return await __validate_session(request, user_controller)
+
+async def __validate_token(request):
+    authorization = request.headers["Authorization"]
+    if "Bearer" not in authorization:
+        raise UnauthorizedException("Invalid token")
+    api_token = authorization.split("Bearer ")[1]
+    payload = jwt_handler.decode(api_token)
+    user_name = payload.get("username")
+    return user_name
+
+async def __validate_session(request, user_controller):
+    session = request.cookies.get("session")
     if session is None:
         raise UnauthorizedException("Unauthorized session")
     session_user = jwt_handler.decode(session)

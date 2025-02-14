@@ -34,6 +34,14 @@ class JWTHandler:
         )
 
     @staticmethod
+    def encode(payload: dict, expire_minutes: int ) -> str:
+        expire = datetime.utcnow() + timedelta(minutes=expire_minutes)
+        payload.update({"exp": expire})
+        return jwt.encode(
+            payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm
+        )
+
+    @staticmethod
     def decode(token: str) -> dict:
         try:
             return jwt.decode(
