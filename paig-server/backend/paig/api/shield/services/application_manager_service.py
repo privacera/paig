@@ -81,11 +81,11 @@ class ApplicationManager(Singleton):
             setattr(scanner, 'application_key', application_key)
 
             if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner' and guardrail_instance_infos:
-                for attr in ['guardrail_id', 'guardrail_version', 'region']:
+                for attr in ['guardrail_id', 'guardrail_version', 'region', 'connection_details']:
                     value = guardrail_instance_infos[0].get(attr)
                     if value:
                         setattr(scanner, attr, value)
-                    elif attr == 'guardrail_id' and hasattr(scanner, attr):
+                    elif hasattr(scanner, attr):
                         delattr(scanner, attr)
             if getattr(scanner, 'name') == 'PAIGPIIGuardrailScanner':
                 from api.shield.services.guardrail_service import transform_guardrail_response
@@ -154,7 +154,7 @@ def scan_with_scanner(scanner: Scanner, message: str, tenant_id: str) -> (str, S
                                                       "tenant_id": tenant_id})
     return scanner.name, result, message_scan_time
 
-def _extract_guardrail_instance_infos(context):
+def _extract_guardrail_instance_infos(context: dict) -> list:
     """
     Extract the guardrail instance information from the context.
 
@@ -167,8 +167,11 @@ def _extract_guardrail_instance_infos(context):
     result = []
     for guardrail in context.get('guardrail_info', {}).get('guardrails', []):
         if guardrail.get('guardrail_provider') == 'AWS':
+            aws_guardrail_connection_details = guardrail.get('guardrail_connection_details', {})
+            region = aws_guardrail_connection_details.get('region')
             aws_response = guardrail.get('guardrail_provider_response', {}).get('AWS', {}).get('response', {})
             guardrail_id, version = aws_response.get('guardrailId'), aws_response.get('version')
             if guardrail_id and version:
-                result.append({'guardrail_id': guardrail_id, 'guardrail_version': version})
+                result.append({'guardrail_id': guardrail_id, 'guardrail_version': version,
+                               'region':region, 'connection_details': aws_guardrail_connection_details})
     return result

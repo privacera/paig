@@ -49,7 +49,7 @@ class AWSBedrockGuardrailScanner(Scanner):
         from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
         connection_details = self.get_property('connection_details')
         bedrock_client_provider = BedrockGuardrailProvider(connection_details if connection_details else {})
-        bedrock_client = bedrock_client_provider.create_bedrock_runtime_client()
+        bedrock_client = bedrock_client_provider.create_bedrock_client('bedrock-runtime')
 
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
@@ -117,6 +117,8 @@ class AWSBedrockGuardrailScanner(Scanner):
                         # If the tag data is 'DENY' that indicates there's a off topic policy, hence extract the name of the policy
                         if tag_data == "DENY":
                             tag_data = value.get('name').replace(' ', '_').upper()
+                        if tag_data == "CUSTOMWORDS":
+                            tag_data = value.get('match').replace(' ', '_').upper()
                         tag_set.add(tag_data)
                         action_set.add(value.get('action'))
         return tag_set, action_set

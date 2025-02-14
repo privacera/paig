@@ -128,29 +128,11 @@ class AuthService:
 
         # process for non authz scanners
         non_authz_scan_timings_per_message = 0
-        guardrail_info = await self.guardrail_service_client.get_guardrail_info_by_application_key(auth_req.tenant_id, auth_req.application_key, last_known_version=0)
-        if is_allowed and guardrail_info:
-            auth_req.context.update({"guardrail_info": guardrail_info})
-            auth_req.context.update({"pii_traits": all_result_traits})
-            masked_traits = {}
-            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                                            analyzer_result_map, auth_req, False, masked_traits)
-
-            if Guardrail.BLOCKED.value in access_control_traits:
-                authz_service_res.authorized = is_allowed = False
-                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
-
-                logger.debug(f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
-            authz_service_res.masked_traits = masked_traits
-            auth_req.context.pop("guardrail_info")
-            auth_req.context.pop("pii_traits")
-        # Overriding the access control results for the application keys configured under
-        # property ignore_access_control_application_keys
-        if auth_req.application_key in self.ignore_access_control_application_keys:
-            logger.info(f"Overriding access control results for application_key=" + auth_req.application_key)
-            authz_service_res.authorized = is_allowed = True
-            authz_service_res.masked_traits = {}
-            masked_messages = []
+        if is_allowed:
+            is_allowed, non_authz_scan_timings_per_message = await self.do_guardrail_scan(access_control_traits,
+                                                                                          all_result_traits,
+                                                                                          analyzer_result_map, auth_req,
+                                                                                          authz_service_res)
 
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
@@ -535,3 +517,31 @@ class AuthService:
                                                                     "Access is denied")
 
         return response_text_message
+
+    async def do_guardrail_scan(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
+                                    authz_service_res):
+        guardrail_info = await self.guardrail_service_client.get_guardrail_info_by_application_key(auth_req.tenant_id,
+                                                                                                       auth_req.application_key,
+                                                                                                       last_known_version=0)
+        non_authz_scan_timings_per_message = 0
+        is_allowed = True
+        if guardrail_info:
+            await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrails", [])[0].get("guardrail_connection_details", {}))
+            auth_req.context.update({"guardrail_info": guardrail_info})
+            auth_req.context.update({"pii_traits": all_result_traits})
+            masked_traits = {}
+            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
+                                                                            analyzer_result_map, auth_req, False,
+                                                                            masked_traits)
+
+            if Guardrail.BLOCKED.value in access_control_traits:
+                authz_service_res.authorized = is_allowed = False
+                authz_service_res.masked_traits = {}
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
+
+                logger.debug(
+                    f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
+            authz_service_res.masked_traits.update(masked_traits)
+            auth_req.context.pop("guardrail_info")
+            auth_req.context.pop("pii_traits")
+        return is_allowed, non_authz_scan_timings_per_message
