@@ -4,6 +4,7 @@ PAIG offers tools designed to enhance the security and compliance of your AI app
 ## Contents
 - [Installation](#Installation)
 - [Usage](#usage)
+- [PAIG Server Background Mode](#backgroundmode)
 - [Optional Configuration](#configuration)
 
 
@@ -33,7 +34,7 @@ PAIG  can be used in following ways:
     Example:
 
     ```shell
-    paig run --port 4545 --host 0.0.0.0
+    paig run --port 4545 --host 0.0.0.0 --background true
     ```
 
 2. **Run as an Embedded Service:** 
@@ -54,6 +55,27 @@ Please run the help command to see all available options you can pass while call
     # To stop the PIAG
     launcher.close_app()
     ```
+
+## PAIG Server Background Mode <a name="backgroundmode"></a>
+PAIG can be run in the background mode by setting the background flag to true.
+
+1. To Start the PAIG in the background mode:
+```bash
+paig run --background true
+```
+**Note:** Please use help command to see all available options you can pass on command line.
+```bash
+paig --help
+```
+2. To Stop the PAIG Server:
+```bash
+paig stop
+```
+3. To Check the status of the PAIG Server:
+```bash
+paig status
+```
+
 
 ## Optional Configuration <a name="configuration"></a>
 PAIG provides overlay configuration. You can provide the custom configuration in the following ways:

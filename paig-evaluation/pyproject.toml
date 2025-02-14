@@ -1,0 +1,60 @@
+[project]
+name = 'paig-evaluation'
+dynamic = ["version"]
+readme = "README.md"
+license = {file = "../LICENSE"}
+description = 'PAIG Evaluation'
+requires-python = ">= 3.10"
+keywords = [
+    "Chatbot",
+    "Governance",
+    "Privacy",
+    "Security",
+    "PAIG",
+    "PAIG-Evaluation"
+]
+authors = [
+  { name = "Privacera ", email = "support@privacera.com" },
+]
+
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "click",
+    "pyyaml",
+    "openai>=1.55.3"
+]
+
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[project.urls]
+"Homepage" = "https://github.com/privacera/paig"
+"Bug Tracker" = "https://github.com/privacera/paig/issues"
+
+
+[project.scripts]
+paig_evaluation = "paig_evaluation.__main__:main"
+paig-evaluation = "paig_evaluation.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["paig_evaluation"]
+
+
+[tool.hatch.build]
+include = ["paig_evaluation/*"]
+
+
+[tool.hatch.version]
+path = "paig_evaluation/VERSION"

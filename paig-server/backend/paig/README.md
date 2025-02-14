@@ -3,6 +3,7 @@
 - [How to Start Development Server](#developmentserver)
 - [Optional Configuration](#configuration)
 - [How to Start/Build Web UI](../../paig-server/frontend/README.md)
+- [PAIG Server Background Mode](#backgroundmode)
 - [How to Setup Database](#databsesetup)
 - [Logging](#logging)
 
@@ -23,18 +24,25 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    git clone git@github.com:privacera/paig.git
    ```
-2. Run the script to build the web UI.
+2. Change directory to the paig-server.
+   ```bash
+   cd paig/paig-server
+   ```
+3. Run the script to build the web UI.
    ```bash
    cd scripts
    source ./build_ui.sh
    ```
-3. Change directory to the root level of the repository.
 4. Go to the backend directory.
    ```bash
-    cd backend
-    ```
+   cd backend
+   ```
 5. Create a virtual environment.
     ```bash
+    python -m venv venv
+    ```
+   OR
+   ```bash
     python3 -m venv venv
     ```
 6. Activate the virtual environment.
@@ -51,11 +59,11 @@ PAIG provides a platform for AI governance. It allows users to governance and au
     ```
 9. Run the web server.
    ```bash
-   python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port>
+   python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port> --background <true|false>
    ```
    One Such example is:
    ```bash
-   python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545
+   python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545 --background true
    ```
    **Note:** *Admin user credentials.*
    ```bash
@@ -63,6 +71,27 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    username: admin
    password: welcome1
    ```
+
+## PAIG Server Background Mode <a name="backgroundmode"></a>
+PAIG can be run in the background mode by setting the background flag to true.
+
+1. To Start the PAIG in the background mode:
+```bash
+python __main__.py run --background true
+```
+**Note:** Please use help command to see all available options you can pass on command line.
+```bash
+python __main__.py --help
+```
+2. To Stop the PAIG Server:
+```bash
+python __main__.py stop
+```
+3. To Check the status of the PAIG Server:
+```bash
+python __main__.py status
+```
+
 
 ## Optional Configuration <a name="configuration"></a>
 PAIG provides overlay configuration. PAIG will use the default configuration provided in the [default_config.yaml](conf/default_config.yaml) file.

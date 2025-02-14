@@ -1,5 +1,5 @@
-from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
 from api.shield.logfile.log_message_in_file import LogMessageInFile
+from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
 from api.shield.model.shield_audit import ShieldAudit
 
 

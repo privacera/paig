@@ -1,0 +1,12 @@
+{
+  "name": "cypress-e2e-test",
+  "version": "1.0.0",
+  "description": "This is to test cypress e2e test cases",
+  "main": "cypress.config.js",
+  "scripts": {
+    "test": "npx cypress run"
+  },
+  "dependencies": {
+    "cypress": "^13.6.0"
+  }
+}

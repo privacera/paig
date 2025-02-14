@@ -34,7 +34,7 @@ def get_shield_audit_obj():
     return shield_audit
 
 
-@patch('api.shield.client.fluentd_rest_http_client.FluentdRestHttpClient')
+@patch('api.shield.client.http_fluentd_client.FluentdRestHttpClient')
 def test_fluentd_audit_logger(mock_fluentd_http_client):
     fluentd_audit_logger = FluentdAuditLogger(mock_fluentd_http_client, format_to_root_path('tests/api/shield/audit_spool_dir'), 0, 5)
     shield_audit = get_shield_audit_obj()

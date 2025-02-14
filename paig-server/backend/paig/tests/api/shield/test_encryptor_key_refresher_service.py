@@ -2,11 +2,10 @@ import asyncio
 import os
 import builtins
 import json
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock
 
 import pytest
 
-from api.shield.client.http_account_service_client import HttpAccountServiceClient
 from api.shield.services.tenant_data_encryptor_service import EncryptionKeyRefresher, ShieldDataEncryptor
 from api.shield.utils import config_utils
 from api.shield.model.encryption_key_info import EncryptionKeyInfo
@@ -48,6 +47,8 @@ class TestEncryptionKeyRefresher:
 
     #  encryption keys cache dir is enabled but file does not exist
     def test_encryption_keys_cache_dir_is_enabled_but_file_does_not_exist(self, mocker):
+        from api.shield.client.http_account_service_client import HttpAccountServiceClient
+
         # Mock the necessary dependencies
         mocker.patch.object(HttpAccountServiceClient, 'get_all_encryption_keys', return_value=[])
         mocker.patch.object(os.path, 'exists', return_value=False)
@@ -196,7 +197,7 @@ async def test_init_refresher(mocker):
 
 
 @pytest.mark.asyncio
-async def test_download_and_refresh_key(mocker):
+async def test_download_and_refresh_key_local_client(mocker):
     # Mocking the necessary methods
     # Mock the necessary dependencies
     mocker.patch.object(EncryptionKeyRefresher, 'load_self_managed_encrypt_keys', return_value=(None, None, None))
@@ -207,6 +208,37 @@ async def test_download_and_refresh_key(mocker):
     mocker.patch('api.shield.services.tenant_data_encryptor_service.EncryptionKeyInfo', return_value="mocked_key_info")
     mock_account_service_client = mocker.patch(
         'api.shield.client.local_account_service_client.LocalAccountServiceClient',
+        new_callable=AsyncMock, return_value=AsyncMock())
+    mocker.patch.object(mock_account_service_client, 'get_all_encryption_keys',
+                        return_value=[
+                            {"id": 1, "publicKeyValue": "publicKeyValue", "privateKeyValue": "privateKeyValue",
+                             "keyStatus": "keyStatus", "keyType": "MSG_PROTECT_PLUGIN",
+                             "tenantId": "tenantId"}])
+
+    # Create an instance of EncryptionKeyRefresher
+    refresher = EncryptionKeyRefresher(data_encryptor=AsyncMock(), account_service_client=mock_account_service_client)
+    refresher.enable_encryption_keys_cache_dir = True
+
+    # Call the method to test
+    await refresher.download_and_refresh_key()
+
+    # Assert that the mocked methods were called
+    EncryptionKeyRefresher.load_self_managed_encrypt_keys.assert_called_once()
+    EncryptionKeyRefresher.store_key_to_cache.assert_called_once()
+    EncryptionKeyRefresher.refresh_context_with_key_info.assert_called_once()
+
+@pytest.mark.asyncio
+async def test_download_and_refresh_key_http_client(mocker):
+    # Mocking the necessary methods
+    # Mock the necessary dependencies
+    mocker.patch.object(EncryptionKeyRefresher, 'load_self_managed_encrypt_keys', return_value=(None, None, None))
+    mocker.patch.object(EncryptionKeyRefresher, 'store_key_to_cache')
+    mocker.patch.object(EncryptionKeyRefresher, 'refresh_context_with_key_info')
+    mocker.patch('api.shield.services.tenant_data_encryptor_service.config_utils.get_property_value_boolean',
+                 return_value=False)
+    mocker.patch('api.shield.services.tenant_data_encryptor_service.EncryptionKeyInfo', return_value="mocked_key_info")
+    mock_account_service_client = mocker.patch(
+        'api.shield.client.http_account_service_client.HttpAccountServiceClient',
         new_callable=AsyncMock, return_value=AsyncMock())
     mocker.patch.object(mock_account_service_client, 'get_all_encryption_keys',
                         return_value=[

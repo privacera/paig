@@ -55,37 +55,26 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.NLPHandler')
+        mocker.patch('api.shield.services.auth_service.ApplicationManager')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
-        # Create mock objects for the dependencies
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
-        # Initialize AuthService in self-managed mode
+        # Initialize AuthService in cloud mode
         side_effect = lambda prop, default_value=None: {
             "shield_run_mode": "cloud"
         }.get(prop, default_value)
 
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
         # Initialize AuthService in cloud mode
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         # Assertions
         assert auth_service._shield_run_mode == 'cloud'
 
-    def get_auth_service(self, mock_account_service_factory, mock_authz_service_client_factory,
-                         mock_data_store_controller):
-        auth_service = AuthService(authz_service_client_factory=mock_authz_service_client_factory,
-                                   data_store_controller=mock_data_store_controller,
-                                   account_service_factory=mock_account_service_factory)
+    def get_auth_service(self):
+        auth_service = AuthService()
         return auth_service
-
-    def get_required_auth_service_mock_dependencies(self, mocker):
-        mock_authz_service_client_factory = mocker.Mock()
-        mock_authz_service_client_factory.get_authz_service_client = mocker.Mock()
-        mock_data_store_controller = mocker.Mock()
-        mock_account_service_factory = mocker.Mock()
-        mock_account_service_factory.get_account_service_client = mocker.Mock()
-        return mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller
 
     #  AuthService can be initialized in self-managed mode
     def test_initialize_self_managed_mode(self, mocker):
@@ -93,10 +82,10 @@ class TestAuthService:
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
         mocker.patch('api.shield.services.auth_service.AuthService.init_log_message_in_file')
-
-        # Create mock objects for the dependencies
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+        mocker.patch('api.shield.services.auth_service.NLPHandler')
+        mocker.patch('api.shield.services.auth_service.ApplicationManager')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
         # Initialize AuthService in self-managed mode
         side_effect = lambda prop, default_value=None: {
@@ -104,8 +93,7 @@ class TestAuthService:
         }.get(prop, default_value)
 
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         # Assertions
         assert auth_service._shield_run_mode == 'self_managed'
@@ -115,24 +103,25 @@ class TestAuthService:
     async def test_decrypt_authorize_request(self, mocker):
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mock_tenant_data_encryptor_service = mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
         mock_tenant_data_encryptor_service.decrypt_authorize_request = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_shield_audit = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_authorize_response = AsyncMock()
         mocker.patch('api.shield.services.auth_service.ApplicationManager')
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         # Mock the decrypt_authorize_request method
         auth_service.tenant_data_encryptor_service = mock_tenant_data_encryptor_service
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock,
                             return_value=authz_res_data_no_masking())
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
+
+        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -148,21 +137,23 @@ class TestAuthService:
     async def test_analyze_messages(self, mocker):
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mock_tenant_data_encryptor_service = mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
         mock_tenant_data_encryptor_service.decrypt_authorize_request = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_shield_audit = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_authorize_response = AsyncMock()
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
+
         auth_service.tenant_data_encryptor_service = mock_tenant_data_encryptor_service
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock,
                             return_value=authz_res_data_no_masking())
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
+
+        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -171,12 +162,14 @@ class TestAuthService:
         await auth_service.authorize(mock_auth_req)
 
         # Assertions
-        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()
+        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()*2
 
     def test_init_log_message_in_file(self, mocker):
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
         side_effect = lambda prop, default_value=None: {
             "shield_run_mode": "self_managed",
@@ -188,11 +181,8 @@ class TestAuthService:
         mocker.patch('api.shield.logfile.log_message_in_s3.LogMessageInS3File.__init__', return_value=None)
         mocker.patch('api.shield.logfile.log_message_in_local.LogMessageInLocal.__init__', return_value=None)
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         assert auth_service.message_log_objs.__len__() == 2
 
@@ -200,6 +190,8 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
         side_effect = lambda prop, default: {
             "shield_run_mode": "self_managed",
@@ -212,11 +204,8 @@ class TestAuthService:
         mocker.patch('api.shield.logfile.log_message_in_local.LogMessageInLocal.__init__')
 
         with pytest.raises(Exception) as e:
-            mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-                mocker)
             # Initialize AuthService
-            self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                  mock_data_store_controller)
+            self.get_auth_service()
 
         print(f"\nGot Exception=> {e.type}:{e.value}")
 
@@ -225,12 +214,11 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
         authz_vectordb_res = AuthorizeVectorDBResponse({"filterExpression": "example_filter_expression"})
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize_vectordb', new_callable=AsyncMock,
                             return_value=authz_vectordb_res)
@@ -245,10 +233,47 @@ class TestAuthService:
                                                                                           "test_tenant")
 
     @pytest.mark.asyncio
-    async def test_log_audit_message(self, mocker):
+    async def test_log_audit_message_s3_local_storage_type(self, mocker):
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+
+        side_effect = lambda prop, default_value=None: {
+            "shield_run_mode": "self_managed",
+            "audit_msg_content_to_self_managed_storage": "True",
+            "audit_msg_content_storage_system": "s3,local",
+        }.get(prop, default_value)
+
+        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
+        mocker.patch('api.shield.logfile.log_message_in_s3.LogMessageInS3File.__init__', return_value=None)
+        mocker.patch('api.shield.logfile.log_message_in_local.LogMessageInLocal.__init__', return_value=None)
+        mocker.patch('api.shield.logfile.log_message_in_s3.LogMessageInS3File.log', new_callable=AsyncMock)
+        mocker.patch('api.shield.logfile.log_message_in_local.LogMessageInLocal.log', new_callable=AsyncMock)
+
+        # Initialize AuthService
+        auth_service = self.get_auth_service()
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+
+        audit_data = ShieldAudit(auth_req, authz_res, ["PERSON", "LOCATION"],
+                                 [{"originalMessage": "test_message", "maskedMessage": "test_message"}])
+        # Call the authorize method
+        await auth_service.log_audit_message(audit_data)
+
+        # Assertions
+        assert auth_service.message_log_objs.__len__() == 2
+        for message_log_obj in auth_service.message_log_objs:
+            message_log_obj.log.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_log_audit_message_for_data_service_storage_type(self, mocker):
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
         side_effect = lambda prop, default_value=None: {
             "shield_run_mode": "self_managed",
@@ -265,11 +290,9 @@ class TestAuthService:
         mocker.patch('api.shield.logfile.log_message_in_local.LogMessageInLocal.log', new_callable=AsyncMock)
         mocker.patch('api.shield.logfile.log_message_in_data_service.LogMessageInDataService.log',
                      new_callable=AsyncMock)
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
 
@@ -288,17 +311,16 @@ class TestAuthService:
     async def test_not_allowed_authz_response(self, mocker):
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mock_tenant_data_encryptor_service = mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
         mock_tenant_data_encryptor_service.decrypt_authorize_request = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_shield_audit = AsyncMock()
         mock_tenant_data_encryptor_service.encrypt_authorize_response = AsyncMock()
         mocker.patch('api.shield.services.auth_service.ApplicationManager')
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
         auth_req = authorize_req_data()
 
         authz_res = authz_res_data()
@@ -309,8 +331,10 @@ class TestAuthService:
         mocker.patch.object(auth_service, 'do_authz_authorize', new_callable=AsyncMock, return_value=authz_res)
         # mocker.patch.object(auth_service, 'log_audit_fluentd')
         mocker.patch.object(auth_service, 'log_audit_message', new_callable=AsyncMock)
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
+
+        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
 
         # Call the authorize method
         auth_res = await auth_service.authorize(auth_req)
@@ -356,15 +380,14 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mocker_logger = Mock()
         mocker.patch('api.shield.services.auth_service.AuthService.get_or_create_fluentd_audit_logger',
                      return_value=mocker_logger)
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
@@ -388,15 +411,15 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mocker_logger = Mock()
         mocker.patch('api.shield.services.auth_service.AuthService.get_or_create_fluentd_audit_logger',
                      return_value=mocker_logger)
         mocker_logger.log.side_effect = DiskFullException
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
@@ -418,15 +441,15 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mocker_logger = Mock()
         mocker.patch('api.shield.services.auth_service.AuthService.get_or_create_fluentd_audit_logger',
                      return_value=mocker_logger)
         mocker_logger.log.side_effect = AuditEventQueueFullException
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
@@ -448,15 +471,14 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mocker_logger = Mock()
         mocker.patch('api.shield.services.auth_service.AuthService.get_or_create_fluentd_audit_logger',
                      return_value=mocker_logger)
         mocker_logger.log.side_effect = Exception
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
@@ -509,11 +531,11 @@ class TestAuthService:
     #  Decrypts and encrypts shield audit data successfully.
     @pytest.mark.asyncio
     async def test_decrypts_and_encrypts_successfully(self, mocker):
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
         # Create a shield_audit object
         shield_audit = self.get_stream_shield_obj()
 
@@ -548,11 +570,11 @@ class TestAuthService:
     #  Shield audit data decryption fails.
     @pytest.mark.asyncio
     async def test_decryption_fails(self, mocker):
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         # Create a shield_audit object
         shield_audit = self.get_stream_shield_obj()
@@ -577,12 +599,11 @@ class TestAuthService:
         # mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_authorize_request', new_callable=AsyncMock)
         mocker.patch.object(auth_service.tenant_data_encryptor_service, 'encrypt_shield_audit', new_callable=AsyncMock)
@@ -590,8 +611,10 @@ class TestAuthService:
         mocker.patch.object(auth_service.authz_service_client, 'post_authorize', new_callable=AsyncMock, return_value=authz_res_data())
 
         # Mock the analysis method
-        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, [], {}))
+        mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
+
+        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data_with_streamid()
@@ -605,16 +628,15 @@ class TestAuthService:
         # Mock dependencies
         mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
         mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
         mocked_fluentd_audit_logger = mocker.patch(
             'api.shield.services.auth_service.FluentdAuditLogger')
         fluentd_audit_logger_mock = MagicMock()
         mocked_fluentd_audit_logger.return_value = fluentd_audit_logger_mock
 
-        mock_account_service_factory, mock_authz_service_client_factory, mock_data_store_controller = self.get_required_auth_service_mock_dependencies(
-            mocker)
         # Initialize AuthService
-        auth_service = self.get_auth_service(mock_account_service_factory, mock_authz_service_client_factory,
-                                             mock_data_store_controller)
+        auth_service = self.get_auth_service()
 
         side_effect = lambda prop, default: {
             "audit_msg_content_to_paig_cloud": False,
@@ -686,3 +708,106 @@ class TestAuthService:
         assert instance.clientIp == payload["clientIp"]
         assert instance.clientHostname == payload["clientHostname"]
         assert instance.numberOfTokens == payload["numberOfTokens"]
+
+    def test_generate_access_denied_message_default(self, mocker):
+
+        # Initialize AuthService
+        auth_service = self.get_auth_service()
+
+        side_effect = lambda prop, default: {
+            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
+            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
+            "OFF_TOPIC-WEATHER": "off-topic (weather)",
+            "OFF_TOPIC-SPORTS": "off-topic (sports)",
+            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
+            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
+            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
+            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
+            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
+            "OFF_TOPIC-JOKE": "off-topic (jokes)",
+            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
+            "OFF_TOPIC-HISTORY": "off-topic (history)",
+            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
+            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
+            "MISCONDUCT": "inappropriate topics",
+            "SEXUAL": "sexual topics",
+            "VIOLENCE": "violent topics",
+            "CRIMINAL": "criminal topics",
+            "PASSWORD": "personal sensitive information"
+        }.get(prop)
+
+        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
+
+        message = auth_service.generate_access_denied_message(['PERSON'])
+
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss PERSON"
+
+    def test_generate_access_denied_message_single_trait(self, mocker):
+
+        # Initialize AuthService
+        auth_service = self.get_auth_service()
+
+        side_effect = lambda prop, default: {
+            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
+            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
+            "OFF_TOPIC-WEATHER": "off-topic (weather)",
+            "OFF_TOPIC-SPORTS": "off-topic (sports)",
+            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
+            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
+            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
+            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
+            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
+            "OFF_TOPIC-JOKE": "off-topic (jokes)",
+            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
+            "OFF_TOPIC-HISTORY": "off-topic (history)",
+            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
+            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
+            "MISCONDUCT": "inappropriate topics",
+            "SEXUAL": "sexual topics",
+            "VIOLENCE": "violent topics",
+            "CRIMINAL": "criminal topics",
+            "PASSWORD": "personal sensitive information"
+        }.get(prop)
+
+        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
+
+        message = auth_service.generate_access_denied_message(['MISCONDUCT'])
+
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics"
+
+    def test_generate_access_denied_message_multiple_traits(self, mocker):
+
+        # Initialize AuthService
+        auth_service = self.get_auth_service()
+
+        side_effect = lambda prop, default: {
+            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
+            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
+            "OFF_TOPIC-WEATHER": "off-topic (weather)",
+            "OFF_TOPIC-SPORTS": "off-topic (sports)",
+            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
+            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
+            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
+            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
+            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
+            "OFF_TOPIC-JOKE": "off-topic (jokes)",
+            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
+            "OFF_TOPIC-HISTORY": "off-topic (history)",
+            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
+            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
+            "MISCONDUCT": "inappropriate topics",
+            "SEXUAL": "sexual topics",
+            "VIOLENCE": "violent topics",
+            "CRIMINAL": "criminal topics",
+            "PASSWORD": "personal sensitive information"
+        }.get(prop)
+
+        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
+
+        message = auth_service.generate_access_denied_message(['MISCONDUCT', 'OFF_TOPIC-INVESTMENT'])
+
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or off-topic (investment advice)"
+
+        message = auth_service.generate_access_denied_message(['MISCONDUCT', 'PERSON'])
+
+        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or PERSON"

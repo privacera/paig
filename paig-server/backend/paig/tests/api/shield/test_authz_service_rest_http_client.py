@@ -6,7 +6,6 @@ from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
-from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
 from api.shield.utils import config_utils
 from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
 from requests.models import Response
@@ -37,6 +36,7 @@ class TestHttpAuthzClient:
     #  can make a successful POST request to the API with valid AuthzServiceRequest data
     @pytest.mark.asyncio
     async def test_successful_post_request_with_valid_authz_service_request_data(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
 
@@ -63,6 +63,7 @@ class TestHttpAuthzClient:
     #  can make a successful POST request to the API with valid AuthorizeVectorDBRequest data
     @pytest.mark.asyncio
     async def test_successful_post_request_with_valid_authorize_vectordb_request_data(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         req_data = {"userId": "example_user_id", "applicationKey": "example_app_key"}
@@ -87,6 +88,7 @@ class TestHttpAuthzClient:
     #  can handle a POST request to the API with valid AuthorizeVectorDBRequest data but error in response
     @pytest.mark.asyncio
     async def test_post_request_with_error_authorize_vectordb_response(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         req_data = {"userId": "example_user_id", "applicationKey": "example_app_key"}
@@ -108,6 +110,7 @@ class TestHttpAuthzClient:
     #  can make a successful POST request to the API to initialize authorization
     @pytest.mark.asyncio
     async def test_successful_post_request_to_initialize_authorization(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         tenant_id = "example_tenant_id"
@@ -127,10 +130,36 @@ class TestHttpAuthzClient:
         await client.post_init_authz(tenant_id, user_role)
 
         # Assert
-        client.post.assert_called_once_with(url="/authz/init", headers=client.get_headers(tenant_id, user_role))
+        client.post.assert_called_once_with(url="/authz/init", headers=client.get_headers(tenant_id, user_role), json={})
+
+    @pytest.mark.asyncio
+    async def test_successful_post_request_to_initialize_authorization_with_application_key(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
+        # Arrange
+        client = HttpAuthzClient()
+        tenant_id = "example_tenant_id"
+        user_role = "OWNER"
+
+        response = Response()
+        response.status_code = 200
+        mocker.patch.object(client, 'post', return_value=response)
+
+        side_effect = lambda prop: {
+            "authz_init_endpoint": "/authz/init"
+        }.get(prop)
+
+        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
+
+        # Act
+        await client.post_init_authz(tenant_id, user_role, application_key="example_app_key")
+
+        # Assert
+        client.post.assert_called_once_with(url="/authz/init", headers=client.get_headers(tenant_id, user_role),
+                                            json={"applicationKey": "example_app_key"})
 
     @pytest.mark.asyncio
     async def test_error_on_post_request_to_initialize_authorization(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         tenant_id = "example_tenant_id"
@@ -148,6 +177,7 @@ class TestHttpAuthzClient:
 
     #  can handle missing paig_api_key when getting headers
     def test_handle_missing_paig_api_key_when_getting_headers(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         tenant_id = "example_tenant_id"
@@ -163,13 +193,14 @@ class TestHttpAuthzClient:
         #  can handle having paig_api_key when getting headers
 
     def test_having_paig_api_key_when_getting_headers(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         tenant_id = "example_tenant_id"
         user_role = "OWNER"
         api_key = "sample-api-key"
 
-        mocker.patch("api.shield.client.authz_service_rest_http_client.config_utils.get_property_value",
+        mocker.patch("api.shield.client.http_authz_service_client.config_utils.get_property_value",
                      return_value=api_key)
 
         # Act
@@ -181,6 +212,7 @@ class TestHttpAuthzClient:
     #  can handle unsuccessful POST request to the API with invalid AuthzServiceRequest data
     @pytest.mark.asyncio
     async def test_handle_unsuccessful_post_request_with_invalid_authz_service_request_data(self, mocker):
+        from api.shield.client.http_authz_service_client import HttpAuthzClient
         # Arrange
         client = HttpAuthzClient()
         auth_req = get_authz_request_data()

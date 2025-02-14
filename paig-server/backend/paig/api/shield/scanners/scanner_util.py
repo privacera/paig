@@ -24,6 +24,7 @@ from core.utils import format_to_root_path
 from api.shield.scanners.BaseScanner import Scanner
 from api.shield.scanners.PIIScanner import PIIScanner
 from api.shield.utils.custom_exceptions import ShieldException
+from api.shield.utils import config_utils
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,9 @@ def get_custom_scanner_objects_from_portal(default_properties, scanner_objects, 
 def get_scanner_object_from_properties_file(default_properties, scanner_objects):
     config = configparser.ConfigParser()
     config.optionxform = str
-    cust_file_path = format_to_root_path("api/shield/conf/shield_scanner.properties")
+
+    cust_file = config_utils.get_property_value("custom_scanner_properties_file", "api/shield/conf/shield_scanner.properties")
+    cust_file_path = format_to_root_path(cust_file)
     default_file_path = format_to_root_path("api/shield/conf/shield_scanner.properties")
 
     if os.path.exists(cust_file_path):
@@ -245,8 +248,30 @@ def create_scanner(default_predefined_properties, scanner_index, scanner_info, s
         scanner_objects (dict): Dictionary to hold scanner objects.
     """
     if scanner_info['enable'] and scanner_index not in scanner_objects:
-        scanner_objects[scanner_index] = load_scanner(scanner_info)
+        if default_predefined_properties:
+            scanner_objects[scanner_index] = load_scanner(scanner_info)
+        else:
+            load_nocode_scanners = config_utils.get_property_value_boolean('enable_nocode_scanners', False)
+            if load_nocode_scanners:
+                # Lazy initialization: Only create NoCodeScanner when required
+                def create_nocode_scanner():
+                    from api.shield.scanners.NoCodeScanner import NoCodeScanner
+                    return NoCodeScanner(**scanner_info)
+
+                scanner_objects[scanner_index] = create_nocode_scanner()
         logger.info(f"Loaded scanner: {scanner_objects[scanner_index].name}")
+
+
+# Define the fallback values in a dictionary
+FALLBACK_VALUES = {
+    'model_path': '',
+    'model_score_threshold': 0.5,
+    'scanner_type': '',
+    'entity_type': '',
+    'model_entity_type_keyword': '',
+    'model_input_max_length': 512,
+    'model_input_truncation': True,
+}
 
 
 def get_scanner_info(config, section):
@@ -262,19 +287,33 @@ def get_scanner_info(config, section):
     """
     scanner_info = {}
     try:
-        scanner_info = {
-            'name': config.get(section, 'name'),
-            'enable': config.getboolean(section, 'enable'),
-            'request_types': config.get(section, 'request_types').split(","),
-            'enforce_access_control': config.getboolean(section, 'enforce.access.control'),
-            'model_path': config.get(section, 'model.path', fallback=''),
-            'model_score_threshold': config.getfloat(section, 'model.score.threshold', fallback=0.5),
-            'scanner_type': config.get(section, 'scanner_type', fallback=''),
-            'entity_type': config.get(section, 'entity_type', fallback=''),
-            'model_entity_type_keyword': config.get(section, 'model.entity.type.keyword', fallback=''),
-            'model_input_max_length': config.getint(section, 'model.input.max.length', fallback=512),
-            'model_input_truncation': config.getboolean(section, 'model.input.truncation', fallback=True),
-        }
+        if config.has_section(section):
+            for key, value in config.items(section):
+                # Convert boolean, integer, or float types as needed
+                if value.lower() in ('true', 'false'):
+                    scanner_info[key] = config.getboolean(section, key)
+                elif value.isdigit():
+                    scanner_info[key] = config.getint(section, key)
+                else:
+                    try:
+                        scanner_info[key] = config.getfloat(section, key)
+                    except ValueError:
+                        scanner_info[key] = value.split(',') if ',' in value else value
+
+            # Handle fallback values for missing keys
+            for key, fallback_value in FALLBACK_VALUES.items():
+                if key not in scanner_info:
+                    if isinstance(fallback_value, bool):
+                        scanner_info[key] = config.getboolean(section, key, fallback=fallback_value)
+                    elif isinstance(fallback_value, int):
+                        scanner_info[key] = config.getint(section, key, fallback=fallback_value)
+                    elif isinstance(fallback_value, float):
+                        scanner_info[key] = config.getfloat(section, key, fallback=fallback_value)
+                    else:
+                        scanner_info[key] = config.get(section, key, fallback=fallback_value)
+        else:
+            raise configparser.NoSectionError(section)
+
     except (configparser.NoOptionError, configparser.NoSectionError) as e:
         logger.error(f"Error parsing section '{section}': {e}")
     return scanner_info

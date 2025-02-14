@@ -1,5 +1,3 @@
-from api.shield.client.authz_service_rest_http_client import HttpAuthzClient
-from api.shield.client.local_authz_service_client import LocalAuthzClient
 from api.shield.utils import config_utils
 from core.utils import SingletonDepends
 
@@ -24,8 +22,10 @@ class AuthzServiceClientFactory:
         client_type = config_utils.get_property_value('authz_client', 'local')
         match client_type:
             case "http":
+                from api.shield.client.http_authz_service_client import HttpAuthzClient
                 return SingletonDepends(HttpAuthzClient)
             case "local":
+                from api.shield.client.local_authz_service_client import LocalAuthzClient
                 return SingletonDepends(LocalAuthzClient)
             case _:
                 raise Exception("Invalid service type")

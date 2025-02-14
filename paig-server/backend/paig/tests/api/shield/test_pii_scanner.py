@@ -14,7 +14,7 @@ class TestPIIScanner:
     # note: the mock here is not used directly, but it is used inside the PIIScanner class
     @patch('api.shield.scanners.PIIScanner.PresidioAnalyzerEngine')
     def test_init_recognizers(self, mock_presidio_analyzer_engine):
-        scanner = PIIScanner('name', 'request_types', True, 'model_path', 0.5, 'entity_type', True)
+        scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.5, entity_type='entity_type', enable=True)
         scanner.recognizers = {'recognizer1': Recognizer(name='recognizer1', enable=True, entity_type='entity_type',
                                                          ignore_list=['ignore1', 'ignore2'],
                                                          detect_list=['detect1', 'detect2'], detect_regex=r'',
@@ -31,13 +31,14 @@ class TestPIIScanner:
         }.get(prop)
         mocker.patch('api.shield.utils.config_utils.get_property_value_float', side_effect=side_effect)
 
-        scanner = PIIScanner('name', 'request_types', True, 'model_path', 0.6, 'entity_type', True)
+        scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.6, entity_type='entity_type', enable=True)
         message = 'Hi John, please send me an email to you@moon.com'
         result = scanner.scan(message)
-        assert result == {'traits': {'PERSON', 'EMAIL_ADDRESS'}, 'analyzer_result': analyzer_result_list}
+        assert result.get('traits') == ['EMAIL_ADDRESS', 'PERSON']
+        assert result.get('analyzer_result') == analyzer_result_list
 
     def test_load_recognizer_ignore_list(self):
-        scanner = PIIScanner('name', 'request_types', True, 'model_path', 0.5, 'entity_type', True)
+        scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.5, entity_type='entity_type', enable=True)
         scanner.recognizers = {'recognizer1': Recognizer(name='recognizer1', enable=True, entity_type='entity_type',
                                                          ignore_list=['ignore1', 'ignore2'],
                                                          detect_list=['detect1', 'detect2'], detect_regex=r'',
@@ -46,7 +47,7 @@ class TestPIIScanner:
         assert result == {'recognizer1': ['ignore1', 'ignore2']}
 
     def test_remove_ignore_list_keywords(self):
-        scanner = PIIScanner('name', 'request_types', True, 'model_path', 0.5, 'entity_type', True)
+        scanner = PIIScanner(name='name', request_types=['request_types'], enforce_access_control=True, model_path='model_path', model_threshold=0.5, entity_type='entity_type', enable=True)
         analyzer_result_list = [
             MagicMock(start=0, end=4, entity_type='trait1', recognition_metadata={'recognizer_name': 'recognizer1'})]
         recognizer_ignore_dict = {'recognizer1': ['word']}
@@ -76,7 +77,7 @@ class TestPIIScanner:
         assert result == ['word1', 'word2']
 
     def test_load_keyword_list_with_multiple_parameters(self, mocker):
-        mocker.patch('os.path.exists', retrun_value=True)
+        mocker.patch('os.path.exists', return_value=True)
         mocker.patch('os.path.getsize', return_value=10)
 
         def mock_open_func(file, mode='r'):

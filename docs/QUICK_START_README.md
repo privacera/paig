@@ -4,6 +4,7 @@ PAIG provides platform to secure and govern your AI applications.
 ## Contents
 - [Installation](#Installation)
 - [Usage](#usage)
+- [PAIG Server Background Mode](#backgroundmode)
 - [How To Govern Your LLM Interaction](SNIPPET_USING_PLUGIN.md)
 - [Optional Configuration](#configuration)
 - [Try Out Using Notebook](#notebooks)
@@ -62,6 +63,26 @@ Please run the help command to see all available options you can pass while call
     # To stop the PIAG
     launcher.close_app()
     ```
+
+## PAIG Server Background Mode <a name="backgroundmode"></a>
+PAIG can be run in the background mode by setting the background flag to true.
+
+1. To Start the PAIG in the background mode:
+```bash
+paig run --background true
+```
+**Note:** Please use help command to see all available options you can pass on command line.
+```bash
+paig --help
+```
+2. To Stop the PAIG Server:
+```bash
+paig stop
+```
+3. To Check the status of the PAIG Server:
+```bash
+paig status
+```
 
 ## How To Govern Your LLM Interaction <a name="govern-your-llm"></a>
 PAIG provides a platform to secure and govern your AI applications. You can use the PAIG to secure and govern your LLM interactions.

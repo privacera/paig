@@ -36,3 +36,5 @@ APScheduler==3.10.4
 pydantic[email]
 posthog
 paig-authorizer-core
+click==8.1.7
+psutil

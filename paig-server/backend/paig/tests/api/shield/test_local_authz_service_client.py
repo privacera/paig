@@ -3,9 +3,6 @@ from pathlib import Path
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from api.shield.client.local_authz_service_client import LocalAuthzClient
-from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
-from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
@@ -58,10 +55,12 @@ def create_mock_vectordb_response(mock_vectordb_response):
 class TestLocalAuthzClient:
     @pytest.fixture
     def mock_paig_authorizer(self):
+        from paig_authorizer_core.async_paig_authorizer import AsyncPAIGAuthorizer
         return MagicMock(spec=AsyncPAIGAuthorizer)
 
     @pytest.fixture
     def client(self, mock_paig_authorizer):
+        from api.shield.client.local_authz_service_client import LocalAuthzClient
         return LocalAuthzClient(mock_paig_authorizer)
 
     @pytest.mark.asyncio
@@ -69,6 +68,7 @@ class TestLocalAuthzClient:
         # Arrange
         tenant_id = "test_tenant"
         mock_authz_service_request = get_authz_service_request()
+        from paig_authorizer_core.models.response_models import AuthzResponse
         mock_authz_response = MagicMock(spec=AuthzResponse)
         create_mock_authz_response(mock_authz_response)
         mock_paig_authorizer.authorize = AsyncMock(return_value=mock_authz_response)
@@ -86,6 +86,7 @@ class TestLocalAuthzClient:
         tenant_id = "test_tenant"
         mock_vectordb_auth_req = AuthorizeVectorDBRequest({"userId": "userId", "applicationKey": "applicationKey",
                                                            }, user_role=None)
+        from paig_authorizer_core.models.response_models import VectorDBAuthzResponse
         mock_vectordb_response = MagicMock(spec=VectorDBAuthzResponse)
         create_mock_vectordb_response(mock_vectordb_response)
         mock_paig_authorizer.authorize_vector_db = AsyncMock(return_value=mock_vectordb_response)

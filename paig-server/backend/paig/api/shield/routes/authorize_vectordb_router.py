@@ -7,6 +7,7 @@ authorize_vectordb_router = APIRouter()
 
 shield_controller_instance = Depends(SingletonDepends(ShieldController, called_inside_fastapi_depends=True))
 
+
 @authorize_vectordb_router.post("")
 async def authorize_vectordb_app(request: Annotated[dict | None, Body()],
                                  x_tenant_id: Annotated[Optional[str], Header()] = None,

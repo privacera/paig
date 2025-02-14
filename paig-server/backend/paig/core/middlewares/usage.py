@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import threading
+
 from fastapi import FastAPI
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from core.utils import format_to_root_path, acquire_lock
@@ -94,7 +96,12 @@ async def register_usage_events(application: FastAPI):
     async def shutdown_usage_collector():
         if hasattr(application.state, 'lock'):
             scheduler.shutdown()
-            application.state.lock.release()
+            try:
+                application.state.lock.release()
+            except threading.ThreadError:
+                pass
+            except Exception as e:
+                pass
             logger.info("Scheduler shutdown and lock released.")
 
     await init_usage_collector()  # called on startup

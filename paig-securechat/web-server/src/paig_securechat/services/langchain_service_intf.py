@@ -22,7 +22,7 @@ class LangChainServiceIntf:
         ai_application_conf = self.config["AI_applications"]
         self.conversation_history_k = ai_application_conf[self.ai_application_name].get("conversation_history_k", 5)
         self.vector_store_retriever_k = ai_application_conf[self.ai_application_name].get("vector_store_retriever_k", 4)
-        self.return_source_documents = ai_application_conf[self.ai_application_name].get("return_source_documents", "false") in ["true", "True"]
+        self.return_source_documents = ai_application_conf[self.ai_application_name].get("return_source_documents", "true") in ["true", "True"]
         self.source_document_base_url = ai_application_conf[self.ai_application_name].get("source_document_base_url", "")
         vector_store_factory_instance = llm_constants.vector_store
         self.vectordb = vector_store_factory_instance.get_application_vectordb_index(self.ai_application_name)

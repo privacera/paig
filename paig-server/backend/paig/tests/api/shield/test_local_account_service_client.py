@@ -1,17 +1,16 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from api.shield.client.local_account_service_client import LocalAccountServiceClient
-from api.encryption.services.encryption_key_service import EncryptionKeyService
-from api.encryption.api_schemas.encryption_key import EncryptionKeyFilter
 
 
 class TestLocalAccountServiceClient:
     @pytest.fixture
     def mock_encryption_key_service(self):
+        from api.encryption.services.encryption_key_service import EncryptionKeyService
         return MagicMock(spec=EncryptionKeyService)
 
     @pytest.fixture
     def client(self, mock_encryption_key_service):
+        from api.shield.client.local_account_service_client import LocalAccountServiceClient
         return LocalAccountServiceClient(mock_encryption_key_service)
 
     @pytest.mark.asyncio
@@ -30,6 +29,7 @@ class TestLocalAccountServiceClient:
         result = await client.get_all_encryption_keys(tenant_id)
 
         # Assert
+        from api.encryption.api_schemas.encryption_key import EncryptionKeyFilter
         mock_encryption_key_service.list_encryption_keys.assert_awaited_once_with(EncryptionKeyFilter(), 0, 10, [])
         assert len(result) == 1
         assert result[0]["id"] == "key_id"
