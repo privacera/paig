@@ -43,7 +43,6 @@ class GuardrailView(BaseView):
         version (int): The version of the Guardrail.
         guardrail_provider (GuardrailProvider): The guardrail provider.
         guardrail_connection_name (str): The connection name to guardrail provider.
-        application_keys (List[str]): The associated application keys.
         guardrail_configs (List[Dict]): The guardrail details.
         guardrail_provider_response (dict): The guardrail response info.
         guardrail_connection_details (dict): The guardrail connection details.
@@ -53,8 +52,6 @@ class GuardrailView(BaseView):
     version: Optional[int] = Field(default=1, description="The version of the Guardrail")
     guardrail_provider: Optional[GuardrailProvider] = Field(None, description="The guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(None, description="The connection name to guardrail provider", alias="guardrailConnectionName")
-    application_keys: Optional[List[str]] = Field(None, description="The associated application keys",
-                                        alias="applicationKeys")
     guardrail_configs: Optional[List[GRConfigView]] = Field(None, description="The guardrail details",
                                                             alias="guardrailConfigs")
     guardrail_provider_response: Optional[Dict] = Field(None, description="The guardrail response info",
@@ -81,24 +78,6 @@ class GRVersionHistoryView(GuardrailView):
     guardrail_id: Optional[int] = Field(default=None, description="The guardrail id", alias="guardrailId")
 
 
-class GuardrailsDataView(BaseView):
-    """
-    A model representing the Guardrails data, this is used to return as response for the shield request.
-    This holds version, application key and list of guardrails.
-
-    Inherits from:
-        BaseView: The base model containing common fields.
-
-    Attributes:
-        app_key (str): The application key.
-        version (int): The version of the Guardrails.
-        guardrails (List[GuardrailView]): The list of Guardrails.
-    """
-    app_key: str = Field(..., description="The application key", alias="applicationKey")
-    version: int = Field(..., description="The version of the Guardrails")
-    guardrails: Optional[List[GuardrailView]] = Field(None, description="The list of Guardrails")
-
-
 class GuardrailFilter(BaseAPIFilter):
     """
     Filter class for Guardrails.
@@ -109,14 +88,12 @@ class GuardrailFilter(BaseAPIFilter):
         version (int, optional): Filter by version.
         guardrail_provider (GuardrailProvider, optional): Filter by guardrail provider.
         guardrail_connection_name (str, optional): Filter by connection name.
-        application_keys (List[str], optional): Filter by application keys.
     """
     name: Optional[str] = Field(default=None, description="Filter by name")
     description: Optional[str] = Field(default=None, description="Filter by description")
     version: Optional[int] = Field(default=None, description="Filter by version")
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
-    application_keys: Optional[str] = Field(default=None, description="Filter by application keys", alias="applicationKey")
     extended: Optional[bool] = Field(default=False, description="Give the extended result with connections and guardrail responses")
 
 

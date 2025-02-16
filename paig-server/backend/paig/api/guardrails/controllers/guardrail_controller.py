@@ -1,7 +1,6 @@
 from typing import List
 
-from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GuardrailsDataView, \
-    GRVersionHistoryFilter
+from api.guardrails.api_schemas.guardrail import GuardrailFilter, GuardrailView, GRVersionHistoryFilter
 from api.guardrails.services.guardrails_service import GuardrailService
 from core.controllers.paginated_response import Pageable
 from core.db_session import Transactional, Propagation
@@ -64,19 +63,6 @@ class GuardrailController:
             GuardrailView: The Guardrail view object corresponding to the ID.
         """
         return await self.guardrail_service.get_by_id(id, extended)
-
-    async def get_all_by_app_key(self, app_key: str, last_known_version: int = None) -> GuardrailsDataView:
-        """
-        Retrieve all Guardrails by the application key.
-
-        Args:
-            app_key (str): The application key to search for.
-            last_known_version (int): The last known version to compare against.
-
-        Returns:
-            GuardrailsDataView: The view object containing the app_key, version and list of Guardrails.
-        """
-        return await self.guardrail_service.get_all_by_app_key(app_key, last_known_version)
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update(self, id: int, request: GuardrailView) -> GuardrailView:

@@ -1,5 +1,4 @@
-from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRApplicationVersionModel, \
-    GRVersionHistoryModel
+from api.guardrails.database.db_models.guardrail_model import GuardrailModel, GRVersionHistoryModel
 from core.factory.database_initiator import BaseOperations
 
 
@@ -33,19 +32,3 @@ class GRVersionHistoryRepository(BaseOperations[GRVersionHistoryModel]):
         Initialize the GuardrailHistoryRepository.
         """
         super().__init__(GRVersionHistoryModel)
-
-
-class GRApplicationVersionRepository(BaseOperations[GRApplicationVersionModel]):
-    """
-    Repository class for handling database operations related to guardrail application version models.
-
-    Inherits from BaseOperations[GRApplicationVersionModel], providing generic CRUD operations.
-
-    This class inherits all methods from BaseOperations[GRApplicationVersionModel].
-    """
-
-    def __init__(self):
-        """
-        Initialize the GRApplicationVersionRepository.
-        """
-        super().__init__(GRApplicationVersionModel)

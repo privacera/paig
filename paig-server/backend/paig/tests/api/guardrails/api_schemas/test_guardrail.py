@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GuardrailsDataView
+from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter
 
 guardrail_data = {
     "id": 1,
@@ -11,7 +11,6 @@ guardrail_data = {
     "name": "mock_guardrail",
     "description": "mock description",
     "version": 1,
-    "applicationKeys": ["mock_app_key1", "mock_app_key2"],
     "guardrailConnectionName": "gr_connection_1",
     "guardrailProvider": "AWS",
     "guardrailConfigs": [
@@ -151,7 +150,6 @@ def test_guardrail_view_valid_data():
     assert view.version == guardrail_data["version"]
     assert view.guardrail_provider.value == guardrail_data["guardrailProvider"]
     assert view.guardrail_connection_name == guardrail_data["guardrailConnectionName"]
-    assert view.application_keys == guardrail_data["applicationKeys"]
     assert view.guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
     assert view.guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
     assert view.guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
@@ -208,26 +206,3 @@ def test_guardrail_filter_invalid_key_type():
     }
     with pytest.raises(ValidationError):
         GuardrailFilter(**invalid_data)
-
-
-def test_guardrails_data_view_valid_data():
-    guardrails_data_for_app = {
-        "applicationKey": "mock_app_key",
-        "version": 1,
-        "guardrails": [guardrail_data]
-    }
-    view = GuardrailsDataView(**guardrails_data_for_app)
-    assert view.app_key == guardrails_data_for_app["applicationKey"]
-    assert view.version == guardrails_data_for_app["version"]
-    assert view.guardrails[0].id == guardrail_data["id"]
-    assert view.guardrails[0].status == guardrail_data["status"]
-    assert view.guardrails[0].name == guardrail_data["name"]
-    assert view.guardrails[0].description == guardrail_data["description"]
-    assert view.guardrails[0].version == guardrail_data["version"]
-    assert view.guardrails[0].guardrail_provider.value == guardrail_data["guardrailProvider"]
-    assert view.guardrails[0].guardrail_connection_name == guardrail_data["guardrailConnectionName"]
-    assert view.guardrails[0].application_keys == guardrail_data["applicationKeys"]
-    assert view.guardrails[0].guardrail_configs[0].config_data == guardrail_data["guardrailConfigs"][0]["configData"]
-    assert view.guardrails[0].guardrail_configs[0].config_type.value == guardrail_data["guardrailConfigs"][0]["configType"]
-    assert view.guardrails[0].guardrail_configs[0].response_message == guardrail_data["guardrailConfigs"][0]["responseMessage"]
-    assert view.guardrails[0].guardrail_provider_response == guardrail_data["guardrailProviderResponse"]

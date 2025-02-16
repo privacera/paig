@@ -27,7 +27,6 @@ def upgrade() -> None:
     sa.Column('version', sa.Integer(), nullable=False),
     sa.Column('guardrail_provider', sa.Enum('AWS', name='guardrailprovider'), nullable=True),
     sa.Column('guardrail_connection_name', sa.String(length=255), nullable=True),
-    sa.Column('application_keys', core.db_models.utils.CommaSeparatedList(length=4000), nullable=True),
     sa.Column('guardrail_configs', sa.JSON(), nullable=False),
     sa.Column('guardrail_provider_response', sa.JSON(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -39,19 +38,6 @@ def upgrade() -> None:
     op.create_index(op.f('ix_guardrail_create_time'), 'guardrail', ['create_time'], unique=False)
     op.create_index(op.f('ix_guardrail_id'), 'guardrail', ['id'], unique=False)
     op.create_index(op.f('ix_guardrail_update_time'), 'guardrail', ['update_time'], unique=False)
-    op.create_table('guardrail_application_version',
-    sa.Column('application_key', sa.String(length=255), nullable=False),
-    sa.Column('version', sa.Integer(), nullable=False),
-    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.Column('status', sa.Integer(), nullable=False),
-    sa.Column('create_time', sa.DateTime(), nullable=False),
-    sa.Column('update_time', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_guardrail_application_version_application_key'), 'guardrail_application_version', ['application_key'], unique=False)
-    op.create_index(op.f('ix_guardrail_application_version_create_time'), 'guardrail_application_version', ['create_time'], unique=False)
-    op.create_index(op.f('ix_guardrail_application_version_id'), 'guardrail_application_version', ['id'], unique=False)
-    op.create_index(op.f('ix_guardrail_application_version_update_time'), 'guardrail_application_version', ['update_time'], unique=False)
     op.create_table('guardrail_connection',
     sa.Column('name', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=4000), nullable=True),
@@ -85,7 +71,6 @@ def upgrade() -> None:
     sa.Column('description', sa.String(length=4000), nullable=True),
     sa.Column('guardrail_provider', sa.Enum('AWS', name='guardrailprovider'), nullable=True),
     sa.Column('guardrail_connection_name', sa.String(length=255), nullable=True),
-    sa.Column('application_keys', core.db_models.utils.CommaSeparatedList(length=4000), nullable=True),
     sa.Column('guardrail_configs', sa.JSON(), nullable=False),
     sa.Column('guardrail_provider_response', sa.JSON(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
@@ -119,11 +104,6 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_guardrail_connection_id'), table_name='guardrail_connection')
     op.drop_index(op.f('ix_guardrail_connection_create_time'), table_name='guardrail_connection')
     op.drop_table('guardrail_connection')
-    op.drop_index(op.f('ix_guardrail_application_version_update_time'), table_name='guardrail_application_version')
-    op.drop_index(op.f('ix_guardrail_application_version_id'), table_name='guardrail_application_version')
-    op.drop_index(op.f('ix_guardrail_application_version_create_time'), table_name='guardrail_application_version')
-    op.drop_index(op.f('ix_guardrail_application_version_application_key'), table_name='guardrail_application_version')
-    op.drop_table('guardrail_application_version')
     op.drop_index(op.f('ix_guardrail_update_time'), table_name='guardrail')
     op.drop_index(op.f('ix_guardrail_id'), table_name='guardrail')
     op.drop_index(op.f('ix_guardrail_create_time'), table_name='guardrail')

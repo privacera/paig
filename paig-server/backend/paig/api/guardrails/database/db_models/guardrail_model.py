@@ -17,7 +17,6 @@ class BaseGuardrailModel(BaseSQLModel):
         version (str): The version of the guardrail.
         guardrail_provider (str): The guardrail provider.
         guardrail_connection_name (str): The connection name to guardrail provider.
-        application_keys (List[str]): The associated application keys.
         guardrail_configs (List[Dict]): The guardrail details.
     """
 
@@ -28,7 +27,6 @@ class BaseGuardrailModel(BaseSQLModel):
     version = Column(Integer, nullable=False, default=1)
     guardrail_provider = Column(SQLEnum(GuardrailProvider), nullable=True)
     guardrail_connection_name = Column(String(255), nullable=True)
-    application_keys = Column(CommaSeparatedList(4000), nullable=True)
     guardrail_configs = Column(JSON, nullable=False)
     guardrail_provider_response = Column(JSON, nullable=True)
 
@@ -59,17 +57,3 @@ class GRVersionHistoryModel(BaseGuardrailModel):
     version = Column(Integer, nullable=False, default=1)
 
     guardrail = relationship("GuardrailModel", back_populates="gr_version_history")
-
-
-class GRApplicationVersionModel(BaseSQLModel):
-    """
-    SQLAlchemy model representing the guardrails_applications table.
-
-    Attributes:
-        application_key (str): The application key.
-        version (int): The version of the application.
-    """
-    __tablename__ = "guardrail_application_version"
-    application_key = Column(String(255), nullable=False, index=True)
-    version = Column(Integer, nullable=False)
-

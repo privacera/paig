@@ -5,7 +5,7 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
-from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailsDataView, GRVersionHistoryView
+from api.guardrails.api_schemas.guardrail import GuardrailView, GRVersionHistoryView
 from api.guardrails.controllers.guardrail_controller import GuardrailController
 from core.controllers.paginated_response import create_pageable_response
 
@@ -28,9 +28,6 @@ guardrail_data_view_json = {
     "version": 1,
     "guardrails": [guardrail_view_json]
 }
-
-guardrail_data_view = GuardrailsDataView(**guardrail_data_view_json)
-
 
 gr_version_history_view_json = {
         "id": 1,
@@ -69,7 +66,6 @@ def mock_guardrail_controller():
 
     mock_guardrail_controller.create.return_value = guardrail_view
     mock_guardrail_controller.get_by_id.return_value = guardrail_view
-    mock_guardrail_controller.get_all_by_app_key.return_value = guardrail_data_view
     mock_guardrail_controller.update.return_value = guardrail_view
     mock_guardrail_controller.delete.return_value = None
 
@@ -140,12 +136,12 @@ def test_get_guardrail_by_id_success(guardrail_app_client):
     assert response.json()["id"] == 1
 
 
-def test_get_guardrail_by_app_key_success(guardrail_app_client):
-    response = guardrail_app_client.get("http://localhost:9090/guardrail/application/mock_app_key?lastKnownVersion=0")
+def test_get_guardrail_by_name_success(guardrail_app_client):
+    response = guardrail_app_client.get("http://localhost:9090/guardrail?name=mock_guardrail&extended=true&exactMatch=true")
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()["applicationKey"] == "mock_app_key"
-    assert response.json()["version"] == 1
-    assert len(response.json()["guardrails"]) == 1
+    assert len(response.json()["content"]) == 1
+    assert response.json()["content"][0]["name"] == "mock_guardrail"
+    assert response.json()["content"][0]["version"] == 1
 
 
 def test_update_guardrail_success(guardrail_app_client):
