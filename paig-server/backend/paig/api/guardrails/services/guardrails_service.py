@@ -278,10 +278,34 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             sort=sort
         )
 
-        for guardrail in result.content:
-            guardrail.guardrail_provider_response = None
+        # If extended is set, fetch guardrail connections and add to the response
+        if filter.extended:
+            connection_names = set(guardrail.guardrail_connection_name for guardrail in result.content if
+                                   guardrail.guardrail_connection_name)
+            gr_connections = await self.guardrail_connection_service.get_all(
+                GRConnectionFilter(name=",".join(connection_names)))
+            gr_conn_map = {gr_conn.name: gr_conn for gr_conn in gr_connections}
+
+            # Fetch encryption key and add id of it to the connection details
+            encryption_key = await self.get_encryption_key()
+            for guardrail in result.content:
+                if guardrail.guardrail_connection_name and guardrail.guardrail_connection_name in gr_conn_map:
+                    guardrail.guardrail_connection_details = gr_conn_map.get(guardrail.guardrail_connection_name).connection_details
+                    if encryption_key:
+                        guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
+        else:
+            # Remove guardrail provider response if extended is not set
+            for guardrail in result.content:
+                guardrail.guardrail_provider_response = None
 
         return result
+
+    async def get_encryption_key(self):
+        try:
+            return await self.guardrail_connection_service.get_encryption_key()
+        except NotFoundException:
+            # Return None if encryption key is not found
+            return None
 
     async def create(self, request: GuardrailView) -> GuardrailView:
         """
@@ -490,7 +514,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Update attributes from the request (excluding specific fields)
         guardrail.set_attribute(
             request.model_dump(exclude_unset=True,
-                               exclude={"create_time", "update_time", "version", "guardrail_provider_response"},
+                               exclude={"name", "create_time", "update_time", "version", "guardrail_provider_response"},
                                mode="json"))
 
         guardrail.version += 1  # Increment version number
@@ -531,7 +555,6 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             bool: True if record is updated else False.
         """
-        if existing_guardrail.name != request.name: return True
         if existing_guardrail.description != request.description: return True
         if request.status and existing_guardrail.status != request.status: return True
         if existing_guardrail.guardrail_provider != request.guardrail_provider: return True

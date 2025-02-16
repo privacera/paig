@@ -117,6 +117,7 @@ class GuardrailFilter(BaseAPIFilter):
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
     application_keys: Optional[str] = Field(default=None, description="Filter by application keys", alias="applicationKey")
+    extended: Optional[bool] = Field(default=False, description="Give the extended result with connections and guardrail responses")
 
 
 class GRVersionHistoryFilter(GuardrailFilter):
