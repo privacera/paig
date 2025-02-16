@@ -5,6 +5,7 @@ import pytest
 from sqlalchemy.exc import NoResultFound
 
 from api.encryption.api_schemas.encryption_key import EncryptionKeyView
+from api.governance.services.ai_app_service import AIAppService
 from api.guardrails.api_schemas.gr_connection import GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, GRConfigView, GRVersionHistoryFilter, \
     GRVersionHistoryView
@@ -158,6 +159,10 @@ def mock_guardrail_app_version_repository():
 def mock_guardrail_connection_service():
     return AsyncMock(spec=GRConnectionService)
 
+@pytest.fixture
+def mock_ai_app_gov_service():
+    return AsyncMock(spec=AIAppService)
+
 
 @pytest.fixture
 def guardrail_request_validator(mock_guardrail_repository):
@@ -167,13 +172,14 @@ def guardrail_request_validator(mock_guardrail_repository):
 @pytest.fixture
 def guardrail_service(mock_guardrail_repository, mock_guardrail_version_history_repository,
                       mock_guardrail_app_version_repository, guardrail_request_validator,
-                      mock_guardrail_connection_service):
+                      mock_guardrail_connection_service, mock_ai_app_gov_service):
     return GuardrailService(
         guardrail_repository=mock_guardrail_repository,
         gr_version_history_repository=mock_guardrail_version_history_repository,
         gr_app_version_repository=mock_guardrail_app_version_repository,
         guardrail_request_validator=guardrail_request_validator,
-        guardrail_connection_service=mock_guardrail_connection_service
+        guardrail_connection_service=mock_guardrail_connection_service,
+        ai_app_governance_service=mock_ai_app_gov_service
     )
 
 

@@ -5,6 +5,8 @@ from typing import List, Set
 import sqlalchemy
 from paig_common.lru_cache import LRUCache
 
+from api.governance.api_schemas.ai_app import GuardrailApplicationsAssociation
+from api.governance.services.ai_app_service import AIAppService
 from api.guardrails import model_to_dict
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, \
@@ -232,7 +234,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                  gr_version_history_repository: GRVersionHistoryRepository = SingletonDepends(
                      GRVersionHistoryRepository),
                  guardrail_request_validator: GuardrailRequestValidator = SingletonDepends(GuardrailRequestValidator),
-                 guardrail_connection_service: GRConnectionService = SingletonDepends(GRConnectionService)):
+                 guardrail_connection_service: GRConnectionService = SingletonDepends(GRConnectionService),
+                 ai_app_governance_service: AIAppService = SingletonDepends(AIAppService)):
         """
         Initialize the GuardrailService.
 
@@ -248,6 +251,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         self.gr_app_version_repository = gr_app_version_repository
         self.guardrail_connection_service = guardrail_connection_service
         self.gr_version_history_repository = gr_version_history_repository
+        self.ai_app_governance_service = ai_app_governance_service
 
     def get_repository(self) -> GuardrailRepository:
         """
@@ -793,6 +797,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Delete the Guardrail
         await self.repository.delete_record(guardrail_model)
 
+        # Disassociated the guardrail from the applications
+        await self._disassociate_guardrail_from_applications(guardrail.name)
+
     async def get_history(self, id, filter: GRVersionHistoryFilter, page_number: int, size: int, sort: List[str]) -> Pageable:
         """
         Get the history of a Guardrail by its ID.
@@ -816,3 +823,14 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             filter=filter, page_number=page_number, size=size, sort=sort)
         v_records = [GRVersionHistoryView.model_validate(record) for record in records]
         return create_pageable_response(v_records, total_count, page_number, size, sort)
+
+    async def _disassociate_guardrail_from_applications(self, guardrail_name):
+        """
+        Disassociate the guardrail from the applications.
+
+        Args:
+            guardrail_name (str): The name of the guardrail.
+        """
+        request = GuardrailApplicationsAssociation(guardrail=guardrail_name, applications=[])
+        await self.ai_app_governance_service.disassociate_guardrail(request)
+
