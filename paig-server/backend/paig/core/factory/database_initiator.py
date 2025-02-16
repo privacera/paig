@@ -102,10 +102,10 @@ class BaseOperations(Generic[ModelType]):
     def _process_comma_separated_list(self, column, value, filters):
         all_filters = []
         for val in value.split(","):
-            if filters.get('exact_match') is False:
-                all_filters.append(column.like('%' + val + '%'))
-            elif filters.get('exclude_match'):
+            if filters.get('exclude_match'):
                 all_filters.append(column != val)
+            elif filters.get('exact_match') is False:
+                all_filters.append(column.like('%' + val + '%'))
             else:
                 all_filters.append(or_(
                     column.like(val),
@@ -367,6 +367,26 @@ class BaseOperations(Generic[ModelType]):
         """
         session.add(updated_model)
         return updated_model
+
+    async def update_all_records(self, updated_models: list[ModelType]) -> list[ModelType]:
+        """
+        Update all records in the database.
+
+        This method takes a list of updated model instances, adds them to the session,
+        and returns the updated model instances. It is expected that the `updated_models`
+        contains the necessary changes.
+
+        Args:
+            updated_models (list[ModelType]): The list of model instances with updated data.
+
+        Returns:
+            list[ModelType]: The list of updated model instances.
+
+        Raises:
+            sqlalchemy.exc.SQLAlchemyError: If there is an issue with updating the records in the database
+        """
+        session.add_all(updated_models)
+        return updated_models
 
     async def delete_record(self, model: ModelType) -> None:
         """
