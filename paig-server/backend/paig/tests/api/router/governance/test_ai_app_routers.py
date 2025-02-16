@@ -14,7 +14,8 @@ class TestAIApplicationRouters:
             "status": 1,
             "name": "test_app1",
             "description": "test application1",
-            "vector_dbs": []
+            "vector_dbs": [],
+            "guardrails": []
         }
         self.invalid_ai_application_dict = {
             "id": 2,
@@ -193,6 +194,49 @@ class TestAIApplicationRouters:
         )
         assert response.status_code == 200
         assert response.json()['guardrailDetails'] == "{\"guardrail_id\": \"guardrail2\",  \"guardrail_version\": \"DRAFT\",\"region\": \"us-east-1\"}"
+
+        response = await client.delete(
+            f"{governance_services_base_route}/application/" + app_id
+        )
+        assert response.status_code == 204
+
+    @pytest.mark.asyncio
+    async def test_ai_application_crud_operations_with_guardrails(self, client: AsyncClient, app: FastAPI):
+        app.dependency_overrides[get_auth_user] = self.auth_user
+
+        new_ai_app_dict = self.ai_application_dict.copy()
+        new_ai_app_dict['guardrails'] = ["guardrail1"]
+
+        await client.post(
+            f"{governance_services_base_route}/application", content=json.dumps(new_ai_app_dict)
+        )
+
+        response = await client.get(
+            f"{governance_services_base_route}/application"
+        )
+        assert response.status_code == 200
+        assert response.json()['content'][0]['guardrails'] == ['guardrail1']
+        app_id = str(response.json()['content'][0]['id'])
+
+        response = await client.get(
+            f"{governance_services_base_route}/application/" + app_id
+        )
+        assert response.status_code == 200
+        assert response.json()['guardrails'] == ['guardrail1']
+
+        update_req = {
+            "status": 1,
+            "name": "test_guardrail_app1",
+            "description": "test application1 updated",
+            "applicationKey": response.json()['applicationKey'],
+            "vector_dbs": [],
+            "guardrails": ["guardrail2"]
+        }
+        response = await client.put(
+            f"{governance_services_base_route}/application/" + app_id, content=json.dumps(update_req)
+        )
+        assert response.status_code == 200
+        assert response.json()['guardrails'] == ['guardrail2']
 
         response = await client.delete(
             f"{governance_services_base_route}/application/" + app_id
