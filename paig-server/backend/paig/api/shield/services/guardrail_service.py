@@ -156,7 +156,8 @@ async def test_aws_guardrail(tenant_id: str, transformed_response: dict, message
     aws_guardrail_scanner_instance = awsGuardrailScanner.AWSBedrockGuardrailScanner(guardrail_id=aws_guardrail_id,
                                                                                       guardrail_version=aws_guardrail_version,
                                                                                       region=aws_guardrail_region,
-                                                                                      connection_details=aws_guardrail_connection_details)
+                                                                                      connection_details=aws_guardrail_connection_details,
+                                                                                      scan_for_req_type="prompt")
     scanner_result = aws_guardrail_scanner_instance.scan(message)
     if scanner_result.get("actions"):
         policies_identified = []
