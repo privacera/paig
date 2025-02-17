@@ -64,6 +64,14 @@ class PAIGShield:
                 logger.error(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
                 sys.exit(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
             return
+        elif 'PAIG_API_KEY' in os.environ:
+            try:
+                ai_app = paig_shield_client.setup_app(application_config_api_key=os.environ['PAIG_API_KEY'])
+                self.paig_config_map[ai_application_name] = ai_app
+            except paig_client.exception.AccessControlException as err:
+                logger.error(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
+                sys.exit(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
+            return
 
         logger.info("PAIG_API_KEY is not provided. Trying to setup PAIG Shield using configuration file.")
         self.paig_shield_setup_app_with_file(ai_application_name, ai_application_config.get('paig_shield_config_file'))
