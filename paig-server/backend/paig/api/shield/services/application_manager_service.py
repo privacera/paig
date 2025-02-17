@@ -88,9 +88,9 @@ class ApplicationManager(Singleton):
                     elif hasattr(scanner, attr):
                         delattr(scanner, attr)
             if getattr(scanner, 'name') == 'PAIGPIIGuardrailScanner':
-                from api.shield.services.guardrail_service import transform_guardrail_response
-                guardrails_configs = transform_guardrail_response(auth_req.context.get("guardrail_info", {}))
-                sensitive_data_configs = guardrails_configs[0].get("config_type", {}).get("SENSITIVE_DATA", {})
+                from api.shield.services.guardrail_service import process_guardrail_response
+                guardrails_configs = process_guardrail_response(auth_req.context.get("guardrail_info", {}))
+                sensitive_data_configs = guardrails_configs.get("config_type", {}).get("SENSITIVE_DATA", {})
                 setattr(scanner, 'sensitive_data_config', sensitive_data_configs)
                 setattr(scanner, 'pii_traits', auth_req.context.get('pii_traits'))
 
@@ -165,13 +165,13 @@ def _extract_guardrail_instance_infos(context: dict) -> list:
         dict: The guardrail instance information.
     """
     result = []
-    for guardrail in context.get('guardrail_info', {}).get('guardrails', []):
-        if guardrail.get('guardrail_provider') == 'AWS':
-            aws_guardrail_connection_details = guardrail.get('guardrail_connection_details', {})
-            region = aws_guardrail_connection_details.get('region')
-            aws_response = guardrail.get('guardrail_provider_response', {}).get('AWS', {}).get('response', {})
-            guardrail_id, version = aws_response.get('guardrailId'), aws_response.get('version')
-            if guardrail_id and version:
-                result.append({'guardrail_id': guardrail_id, 'guardrail_version': version,
-                               'region':region, 'connection_details': aws_guardrail_connection_details})
+    guardrail = context.get('guardrail_info', {})
+    if guardrail.get('guardrail_provider', '') == 'AWS':
+        aws_guardrail_connection_details = guardrail.get('guardrail_connection_details', {})
+        region = aws_guardrail_connection_details.get('region')
+        aws_response = guardrail.get('guardrail_provider_response', {}).get('AWS', {}).get('response', {})
+        guardrail_id, version = aws_response.get('guardrailId'), aws_response.get('version')
+        if guardrail_id and version:
+            result.append({'guardrail_id': guardrail_id, 'guardrail_version': version,
+                           'region':region, 'connection_details': aws_guardrail_connection_details})
     return result

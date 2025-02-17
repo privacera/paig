@@ -54,21 +54,11 @@ def process_guardrail_response(input_data: dict) -> dict:
 
     return result
 
-def transform_guardrail_response(input_data: dict) -> list:
-
-    result = []
-
-    # Process each guardrail
-    for guardrail in input_data["guardrails"]:
-        result.append(process_guardrail_response(guardrail))
-
-    return result
-
 async def get_guardrail_by_id(request: dict, tenant_id: str) -> dict:
     guardrail_id = request.get("guardrailId")
     from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
-    guardrail_service = GuardrailServiceFactory().get_guardrail_service_client()
-    response = await guardrail_service.get_guardrail_info(tenant_id, guardrail_id)
+    guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
+    response = await guardrail_service_client.get_guardrail_info_by_id(tenant_id, guardrail_id)
     return response
 
 async def decrypted_connection_details(tenant_id: str, connection_details: dict):

@@ -121,7 +121,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -153,7 +153,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -334,7 +334,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Call the authorize method
         auth_res = await auth_service.authorize(auth_req)
@@ -614,7 +614,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data_with_streamid()
