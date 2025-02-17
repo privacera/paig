@@ -112,11 +112,11 @@ def wait_for_process_complete(process: subprocess.Popen, verbose: bool = False):
         if status == 0:
             break
         elif status == -1:
-            break
-        else:
             error_message = process.stderr.read()
             if error_message:
                 logger.error(error_message)
+            break
+        else:
             if verbose:
                 stdout_line = process.stdout.readline()
                 if stdout_line:

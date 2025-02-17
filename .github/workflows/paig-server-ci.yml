@@ -51,6 +51,14 @@ jobs:
         pip install dist/*.whl
         cd ..
 
+    - name: Build and Install paig-authorizer-core wheel
+      run: |
+        . venv/bin/activate
+        cd paig-authorizer-core
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
     - name: Install PAIG-Server dependencies
       run: |
         . venv/bin/activate

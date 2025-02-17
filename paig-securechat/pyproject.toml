@@ -48,7 +48,9 @@ dependencies = [
         'tiktoken',
         'greenlet',
         'werkzeug',
-        'pandas'
+        'pandas',
+        'mysql-connector-python',
+        'asyncmy'
 ]
 
 [project.urls]
