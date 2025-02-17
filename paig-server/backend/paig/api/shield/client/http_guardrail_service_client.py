@@ -1,4 +1,3 @@
-import json
 import logging
 
 
@@ -51,7 +50,7 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
 
         return {"x-paig-api-key": paig_key}
 
-    async def get_guardrail_info(self, tenant_id: str, guardrail_id: int):
+    async def get_guardrail_info_by_id(self, tenant_id: str, guardrail_id: int):
         """
         Retrieve Guardrail Config details for the specified guardrail id from the Guardrail service API.
         :param guardrail_id:
@@ -68,5 +67,27 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
         )
         if response.status != 200:
             raise ShieldException(f"Failed to fetch guardrail details for guardrail_id: {guardrail_id}. "
+                                  f"Status code: {response.status}, Response: {response.text}")
+        return response.json()
+
+    async def get_guardrail_info_by_name(self, tenant_id, guardrail_name):
+        """
+        Retrieve Guardrail Config details for the specified guardrail name from the Guardrail service API.
+        :param tenant_id:
+        :param guardrail_name:
+        :return:
+        """
+        url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
+        logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-name={guardrail_name}")
+
+        response = await self.get(
+            url=url,
+            headers=self.get_headers(tenant_id),
+            params={"guardrail_name": guardrail_name,
+                    "extended": "true",
+                    "exactmatch": "true"}
+        )
+        if response.status != 200:
+            raise ShieldException(f"Failed to fetch guardrail details for guardrail_name: {guardrail_name}. "
                                   f"Status code: {response.status}, Response: {response.text}")
         return response.json()

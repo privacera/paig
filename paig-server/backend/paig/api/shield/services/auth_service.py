@@ -26,6 +26,7 @@ from api.shield.utils import json_utils
 from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
+from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
 from opentelemetry import metrics
 
@@ -63,6 +64,8 @@ class AuthService:
         self.authz_service_client = authz_service_client_factory.get_authz_service_client()
         account_service_factory: AccountServiceFactory = SingletonDepends(AccountServiceFactory)
         self.account_service_client = account_service_factory.get_account_service_client()
+        governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)
+        self.governance_service_client = governance_service_factory.get_governance_service_client()
         guardrail_service_factory: GuardrailServiceFactory = SingletonDepends(GuardrailServiceFactory)
         self.guardrail_service_client = guardrail_service_factory.get_guardrail_service_client()
         self.fluentd_logger_client = FluentdRestHttpClient()
@@ -520,13 +523,16 @@ class AuthService:
 
     async def do_guardrail_scan(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
                                     authz_service_res):
-        guardrail_info = await self.guardrail_service_client.get_guardrail_info_by_application_key(auth_req.tenant_id,
-                                                                                                       auth_req.application_key,
-                                                                                                       last_known_version=0)
+        guardrail_name = await self.governance_service_client.get_application_guardrail_name(auth_req.tenant_id, auth_req.application_key)
+        if not guardrail_name:
+            logger.debug("No guardrail info association for the application. Hence, skipping guardrail scan.")
+            return True, 0
+
+        guardrail_info = await self.guardrail_service_client.get_guardrail_info_by_name(auth_req.tenant_id, guardrail_name)
         non_authz_scan_timings_per_message = 0
         is_allowed = True
         if guardrail_info:
-            await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrails", [])[0].get("guardrail_connection_details", {}))
+            await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrail_connection_details", {}))
             auth_req.context.update({"guardrail_info": guardrail_info})
             auth_req.context.update({"pii_traits": all_result_traits})
             masked_traits = {}
