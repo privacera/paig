@@ -196,5 +196,5 @@ You can generate API token using script _web-server/src/paig_securechat/standalo
    Enter expiry in minutes : 30
    Encoded Token: <generated token>
    Decoded Token: <decoded token>
-    ```
-   [Standalone API token generation script](web-server/src/paig_securechat/standalone_generate_api_token.py_)
+   ```
+   [Standalone API token generation script](web-server/src/paig_securechat/standalone_generate_api_token.py)
