@@ -7,7 +7,7 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 import FormLabel from '@material-ui/core/FormLabel';
 
 import UiState from 'data/ui_state';
-import VAIApplicationForm, {ai_application_form_def/* , application_guardrail_form_def */} from 'components/applications/ai_applications/v_ai_application_form';
+import VAIApplicationForm, {ai_application_form_def} from 'components/applications/ai_applications/v_ai_application_form';
 import {configProperties} from 'utils/config_properties';
 import {DEPLOYMENT_TYPE} from 'utils/globals';
 import f from 'common-ui/utils/f';
@@ -30,7 +30,6 @@ class CAIApplicationForm extends Component {
         const application = props.application || {};
 
         this.form = createFSForm(ai_application_form_def);
-        //this.guardrailForm = createFSForm(application_guardrail_form_def);
 
         if (application.id) {
             this.handleFormRefresh(application);
@@ -41,11 +40,6 @@ class CAIApplicationForm extends Component {
     }
     handleFormRefresh(application) {
         this.form.refresh(application);
-//         if (application.guardrailDetails) {
-//             this.guardrailForm.refresh(Utils.parseJSON(application.guardrailDetails));
-//         } else {
-//             this.guardrailForm.clearForm();
-//         }
     }
     handleCancelEdit = () => {
         this._vState.editMode = false;
@@ -54,25 +48,21 @@ class CAIApplicationForm extends Component {
 
     handleCreate = async () => {
         let valid = await this.form.validate();
-        //let guardrailDetailsValid = await this.guardrailForm.validate();
-        if (!this.form.valid /* || !this.guardrailForm.valid */) {
+        if (!this.form.valid) {
             return;
         }
         let data = this.form.toJSON();
         delete data.id;
-
-//         let guardrailDetails = this.guardrailForm.toJSON();
-//         if (guardrailDetails.guardrail_enable) {
-//             data.guardrailDetails = JSON.stringify(guardrailDetails);
-//         } else {
-//             data.guardrailDetails = null;
-//         }
 
         // TODO remove this from body
         data.tenantId = UiState.getTenantId();
 
         if (typeof data.vectorDBs === 'string') {
             data.vectorDBs = data.vectorDBs.split(',').filter(db => db);
+        }
+
+        if (typeof data.guardrails === 'string') {
+            data.guardrails = data.guardrails.split(',').filter(g => g);
         }
 
         try {
@@ -88,20 +78,17 @@ class CAIApplicationForm extends Component {
     }
     handleUpdate = async () => {
         let valid = await this.form.validate();
-        //let guardrailDetailsValid = await this.guardrailForm.validate();
-        if (!this.form.valid /* || !this.guardrailForm.valid */) {
+        if (!this.form.valid) {
             return;
         }
         let data = this.form.toJSON();
-//         let guardrailDetails = this.guardrailForm.toJSON();
-//         if (guardrailDetails.guardrail_enable) {
-//             data.guardrailDetails = JSON.stringify(guardrailDetails);
-//         } else {
-//             data.guardrailDetails = null;
-//         }
 
         if (typeof data.vectorDBs === 'string') {
             data.vectorDBs = data.vectorDBs.split(',').filter(db => db);
+        }
+
+        if (typeof data.guardrails === 'string') {
+            data.guardrails = data.guardrails.split(',').filter(g => g);
         }
 
         let {application} = this.props;
@@ -197,7 +184,6 @@ class CAIApplicationForm extends Component {
                         </Grid>
                         <VAIApplicationForm
                             form={this.form}
-//                             guardrailForm={this.guardrailForm}
                             editMode={this._vState.editMode}
                         />
                     </Grid>

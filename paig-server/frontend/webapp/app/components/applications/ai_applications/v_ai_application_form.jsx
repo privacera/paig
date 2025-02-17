@@ -10,7 +10,7 @@ import {FormGroupInput, FormGroupSwitch, FormGroupSelect2} from 'common-ui/compo
 import {STATUS} from 'common-ui/utils/globals';
 import {DEPLOYMENT_TYPE} from 'utils/globals';
 import {configProperties} from 'utils/config_properties';
-import {vectorDBLookUps} from 'components/policies/field_lookups';
+import {vectorDBLookUps, guardrailLookUps} from 'components/policies/field_lookups';
 
 const VectorDBAssociate = ({form, editMode}) => {
     if (!configProperties.isVectorDBEnable()) {
@@ -51,83 +51,41 @@ const VectorDBAssociate = ({form, editMode}) => {
     )
 }
 
-/* const VGuardrailForm = observer(({id, form, editMode}) => {
-    const {guardrail_enable, guardrail_id, guardrail_version, region} = form.fields;
+const VGuardrailAssociation = ({form, editMode}) => {
+    const {id, guardrails} = form.fields;
 
-    if (!id || editMode) {
+    if (!id.value || editMode) {
         return (
-            <Fragment>
-                <Grid item xs={12}>
-                    <FormLabel>Enable Guardrail</FormLabel>
-                    <FormGroupSwitch
-                        showLabel={false}
-                        fieldObj={guardrail_enable}
-                        inputColAttr={{ xs: 12}}
-                        data-testid="guardrail-enable"
-                    />
-                </Grid>
-                {
-                    guardrail_enable.value &&
-                    <Fragment>
-                        <FormGroupInput
-                            required={true}
-                            fieldObj={guardrail_id}
-                            label="Guardrail ID"
-                            variant="standard"
-                            data-testid="guardrail-id"
-                        />
-                        <FormGroupInput
-                            required={true}
-                            fieldObj={guardrail_version}
-                            label="Guardrail Version"
-                            variant="standard"
-                            data-testid="guardrail-version"
-                        />
-                        <FormGroupInput
-                            required={true}
-                            fieldObj={region}
-                            label="Guardrail Region"
-                            variant="standard"
-                            data-testid="guardrail-region"
-                        />
-                    </Fragment>
-                }
-            </Fragment>
-        )
-    } else {
-        return (
-            <Fragment>
-                <Grid item xs={12}>
-                    <FormLabel>Enable Guardrail</FormLabel>
-                    <FormGroupSwitch
-                        showLabel={false}
-                        disabled={true}
-                        fieldObj={guardrail_enable}
-                        inputColAttr={{ xs: 12}}
-                        data-testid="guardrail-enable"
-                    />
-                </Grid>
-                {
-                    guardrail_enable.value &&
-                    <Fragment>
-                        <Grid item xs={12}>
-                            <FormLabel>Guardrail ID</FormLabel>
-                            <div data-testid="guardrail-id" style={{ marginBottom: '8px'}}>{guardrail_id.value}</div>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <FormLabel>Guardrail Version</FormLabel>
-                            <div data-testid="guardrail-version" style={{ marginBottom: '8px'}}>{guardrail_version.value}</div>
-                        </Grid>
-                        <Grid item xs={12}>
-                            <FormLabel>Guardrail Region</FormLabel>
-                            <div data-testid="region" style={{ marginBottom: '8px'}}>{region.value}</div>
-                        </Grid>
-                    </Fragment>
-                }
-            </Fragment>
+            <FormGroupSelect2
+                inputColAttr={{
+                    xs: 12
+                }}
+                label="Associated Guardrail"
+                fieldObj={guardrails}
+                labelKey="label"
+                valueKey="value"
+                placeholder="Select Guardrail"
+                variant="standard"
+                triggerOnLoad={true}
+                multiple={false}
+                openText="Options"
+                data-testid="associate-guardrail"
+                loadOptions={(searchString, callback) => {
+                    guardrailLookUps(searchString, options => callback(options));
+                }}
+            />
         )
     }
-}) */
+
+    return (
+        <Grid item xs={12}>
+            <FormLabel>Associated Guardrail</FormLabel>
+            <div data-testid="guardrail-association" style={{ marginBottom: '8px'}}>
+                {guardrails.value?.join?.(', ') || 'None'}
+            </div>
+        </Grid>
+    )
+}
 
 const VAIApplicationForm = observer(({form, /* guardrailForm, */ editMode}) => {
     const { id, name, applicationKey, description, status, deploymentType, vectorDBs, guardrails } = form.fields;
@@ -216,18 +174,10 @@ const VAIApplicationForm = observer(({form, /* guardrailForm, */ editMode}) => {
                 />
             </Grid>
 
-            <Grid item xs={12}>
-                <FormLabel>Associated Guardrail</FormLabel>
-                <div data-testid="guardrail-assiciation" style={{ marginBottom: '8px'}}>
-                    {guardrails?.value?.join(', ') || 'None'}
-                </div>
-            </Grid>
-
-            {/* <VGuardrailForm
-                id={id.value}
-                form={guardrailForm}
+            <VGuardrailAssociation
+                form={form}
                 editMode={editMode}
-            /> */}
+            />
 
             <VectorDBAssociate
                 form={form}
@@ -316,53 +266,9 @@ const ai_application_form_def = {
     guardrails: {
         defaultValue: []
     }
-    /* ,
-    guardrailDetails: {
-        defaultValue: []
-    } */
 }
 
-/* const application_guardrail_form_def = {
-    guardrail_enable: {
-        defaultValue: false
-    },
-    guardrail_id: {
-        validators: {
-            errorMessage: 'Required!',
-            fn: (field, fields) => {
-                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
-                    return false;
-                }
-                return true;
-            }
-        }
-    },
-    guardrail_version: {
-        validators: {
-            errorMessage: 'Required!',
-            fn: (field, fields) => {
-                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
-                    return false;
-                }
-                return true;
-            }
-        }
-    },
-    region: {
-        validators: {
-            errorMessage: 'Required!',
-            fn: (field, fields) => {
-                if (fields.guardrail_enable.value && !(field.value || '').trim().length) {
-                    return false;
-                }
-                return true;
-            }
-        }
-    }
-} */
-
 export {
-    ai_application_form_def,
-//     application_guardrail_form_def
+    ai_application_form_def
 }
 export default VAIApplicationForm;
