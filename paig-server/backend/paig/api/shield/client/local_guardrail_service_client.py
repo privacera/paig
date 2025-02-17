@@ -41,7 +41,7 @@ class LocalGuardrailServiceClient(IGuardrailServiceClient):
         """
         from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter
         guardrail_filter = GuardrailFilter(name=guardrail_name[0], extended=True)
-        result: Pageable = await self.guardrail_service.list(filter=guardrail_filter, page_number=0, size=10, sort=["name","asc"])
+        result: Pageable = await self.guardrail_service.list(filter=guardrail_filter)
         if not result.empty:
             guardrail_info: GuardrailView = result.content[0]
             return guardrail_info.model_dump(mode="json", exclude_none=True, exclude_unset=True)
