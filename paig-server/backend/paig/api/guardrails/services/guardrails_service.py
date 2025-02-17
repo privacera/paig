@@ -229,7 +229,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         """
         return self.repository
 
-    async def list(self, filter: GuardrailFilter = None, page_number: int = None, size: int = None, sort: List[str] = None) -> Pageable:
+    async def list(self, filter: GuardrailFilter = GuardrailFilter(), page_number: int = 0, size: int = 10, sort: List[str] = None) -> Pageable:
         """
         Retrieve a paginated list of Guardrails.
 
@@ -242,6 +242,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             Pageable: A paginated response containing Guardrail view objects and metadata.
         """
+        if sort is None:
+            sort = []
         result = await self.list_records(
             filter=filter,
             page_number=page_number,
