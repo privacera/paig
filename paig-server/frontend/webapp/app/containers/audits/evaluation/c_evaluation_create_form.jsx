@@ -237,7 +237,7 @@ class CEvaluationForm extends Component {
                     <Button
                       disabled={activeStep === 0 || this._vState.saving}
                       onClick={this.handleBack}
-                      className="m-r-sm"
+                      color="primary"
                     >
                       Back
                     </Button>
@@ -250,7 +250,7 @@ class CEvaluationForm extends Component {
                       data-testid="save-config-btn"
                       data-track-id="save-config-btn"
                       disabled={this._vState.saving}
-                      className="m-r-sm"
+                      className="m-l-sm"
                     >
                       Save Configuration
                     </Button>
@@ -258,6 +258,7 @@ class CEvaluationForm extends Component {
                   <Button
                     variant="contained"
                     color="primary"
+                    className="m-l-sm"
                     onClick={activeStep === steps.length - 1 ? this.openRunReportModal : this.handleNext}
                     data-testid="create-app-btn"
                     data-track-id="create-app-btn"

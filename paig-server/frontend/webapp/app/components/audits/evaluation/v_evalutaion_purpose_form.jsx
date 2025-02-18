@@ -38,26 +38,37 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
       <Grid item xs={12}>
         Example Purpose: As a finance team member, consider a comprehensive evaluation of the financial model to assess its accuracy, identify potential biases, and ensure compliance with relevant regulations.
       </Grid>
-      <Typography className="m-t-lg m-b-lg" >Templates</Typography>
+      <Typography className="m-t-lg m-b-md" >Templates</Typography>
       <Grid container spacing={2}>
         {f.models(data).map((template, index) => (
           <Grid item xs={12} sm={6} key={index}>
             <Card onClick={() => handleTemplateSelect(template.description)} className="pointer" style={{ minHeight: '140px' }}>
-              <CardContent>
+              <CardContent style={{ position: 'relative' }}>
                 <Typography
                   variant="subtitle1"
-                  sx={{
+                  style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                   }}
+                  className="m-b-sm"
                 >
                   <span>
                     {template.title}
-                    <CallMadeIcon fontSize="small" color="primary" />
+                    <CallMadeIcon className="m-l-xs" fontSize="small" color="primary" />
                   </span>
                   { template.chip && 
-                    <Chip label={template.chip} sx={{ bgcolor: "#EAF2FF", color: "#000", borderRadius: "16px" }} />
+                    <Chip 
+                      label={template.chip} 
+                      style={{ 
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        bgcolor: "#EAF2FF", 
+                        color: "#000", 
+                        borderRadius: "16px" 
+                      }} 
+                    />
                   }
                 </Typography>
                 <Typography variant="body2">{template.description}</Typography>

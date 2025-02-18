@@ -119,22 +119,27 @@ class CEvaluationAppsList extends Component {
 
     handleDelete = (model) => {
         f._confirm.show({
-          title: `Delete Application Config`,
-          children: <div>Are you sure you want to delete application configs ?</div>,
-          btnCancelText: 'Cancel',
-          btnOkText: 'Delete',
-          btnOkColor: 'secondary',
-          btnOkVariant: 'text'
+            title: `Delete Application Config`,
+            children: <div>Are you sure you want to delete application configs?</div>,
+            btnCancelText: 'Cancel',
+            btnOkText: 'Delete',
+            btnOkColor: 'secondary',
+            btnOkVariant: 'text'
         })
         .then((confirm) => {
-          this.props.evaluationStore.deleteAppTarget(model.target_id,{
+            this.props.evaluationStore.deleteAppTarget(model.target_id,{
             models: this.cEvalAppsList
-          })
-          .then(() => {
-              confirm.hide();
-              f.notifySuccess('Report Deleted');
-              this.fetchEvaluationAppsList();
-          }, f.handleError(null, null, {confirm}));
+            })
+            .then(() => {
+                confirm.hide();
+                f.notifySuccess('Report Deleted');
+                // Update the form fields to remove the deleted ID
+                const updatedApplicationIds = Array.isArray(this.props.form.fields.application_ids.value)
+                    ? this.props.form.fields.application_ids.value.filter((id) => id !== model.target_id)
+                    : [];
+                this.props.form.fields.application_ids.value = updatedApplicationIds;
+                this.fetchEvaluationAppsList();
+            }, f.handleError(null, null, {confirm}));
         }, () => {});
     }
 
@@ -163,7 +168,6 @@ class CEvaluationAppsList extends Component {
         
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
-            console.log(response, 'DATA')
             const { config, name, url, id } = response;
             this.form.refresh({
                 ...response,
@@ -198,6 +202,7 @@ class CEvaluationAppsList extends Component {
             })
         }
     }
+
     resolveForm = async () => {
         await this.form.validate();
         if (!this.form.valid) {
@@ -205,6 +210,10 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
+
+        if (!data.id) {
+            data.ai_application_id = null;
+        }
         // Transform headers array into an object
         if (Array.isArray(data.headers)) {
             data.headers = data.headers.reduce((acc, header) => {
@@ -238,6 +247,7 @@ class CEvaluationAppsList extends Component {
           }
         }
     }
+
     render() {
         const {_vState } = this;
         

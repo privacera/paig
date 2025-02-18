@@ -12,42 +12,36 @@ class VEvaluationAppsTable extends Component{
   constructor(props) {
     super(props);
     this.state = {
-      selectedRows: [],
       showAlert: false
     };
   }
 
   handleSelectRow = (id, target_id) => {
     this.props.parent_vState.errorMsg = '';
-    this.setState((prevState) => {
-      let selectedRows = [...prevState.selectedRows];
-      let selectedTargetIds = this.props.form.fields.application_ids.value;
-      if (selectedTargetIds === '') {
-        selectedTargetIds = [];
-      }
-      if (selectedRows.includes(id)) {
-        selectedRows = selectedRows.filter(rowId => rowId !== id);
-        selectedTargetIds = selectedTargetIds.filter(tid => tid !== target_id);
-      } else if (selectedRows.length < 2) {
-        selectedRows.push(id);
-        selectedTargetIds.push(target_id);
-      } else {
-        return { showAlert: true };
-      }
+    const selectedTargetIds = Array.isArray(this.props.form.fields.application_ids.value)
+      ? [...this.props.form.fields.application_ids.value]
+      : [];
 
+    if (selectedTargetIds.includes(target_id)) {
+      // Remove the target_id if it already exists
+      const updatedTargetIds = selectedTargetIds.filter(tid => tid !== target_id);
+      this.props.form.fields.application_ids.value = updatedTargetIds;
+    } else if (selectedTargetIds.length < 2) {
+      // Add the new target_id if the limit is not exceeded
+      selectedTargetIds.push(target_id);
       this.props.form.fields.application_ids.value = selectedTargetIds;
-      
-      if (this.props.onSelectionChange) {
-        this.props.onSelectionChange(selectedRows);
-      }
-      return { selectedRows, showAlert: false };
-    });
-  }
-  
-  handleCloseAlert = () => {
-    this.setState({ showAlert: false });
-  }
+    } else {
+      this.setState({ showAlert: true });
+      return;
+    }
 
+    if (this.props.onSelectionChange) {
+      this.props.onSelectionChange(selectedTargetIds);
+    }
+
+    this.setState({ showAlert: false });
+  };
+  
   getHeaders = () => {
     let headers = ([
       <TableCell key="1">Select</TableCell>,
@@ -61,13 +55,15 @@ class VEvaluationAppsTable extends Component{
 
   getRowData = (model) => {
     const {handleDelete, handleEdit, permission} = this.props;
-    
+    const selectedTargetIds = Array.isArray(this.props.form.fields.application_ids.value)
+      ? this.props.form.fields.application_ids.value
+      : [];
     let rows = [
       <TableCell column="select" key="1" className='p-xxs'>
         <Checkbox 
           color='primary'
           data-test="select-all"
-          checked={this.state.selectedRows.includes(model.id)}
+          checked={selectedTargetIds.includes(model.target_id)}
           onChange={() => this.handleSelectRow(model.id, model.target_id)}
           disabled={!model.target_id}
         />
@@ -88,7 +84,6 @@ class VEvaluationAppsTable extends Component{
     ]
     return rows;
   }
-  handleContextMenuSelection = () => {}
 
   render() {
     const { data, pageChange, parent_vState} = this.props;
@@ -121,7 +116,7 @@ class VEvaluationAppsTable extends Component{
         />
       </>
     )
-}
+  }
 }
 
 export default VEvaluationAppsTable;

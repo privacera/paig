@@ -86,12 +86,12 @@ const VEvalTargetForm = ({form}) => {
                 <Grid item xs={12} sm={6}>
                     <FormGroupInput
                         disabled={ai_application_id.value}
-                            required={true}
-                            label={id ? "Name" : "Name (Auto Generated, Editable)"}
-                            placeholder="Enter configuration name"
-                            fieldObj={name}
-                            inputProps={{ 'data-testid': 'name-input' }}
-                        />
+                        required={true}
+                        label={id ? "Name" : "Name (Auto Generated, Editable)"}
+                        placeholder="Enter configuration name"
+                        fieldObj={name}
+                        inputProps={{ 'data-testid': 'name-input' }}
+                    />
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
