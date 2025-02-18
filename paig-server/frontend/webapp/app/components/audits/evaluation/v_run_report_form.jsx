@@ -3,20 +3,21 @@ import { observer } from 'mobx-react';
 
 import { FormHorizontal, FormGroupInput } from 'common-ui/components/form_fields';
 
-const VRunReportForm = observer(({form}) => {
-
+const VRunReportForm = observer(({form, mode}) => {
   const { name, report_name } = form.fields;
 
   useEffect(() => {
     const generateReportName = () => {
       if (name.value) {
         const now = new Date();
-        const formattedDate = now.toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+        const formattedDate = now.toLocaleDateString('en-GB').split('/').reverse().join(''); // Format: DDMMYYYY
         const formattedTime = now.toLocaleTimeString('en-GB', {
           hour: '2-digit',
           minute: '2-digit',
-        }).replace(' ', ''); // Format: HH:MM(am/pm)
-        return `${name.value}_report_${formattedDate}${formattedTime}`;
+          hour12: false
+        }).replace(':', ''); // Format: HHmm
+        const reportType = mode === "rerun_report" ? "rerun_report" : "report";
+        return `${name.value}_${reportType}_${formattedDate}${formattedTime}`;
       }
       return '';
     };

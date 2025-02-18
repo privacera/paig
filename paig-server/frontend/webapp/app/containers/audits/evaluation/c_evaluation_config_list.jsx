@@ -258,7 +258,7 @@ class CEvaluationConfigList extends Component {
             handleRun={this.handleRun}
           />
           <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>
-            <VRunReportForm form={this.evalForm} />
+            <VRunReportForm form={this.evalForm} mode="run_report"/>
           </FSModal>
         </>
       </BaseContainer>

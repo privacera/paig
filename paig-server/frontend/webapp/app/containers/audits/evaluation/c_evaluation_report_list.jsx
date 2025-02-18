@@ -190,6 +190,7 @@ class CEvaluationReportsList extends Component {
     this.evalForm.clearForm();
     this.evalForm.refresh(model);
     this.evalForm.model = model;
+    this.evalForm.fields.name.value = model.config_name; // Set form.name with model.config_name
     if (this.runReportModalRef.current) {
       this.runReportModalRef.current.show({
         title: 'Rerun Report Evaluation',
@@ -282,7 +283,7 @@ class CEvaluationReportsList extends Component {
           </div>
         )}
         <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>
-          <VRunReportForm form={this.evalForm} />
+          <VRunReportForm form={this.evalForm} mode="rerun_report"/>
         </FSModal>
       </BaseContainer>
     );

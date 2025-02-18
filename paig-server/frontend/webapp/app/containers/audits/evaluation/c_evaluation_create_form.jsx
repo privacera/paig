@@ -277,7 +277,7 @@ class CEvaluationForm extends Component {
         </Grid>
       </Paper>
       <FSModal ref={this.runReportModalRef} dataResolve={this.handleCreate}>
-        <VRunReportForm form={this.evalForm}/>
+        <VRunReportForm form={this.evalForm} mode="create_report"/>
       </FSModal>
 	  </BaseContainer>
 	)}
