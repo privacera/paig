@@ -84,9 +84,6 @@ class AuthService:
             unit="1"
         )
 
-        self.ignore_access_control_application_keys = config_utils.get_property_value_list("ignore_access_control_application_keys", [])
-        logger.info("Found ignore_access_control_application_keys = " + str(self.ignore_access_control_application_keys))
-
         logger.info(f"AuthService Initialized in {self._shield_run_mode} mode!")
 
     async def authorize(self, auth_req: AuthorizeRequest):
