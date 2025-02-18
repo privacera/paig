@@ -37,10 +37,10 @@ class PAIGShield:
         """Handles PAIG Shield setup using a configuration file."""
         if not paig_shield_config_file:
             if app_count > 1:
-                logger.error(f"AI Applications {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' configuration file")
-                sys.exit(f"AI Applications {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' configuration file")
+                logger.error(f"AI Application {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' in configuration file")
+                sys.exit(f"AI Application {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' configuration file")
             if 'PRIVACERA_SHIELD_CONF_FILE' in os.environ:
-                logger.info(f"AI Applications {ai_application_name} using the 'PRIVACERA_SHIELD_CONF_FILE' environment variable")
+                logger.info(f"AI Application {ai_application_name} setup using 'PRIVACERA_SHIELD_CONF_FILE' environment variable")
                 return
             logger.error("Missing shield config file / paig api key.")
             sys.exit("Missing shield config file / paig api key.")
@@ -72,7 +72,7 @@ class PAIGShield:
             return
 
         if app_count == 1 and 'PAIG_API_KEY' in os.environ:
-            logger.info(f"AI Applications {ai_application_name} using the 'PAIG_API_KEY' environment variable")
+            logger.info(f"AI Application {ai_application_name} setup using 'PAIG_API_KEY' environment variable")
             return
 
         logger.info("'paig_api_key' is not provided in config. Trying to setup PAIG Shield using configuration file.")
