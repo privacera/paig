@@ -18,7 +18,7 @@ config = load_config_file()
 
 
 from core.db_session.transactional import Transactional, Propagation
-from core.db_session.standalone_session import update_table_fields
+from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
 
 targets = {}
 
@@ -43,7 +43,62 @@ def prepare_report_format(result, update_eval_params):
     update_eval_params['failed'] = ', '.join(total_failed)
     return update_eval_params
 
-def threaded_run_evaluation(eval_id, eval_config, target_hosts, application_names):
+def generate_common_fields(eval_run_id, eval_id):
+    return {
+        "eval_run_id": eval_run_id,
+        "eval_id": eval_id,
+        "create_time": current_utc_time()
+    }
+
+async def insert_eval_results(eval_id, eval_run_id, report):
+    print(report['result'])
+    results = report["result"]
+    if 'results' not in results:
+        logger.info(f'No result is generated for eval_id: {eval_id}')
+        return
+    results = results["results"]
+    results = results["results"]
+    prompt_records = list()
+    response_records = list()
+    # Set to keep track of processed prompt testIdx values
+    processed_testIdxs = set()
+
+    # Dictionary to store generated IDs for each prompt
+    prompt_id_map = {}
+
+    for res in results:
+        test_idx = res['testIdx']
+        # Generate the common fields
+        common_fields = generate_common_fields(eval_run_id, eval_id)
+        # If the testIdx has not been processed before, insert the prompt and generate a new ID
+        if test_idx not in processed_testIdxs:
+            new_prompt_id = str(uuid.uuid4())  # Generate a new unique ID for the prompt
+            prompt = {
+                **common_fields,
+                "prompt_uuid": new_prompt_id,
+                "prompt": res['prompt']['raw']
+            }
+            prompt_records.append(prompt)
+            prompt_id_map[test_idx] = new_prompt_id  # Map testIdx to new prompt ID
+            processed_testIdxs.add(test_idx)
+            # Insert the response and link it to the prompt using the generated ID
+        response = {
+            **common_fields,
+            "eval_result_prompt_uuid": prompt_id_map[test_idx],
+            "application_name": res['provider']['label'],
+            "response": res['response']['output'],
+            "failure_reason": res['failureReason'] if res['failureReason'] else None,
+            "category_score": json.dumps(res['namedScores'])
+        }  # Add prompt_id in response
+        response_records.append(response)
+    # Insert the prompt and response records
+    await bulk_insert_into_table('eval_result_prompt', prompt_records)
+    await bulk_insert_into_table('eval_result_response', response_records)
+    return
+
+
+
+def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, application_names):
     async def async_operations():
         # Update config in database
         update_eval_params = dict()
@@ -81,9 +136,9 @@ def threaded_run_evaluation(eval_id, eval_config, target_hosts, application_name
             finally:
                 await update_table_fields('eval_run', update_eval_params, 'eval_id', eval_id)
         else:
-            generated_prompts_config = eval_config.generated_config
+            generated_prompts_config = json.loads(eval_config.generated_config)
             logger.info('Prompts already generated')
-        if update_eval_params['status'] == 'FAILED':
+        if 'status' in update_eval_params and update_eval_params['status'] == 'FAILED':
             return
         logger.info('Proceeding to evaluate')
         # Append static custom prompts
@@ -105,14 +160,17 @@ def threaded_run_evaluation(eval_id, eval_config, target_hosts, application_name
         )
         logger.info('Evaluation completed with status ' + str(report['status']))
         try:
+            logger.info(str(report['result']))
             if report['status'] == 'success':
                 update_eval_params = prepare_report_format(report['result'], update_eval_params)
             else:
                 update_eval_params['status'] = 'FAILED'
                 logger.error('Evaluation failed:- ' + str(report['message']))
             await update_table_fields('eval_run', update_eval_params, 'eval_id', eval_id)
+            await insert_eval_results(eval_id, eval_run_id, report)
         except Exception as err:
             logger.error('Error while updating DB: ' + str(err))
+            logger.error(str(traceback.print_exc()))
         return report
 
     # Run the async operations in a new event loop
@@ -168,10 +226,12 @@ class EvaluationService:
             "name": report_name
         }
         eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
+        eval_run_id = eval_model.id
         asyncio.create_task(
             asyncio.to_thread(
                 threaded_run_evaluation,
                 eval_id,
+                eval_run_id,
                 eval_config,
                 target_hosts,
                 application_names

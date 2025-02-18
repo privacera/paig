@@ -1,10 +1,14 @@
 # This module provides a standalone async session for database operations
+import logging
+from typing import List, Dict
+
 from core import config
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import MetaData, select, func, update
+from sqlalchemy import MetaData, select, func, update, insert
 from api.user.database.db_models.user_model import Tenant
 
+logger = logging.getLogger(__name__)
 # Load config
 cnf = config.load_config_file()
 database_url = cnf["database"]["url"]
@@ -112,3 +116,39 @@ async def update_table_fields(
     except Exception as e:
         return f"Error: {e}"
 
+
+async def bulk_insert_into_table(table_name: str, records: List[Dict[str, any]]):
+    """
+    Bulk inserts records into a table in batches using a single AsyncSession.
+
+    :param table_name: Name of the table
+    :param records: List of dictionaries containing field names and values
+    :return: Number of records inserted or error message
+    """
+    BATCH_SIZE = 400
+    if not records:
+        return "No records provided for insertion"
+
+    try:
+        async with engine.connect() as conn:  # Use engine connection for reflection
+            metadata = MetaData()
+            await conn.run_sync(metadata.reflect)
+
+            if table_name not in metadata.tables:
+                return f"Error: Table '{table_name}' does not exist"
+
+            table = metadata.tables[table_name]
+
+            total_inserted = 0
+
+            async with async_session() as session:  # Single session for everything
+                async with session.begin():  # Use session.begin() for transaction safety
+                    for i in range(0, len(records), BATCH_SIZE):
+                        batch = records[i : i + BATCH_SIZE]
+                        await session.execute(insert(table), batch)
+                        total_inserted += len(batch)
+
+            return f"{total_inserted} rows inserted successfully"
+
+    except Exception as e:
+        logger.error(f"Error: {e}")

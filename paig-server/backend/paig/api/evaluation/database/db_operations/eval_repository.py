@@ -27,6 +27,7 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         model = self.model_class()
         model.set_attribute(evaluation_params)
         session.add(model)
+        await session.flush()
         return model
 
     async def get_all_evaluation(self, **args):
