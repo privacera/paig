@@ -8,6 +8,9 @@ openai:
     model: "gpt-4o"
     temperature: 0.1
 
+paig:
+  key_file: "custom-configs/paig.key"
+
 bedrock:
   embedding_model: "amazon.titan-embed-text-v1"
   model: "amazon.titan-tg1-large"
