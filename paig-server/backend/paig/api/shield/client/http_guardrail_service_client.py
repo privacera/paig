@@ -6,6 +6,7 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.guardrail_service_interface import IGuardrailServiceClient
+from api.shield.view.guardrail_view import GuardrailView
 
 logger = logging.getLogger(__name__)
 
@@ -60,15 +61,19 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
         url = config_utils.get_property_value("guardrail_service_get_guardrail_configs_endpoint")
         logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-id={guardrail_id}")
 
-        response = await self.get(
-            url=url+"/"+str(guardrail_id),
-            headers=self.get_headers(tenant_id),
-            params={"extended": "true"}
-        )
-        if response.status != 200:
-            raise ShieldException(f"Failed to fetch guardrail details for guardrail_id: {guardrail_id}. "
-                                  f"Status code: {response.status}, Response: {response.text}")
-        return response.json()
+        try:
+            response = await self.get(
+                url=url+"/"+str(guardrail_id),
+                headers=self.get_headers(tenant_id),
+                params={"extended": "true"}
+            )
+            if response.status_code != 200:
+                raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_id: {guardrail_id}. "
+                                      f"Status code: {response.status}, Response: {response.text}")
+            return response.json()
+        except Exception as ex:
+            logger.error(f"Request get_guardrail_info_by_id({tenant_id}, {guardrail_id}) failed with error: {ex}")
+            raise ShieldException(ex.args[0])
 
     async def get_guardrail_info_by_name(self, tenant_id, guardrail_name):
         """
@@ -80,14 +85,20 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
         url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
         logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-name={guardrail_name}")
 
-        response = await self.get(
-            url=url,
-            headers=self.get_headers(tenant_id),
-            params={"guardrail_name": guardrail_name,
-                    "extended": "true",
-                    "exactmatch": "true"}
-        )
-        if response.status != 200:
-            raise ShieldException(f"Failed to fetch guardrail details for guardrail_name: {guardrail_name}. "
-                                  f"Status code: {response.status}, Response: {response.text}")
-        return response.json()
+        try:
+            response = await self.get(
+                url=url,
+                headers=self.get_headers(tenant_id),
+                params={"name": guardrail_name[0],
+                        "extended": "true",
+                        "exactMatch": "true"}
+            )
+            if response.status_code != 200:
+                raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_name: {guardrail_name}. "
+                                      f"Status code: {response.status}, Response: {response.text}")
+            response_content = response.json().get("content", {})
+            guardrail_info : GuardrailView = GuardrailView(**response_content[0])
+            return guardrail_info.dict(exclude_none=True, exclude_unset=True)
+        except Exception as ex:
+            logger.error(f"Request get_guardrail_info_by_name({tenant_id}, {guardrail_name}) failed with error: {ex}")
+            raise ShieldException(ex.args[0])

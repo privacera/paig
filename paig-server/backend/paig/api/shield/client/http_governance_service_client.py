@@ -1,4 +1,3 @@
-import json
 import logging
 
 
@@ -79,9 +78,9 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
             logger.debug(f"response received: {response.__str__()}")
 
             if response.status_code == 200:
-                response_content = response.json().get("content")[0]
-                guardrail_details = response_content.get("guardrailDetails", "{}") if response_content else "{}"
-                return json.loads(guardrail_details)
+                response_content = response.json().get("content", {})
+                guardrail_names = response_content[0].get("guardrails", [])
+                return guardrail_names
             else:
                 error_message = (f"Request get_application_guardrail_name({tenant_id}, {application_key}) failed "
                                  f"with status code {response.status_code}: {response.text}")
