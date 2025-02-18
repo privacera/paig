@@ -164,15 +164,13 @@ class CEvaluationAppsList extends Component {
             url: model.url || "",
             target_id: model.target_id || ""
         });
-        this.showEditModal();
-        
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
             const { config, name, url, id } = response;
             this.form.refresh({
                 ...response,
                 method: config.method,
-                headers: Object.entries(config.headers).map(([key, value]) => ({ key, value })),
+                headers: config.headers ? Object.entries(config.headers).map(([key, value]) => ({ key, value })) : [],
                 body: JSON.stringify(config.body, null, 2),
                 transformResponse: config.transformResponse,
                 url: config.url || url

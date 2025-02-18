@@ -6,10 +6,14 @@ import CheckIcon from "@material-ui/icons/Check";
 import CloseIcon from "@material-ui/icons/Close";
 import {Tooltip, IconButton, LinearProgress} from "@material-ui/core";
 
+import {Utils} from 'common-ui/utils/utils';
 import Table from 'common-ui/components/table';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import {DATE_TIME_FORMATS} from 'common-ui/utils/globals';
 import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
+
+const moment = Utils.dateUtil.momentInstance();
 
 @inject('evaluationStore')
 @observer
@@ -19,25 +23,6 @@ class VEvaluationReportTable extends Component{
     this.state = {
       expandedRows: []
     };
-  }
-    
-  formatCreateTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    
-    // Get date difference in days
-    const diffTime = now - date;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-    if (diffDays === 0) {
-      return "Today";
-    } else if (diffDays === 1) {
-      return "Yesterday";
-    } else if (diffDays <= 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toISOString().split("T")[0]; // YYYY-MM-DD format
-    }
   }
     
   getStatus = (status) => {
@@ -128,7 +113,7 @@ class VEvaluationReportTable extends Component{
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
       <TableCell key="5" className="text-center">{this.getStatus(model.status) || "--"}</TableCell>,
       <TableCell key="7">{this.getResultCell(model)}</TableCell>,
-      <TableCell key="8">{this.formatCreateTime(model.create_time)}</TableCell>,
+      <TableCell key="8">{model.create_time ? moment(model.create_time).format(DATE_TIME_FORMATS.DATE_TIME_FORMAT_SHORT) : '--'}</TableCell>,
       <TableCell key="9" column="actions">
         <ActionButtonsWithPermission
           permission={permission}

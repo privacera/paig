@@ -117,7 +117,7 @@ const VEvalTargetForm = ({form}) => {
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Endpoint Configuration</Typography>
                 </Grid>
-                <Grid item xs={12} sm={4}>  
+                <Grid item xs={12} sm={4}>
                     <FormGroupSelect2
                         required={true}
                         label={"Method"}
@@ -134,9 +134,7 @@ const VEvalTargetForm = ({form}) => {
 
                 {/* Headers Section */}
                 <Grid item xs={12}>
-                    <Typography variant="h7" gutterBottom>Headers</Typography>
-                </Grid>
-                <Grid item xs={12}>
+                <FormLabel>Headers</FormLabel>
                     {headersList.map((header, index) => (
                         <Grid container spacing={2} alignItems="center" key={index}>
                             <Grid item xs={5}>
@@ -156,7 +154,7 @@ const VEvalTargetForm = ({form}) => {
                                 />
                             </Grid>
                             <Grid item xs={2}>
-                                <IconButton onClick={() => handleRemoveHeader(index)} color="secondary">
+                                <IconButton onClick={() => handleRemoveHeader(index)} color="primary">
                                     <Delete />
                                 </IconButton>
                             </Grid>

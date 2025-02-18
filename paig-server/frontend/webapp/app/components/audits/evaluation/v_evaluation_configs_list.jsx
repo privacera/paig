@@ -4,9 +4,13 @@ import {observer, inject} from 'mobx-react';
 import {TableCell} from '@material-ui/core';
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
 
+import {Utils} from 'common-ui/utils/utils';
 import Table from 'common-ui/components/table';
+import {DATE_TIME_FORMATS} from 'common-ui/utils/globals';
 import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
+
+const moment = Utils.dateUtil.momentInstance();
 
 @inject('evaluationStore')
 @observer
@@ -19,8 +23,6 @@ class VEvaluationConfigTable extends Component{
   }
 
   getHeaders = () => {
-    const {permission, importExportUtil} = this.props;
-    
     let headers = ([
       <TableCell key="1">Name</TableCell>,
       <TableCell key="2">Applications</TableCell>,
@@ -35,25 +37,6 @@ class VEvaluationConfigTable extends Component{
     return headers;
   }
 
-  formatCreateTime = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    
-    // Get date difference in days
-    const diffTime = now - date;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-    if (diffDays === 0) {
-      return "Today";
-    } else if (diffDays === 1) {
-      return "Yesterday";
-    } else if (diffDays <= 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toISOString().split("T")[0]; // YYYY-MM-DD format
-    }
-  }
-
   getRowData = (model) => {
     const {handleDelete, handleRun, handleEdit, permission} = this.props;
     let rows = [
@@ -61,7 +44,7 @@ class VEvaluationConfigTable extends Component{
       <TableCell key="2">{model.application_names || "--"}</TableCell>,
       <TableCell key="3">{model.purpose || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
-      <TableCell key="5">{this.formatCreateTime(model.createTime) || "--"}</TableCell>,
+      <TableCell key="5">{model.createTime ? moment(model.createTime).format(DATE_TIME_FORMATS.DATE_TIME_FORMAT_SHORT) : '--'}</TableCell>,
       <TableCell key="6">{model.owner || "--"}</TableCell>,
       <TableCell key="7">{model.eval_run_count}</TableCell>,
       <TableCell key="9" column="actions">
@@ -82,7 +65,6 @@ class VEvaluationConfigTable extends Component{
     ]
     return rows;
   }
-  handleContextMenuSelection = () => {}
 
   render() {
     const { data, pageChange } = this.props;
