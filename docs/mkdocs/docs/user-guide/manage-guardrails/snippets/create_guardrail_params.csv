@@ -1,0 +1,5 @@
+Field, Mandatory, Description, Example
+Name, Yes, Name of your Guardrail. Keep it short and simple, InformationGuard
+Description, No, Describe your Guardrail in a few words, This is a safeguard for internal ChatBot of the company
+Default Guardrail, Yes(by default selected), PAIG Guardrail is for blocking or masking sensitive information , true
+Optional Guardrail Provider, No,"Here you can select AWS Bedrock Guardrail connection which provides capability for prompt safety, content filtering, blocking on deny topics, denied terms etc", true

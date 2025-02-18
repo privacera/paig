@@ -186,6 +186,6 @@ offering a nuanced approach to data privacy and access management.
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Appications](index.md)
+    [Manage Applications](index.md)
 
 </div>
