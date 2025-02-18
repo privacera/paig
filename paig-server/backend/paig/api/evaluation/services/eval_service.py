@@ -6,7 +6,6 @@ from api.evaluation.database.db_operations.eval_config_repository import Evaluat
 from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
 from api.evaluation.database.db_operations.eval_repository import EvaluationRepository
-from core.config import load_config_file
 from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins
 from paig_evaluation.promptfoo_utils import ensure_promptfoo_config
 import logging
@@ -14,7 +13,6 @@ from core.utils import current_utc_time
 from core.exceptions import BadRequestException
 
 logger = logging.getLogger(__name__)
-config = load_config_file()
 
 
 from core.db_session.transactional import Transactional, Propagation
@@ -31,7 +29,7 @@ def prepare_report_format(result, update_eval_params):
     cumulative_result = results['prompts']
     update_eval_params['status'] = 'COMPLETED'
     update_eval_params['update_time'] = current_utc_time()
-    update_eval_params['cumulative_result'] = str(cumulative_result)
+    update_eval_params['cumulative_result'] = json.dumps(cumulative_result)
     # update pass counts
     total_passed = list()
     total_failed = list()
@@ -51,7 +49,6 @@ def generate_common_fields(eval_run_id, eval_id):
     }
 
 async def insert_eval_results(eval_id, eval_run_id, report):
-    print(report['result'])
     results = report["result"]
     if 'results' not in results:
         logger.info(f'No result is generated for eval_id: {eval_id}')
@@ -61,7 +58,7 @@ async def insert_eval_results(eval_id, eval_run_id, report):
     prompt_records = list()
     response_records = list()
     # Set to keep track of processed prompt testIdx values
-    processed_testIdxs = set()
+    processed_test_idxs = set()
 
     # Dictionary to store generated IDs for each prompt
     prompt_id_map = {}
@@ -71,7 +68,7 @@ async def insert_eval_results(eval_id, eval_run_id, report):
         # Generate the common fields
         common_fields = generate_common_fields(eval_run_id, eval_id)
         # If the testIdx has not been processed before, insert the prompt and generate a new ID
-        if test_idx not in processed_testIdxs:
+        if test_idx not in processed_test_idxs:
             new_prompt_id = str(uuid.uuid4())  # Generate a new unique ID for the prompt
             prompt = {
                 **common_fields,
@@ -80,14 +77,14 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             }
             prompt_records.append(prompt)
             prompt_id_map[test_idx] = new_prompt_id  # Map testIdx to new prompt ID
-            processed_testIdxs.add(test_idx)
+            processed_test_idxs.add(test_idx)
             # Insert the response and link it to the prompt using the generated ID
         response = {
             **common_fields,
             "eval_result_prompt_uuid": prompt_id_map[test_idx],
             "application_name": res['provider']['label'],
             "response": res['response']['output'],
-            "failure_reason": res['failureReason'] if res['failureReason'] else None,
+            "failure_reason": res['error'] if res['failureReason'] else None,
             "category_score": json.dumps(res['namedScores'])
         }  # Add prompt_id in response
         response_records.append(response)
@@ -121,6 +118,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
                 generated_prompts_config_result = eval_obj.generate_prompts(application_config=application_config, plugins=categories, targets=target_hosts)
                 if generated_prompts_config_result['status'] != 'success':
                     update_eval_params['status'] = 'FAILED'
+                    logger.error('Prompts generation failed:- ' + str(generated_prompts_config_result['message']))
                 else:
                     update_eval_params['status'] = 'EVALUATING'
                     generated_prompts_config = generated_prompts_config_result['result']
@@ -128,7 +126,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
                         'generated_config': json.dumps(generated_prompts_config)
                     }
                     await update_table_fields('eval_config_history', eval_config_params, 'eval_config_id', eval_config.id)
-                logger.info('Prompts generated')
+                    logger.info('Prompts generation completed')
             except Exception as err:
                 logger.error('Error: ' + str(err))
                 logger.error(str(traceback.print_exc()))
@@ -139,6 +137,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
             generated_prompts_config = json.loads(eval_config.generated_config)
             logger.info('Prompts already generated')
         if 'status' in update_eval_params and update_eval_params['status'] == 'FAILED':
+            logger.info('Generation failed. Skipping evaluation')
             return
         logger.info('Proceeding to evaluate')
         # Append static custom prompts
@@ -160,7 +159,6 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
         )
         logger.info('Evaluation completed with status ' + str(report['status']))
         try:
-            logger.info(str(report['result']))
             if report['status'] == 'success':
                 update_eval_params = prepare_report_format(report['result'], update_eval_params)
             else:
@@ -249,8 +247,93 @@ class EvaluationService:
         existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)
         return await self.evaluation_repository.delete_evaluation(existing_evaluation)
 
-    async def get_eval_results_with_filters(self, *args):
-        return await self.evaluation_repository.get_eval_results_with_filters(*args)
+    @staticmethod
+    async def get_categories(purpose):
+        resp = dict()
+        suggested_categories = get_suggested_plugins(purpose)
+        if not isinstance(suggested_categories, dict):
+            raise BadRequestException('Invalid response received for for suggested categories')
+        if suggested_categories['status'] != 'success':
+            raise BadRequestException(suggested_categories['message'])
+        resp['suggested_categories'] = suggested_categories['result']
+        all_categories = get_all_plugins()
+        if not isinstance(all_categories, dict):
+            raise BadRequestException('Invalid response received for for all categories')
+        if all_categories['status'] != 'success':
+            raise BadRequestException(all_categories['message'])
+        resp['all_categories'] = all_categories['result']
+        return resp
+class EvaluationService:
+
+    def __init__(
+        self,
+        evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository),
+        eval_config_history_repository: EvaluationConfigHistoryRepository = SingletonDepends(EvaluationConfigHistoryRepository),
+        eval_target_repository: EvaluationTargetRepository = SingletonDepends(EvaluationTargetRepository)
+    ):
+        self.evaluation_repository = evaluation_repository
+        self.eval_config_history_repository = eval_config_history_repository
+        self.eval_target_repository = eval_target_repository
+
+    def get_paig_evaluator(self):
+        return PAIGEvaluator()
+
+    async def get_target_hosts(self, apps):
+        final_target = list()
+        app_names = list()
+        for app in apps:
+            target_host = json.loads(app.config)
+            target_host['label'] = app.name
+            app_names.append(app.name)
+            final_target.append(target_host)
+        return final_target, app_names
+
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None):
+        eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
+        if eval_config is None:
+            raise BadRequestException('Invalid evaluation config ID')
+        app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
+        apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
+        if len(apps) != len(app_ids):
+            raise BadRequestException('Application names not found')
+        target_hosts, application_names = await self.get_target_hosts(apps)
+        # Insert evaluation record
+        eval_id = str(uuid.uuid4())
+        eval_params = {
+            "status": "GENERATING",
+            "config_id": eval_config_id,
+            "owner": owner,
+            "eval_id": eval_id,
+            "purpose": eval_config.purpose,
+            "config_name": eval_config.name,
+            "application_names": ','.join(application_names),
+            "base_run_id": base_run_id,
+            "name": report_name
+        }
+        eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
+        eval_run_id = eval_model.id
+        asyncio.create_task(
+            asyncio.to_thread(
+                threaded_run_evaluation,
+                eval_id,
+                eval_run_id,
+                eval_config,
+                target_hosts,
+                application_names
+            )
+        )
+        return
+
+    async def delete_evaluation(self, eval_id: int):
+        """
+        Delete an AI application by its ID.
+
+        Args:
+            id (int): The ID of the AI application to delete.
+        """
+        existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)
+        return await self.evaluation_repository.delete_evaluation(existing_evaluation)
 
     @staticmethod
     async def get_categories(purpose):

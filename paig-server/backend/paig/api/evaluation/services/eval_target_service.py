@@ -1,6 +1,6 @@
 import json
 import traceback
-from core.utils import SingletonDepends
+from core.utils import SingletonDepends, is_valid_url
 from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
 import logging
 from api.governance.database.db_operations.ai_app_repository import AIAppRepository
@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 def transform_eval_target(eval_target):
     eval_target_dict = dict()
+    if not is_valid_url(eval_target['url']):
+        raise BadRequestException("Invalid URL format")
     eval_target_dict['id'] = eval_target['url']
     eval_target_dict['label'] = eval_target["name"]
     eval_config = dict()

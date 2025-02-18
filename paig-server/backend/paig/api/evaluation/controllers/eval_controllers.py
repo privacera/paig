@@ -1,6 +1,7 @@
 import traceback
 
 from api.evaluation.services.eval_config_service import EvaluationConfigService
+from api.evaluation.services.eval_result_service import EvaluationResultService
 from api.evaluation.services.eval_service import EvaluationService
 from core.utils import SingletonDepends
 from core.exceptions import NotFoundException, BadRequestException
@@ -12,11 +13,13 @@ from server import logger
 class EvaluationController:
 
     def __init__(self,
+                 evaluation_result_service: EvaluationResultService = SingletonDepends(EvaluationResultService),
                  evaluation_service: EvaluationService = SingletonDepends(EvaluationService),
                  evaluation_config_service: EvaluationConfigService = SingletonDepends(EvaluationConfigService)
     ):
         self.evaluation_service = evaluation_service
         self.evaluation_config_service = evaluation_config_service
+        self.evaluation_result_service = evaluation_result_service
 
     async def create_and_run_evaluation(self, eval_params, user):
         try:
@@ -42,7 +45,7 @@ class EvaluationController:
             include_filters.owner = include_filters.owner.strip("*")
         if exclude_filters.owner:
             exclude_filters.owner = exclude_filters.owner.strip("*")
-        eval_results, total_count = await self.evaluation_service.get_eval_results_with_filters(include_filters, exclude_filters, page, size, sort, min_time, max_time)
+        eval_results, total_count = await self.evaluation_result_service.get_eval_results_with_filters(include_filters, exclude_filters, page, size, sort, min_time, max_time)
         if eval_results is None:
             raise NotFoundException("No results found")
         eval_results_list = [BaseEvaluationView.model_validate(eval_result) for eval_result in eval_results]
@@ -58,4 +61,10 @@ class EvaluationController:
 
     async def get_categories(self, purpose):
         return await self.evaluation_service.get_categories(purpose)
+
+    async def get_cumulative_results(self, eval_id):
+        return await self.evaluation_result_service.get_cumulative_results_by_uuid(eval_id)
+
+    async def get_detailed_results(self, eval_id):
+        return await self.evaluation_result_service.get_detailed_results_by_uuid(eval_id)
 

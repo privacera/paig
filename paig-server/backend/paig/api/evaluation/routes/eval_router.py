@@ -82,3 +82,21 @@ async def get_categories(
 ):
     purpose = body_params.purpose
     return await evaluation_controller.get_categories(purpose)
+
+
+@evaluation_router.get("/report/{eval_uuid}/cumulative")
+async def get_cumulative_result(
+    eval_uuid: str,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+   return await evaluation_controller.get_cumulative_results(eval_uuid)
+
+
+@evaluation_router.get("/report/{eval_uuid}/detailed")
+async def get_detailed_result(
+    eval_uuid: str,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+   return await evaluation_controller.get_detailed_results(eval_uuid)
