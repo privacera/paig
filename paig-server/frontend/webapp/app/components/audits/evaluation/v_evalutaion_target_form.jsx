@@ -67,11 +67,11 @@ const VEvalTargetForm = ({form}) => {
         const generateReportName = () => {
             if (!id.value) {
                 const now = new Date();
-                const formattedDate = now.toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+                const formattedDate = now.toLocaleDateString('en-GB').split('/').reverse().join(''); // Format: DDMMYYYY
                 const formattedTime = now.toLocaleTimeString('en-GB', {
                 hour: '2-digit',
                 minute: '2-digit',
-                }).replace(' ', ''); // Format: HH:MM(am/pm)
+                }).replace(':', ''); // Format: HHmm
                 return `eval-target-${formattedDate}${formattedTime}`;
             }
             return name.value;
