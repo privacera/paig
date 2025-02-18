@@ -99,6 +99,7 @@ class CEvaluationReportsList extends Component {
   handlePageChange = () => {
     this.fetchEvaluationReports();
   }
+
   handleDateChange = (event, picker) => {
     this._vState.prevNextValueList = [''];
     this._vState.pageNumber = 0;
@@ -117,6 +118,7 @@ class CEvaluationReportsList extends Component {
 
     this.fetchEvaluationReports();
   }
+
   handleSearchByField = (filter, event) => {
     this._vState.prevNextValueList = [''];
     this._vState.pageNumber = 0;
@@ -219,6 +221,7 @@ class CEvaluationReportsList extends Component {
       this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Report evaluation submitted');
+      this.fetchEvaluationReports();
       // this.handlePostCreate(response);
       this._vState.saving = false;
     } catch(e) {

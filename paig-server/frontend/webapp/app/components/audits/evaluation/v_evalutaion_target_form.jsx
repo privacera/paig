@@ -166,7 +166,7 @@ const VEvalTargetForm = ({form}) => {
                         <Button
                             variant="outlined"
                             color="primary"
-                            startIcon={<Add />}
+                            startIcon={<Add className='m-l-sm'/>}
                             onClick={handleAddHeader}
                             size="small"
                         >

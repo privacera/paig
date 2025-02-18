@@ -105,7 +105,7 @@ class VEvaluationReportTable extends Component{
   };
 
   getRowData = (model) => {
-    const {handleReRun, handleView, permission, importExportUtil, handleDelete} = this.props;
+    const {handleReRun, handleView, permission, handleDelete} = this.props;
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
       <TableCell key="2">{model.config_name || "--"}</TableCell>,
@@ -141,16 +141,16 @@ class VEvaluationReportTable extends Component{
   handleContextMenuSelection = () => {}
 
   render() {
-    const { data, pageChange, _vState } = this.props;
+    const { data, pageChange } = this.props;
     return (
-        <Table
-            data={data}
-            getHeaders={this.getHeaders}
-            getRowData={this.getRowData}
-            pageChange={pageChange}
-        />
+      <Table
+        data={data}
+        getHeaders={this.getHeaders}
+        getRowData={this.getRowData}
+        pageChange={pageChange}
+      />
     )
-}
+  }
 }
 
 export default VEvaluationReportTable;
