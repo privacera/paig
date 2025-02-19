@@ -264,7 +264,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             for guardrail in result.content:
                 if guardrail.guardrail_connection_name and guardrail.guardrail_connection_name in gr_conn_map:
                     guardrail.guardrail_connection_details = gr_conn_map.get(guardrail.guardrail_connection_name).connection_details
-                    if encryption_key:
+                    if encryption_key and guardrail.guardrail_connection_details:
                         guardrail.guardrail_connection_details["encryption_key_id"] = encryption_key.id
         else:
             # Remove guardrail provider response if extended is not set
