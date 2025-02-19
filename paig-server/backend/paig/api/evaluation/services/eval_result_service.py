@@ -28,10 +28,11 @@ class EvaluationResultService:
         if model is None:
             raise BadRequestException("No results found")
         cumulative_result = model.cumulative_result
-        cumulative_result = json.loads(cumulative_result)
         if cumulative_result is None:
             raise BadRequestException("No results found")
+        cumulative_result = json.loads(cumulative_result)
         resp_list = list()
+        resp_dict = {}
         for result in cumulative_result:
             resp = dict()
             resp['application_name'] = result['provider']
@@ -41,7 +42,10 @@ class EvaluationResultService:
             resp['categories'] = result['metrics']['namedScores']
             resp['total_categories'] = result['metrics']['namedScoresCount']
             resp_list.append(resp)
-        return resp_list
+        resp_dict['result'] = resp_list
+        resp_dict['eval_id'] = model.eval_id
+        resp_dict['report_name'] = model.name
+        return resp_dict
 
     async def get_detailed_results_by_uuid(self,
         *args

@@ -1,3 +1,4 @@
+import json
 import traceback
 
 from api.evaluation.services.eval_config_service import EvaluationConfigService
@@ -99,7 +100,9 @@ class EvaluationController:
                 resp_dict['response'] = resp.response
                 resp_dict['application_name'] = resp.application_name
                 resp_dict['failure_reason'] = resp.failure_reason
-                resp_dict['category_score'] = resp.category_score
+                resp_dict['category_score'] = json.loads(resp.category_score)
+                resp_dict['status'] = resp.status
+                resp_dict['category'] = resp.category
                 responses.append(resp_dict)
             dict_record['responses'] = responses
             results_list.append(dict_record)

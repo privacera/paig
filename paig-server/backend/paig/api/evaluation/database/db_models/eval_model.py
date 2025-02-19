@@ -59,6 +59,7 @@ class EvaluationResultResponseModel(CommonBase):
     application_name = Column(String(255), nullable=False)
     failure_reason = Column(String(), nullable=True)
     category_score = Column(String(), nullable=True)
+    category = Column(String(255), nullable=True)
 
     # Back-reference to EvaluationResultPromptsModel
     prompt = relationship("EvaluationResultPromptsModel", back_populates="responses")

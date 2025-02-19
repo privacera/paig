@@ -83,10 +83,15 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             **common_fields,
             "eval_result_prompt_uuid": prompt_id_map[test_idx],
             "application_name": res['provider']['label'],
-            "response": res['response']['output'],
+            "response": res['response']['output'] if 'response' in res else None,
             "failure_reason": res['error'] if res['failureReason'] else None,
-            "category_score": json.dumps(res['namedScores'])
+            "category_score": json.dumps(res['namedScores']),
+            "status": 'PASSED' if res['success'] else 'FAILED'
         }  # Add prompt_id in response
+        if res['failureReason'] == 2:
+            response['status'] = 'ERROR'
+        if 'testCase' in res and 'metadata' in res['testCase'] and 'pluginId' in res['testCase']['metadata']:
+            response['category'] = res['testCase']['metadata']['pluginId']
         response_records.append(response)
     # Insert the prompt and response records
     await bulk_insert_into_table('eval_result_prompt', prompt_records)

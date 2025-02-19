@@ -113,6 +113,7 @@ def upgrade() -> None:
     sa.Column('create_time', sa.DateTime(), nullable=True),
     sa.Column('update_time', sa.DateTime(), nullable=True),
     sa.Column('status', sa.String(length=255), nullable=True),
+    sa.Column('category', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['eval_result_prompt_uuid'], ['eval_result_prompt.prompt_uuid'], ),
     sa.ForeignKeyConstraint(['eval_run_id'], ['eval_run.id'], ),
     sa.PrimaryKeyConstraint('id')
