@@ -25,7 +25,10 @@ responses. The filter strength can be adjusted to increase the likelihood of det
 within specific categories. These filters apply to both user inputs and AI outputs.
 - **Management**: Content filtering settings allow you to fine-tune detection levels based on your application’s needs. Administrators can enable or disable this content filter and can also modify the individual filter strength to balance strictness and flexibility, ensuring that your AI application effectively screens harmful content without unnecessary restrictions.
 
-<video_showing_enabling_content_filters>
+<figure markdown>
+<script src="https://fast.wistia.com/embed/medias/psvjflzmmw.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_psvjflzmmw popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Guardrails</figcaption>
+</figure>
 
 ### Filter strength
 The filter strength can be set to Low, Medium, or High, and you have the flexibility to apply the same setting for both
@@ -101,7 +104,10 @@ illustrate the type of content to be filtered.
 or create new ones tailored to their needs. Admins can refine filtering rules by adjusting sample phrases and
 keywords, ensuring accurate detection and enforcement of content restrictions across user interactions.
 
-<video_showing_adding_off_topic_filters>
+<figure markdown>
+<script src="https://fast.wistia.com/embed/medias/7xal6pacrh.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_7xal6pacrh popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Guardrails</figcaption>
+</figure>
 
 ### Adding New Off-Topic
 Click on the ==**ADD OFF TOPIC**== button located at the top right of the section to introduce new restrictions for denied topics. 

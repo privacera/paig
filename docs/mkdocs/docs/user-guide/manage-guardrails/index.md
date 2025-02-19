@@ -20,7 +20,7 @@ right top. This will open a dialog box where you can enter the details of the gu
 guardrail connection and configure the response template beforehand.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/dta3qo5fjg.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_dta3qo5fjg popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<script src="https://fast.wistia.com/embed/medias/9wonvbmfwk.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_9wonvbmfwk popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
 <figcaption>How to add Guardrails</figcaption>
 </figure>
 
@@ -35,7 +35,7 @@ To create a new guardrail connection for AWS, go to __Account > Guardrail Connec
 from Available Providers. This will open a dialog box where you can enter the details of the guardrail connection.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/dta3qo5fjg.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_dta3qo5fjg popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<script src="https://fast.wistia.com/embed/medias/nfagrtjenv.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_nfagrtjenv popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
 <figcaption>How to add Guardrail Connection</figcaption>
 </figure>
 
@@ -51,7 +51,7 @@ To create a new guardrail connection for AWS, go to __Application > Response Tem
 guardrail response template.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/dta3qo5fjg.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_dta3qo5fjg popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<script src="https://fast.wistia.com/embed/medias/7xl8e9cndu.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_7xl8e9cndu popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
 <figcaption>How to add Guardrail Response Template</figcaption>
 </figure>
 
