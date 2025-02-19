@@ -94,3 +94,33 @@ def extract_include_query_params(params):
                        value is not None}
 
     return filtered_params
+
+
+class ResultsQueryParamsBase(BaseAPIFilter):
+    prompt: Optional[str] = Field(None, description="prompt", alias="prompt")
+    response: Optional[str] = Field(None, description="response", alias="response")
+
+
+
+
+class ResultsIncludeQueryParams(ResultsQueryParamsBase):
+    pass
+
+
+def results_include_query_params(
+        include_query_prompt: Optional[str] = Query(None, alias="includeQuery.prompt"),
+        include_query_response: Optional[str] = Query(None, alias="includeQuery.response"),
+) -> ResultsIncludeQueryParams:
+    return ResultsIncludeQueryParams(
+        prompt=include_query_prompt,
+        response=include_query_response
+    )
+
+def results_exclude_query_params(
+        exclude_query_prompt: Optional[str] = Query(None, alias="excludeQuery.prompt"),
+        exclude_query_response: Optional[str] = Query(None, alias="excludeQuery.response"),
+) -> ResultsQueryParamsBase:
+    return ResultsQueryParamsBase(
+        prompt=exclude_query_prompt,
+        response=exclude_query_response
+    )

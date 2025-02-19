@@ -2,7 +2,7 @@ import json
 
 from core.exceptions import BadRequestException
 import logging
-from api.evaluation.database.db_operations.eval_repository import EvaluationRepository
+from api.evaluation.database.db_operations.eval_repository import EvaluationRepository, EvaluationPromptRepository
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
@@ -14,9 +14,11 @@ class EvaluationResultService:
 
     def __init__(
         self,
-        evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository)
+        evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository),
+        evaluation_prompt_repository: EvaluationPromptRepository = SingletonDepends(EvaluationPromptRepository)
     ):
         self.evaluation_repository = evaluation_repository
+        self.evaluation_prompt_repository = evaluation_prompt_repository
 
     async def get_eval_results_with_filters(self, *args):
         return await self.evaluation_repository.get_eval_results_with_filters(*args)
@@ -41,5 +43,7 @@ class EvaluationResultService:
             resp_list.append(resp)
         return resp_list
 
-    async def get_detailed_results_by_uuid(self, uuid):
-        pass
+    async def get_detailed_results_by_uuid(self,
+        *args
+    ):
+        return await self.evaluation_prompt_repository.get_detailed_results_by_uuid(*args)

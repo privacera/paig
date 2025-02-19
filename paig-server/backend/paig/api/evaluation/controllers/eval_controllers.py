@@ -65,6 +65,44 @@ class EvaluationController:
     async def get_cumulative_results(self, eval_id):
         return await self.evaluation_result_service.get_cumulative_results_by_uuid(eval_id)
 
-    async def get_detailed_results(self, eval_id):
-        return await self.evaluation_result_service.get_detailed_results_by_uuid(eval_id)
+    async def get_detailed_results(self,
+        eval_uuid,
+        include_query,
+        exclude_query,
+        page,
+        size,
+        sort,
+        from_time,
+        to_time
+    ):
+        results, total_count =  await self.evaluation_result_service.get_detailed_results_by_uuid(
+            eval_uuid,
+            include_query,
+            exclude_query,
+            page,
+            size,
+            sort,
+            from_time,
+            to_time
+        )
+        results_list = []
+        for record in results:
+            dict_record = dict()
+            responses = list()
+            dict_record['eval_id'] = record.eval_id
+            dict_record['create_time'] = record.create_time
+            dict_record['prompt_uuid'] = record.prompt_uuid
+            dict_record['prompt'] = record.prompt
+            dict_record['id'] = record.id
+            for resp in record.responses:
+                resp_dict = dict()
+                resp_dict['response'] = resp.response
+                resp_dict['application_name'] = resp.application_name
+                resp_dict['failure_reason'] = resp.failure_reason
+                resp_dict['category_score'] = resp.category_score
+                responses.append(resp_dict)
+            dict_record['responses'] = responses
+            results_list.append(dict_record)
+        return create_pageable_response(results_list, total_count, page, size, sort)
+
 

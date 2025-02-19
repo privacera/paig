@@ -1,10 +1,12 @@
-from sqlalchemy import and_
+from dns.e164 import query
+from sqlalchemy import and_, func
 from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationModel
+from api.evaluation.database.db_models.eval_model import EvaluationResultPromptsModel, EvaluationResultResponseModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
@@ -87,3 +89,69 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         results = (await session.execute(query)).scalars().all()
         count = (await self.get_count_with_filter(include_filters.model_dump()))
         return results, count
+
+
+
+class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
+    def __init__(self):
+        """
+        Initialize the EvaluationPromptsRepository.
+
+        Args:
+            db_session (Session): The database session to use for operations.
+        """
+        super().__init__(EvaluationResultPromptsModel)
+
+
+    async def get_detailed_results_by_uuid(self,
+         eval_uuid,
+         include_query,
+         exclude_query,
+         page,
+         size,
+         sort,
+         from_time,
+         to_time
+    ):
+        skip = 0 if page is None else (page * size)
+        # base query
+        query = select(EvaluationResultPromptsModel).filter(EvaluationResultPromptsModel.eval_id == eval_uuid)
+        exclude_list = []
+        if exclude_query:
+            for key, value in exclude_query.model_dump().items():
+                if value:
+                    exclude_list.append(key)
+                    if hasattr(include_query, key):
+                        setattr(include_query, key, value)
+        include_query = include_query.model_dump()
+        search_filters = []
+        if from_time:
+            search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
+        if to_time:
+            search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
+        if 'prompts' in include_query and include_query['prompts']:
+            if 'prompts' in exclude_list:
+                search_filters.append(EvaluationResultPromptsModel.prompts.notlike('%' + include_query['prompts'] + '%'))
+            else:
+                search_filters.append(EvaluationResultPromptsModel.prompts.like('%' + include_query['prompts'] + '%'))
+        if 'response' in include_query and include_query['response']:
+            if 'response' in exclude_list:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.notlike('%' + include_query['response'] + '%')))
+            else:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.like('%' + include_query['response'] + '%')))
+        if search_filters:
+            query = query.filter(*search_filters)
+
+        # Get total count
+        total_count_query = select(func.count()).select_from(query.subquery())
+        total_count = (await session.execute(total_count_query)).scalar()
+
+        # Fetch results
+        query = query.options(selectinload(EvaluationResultPromptsModel.responses)).offset(skip).limit(size)
+        results = (await session.execute(query)).scalars().all()
+
+        return results, total_count
+
+
+
+
