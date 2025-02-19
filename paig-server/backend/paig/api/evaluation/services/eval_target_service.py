@@ -105,6 +105,10 @@ class EvaluationTargetService:
                 raise BadRequestException(f"Target already exists for AI application {ai_app.name}")
             body_params['name'] = ai_app.name
             new_params['application_id'] = app_id
+        else:
+            name_exists = await self.eval_target_repository.application_name_exists(body_params['name'])
+            if name_exists:
+                raise BadRequestException(f"Application with name {body_params['name']} already exists")
         transformed_eval = transform_eval_target(body_params)
         new_params['config'] = transformed_eval
         new_params['name'] = body_params['name']
@@ -127,10 +131,16 @@ class EvaluationTargetService:
             if ai_app is None:
                 raise NotFoundException(f"No AI application found with id {target_model.application_id}")
             body_params['name'] = ai_app.name
+        else:
+            if 'name' in body_params and body_params['name'] != target_model.name:
+                name_exists = await self.eval_target_repository.application_name_exists(body_params['name'])
+                if name_exists:
+                    raise BadRequestException(f"Application with name {body_params['name']} already exists")
         transformed_eval = transform_eval_target(body_params)
         new_params['config'] = transformed_eval
-        new_params['name'] = body_params['name']
         new_params['url'] = body_params['url']
+        if 'name' in body_params:
+            new_params['name'] = body_params['name']
         try:
             eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
             return eval_target

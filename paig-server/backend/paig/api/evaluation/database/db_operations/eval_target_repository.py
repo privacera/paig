@@ -147,3 +147,12 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             return await self.get_all(filters, apply_in_list_filter=apply_in_list_filter)
         except NoResultFound:
             return None
+
+    async def application_name_exists(self, name: str) -> bool:
+        query = select(
+            select(EvaluationTargetModel.id).filter(EvaluationTargetModel.name == name).exists()
+        ).scalar_subquery() | select(
+            select(AIApplicationModel.id).filter(AIApplicationModel.name == name).exists()
+        ).scalar_subquery()
+
+        return (await session.execute(select(query))).scalar()
