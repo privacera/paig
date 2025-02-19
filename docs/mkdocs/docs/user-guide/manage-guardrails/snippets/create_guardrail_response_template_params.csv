@@ -1,0 +1,3 @@
+Field, Mandatory, Description, Example
+Response, Yes, The response to the user prompt in your chatbot AI application whenever anything is blocked through guardrail. Keep it short and simple, Sorry I can't respond to that as it contains potentially harmful content
+Description, No, Describe your response in a few words, This response is designed to politely inform the user that their request cannot be fulfilled due to the detection of potentially harmful content
