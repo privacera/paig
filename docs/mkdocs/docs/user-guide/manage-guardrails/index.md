@@ -20,7 +20,7 @@ right top. This will open a dialog box where you can enter the details of the gu
 guardrail connection and configure the response template beforehand.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/9wonvbmfwk.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_9wonvbmfwk popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<script src="https://fast.wistia.com/embed/medias/3szm04biiz.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_3szm04biiz popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
 <figcaption>How to add Guardrails</figcaption>
 </figure>
 

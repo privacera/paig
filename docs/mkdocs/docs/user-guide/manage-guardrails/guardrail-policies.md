@@ -66,8 +66,10 @@ custom rules based on their specific requirements. Each filter element can be co
 as `allowing, blocking, or redacting` detected sensitive data. Admins can also define specific data types to monitor and
 manage, selecting from a list of predefined sensitive elements or adding custom regex patterns for enhanced flexibility.
 
-<video_showing_adding_sensitive_data_filters>
-
+<figure markdown>
+<script src="https://fast.wistia.com/embed/medias/c02mx4eyyn.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_c02mx4eyyn popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Guardrails</figcaption>
+</figure>
 
 ### Adding New Elements
 Click on the ==**ADD ELEMENT**== button located at the top right of the section to introduce new restriction elements
@@ -131,7 +133,10 @@ such as `blocking`, `redacting`, or `allowing` detected content. Admins can cont
 filtering rules, ensuring that the application enforces content restrictions effectively and adapts to evolving
 requirements.
 
-<video_showing_adding_denied_term_filters>
+<figure markdown>
+<script src="https://fast.wistia.com/embed/medias/w4rpm06baf.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_w4rpm06baf popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Guardrails</figcaption>
+</figure>
 
 ### Adding New Term
 Click on the ADD TERMS button located at the top right of the section of the Terms to introduce new restrictions for
@@ -152,8 +157,6 @@ profane language is blocked.
 The profanity list is regularly updated, but admins can also customize restrictions by adding specific terms to enhance
 filtering. Based on application needs, admins can configure the denied term filter to `block` content entirely.
 
-<video_showing_enabling_profanity_filters>
-
 
 ## Prompt Safety
 Guardrails prevent prompt injections by validating inputs, filtering harmful patterns, and analyzing context to block
@@ -172,7 +175,10 @@ reduce protection against sophisticated manipulation tactics. Admins can adjust 
 security needs of their application.
 
 
-<video_showing_enabling_prompt_safety>
+<figure markdown>
+<script src="https://fast.wistia.com/embed/medias/721rgfag3h.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_721rgfag3h popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Guardrails</figcaption>
+</figure>
 
 ---
 :octicons-tasklist-16: **What Next?**
