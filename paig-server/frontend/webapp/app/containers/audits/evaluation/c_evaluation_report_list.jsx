@@ -1,14 +1,14 @@
-import React, {Component, createRef} from 'react';
+import React, {Component, createRef, Fragment} from 'react';
 import {inject, observer} from 'mobx-react';
 import {action} from 'mobx';
 
 import {Grid} from '@material-ui/core';
-import {Button} from "@material-ui/core";
 
 import f from 'common-ui/utils/f';
 import UiState from 'data/ui_state';
 import {Utils} from 'common-ui/utils/utils';
 import FSModal from 'common-ui/lib/fs_modal';
+import hashHistory from 'common-ui/routers/history';
 import BaseContainer from 'containers/base_container';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import {DateRangePickerComponent} from 'common-ui/components/filters';
@@ -16,6 +16,7 @@ import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
 import VEvaluationReportTable from 'components/audits/evaluation/v_evaluation_reports_list';
+
 const CATEGORIES = {
   ReportName: { multi: false, category: "ReportName", type: "text", key: 'name' },
   Application: { multi: false, category: "Application", type: "text", key: 'application_names' },
@@ -174,11 +175,7 @@ class CEvaluationReportsList extends Component {
   }
 
   handleView = (model) => {
-    this.setState({
-      showIframe: true,
-      iframeUrl: model.report_url + "/report?evalId=" + model.report_id, // Assuming `viewUrl` contains the URL to be displayed
-    });
-    console.log("iframeUrl",  model.report_url + "/report?evalId=" + model.report_id);
+    hashHistory.push(`/eval_report/${model.eval_id}`);
   }
 
   handleBack = () => {
@@ -241,50 +238,32 @@ class CEvaluationReportsList extends Component {
         handleRefresh={this.handleRefresh}
         titleColAttr={{ lg: 12, md: 12 }}
       >
-        {!showIframe ? (
-            <>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={12} md={6} lg={7}>
-                  <IncludeExcludeComponent
-                    _vState={_vState}
-                    categoriesOptions={Object.values(CATEGORIES)}
-                    onChange={this.handleSearchByField}
-                  />
-                </Grid>
-                <DateRangePickerComponent
-                  colAttr={{ lg: 5, md: 6, sm: 12, xs: 12, className: 'text-right' }}
-                  daterange={dateRangeDetail.daterange}
-                  chosenLabel={dateRangeDetail.chosenLabel}
-                  handleEvent={handleDateChange}
-                />
-              </Grid>
-              <VEvaluationReportTable
-                data={this.cEvalReports}
-                pageChange={this.handlePageChange}
+        <Fragment>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={12} md={6} lg={7}>
+              <IncludeExcludeComponent
                 _vState={_vState}
-                applicationKeyMap={this.applicationKeyMap}
-                handleDelete={this.handleDelete}
-                handleView={this.handleView}
-                handleReRun={this.handleReRun}
+                categoriesOptions={Object.values(CATEGORIES)}
+                onChange={this.handleSearchByField}
               />
-            </>
-        ) : (
-          <div>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={this.handleBack}
-              style={{ marginBottom: '10px' }}
-            >
-              Back
-            </Button>
-            <iframe
-              src={iframeUrl}
-              style={{ width: '100%', height: '80vh', border: 'none' }}
-              title="View Details"
+            </Grid>
+            <DateRangePickerComponent
+              colAttr={{ lg: 5, md: 6, sm: 12, xs: 12, className: 'text-right' }}
+              daterange={dateRangeDetail.daterange}
+              chosenLabel={dateRangeDetail.chosenLabel}
+              handleEvent={handleDateChange}
             />
-          </div>
-        )}
+          </Grid>
+          <VEvaluationReportTable
+            data={this.cEvalReports}
+            pageChange={this.handlePageChange}
+            _vState={_vState}
+            applicationKeyMap={this.applicationKeyMap}
+            handleDelete={this.handleDelete}
+            handleView={this.handleView}
+            handleReRun={this.handleReRun}
+          />
+        </Fragment>
         <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>
           <VRunReportForm form={this.evalForm} mode="rerun_report"/>
         </FSModal>

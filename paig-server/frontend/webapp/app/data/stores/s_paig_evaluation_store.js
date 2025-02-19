@@ -108,6 +108,12 @@ class EvaluationStore extends BaseStore {
         return this.delete(id, opts);
     }
 
+    fetchReportCumulative(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}/cumulative`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch("", opts);
+    }
+
 }
 
 const evaluationStore = new EvaluationStore();
