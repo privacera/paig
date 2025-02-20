@@ -115,7 +115,7 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
     ):
         skip = 0 if page is None else (page * size)
         # base query
-        query = select(EvaluationResultPromptsModel).filter(EvaluationResultPromptsModel.eval_id == eval_uuid)
+        query = select(EvaluationResultPromptsModel).filter(EvaluationResultPromptsModel.eval_id == eval_uuid.strip())
         exclude_list = []
         if exclude_query:
             for key, value in exclude_query.model_dump().items():
@@ -129,17 +129,22 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
             search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
         if to_time:
             search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
-        if 'prompts' in include_query and include_query['prompts']:
-            if 'prompts' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.prompts.notlike('%' + include_query['prompts'] + '%'))
+        if 'prompt' in include_query and include_query['prompt']:
+            if 'prompt' in exclude_list:
+                search_filters.append(EvaluationResultPromptsModel.prompt.notlike('%' + include_query['prompt'] + '%'))
             else:
-                search_filters.append(EvaluationResultPromptsModel.prompts.like('%' + include_query['prompts'] + '%'))
+                search_filters.append(EvaluationResultPromptsModel.prompt.like('%' + include_query['prompt'] + '%'))
         if 'response' in include_query and include_query['response']:
             if 'response' in exclude_list:
                 search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.notlike('%' + include_query['response'] + '%')))
             else:
                 search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.like('%' + include_query['response'] + '%')))
-        if search_filters:
+        if 'category' in include_query and include_query['category']:
+            if 'category' in exclude_list:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.notlike('%' + include_query['category'] + '%')))
+            else:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.like('%' + include_query['category'] + '%')))
+        if len(search_filters) > 0:
             query = query.filter(*search_filters)
 
         # Get total count
@@ -149,7 +154,6 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
         # Fetch results
         query = query.options(selectinload(EvaluationResultPromptsModel.responses)).offset(skip).limit(size)
         results = (await session.execute(query)).scalars().all()
-
         return results, total_count
 
 

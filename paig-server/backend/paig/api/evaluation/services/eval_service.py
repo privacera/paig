@@ -44,7 +44,7 @@ def prepare_report_format(result, update_eval_params):
 def generate_common_fields(eval_run_id, eval_id):
     return {
         "eval_run_id": eval_run_id,
-        "eval_id": eval_id,
+        "eval_id": eval_id.strip(),
         "create_time": current_utc_time()
     }
 
@@ -83,7 +83,7 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             **common_fields,
             "eval_result_prompt_uuid": prompt_id_map[test_idx],
             "application_name": res['provider']['label'],
-            "response": res['response']['output'] if 'response' in res else None,
+            "response": res['response']['output'] if 'response' in res else 'NA',
             "failure_reason": res['error'] if res['failureReason'] else None,
             "category_score": json.dumps(res['namedScores']),
             "status": 'PASSED' if res['success'] else 'FAILED'
