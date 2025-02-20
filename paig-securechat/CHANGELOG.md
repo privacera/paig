@@ -1,3 +1,6 @@
+# paig-securechat Changelog
+All changes to `paig-securechat` will be documented in this file.
+
 ## [v0.0.2] - 2025-02-20 
 ### Added
 - Added supports for bedrock claude models.
