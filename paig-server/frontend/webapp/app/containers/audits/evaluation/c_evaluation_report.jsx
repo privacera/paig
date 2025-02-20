@@ -1,19 +1,14 @@
-import React, { Component, Fragment } from 'react';
-import { observable } from 'mobx';
-import { observer, inject } from 'mobx-react';
+import React, {Component, Fragment} from 'react';
+import {observer, inject} from 'mobx-react';
+import {observable} from 'mobx';
 
 import Box from '@material-ui/core/Box';
 
 import f from 'common-ui/utils/f';
 import {DEFAULTS} from 'common-ui/utils/globals';
+import {EVAL_REPORT_CATEGORIES} from 'utils/globals';
 import BaseContainer from 'containers/base_container';
 import VEvaluationOverview from 'components/audits/evaluation/v_evaluation_report';
-
-const CATEGORIES = {
-  Category: { multi: false, category: "Category", type: "text", key: 'category' },
-  Prompt: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-  Response: { multi: false, category: "Response", type: "text", key: 'response' }
-}
 
 @inject('evaluationStore')
 @observer
@@ -23,11 +18,10 @@ export class CEvaluationReport extends Component {
     loading: true,
     searchFilterValue: []
   }
-  // appNameColorMap = new ObservableMap();
   constructor(props) {
     super(props);
 
-    // donut chart data
+    // Donut chart data
     this.cEvaluationOverview = f.initCollection();
 
     // Table data
@@ -44,8 +38,9 @@ export class CEvaluationReport extends Component {
 
   fetchAllApi = () => {
     if (this.props.match.params.eval_id) {
-      // get report details
+      // Get report details
       this.getReportOverview(this.props.match.params.eval_id);
+      // Get table data
       this.getReportDetails(this.props.match.params.eval_id);
     } else {
       this._vState.reportData = null;
@@ -92,10 +87,10 @@ export class CEvaluationReport extends Component {
   
     apps.forEach((app) => {
       categories.push(app.application_name); 
-      const total = app.passed + app.failed + app.error;
-      passRateSeries.data.push(((app.passed / total) * 100));
-      failRateSeries.data.push(((app.failed / total) * 100));
-      errorRateSeries.data.push(((app.error / total) * 100));
+      const total = app.passed + app.failed + app.error || 0;
+      passRateSeries.data.push(((app.passed / total || 0) * 100));
+      failRateSeries.data.push(((app.failed / total || 0) * 100));
+      errorRateSeries.data.push(((app.error / total || 0) * 100));
     });
   
     const chartData = {
@@ -126,31 +121,36 @@ export class CEvaluationReport extends Component {
     this.fetchAllApi();
   }
 
-  handleSearchByField = (filter, event) => {
-    let params = {
-      page: undefined
-    };
-    Object.values(CATEGORIES).forEach(obj => {
-      params['includeQuery.' + obj.key] = undefined;
-      params['excludeQuery.' + obj.key] = undefined;
+  handleSearchByField = (filter) => {
+    const newParams = { page: undefined };
+    Object.values(EVAL_REPORT_CATEGORIES).forEach(obj => {
+      newParams[`includeQuery.${obj.key}`] = undefined;
+      newParams[`excludeQuery.${obj.key}`] = undefined;
     })
 
-    filter.forEach((item) => {
-      let obj = CATEGORIES[item.category];
-      let prefix = item.operator == 'is' ? 'includeQuery' : 'excludeQuery';
-      let value = item.value;
-      if (obj.key) {    
-        params[`${prefix}.${obj.key}`] = value;
-      }        
+    filter.forEach(({ category, operator, value }) => {
+      const obj = EVAL_REPORT_CATEGORIES[category];
+      const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
+      if (obj.key) {
+        newParams[`${prefix}.${obj.key}`] = value;
+      }
     });
-    Object.assign(this.cEvaluationDetailed.params, params);
-
+    this.cEvaluationDetailed.params = { ...this.cEvaluationDetailed.params, ...newParams };
     this._vState.searchFilterValue = filter;
     this.getReportDetails(this.props.match.params.eval_id);
   }
 
+  renderTitle = () => {
+    const { reportData } = this._vState;
+    return reportData ? (
+      <Box className="ellipsize" component="div">
+        Evaluation Report - {reportData.report_name}
+      </Box>
+    ) : null;
+  };
+
   render() {
-    const {_vState, handleBackButton} = this;
+    const {_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField} = this;
     return (
       <BaseContainer
         showRefresh={false}
@@ -161,22 +161,14 @@ export class CEvaluationReport extends Component {
         }}
         titleColAttr={{sm: 12, md: 12}}
         nameProps={{maxWidth: '100%'}}
-        title={(
-          <Fragment>
-            {_vState.reportData && 
-              <Box className='ellipsize' component="div">
-                Evaluation Report - {_vState.reportData.report_name}
-              </Box>
-            } 
-          </Fragment>
-        )} 
+        title={this.renderTitle()}
       >
         <VEvaluationOverview 
-          _vState={this._vState}
-          cEvaluationOverview={this.cEvaluationOverview} 
-          data={this.cEvaluationDetailed}
-          handlePageChange={this.handlePageChange}
-          handleSearchByField={this.handleSearchByField}
+          _vState={_vState}
+          cEvaluationOverview={cEvaluationOverview} 
+          data={cEvaluationDetailed}
+          handlePageChange={handlePageChange}
+          handleSearchByField={handleSearchByField}
         />
       </BaseContainer>
     );

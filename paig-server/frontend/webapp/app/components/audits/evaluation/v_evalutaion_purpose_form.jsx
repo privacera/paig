@@ -9,7 +9,6 @@ import CardContent from "@material-ui/core/CardContent";
 import Chip from "@material-ui/core/Chip";
 import Paper from '@material-ui/core/Paper';
 import { Box } from '@material-ui/core';
-import Tooltip from '@material-ui/core/Tooltip';
 
 import f from 'common-ui/utils/f';
 import { FormGroupInput } from "common-ui/components/form_fields";
@@ -72,18 +71,16 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
                     />
                   }
                 </Typography>
-                <Tooltip placement="top" title={template.description} arrow>
-                  <Typography 
-                    variant="body2" 
-                    style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: 'block'
-                    }}
-                  >
-                    {template.description}
-                  </Typography>
-                </Tooltip>
+                <Typography 
+                  variant="body2" 
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'block'
+                  }}
+                >
+                  {template.description}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>

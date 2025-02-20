@@ -1,20 +1,14 @@
 import React, {Component, Fragment} from "react";
-import { observer } from "mobx-react";
+import {observer} from "mobx-react";
 
-import { Box, Grid, Paper, Typography } from "@material-ui/core";
-import TableCell from '@material-ui/core/TableCell';
+import {Box, Grid, Paper, Typography, TableCell} from "@material-ui/core";
 
 import f from 'common-ui/utils/f';
 import Table from "common-ui/components/table";
+import {EVAL_REPORT_CATEGORIES} from 'utils/globals';
 import RadialBarChart from "components/audits/evaluation/radial_bar_chart";
-import { Loader, getSkeleton } from "common-ui/components/generic_components";
+import {Loader, getSkeleton} from "common-ui/components/generic_components";
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
-
-const CATEGORIES = {
-  Category: { multi: false, category: "Category", type: "text", key: 'category' },
-  Prompt: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-  Response: { multi: false, category: "Response", type: "text", key: 'response' }
-}
 
 const PaperCard = (props) => {
   const { children, boxProps={}, paperProps={} } = props;
@@ -39,34 +33,48 @@ class VEvaluationOverview extends Component {
 
     return (
       <Fragment>
-        <TableCell key="category">Category</TableCell>
+        <TableCell key="category" className='min-width-100'>Category</TableCell>
         <TableCell key="prompt" className='min-width-200'>Prompt</TableCell>
         {responseHeaders}
       </Fragment>
     );
   }
 
+  // Align responses with the respective application_name columns
   getRows = (model) => {
-    const responseCells = model.responses?.map((response, index) => (
-      <TableCell key={`response-${index}`}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-          <Typography
-            style={{
-              padding: '4px 8px',
-              borderRadius: '4px',
-              backgroundColor: response.status === 'PASSED' ? '#d4edda' : response.status === 'FAILED' ? '#f8d7da' : '#fff3cd',
-              color: response.status === 'PASSED' ? '#155724' : response.status === 'FAILED' ? '#721c24' : '#856404',
-              fontSize: '12px',
-              fontWeight: 500
-            }}
-          >
-            {response.status || '--'}
-          </Typography>
-          {response.response || '--'}
-        </div>
-      </TableCell>
-    )) || [<TableCell key="response-empty">--</TableCell>];
-  
+    const { data } = this.props;
+    const dataModels = f.models(data) || [];
+    const appNames = dataModels[0]?.responses?.map(response => response.application_name) || [];
+
+    const responseCells = appNames.map((appName, index) => {
+      const appResponse = model.responses?.find(response => response.application_name === appName);
+      return (
+        <TableCell key={`response-${appName}-${index}`}>
+          {appResponse ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+              <Typography
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: appResponse.status === 'PASSED' ? '#d4edda' :
+                    appResponse.status === 'FAILED' ? '#f8d7da' : '#fff3cd',
+                  color: appResponse.status === 'PASSED' ? '#155724' :
+                    appResponse.status === 'FAILED' ? '#721c24' : '#856404',
+                  fontSize: '12px',
+                  fontWeight: 500
+                }}
+              >
+                {appResponse.status || '--'}
+              </Typography>
+              {appResponse.response || '--'}
+            </div>
+          ) : (
+            '--'
+          )}
+        </TableCell>
+      );
+    });
+
     return (
       <Fragment>
         <TableCell key="category">
@@ -116,7 +124,7 @@ class VEvaluationOverview extends Component {
             <Grid item xs={6} sm={6} md={6} lg={6}>
               <IncludeExcludeComponent
                 _vState={_vState}
-                categoriesOptions={Object.values(CATEGORIES)}
+                categoriesOptions={Object.values(EVAL_REPORT_CATEGORIES)}
                 onChange={handleSearchByField}
               />
             </Grid>

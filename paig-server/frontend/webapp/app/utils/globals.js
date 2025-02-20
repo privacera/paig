@@ -239,6 +239,12 @@ const REPORT_GRID_LABELS = {
     TOP_REVIEWER_CONTENT_COMPLIANCE: {LABEL: "Top 20 Reviewers In Content Compliance", TOOLTIP: "Identifies the top 20 administrators active in content compliance reviews, crucial for understanding who is most engaged in monitoring sensitive user content."}
 }
 
+const EVAL_REPORT_CATEGORIES = {
+    Category: { multi: false, category: "Category", type: "text", key: 'category' },
+    Prompt: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
+    Response: { multi: false, category: "Response", type: "text", key: 'response' }
+}
+
 export {
     UI_CONSTANTS,
     PERMISSIONS,
@@ -264,5 +270,6 @@ export {
     ACTION_TYPE,
     OBJECT_TYPE_MAPPING,
     ADMIN_AUDITS_FIELDS_TO_HIDE_MAPPING,
-    REPORT_GRID_LABELS
+    REPORT_GRID_LABELS,
+    EVAL_REPORT_CATEGORIES
 }
