@@ -3,7 +3,7 @@ from typing import List
 
 from core.controllers.paginated_response import Pageable
 from core.db_session import Transactional, Propagation
-from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter
+from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter, GuardrailApplicationsAssociation
 from api.governance.api_schemas.ai_app_config import AIApplicationConfigView
 from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
 from api.governance.services.ai_app_config_service import AIAppConfigService
@@ -125,3 +125,19 @@ class AIAppController:
         """
         await self.ai_app_service.delete_ai_application(id)
         await background_capture_event(event=DeleteAIApplicationEvent())
+
+    @Transactional(propagation=Propagation.REQUIRED)
+    async def update_guardrail_application_association(self, request: GuardrailApplicationsAssociation):
+        """
+        Associates or disassociates applications with a given guardrail.
+
+        - Applications in `request.applications` will be associated with the guardrail.
+        - Applications currently linked to the guardrail but missing from `request.applications` will be disassociated.
+
+        Args:
+            request (GuardrailAssociationRequest): Guardrail name and list of applications.
+
+        Returns:
+            GuardrailApplicationsAssociation: Updated associations.
+        """
+        return await self.ai_app_service.update_guardrail_application_association(request)
