@@ -9,6 +9,7 @@ import CardContent from "@material-ui/core/CardContent";
 import Chip from "@material-ui/core/Chip";
 import Paper from '@material-ui/core/Paper';
 import { Box } from '@material-ui/core';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import f from 'common-ui/utils/f';
 import { FormGroupInput } from "common-ui/components/form_fields";
@@ -42,8 +43,8 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
       <Grid container spacing={2}>
         {f.models(data).map((template, index) => (
           <Grid item xs={12} sm={6} key={index}>
-            <Card onClick={() => handleTemplateSelect(template.description)} className="pointer" style={{ minHeight: '140px' }}>
-              <CardContent style={{ position: 'relative' }}>
+            <Card onClick={() => handleTemplateSelect(template.description)} className="pointer" style={{ minHeight: '160px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}>
+              <CardContent style={{ position: 'relative', flex: 1 }}>
                 <Typography
                   variant="subtitle1"
                   style={{
@@ -71,7 +72,18 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
                     />
                   }
                 </Typography>
-                <Typography variant="body2">{template.description}</Typography>
+                <Tooltip placement="top" title={template.description} arrow>
+                  <Typography 
+                    variant="body2" 
+                    style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: 'block'
+                    }}
+                  >
+                    {template.description}
+                  </Typography>
+                </Tooltip>
               </CardContent>
             </Card>
           </Grid>
