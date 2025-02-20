@@ -162,7 +162,7 @@ class TestAuthService:
         await auth_service.authorize(mock_auth_req)
 
         # Assertions
-        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()*2
+        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()
 
     def test_init_log_message_in_file(self, mocker):
         # Mock dependencies
