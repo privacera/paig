@@ -114,6 +114,17 @@ class EvaluationStore extends BaseStore {
         return this.fetch("", opts);
     }
 
+    fetchReportDetailed(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}/detailed`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        opts.deserialize = (resp) => {
+            let {content, ...page} = resp
+            this.page = page;
+            return content;
+        }
+        return this.fetchAll('', opts);
+    }
+
 }
 
 const evaluationStore = new EvaluationStore();

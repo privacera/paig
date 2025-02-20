@@ -8,6 +8,8 @@ const RadialBarChart = ({ chartData, title }) => {
       type: "column",
       inverted: true,
       polar: true,
+      height: "250px",
+      plotBorderWidth: null
     },
     title: {
       text: title,
@@ -34,18 +36,39 @@ const RadialBarChart = ({ chartData, title }) => {
       gridLineWidth: 0,
     },
     yAxis: {
-      tickInterval: 5,
+      tickInterval: 25,
       reversedStacks: false,
       endOnTick: true,
       showLastLabel: true,
       gridLineWidth: 0
+    },
+    legend: {
+      layout: "vertical",
+      align: "right",
+      verticalAlign: "middle",
+      itemMarginTop: 3,
+      itemMarginBottom: 3,
+      symbolPadding: 5,
+      itemStyle: {
+        padding: 0,
+        color: "#8693A6",
+        cursor: "pointer",
+        fontSize: "10px",
+        fontWeight: "400",
+        whiteSpace: "normal",
+        overflow: "visible",
+        textOverflow: "clip"
+      },
+      maxHeight: 200,
+      width: 100,
     },
     plotOptions: {
       column: {
         stacking: "normal",
         borderWidth: 0,
         pointPadding: 0,
-        groupPadding: 0.15
+        groupPadding: 0.15,
+        showInLegend: true
       },
     },
     series: chartData.series,
