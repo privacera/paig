@@ -1,8 +1,8 @@
 """Added evaluation tables
 
-Revision ID: 444a939d812a
+Revision ID: 701ddf55a1b4
 Revises: a95b604c47fb
-Create Date: 2025-02-18 18:45:01.062688
+Create Date: 2025-02-20 12:12:01.526199
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '444a939d812a'
+revision: str = '701ddf55a1b4'
 down_revision: Union[str, None] = 'a95b604c47fb'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -84,7 +84,7 @@ def upgrade() -> None:
     sa.Column('create_time', sa.DateTime(), nullable=True),
     sa.Column('update_time', sa.DateTime(), nullable=True),
     sa.Column('status', sa.String(length=255), nullable=True),
-    sa.ForeignKeyConstraint(['eval_run_id'], ['eval_run.id'], ),
+    sa.ForeignKeyConstraint(['eval_run_id'], ['eval_run.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_eval_result_prompt_id'), 'eval_result_prompt', ['id'], unique=False)
@@ -109,13 +109,13 @@ def upgrade() -> None:
     sa.Column('application_name', sa.String(length=255), nullable=False),
     sa.Column('failure_reason', sa.String(), nullable=True),
     sa.Column('category_score', sa.String(), nullable=True),
+    sa.Column('category', sa.String(length=255), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=True),
     sa.Column('update_time', sa.DateTime(), nullable=True),
     sa.Column('status', sa.String(length=255), nullable=True),
-    sa.Column('category', sa.String(length=255), nullable=True),
     sa.ForeignKeyConstraint(['eval_result_prompt_uuid'], ['eval_result_prompt.prompt_uuid'], ),
-    sa.ForeignKeyConstraint(['eval_run_id'], ['eval_run.id'], ),
+    sa.ForeignKeyConstraint(['eval_run_id'], ['eval_run.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_eval_result_response_id'), 'eval_result_response', ['id'], unique=False)

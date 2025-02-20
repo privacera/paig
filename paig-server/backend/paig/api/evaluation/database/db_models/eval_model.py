@@ -30,14 +30,13 @@ class EvaluationModel(CommonBase):
     # One-to-Many relationship with EvaluationResultPromptsModel
     prompts = relationship("EvaluationResultPromptsModel",
                             back_populates="eval_run",
-                            cascade="all, delete-orphan",
-                            passive_deletes=True
+                            cascade="all, delete-orphan"
                         )
 
 
 class EvaluationResultPromptsModel(CommonBase):
     __tablename__ = "eval_result_prompt"
-    eval_run_id = Column(String(255), ForeignKey('eval_run.id'), nullable=False)
+    eval_run_id = Column(String(255), ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
     eval_id = Column(String(255), nullable=False)
     prompt_uuid = Column(String(255), nullable=False)
     prompt = Column(String(), nullable=False)
@@ -45,14 +44,13 @@ class EvaluationResultPromptsModel(CommonBase):
     # One-to-Many relationship with EvaluationResultResponseModel
     responses = relationship("EvaluationResultResponseModel",
                                 back_populates="prompt",
-                                cascade="all, delete-orphan",
-                                passive_deletes=True
+                                cascade="all, delete-orphan"
                              )
     eval_run = relationship("EvaluationModel", back_populates="prompts")
 
 class EvaluationResultResponseModel(CommonBase):
     __tablename__ = "eval_result_response"
-    eval_run_id = Column(String(255), ForeignKey('eval_run.id'), nullable=False)
+    eval_run_id = Column(String(255), ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
     eval_result_prompt_uuid = Column(String(255), ForeignKey('eval_result_prompt.prompt_uuid'), nullable=False)
     eval_id = Column(String(255), nullable=False)
     response = Column(String(), nullable=True)
