@@ -23,11 +23,11 @@ class TestHttpGovernanceServiceClient:
     async def test_fetch_guardrail_details_success(self, mocker):
         mock_response = mocker.Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {"content": [{"guardrailDetails": '{"key": "value"}'}]}
+        mock_response.json.return_value = {"content": [{"guardrails": '{"key": "value"}'}]}
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
         result = await client.get_application_guardrail_name('tenant123', 'appKey123')
-        assert result == {"key": "value"}
+        assert result == '{"key": "value"}'
 
     # Handles missing or invalid tenant ID gracefully
     @pytest.mark.asyncio
@@ -56,7 +56,7 @@ class TestHttpGovernanceServiceClient:
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
         result = await client.get_application_guardrail_name('tenant123', 'appKey123')
-        assert result == {}
+        assert result == []
 
     # Handles non-200 HTTP status codes by raising ShieldException
     @pytest.mark.asyncio

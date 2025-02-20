@@ -6,7 +6,7 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.guardrail_service_interface import IGuardrailServiceClient
-from api.shield.view.guardrail_view import GuardrailView
+from api.guardrails.api_schemas.guardrail import GuardrailView
 
 logger = logging.getLogger(__name__)
 
