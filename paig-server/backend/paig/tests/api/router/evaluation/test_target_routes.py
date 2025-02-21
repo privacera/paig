@@ -28,7 +28,7 @@ class TestTargetRouters:
     async def test_target_routes(self, client: AsyncClient, app: FastAPI):
         app.dependency_overrides[get_auth_user] = self.auth_user
         post_data = {
-            "url": "string",
+            "url": "http://localhost:8080",
             "body": {},
             "headers": {},
             "method": "string",
@@ -61,7 +61,7 @@ class TestTargetRouters:
 
         # Update application
         update_data = {
-            "url": "updated_string",
+            "url": "http://localhost1:8080",
             "body": {},
             "headers": {},
             "method": "updated_string",
@@ -72,7 +72,7 @@ class TestTargetRouters:
                                         json=update_data)
         assert put_response.status_code == 200
         updated_app = put_response.json()
-        assert updated_app["url"] == "updated_string"
+        assert updated_app["url"] == "http://localhost1:8080"
         assert updated_app["name"] == "updated_string"
 
         # Delete application

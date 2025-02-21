@@ -51,6 +51,14 @@ jobs:
         pip install dist/*.whl
         cd ..
 
+    - name: Build and Install paig-evaluation wheel
+      run: |
+        . venv/bin/activate
+        cd paig-evaluation
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
     - name: Install PAIG-Server dependencies
       run: |
         . venv/bin/activate
