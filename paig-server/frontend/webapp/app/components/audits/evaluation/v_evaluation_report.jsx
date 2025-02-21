@@ -67,6 +67,11 @@ class VEvaluationOverview extends Component {
                 {appResponse.status || '--'}
               </Typography>
               {appResponse.response || '--'}
+              {(appResponse.status === 'FAILED' ||  appResponse.status === 'ERROR') && appResponse.failure_reason && (
+              <Typography style={{ color: '#d32f2f', fontSize: '12px', fontWeight: 500 }}>
+                {appResponse.failure_reason}
+              </Typography>
+            )}
             </div>
           ) : (
             '--'
