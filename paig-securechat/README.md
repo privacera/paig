@@ -16,6 +16,7 @@ Secure chat SDK provides an easy to use, plugable platform which will allow deve
 - [Docker compose with Opensearch](docker/README.md#docker-compose-with-opensearch)
 - [Docker compose with Milvus](docker/README.md#docker-compose-with-milvus)
 - [Generate hashed password](#hashedpassword)
+- [Generate API token](#apitoken)
 
 ## Overview <a name="overview"></a>
 Secure Chat SDK is a pluggable platform which allows you to add more features to your chat bot as you go along.
@@ -92,6 +93,7 @@ This default configuration can be overridden by the user provided custom configu
    _Note_:- 
    1. ai_application_name is the name of the application which is configured in the AI_applications.json file [sample configuration](web-server/src/paig_securechat/configs/AI_applications.json).
    2. User can set up OPENAI_API_KEY in different ways(Refer Configure Docker Compose File in [Secure Chat Docker](docker/README.md))
+   3. The user can use the OpenAI proxy endpoint. To set a custom base URL for OpenAI API requests, the user must configure the OPENAI_API_BASE environment variable with the desired proxy endpoint.
 
 ### Secure Chat with Bedrock configuration
 1. In custom configuration file ,user should provide new configuration key-values to override the existing configuration.
@@ -170,3 +172,29 @@ You can generate hashed password using two ways:
    from werkzeug.security import generate_password_hash
    print(generate_password_hash("<put your password here>", "sha256"))
       ```
+## How to generate API token <a name="apitoken"></a>
+You can generate API token using script _web-server/src/paig_securechat/standalone_generate_api_token.py_ :
+
+   i. Create virtual environment and install the dependencies.
+   ```bash
+    cd web-server
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+   ```
+    
+   ii. Run the standalone_generate_api_token.py script.
+   ```bash
+    cd src/paig_securechat/
+    python standalone_generate_api_token.py
+   ```
+  
+  One such example is :-
+   ```bash
+   python standalone_generate_api_token.py
+   Enter username: sally
+   Enter expiry in minutes : 30
+   Encoded Token: <generated token>
+   Decoded Token: <decoded token>
+   ```
+   [Standalone API token generation script](web-server/src/paig_securechat/standalone_generate_api_token.py)

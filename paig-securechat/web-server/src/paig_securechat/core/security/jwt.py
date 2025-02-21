@@ -26,8 +26,11 @@ class JWTHandler:
     expire_minutes = security_conf.get('expire_minutes', 60)
 
     @staticmethod
-    def encode(payload: dict) -> str:
-        expire = datetime.utcnow() + timedelta(minutes=JWTHandler.expire_minutes)
+    def encode(payload: dict, expire_minutes: int = None) -> str:
+        if expire_minutes is None:
+            expire_minutes = JWTHandler.expire_minutes
+
+        expire = datetime.utcnow() + timedelta(minutes=expire_minutes)
         payload.update({"exp": expire})
         return jwt.encode(
             payload, JWTHandler.secret_key, algorithm=JWTHandler.algorithm

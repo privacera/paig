@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 def initialize_openai_llm_client(openai_params):
     model = openai_params.get("model")
-    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE"))
     models_list = client.models.list()
     models = {model.id for model in models_list.data}
 
