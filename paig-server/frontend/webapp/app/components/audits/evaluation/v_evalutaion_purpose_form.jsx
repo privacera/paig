@@ -1,6 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react";
 
+import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import Typography from "@material-ui/core/Typography";
 import CallMadeIcon from '@material-ui/icons/CallMade';
@@ -13,7 +14,16 @@ import { Box } from '@material-ui/core';
 import f from 'common-ui/utils/f';
 import { FormGroupInput } from "common-ui/components/form_fields";
 
+const useStyles = makeStyles({
+  customCardContent: {
+    "&:last-child": {
+      padding: "16px",
+    },
+  },
+});
+
 const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
+  const classes = useStyles();
   const { purpose } = form.fields;
 
   const handleTemplateSelect = (description) => {
@@ -38,51 +48,67 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
       <Grid item xs={12}>
         Example Purpose: As a finance team member, consider a comprehensive evaluation of the financial model to assess its accuracy, identify potential biases, and ensure compliance with relevant regulations.
       </Grid>
-      <Typography className="m-t-lg m-b-md" >Templates</Typography>
+      <Typography className="m-t-lg m-b-md">Templates</Typography>
       <Grid container spacing={2}>
-        {f.models(data).map((template, index) => (
-          <Grid item xs={12} sm={6} key={index}>
-            <Card onClick={() => handleTemplateSelect(template.description)} className="pointer" style={{ minHeight: '160px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}>
-              <CardContent style={{ position: 'relative', flex: 1 }}>
-                <Typography
-                  variant="subtitle1"
+        {["Non-Custom", "Custom"].map((type) => (
+          <Grid item xs={12} sm={6} key={type}>
+            {f.models(data).filter((template) =>
+                type === "Custom" ? template.title.includes("Custom") : !template.title.includes("Custom")
+              )
+              .map((template, index) => (
+                <Card
+                  key={`${type}-${index}`}
+                  onClick={() => handleTemplateSelect(template.description)} className="pointer" 
                   style={{
+                    minHeight: "160px",
                     display: "flex",
-                    alignItems: "center",
+                    flexDirection: "column",
                     justifyContent: "space-between",
-                  }}
-                  className="m-b-sm"
-                >
-                  <span>
-                    {template.title}
-                    <CallMadeIcon className="m-l-xs" fontSize="small" color="primary" />
-                  </span>
-                  { template.chip && 
-                    <Chip 
-                      label={template.chip} 
-                      style={{ 
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        bgcolor: "#EAF2FF", 
-                        color: "#000", 
-                        borderRadius: "16px" 
-                      }} 
-                    />
-                  }
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: 'block'
+                    cursor: "pointer",
+                    marginBottom: "10px"
                   }}
                 >
-                  {template.description}
-                </Typography>
-              </CardContent>
-            </Card>
+                  <CardContent style={{ position: "relative", flex: 1 }} className={classes.customCardContent}>
+                    <Typography
+                      variant="subtitle1"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between"
+                      }}
+                      className="m-b-sm"
+                    >
+                      <span>
+                        {template.title}
+                        <CallMadeIcon className="m-l-xs" fontSize="small" color="primary" />
+                      </span>
+                      {template.chip && (
+                        <Chip
+                          label={template.chip}
+                          style={{
+                            position: "absolute",
+                            top: 8,
+                            right: 8,
+                            bgcolor: "#EAF2FF",
+                            color: "#000",
+                            borderRadius: "16px"
+                          }}
+                        />
+                      )}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "block"
+                      }}
+                    >
+                      {template.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))}
           </Grid>
         ))}
       </Grid>

@@ -67,11 +67,24 @@ class VEvaluationOverview extends Component {
                 {appResponse.status || '--'}
               </Typography>
               {appResponse.response || '--'}
-              {(appResponse.status === 'FAILED' ||  appResponse.status === 'ERROR') && appResponse.failure_reason && (
-              <Typography style={{ color: '#d32f2f', fontSize: '12px', fontWeight: 500 }}>
-                {appResponse.failure_reason}
-              </Typography>
-            )}
+              {(appResponse.status === 'FAILED' || appResponse.status === 'ERROR') && appResponse.failure_reason && (
+                <Box
+                  style={{
+                    padding: '8px',
+                    borderRadius: '4px',
+                    backgroundColor: appResponse.status === 'FAILED' ? '#f8d7da' : '#FFFAEB',
+                  }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 500
+                    }}
+                  >
+                    {appResponse.failure_reason}
+                  </Typography>
+                </Box>
+              )}
             </div>
           ) : (
             '--'
@@ -106,7 +119,7 @@ class VEvaluationOverview extends Component {
             <Grid container spacing={2}>
               {evaluationDataList.map((evaluationData, index) => {
                 return (
-                  <Grid item md={4} sm={6} xs={12} key={index} className="graph-border-left">
+                  <Grid item md={4} sm={6} xs={12} key={index} className="graph-border-left m-l-md">
                     <Typography className="graph-title" gutterBottom>
                       Evaluation Overview
                     </Typography>

@@ -12,7 +12,7 @@ const RadialBarChart = ({ chartData, title }) => {
       plotBorderWidth: null
     },
     title: {
-      text: title,
+      text: title
     },
     tooltip: {
       outside: true
@@ -21,6 +21,7 @@ const RadialBarChart = ({ chartData, title }) => {
       size: "85%",
       innerSize: "20%",
       endAngle: 260,
+      center: ["60%", "50%"],
     },
     xAxis: {
       categories: chartData.categories,
