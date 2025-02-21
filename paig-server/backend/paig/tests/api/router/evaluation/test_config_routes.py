@@ -28,7 +28,7 @@ class TestConfigRouters:
     async def test_config_routes(self, client: AsyncClient, app: FastAPI):
         app.dependency_overrides[get_auth_user] = self.auth_user
         post_data = {
-            "url": "string",
+            "url": "http://localhost:8080",
             "body": {},
             "headers": {},
             "method": "string",
