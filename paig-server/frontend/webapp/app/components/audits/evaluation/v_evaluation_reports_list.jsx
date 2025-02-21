@@ -52,8 +52,8 @@ class VEvaluationReportTable extends Component{
   getHeaders = () => {
     let headers = ([
       <TableCell key="1">Report Name</TableCell>,
-      <TableCell key="2">Configuration Used</TableCell>,
-      <TableCell key="3">Applications Evaluated</TableCell>,
+      <TableCell key="2">Eval</TableCell>,
+      <TableCell key="3">Applications</TableCell>,
       <TableCell key="5" className="text-center">Report Status</TableCell>,
       <TableCell key="6">Score</TableCell>,
       <TableCell key="7">Created</TableCell>,

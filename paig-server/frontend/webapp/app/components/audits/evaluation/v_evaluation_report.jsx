@@ -105,7 +105,6 @@ class VEvaluationOverview extends Component {
           >
             <Grid container spacing={2}>
               {evaluationDataList.map((evaluationData, index) => {
-                console.log(evaluationData, 'evaluationData')
                 return (
                   <Grid item md={4} sm={6} xs={12} key={index} className="graph-border-left">
                     <Typography className="graph-title" gutterBottom>

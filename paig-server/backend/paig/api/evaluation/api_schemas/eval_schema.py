@@ -100,6 +100,7 @@ class ResultsQueryParamsBase(BaseAPIFilter):
     prompt: Optional[str] = Field(None, description="prompt", alias="prompt")
     response: Optional[str] = Field(None, description="response", alias="response")
     category: Optional[str] = Field(None, description="category", alias="category")
+    status: Optional[str] = Field(None, description="status", alias="status")
 
 
 
@@ -112,20 +113,24 @@ def results_include_query_params(
         include_query_prompt: Optional[str] = Query(None, alias="includeQuery.prompt"),
         include_query_response: Optional[str] = Query(None, alias="includeQuery.response"),
         include_query_category: Optional[str] = Query(None, alias="includeQuery.category"),
+        include_query_status: Optional[str] = Query(None, alias="includeQuery.status"),
 ) -> ResultsIncludeQueryParams:
     return ResultsIncludeQueryParams(
         prompt=include_query_prompt,
         response=include_query_response,
-        category=include_query_category
+        category=include_query_category,
+        status=include_query_status
     )
 
 def results_exclude_query_params(
         exclude_query_prompt: Optional[str] = Query(None, alias="excludeQuery.prompt"),
         exclude_query_response: Optional[str] = Query(None, alias="excludeQuery.response"),
         exclude_query_category: Optional[str] = Query(None, alias="excludeQuery.category"),
+        exclude_query_status: Optional[str] = Query(None, alias="excludeQuery.status"),
 ) -> ResultsQueryParamsBase:
     return ResultsQueryParamsBase(
         prompt=exclude_query_prompt,
         response=exclude_query_response,
-        category=exclude_query_category
+        category=exclude_query_category,
+        status=exclude_query_status
     )

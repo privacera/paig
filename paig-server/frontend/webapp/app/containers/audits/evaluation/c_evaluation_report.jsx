@@ -74,13 +74,13 @@ export class CEvaluationReport extends Component {
     const failRateSeries = {
       name: "Fail rate (%)",
       data: [],
-      color: "#D8DBDE",
+      color: "#ff4d01",
     };
 
     const errorRateSeries = {
       name: "Error rate (%)",
       data: [],
-      color: "#FF4D01",
+      color: "#FFC107",
     };
 
     const categories = [];

@@ -242,7 +242,8 @@ const REPORT_GRID_LABELS = {
 const EVAL_REPORT_CATEGORIES = {
     Category: { multi: false, category: "Category", type: "text", key: 'category' },
     Prompt: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-    Response: { multi: false, category: "Response", type: "text", key: 'response' }
+    Response: { multi: false, category: "Response", type: "text", key: 'response' },
+    Status: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
 }
 
 export {

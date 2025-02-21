@@ -144,6 +144,11 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
                 search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.notlike('%' + include_query['category'] + '%')))
             else:
                 search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.like('%' + include_query['category'] + '%')))
+        if 'status' in include_query and include_query['status']:
+            if 'status' in exclude_list:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.notlike('%' + include_query['status'] + '%')))
+            else:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.like('%' + include_query['status'] + '%')))
         if len(search_filters) > 0:
             query = query.filter(*search_filters)
 
