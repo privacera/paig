@@ -6,6 +6,7 @@ import {SIDEBAR_MENU} from 'components/site/sidebar_menu';
 import {configProperties} from 'utils/config_properties';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import stores from 'data/stores/all_stores';
+import { prop } from 'cheerio/lib/api/attributes';
 
 const {
 	DASHBOARD,
@@ -30,7 +31,8 @@ const {
     SAVED_REPORTS,
     REPORTING,
     AI_APPLICATIONS_PERMISSIONS,
-    VECTOR_DB_PERMISSIONS
+    VECTOR_DB_PERMISSIONS,
+    PAIG_EVALUATION
 } = UI_CONSTANTS
 
 const SIDEBAR_MENU_ITEMS = {
@@ -82,7 +84,7 @@ const UI_FEATURE_SIDEBAR_TABS = {
         [APPLICATIONS]: {
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            },
+            }
         },
         [ACCOUNT]: {
             [META_DATA]: {}
@@ -98,7 +100,8 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
         }
     },
     [AUDITS]: {
-        [SECURITY]: {}
+        [SECURITY]: {},
+        [PAIG_EVALUATION] : {}
     },
     [COMPLIANCE]:{
         [ADMIN_AUDITS]:{}
@@ -134,7 +137,6 @@ class UISidebarTabsUtil {
     async fetchProperties() {
         try {
             // let properties = await stores.publicStore.getFeatureFlags();
-            // console.log('1prop', properties);
             // this.properties = this.sortPropertiesInOrder(properties.models)
             this.properties = this.sortPropertiesInOrder([/*{
                 "name": "SHIELD_CONFIGURATION",
@@ -142,7 +144,13 @@ class UISidebarTabsUtil {
             },*/ {
                 "name": "VECTOR_DB",
                 "value": 'true'
-            }])
+            }, 
+            {
+                "name": "PAIG_EVALUATION",
+                "value": 'true'
+            }, 
+        
+        ])
         } catch (e) {
             console.error("Failed to fetch system properties", e);
         }
@@ -170,6 +178,7 @@ class UISidebarTabsUtil {
         this.properties.forEach(property => {
             let name = property.name.toUpperCase();
             let value = property.value;
+
             if (!value) {
                 return;
             }
@@ -387,6 +396,9 @@ const featurePermissionUIMap = {
     },
     'governance.vector_db': {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
+    },
+    'governance.paig_evaluation': {
+        propertyForShowHide: [`${AUDITS}.${PAIG_EVALUATION}`]
     },
     'audits.security': {
         propertyForShowHide: [`${AUDITS}.${SECURITY}`]

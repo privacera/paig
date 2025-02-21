@@ -770,3 +770,7 @@ span.diff-danger>span {
       }
   }
 }
+
+.eval-table tbody td, .eval-table thead th{
+  padding:8px;
+}
