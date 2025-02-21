@@ -214,7 +214,7 @@ class EvaluationService:
         app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if len(apps) != len(app_ids):
-            raise BadRequestException('Application names not found')
+            raise BadRequestException('Applications are not configured properly.Please check the configuration')
         target_hosts, application_names = await self.get_target_hosts(apps)
         # Insert evaluation record
         eval_id = str(uuid.uuid4())
