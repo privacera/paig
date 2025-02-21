@@ -180,6 +180,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
     asyncio.run(async_operations())
 
 
+
 class EvaluationService:
 
     def __init__(
@@ -209,95 +210,7 @@ class EvaluationService:
     async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None):
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
-            raise BadRequestException('Invalid evaluation config ID')
-        app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
-        apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
-        if len(apps) != len(app_ids):
-            raise BadRequestException('Application names not found')
-        target_hosts, application_names = await self.get_target_hosts(apps)
-        # Insert evaluation record
-        eval_id = str(uuid.uuid4())
-        eval_params = {
-            "status": "GENERATING",
-            "config_id": eval_config_id,
-            "owner": owner,
-            "eval_id": eval_id,
-            "purpose": eval_config.purpose,
-            "config_name": eval_config.name,
-            "application_names": ','.join(application_names),
-            "base_run_id": base_run_id,
-            "name": report_name
-        }
-        eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
-        eval_run_id = eval_model.id
-        asyncio.create_task(
-            asyncio.to_thread(
-                threaded_run_evaluation,
-                eval_id,
-                eval_run_id,
-                eval_config,
-                target_hosts,
-                application_names
-            )
-        )
-        return
-
-    async def delete_evaluation(self, eval_id: int):
-        """
-        Delete an AI application by its ID.
-
-        Args:
-            id (int): The ID of the AI application to delete.
-        """
-        existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)
-        return await self.evaluation_repository.delete_evaluation(existing_evaluation)
-
-    @staticmethod
-    async def get_categories(purpose):
-        resp = dict()
-        suggested_categories = get_suggested_plugins(purpose)
-        if not isinstance(suggested_categories, dict):
-            raise BadRequestException('Invalid response received for for suggested categories')
-        if suggested_categories['status'] != 'success':
-            raise BadRequestException(suggested_categories['message'])
-        resp['suggested_categories'] = suggested_categories['result']
-        all_categories = get_all_plugins()
-        if not isinstance(all_categories, dict):
-            raise BadRequestException('Invalid response received for for all categories')
-        if all_categories['status'] != 'success':
-            raise BadRequestException(all_categories['message'])
-        resp['all_categories'] = all_categories['result']
-        return resp
-class EvaluationService:
-
-    def __init__(
-        self,
-        evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository),
-        eval_config_history_repository: EvaluationConfigHistoryRepository = SingletonDepends(EvaluationConfigHistoryRepository),
-        eval_target_repository: EvaluationTargetRepository = SingletonDepends(EvaluationTargetRepository)
-    ):
-        self.evaluation_repository = evaluation_repository
-        self.eval_config_history_repository = eval_config_history_repository
-        self.eval_target_repository = eval_target_repository
-
-    def get_paig_evaluator(self):
-        return PAIGEvaluator()
-
-    async def get_target_hosts(self, apps):
-        final_target = list()
-        app_names = list()
-        for app in apps:
-            target_host = json.loads(app.config)
-            target_host['label'] = app.name
-            app_names.append(app.name)
-            final_target.append(target_host)
-        return final_target, app_names
-
-    @Transactional(propagation=Propagation.REQUIRED)
-    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None):
-        eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
-        if eval_config is None:
-            raise BadRequestException('Invalid evaluation config ID')
+            raise BadRequestException('Configuration does not exists')
         app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if len(apps) != len(app_ids):
