@@ -34,6 +34,7 @@ def transform_eval_target(eval_target):
         except Exception as e:
             raise BadRequestException("Invalid body format")
     eval_config['transformResponse'] = eval_target['transformResponse']
+    eval_config['headers'] = {k: v for k, v in eval_config['headers'].items() if k and v}
     eval_target_dict['config'] = eval_config
     return json.dumps(eval_target_dict)
 
