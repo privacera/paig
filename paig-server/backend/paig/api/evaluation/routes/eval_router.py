@@ -58,10 +58,7 @@ async def evaluation_rerun(
     evaluation_controller: EvaluationController = evaluator_controller_instance,
     user: dict = Depends(get_auth_user),
 ):
-    try:
-        return await evaluation_controller.rerun_evaluation(eval_id, user, body_params.report_name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await evaluation_controller.rerun_evaluation(eval_id, user, body_params.report_name)
 
 
 @evaluation_router.delete("/report/{eval_id}")
@@ -70,11 +67,7 @@ async def evaluation_delete(
     evaluation_controller: EvaluationController = evaluator_controller_instance,
     user: dict = Depends(get_auth_user),
 ):
-    # return await evaluation_controller.run_evaluation(evaluation_config)
-    try:
-        return await evaluation_controller.delete_evaluation(eval_id)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return await evaluation_controller.delete_evaluation(eval_id)
 
 @evaluation_router.post("/categories")
 async def get_categories(

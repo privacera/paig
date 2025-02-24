@@ -1,5 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import {observer, inject} from 'mobx-react';
+import {capitalize} from "lodash";
 
 import {TableCell} from '@material-ui/core';
 import CheckIcon from "@material-ui/icons/Check";
@@ -24,10 +25,12 @@ class VEvaluationReportTable extends Component{
       expandedRows: []
     };
   }
-    
+
   getStatus = (status) => {
-    const normalizedStatus = status.toLowerCase(); // Convert to lowercase for comparison
-  
+    if (!status) return null;
+    const normalizedStatus = status.toLowerCase();
+    const formattedStatus = capitalize(normalizedStatus);
+
     if (normalizedStatus === "completed") {
       return (
         <Tooltip arrow placement="top" title="Completed">
@@ -45,7 +48,22 @@ class VEvaluationReportTable extends Component{
         </Tooltip>
       );
     } else {
-      return <LinearProgress style={{ width: "50%", margin: "auto" }} />;
+      return (
+        <Tooltip arrow placement="top" title={formattedStatus}>
+          <div 
+            style={{ 
+              width: "100%", 
+              margin: "auto", 
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center" 
+            }}
+            className="pointer"
+          >
+            <LinearProgress style={{ width: "50%", margin: "auto" }} />
+          </div>
+        </Tooltip>
+      );
     }
   };
 
