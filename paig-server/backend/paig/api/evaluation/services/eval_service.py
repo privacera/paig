@@ -201,6 +201,8 @@ class EvaluationService:
         app_names = list()
         for app in apps:
             target_host = json.loads(app.config)
+            if 'headers'in target_host['config'] and target_host['config']['headers'] == {}:
+                del target_host['config']['headers']
             target_host['label'] = app.name
             app_names.append(app.name)
             final_target.append(target_host)
