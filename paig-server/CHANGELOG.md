@@ -1,6 +1,12 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+## [v0.0.4] - 2025-02-24
+### Added
+- AWS Bedrock guardrails support.
+- API Error Handling improved for invalid API endpoints.
+- Fixed application count in Sensitive Data Access dashboard graph.
+
 ## [v0.0.3] - 2024-10-08
 ### Added
 - Added documentation for Developers Guide.
