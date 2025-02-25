@@ -81,3 +81,14 @@ def set_up_standalone_mode(
     constants.MODE = "standalone"
     constants.SINGLE_USER_MODE = single_user_mode
 
+
+def set_paig_api_key():
+    from core import config
+    conf = config.Config
+    if 'PAIG_API_KEY' not in os.environ:
+        if 'paig' in conf and 'key_file' in conf['paig']:
+            key_file_path = conf['paig']['key_file']
+            if os.path.exists(key_file_path):
+                with open(key_file_path, 'r') as file:
+                    paig_api_key = file.read().strip()
+                    os.environ["PAIG_API_KEY"] = paig_api_key

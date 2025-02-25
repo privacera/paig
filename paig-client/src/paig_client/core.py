@@ -4,6 +4,7 @@ import os
 import threading
 import time
 import uuid
+import base64
 from queue import Queue
 import contextvars
 
@@ -437,10 +438,11 @@ def setup_app(**kwargs):
             application_config: The application config dictionary or string contents of the file
             request_kwargs: The keyword arguments to be passed to the urllib3.request call and can contain
             timeout and retry objects
+            application_config_api_key: The API key to fetch the application config from the PAIG Server
     Returns:
         Instance of PAIGApplication
     """
-    if "application_config_file" in kwargs or "application_config" in kwargs:
+    if "application_config_file" in kwargs or "application_config" in kwargs or "application_config_api_key" in kwargs:
         app = PAIGApplication(**kwargs)
         if app.is_configured():
             return app
@@ -481,6 +483,7 @@ class PAIGApplication:
                 application_config_file (str): The path to the application config file.
                 application_config (dict): The application config dictionary or string contents of the file
                 request_kwargs (dict): The keyword arguments to be passed to the ShieldRestHttpClient class.
+                application_config_api_key (str): The API key to fetch the application config from the PAIG Server
 
                 You can also pass in any of the keys from the application config file as keyword arguments in case
                 you want to override the values that are in the application config file.
@@ -533,6 +536,7 @@ class PAIGApplication:
         if _logger.isEnabledFor(logging.DEBUG):
             _logger.debug(f"PAIGPlugin initialized with {self.__dict__}")
 
+    @classmethod
     def get_plugin_app_config(self, kwargs):
         """
         Get the plugin application config from the given kwargs. User could pass the entire application config
@@ -551,10 +555,65 @@ class PAIGApplication:
                 plugin_app_config_dict = kwargs["application_config"]
             else:
                 raise PAIGException(ErrorMessage.INVALID_APPLICATION_CONFIG_FILE_DATA.format())
+        elif "application_config_api_key" in kwargs:
+            api_key = kwargs.get("application_config_api_key")
+            plugin_app_config_dict = self.fetch_application_config_from_server(api_key, kwargs)
         else:
-            plugin_app_config_dict = self.read_options_from_app_config(kwargs.get("application_config_file"))
+            api_key = os.environ.get('PAIG_API_KEY')
+            plugin_app_config_dict = self.fetch_application_config_from_server(api_key, kwargs)
+
         return plugin_app_config_dict
 
+    @classmethod
+    def fetch_application_config_from_server(self, api_key, kwargs):
+        """
+        Fetch the application configuration from the server using the given API key.
+        Else fallback to the application config file.
+        :param api_key:
+        :param kwargs:
+        :return:
+        """
+        if not api_key:
+            return self.read_options_from_app_config(kwargs.get("application_config_file"))
+
+        try:
+            decoded_bytes = base64.urlsafe_b64decode(api_key)
+            decoded_str = decoded_bytes.decode('utf-8')
+            parts = decoded_str.split(";")
+            if len(parts) != 2:
+                raise ValueError(
+                    "Decoded API key is not in the expected format: 'apiKey;serverUrl'. "
+                    "Please provide a valid API key."
+                )
+
+            server_url = parts[1]
+            if not server_url.startswith("https://"):
+                raise ValueError("Invalid server URL format found in API key. please Ensure API key is valid")
+
+            request_url = f"{server_url.rstrip('/')}/api/ai/application/config"
+            headers = {"x-paig-api-key": api_key}
+            _logger.debug(f"Constructed request URL for fetching application json: {request_url} with headers : {headers}")
+
+            response = HttpTransport.get_http().request(method="GET",
+                                                        url=request_url,
+                                                        headers=headers)
+            if response.status != 200:
+                raise ValueError(f"Failed to fetch configuration: HTTP {response.status} {response.data}")
+
+            _logger.debug("Application configuration fetched successfully.")
+
+            plugin_app_config_dict = response.json()
+            plugin_app_config_dict.update({
+                "apiServerUrl": server_url,
+                "apiKey": api_key
+            })
+        except Exception as e:
+            _logger.error("Failed to retrieve application config. Error occurred while processing API key: %s", e, exc_info=True)
+            raise ValueError("Failed to fetch configuration from the server. Please ensure API key is valid.")
+
+        return plugin_app_config_dict
+
+    @classmethod
     def read_options_from_app_config(self, application_config_file=None):
         """
         Read the options from the application config file.
@@ -607,6 +666,7 @@ class PAIGApplication:
             raise PAIGException(
                 ErrorMessage.MULTIPLE_APP_CONFIG_FILES_FOUND.format(application_config_dir=application_config_dir))
 
+    @classmethod
     def load_plugin_application_configs_from_file(self, app_config_file_path: str):
         with open(app_config_file_path, 'r') as config_file:
             plugin_app_config_dict = json.load(config_file)

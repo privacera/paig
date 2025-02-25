@@ -40,7 +40,6 @@ class AIApplications:
 
     def create_instances(self):
         logger.info(f"create_instances AI_applications={self.AI_applications}")
-
         for AI_application in self.AI_applications:
             ai_application_name = AI_application.get("name")
             if not AI_application.get("enable"):
@@ -65,7 +64,7 @@ class AIApplications:
             self.impl_map[ai_application_name] = class_(ai_application_name)
             if not llm_constants.paig_shield.DISABLE_PAIG_SHIELD_PLUGIN_FLAG:
                 llm_constants.paig_shield.set_paig_config_map(ai_application_name,
-                                                          self.cnf['AI_applications'][ai_application_name])
+                                                          self.cnf['AI_applications'][ai_application_name], len(self.AI_applications))
 
     def get_service(self, ai_application_name):
         service = self.impl_map.get(ai_application_name)

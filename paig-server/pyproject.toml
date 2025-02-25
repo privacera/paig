@@ -53,7 +53,7 @@ dependencies = [
     "APScheduler",
     "pydantic[email]",
     "posthog",
-    "paig-authorizer-core==0.0.1",
+    "paig-authorizer-core",
     "psutil"
 ]
 
