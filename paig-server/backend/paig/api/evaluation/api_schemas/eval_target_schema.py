@@ -1,19 +1,29 @@
+from enum import Enum
+
 from fastapi import Query
-from pydantic import BaseModel, Field, Json
-from typing import Literal, List, Optional, Any, Union, Dict
+from pydantic import BaseModel, Field
+from typing import Optional, Any, Union, Dict
 from core.factory.database_initiator import BaseAPIFilter
 
+
+class HttpMethod(str, Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+
 class TargetCommonRequest(BaseModel):
-    url: str = Field(..., max_length=255, min_length=1)
-    body: Union[Dict[str, Any], str] = Field(default="{}")  # Accepts both dict & str
-    headers: Union[Dict[str, Any], str] = Field(default="{}")  # Accepts both dict & str
-    method: str = Field(..., max_length=255, min_length=1)
-    transformResponse: str = Field(..., max_length=255)
-    name: str = Field(..., max_length=255, min_length=1)
+    url: str = Field(..., min_length=1, description="The URL of the target")
+    body: Union[Dict[str, Any], str] = Field(default="{}", description="body of target host")  # Accepts both dict & str
+    headers: Union[Dict[str, Any], str] = Field(default="{}", description="headers of target host")  # Accepts both dict & str
+    method: HttpMethod = Field(..., max_length=255, min_length=1, description="The method of the target")
+    transformResponse: str = Field(..., description="The transformResponse of the target")
+    name: str = Field(..., max_length=255, min_length=1, description="The name of the target")
 
 
 class TargetCreateRequest(TargetCommonRequest):
-    ai_application_id: Optional[int]
+    ai_application_id: Optional[int] = Field(None, description="The AI application ID")
 
 class TargetUpdateRequest(TargetCommonRequest):
     pass

@@ -61,6 +61,10 @@ class CEvaluationReportsList extends Component {
   }
   componentDidMount() {
     this.handleRefresh();
+    // Auto-refresh every 30 secs
+    this.refreshInterval = setInterval(() => {
+      this.handleRefresh();
+    }, 30000);
   }
   componentWillUnmount() {
     let {dateRangeDetail, _vState} = this;
@@ -68,6 +72,8 @@ class CEvaluationReportsList extends Component {
     let {vName} = this.props;
     let data = JSON.stringify({params, dateRangeDetail, _vState});
     UiState.saveState(vName, data);
+    // Clear the interval when the component is unmounted
+    clearInterval(this.refreshInterval);
   }
   @action
   restoreState() {

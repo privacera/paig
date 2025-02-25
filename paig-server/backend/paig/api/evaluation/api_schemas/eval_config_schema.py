@@ -1,15 +1,15 @@
 from fastapi import Query
-from pydantic import BaseModel, Field, Json
-from typing import Literal, List, Optional, Any, Union, Dict
+from pydantic import BaseModel, Field
+from typing import List, Optional
 
 from core.api_schemas.base_view import BaseView
 from core.factory.database_initiator import BaseAPIFilter
 
 class ConfigCommonModel(BaseModel):
-    purpose: str = Field(..., max_length=1024)
+    purpose: str = Field(..., description="The purpose of the config")
     name: str = Field(..., max_length=1024)
-    categories: list[Any]
-    custom_prompts: list[Any]
+    categories: List[str] = Field(default_factory=[], description="The categories of evaluation")
+    custom_prompts: List[str] = Field(default_factory=[], description="Custom prompts for evaluation")
 
 
 class ConfigCreateRequest(ConfigCommonModel):
@@ -34,14 +34,14 @@ class EvalConfigFilter(BaseAPIFilter):
     name: Optional[str] = Field(default=None, description="Filter by name")
 
 class EvalConfigView(BaseView):
-    purpose: str = Field(..., max_length=1024)
-    name: str = Field(..., max_length=1024)
-    categories: str = Field(..., max_length=1024)
-    custom_prompts: str = Field(..., max_length=1024)
-    status: str = Field(..., max_length=1024)
-    version: int = Field(..., gt=0)
-    application_names: str
-    eval_run_count: int
+    purpose: str = Field(..., description="The purpose of the config")
+    name: str = Field(..., max_length=1024, description="The name of the config")
+    categories: str = Field(..., description="The categories of evaluation")
+    custom_prompts: str = Field(..., description="Custom prompts for evaluation")
+    status: str = Field(..., max_length=1024, description="The status of the config")
+    version: int = Field(..., gt=0, description="The version of the config")
+    application_names: str = Field(..., description="The application names")
+    eval_run_count: int = Field(..., ge=0, description="The number of evaluation runs")
     owner: Optional[str] = Field(None, description="The User Name", alias="owner")
     model_config = BaseView.model_config
 

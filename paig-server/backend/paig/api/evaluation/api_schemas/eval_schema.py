@@ -1,36 +1,33 @@
-import os
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, List, Optional
+from typing import Optional
 from core.factory.database_initiator import BaseAPIFilter
 from fastapi import Query
 from datetime import datetime
 from api.evaluation.api_schemas.eval_config_schema import ConfigCreateRequest
 
-REPORT_URL = os.environ.get('REPORT_SERVER_BASE_URL', 'http://localhost:15500')
 
 class GetCategories(BaseModel):
-    purpose: str = Field(..., max_length=1024)
+    purpose: str = Field(..., description="The purpose of the config")
 
 class SaveAndRunRequest(ConfigCreateRequest):
-    report_name: str = Field(..., max_length=1024)
+    report_name: str = Field(..., max_length=1024, description="The name of the report")
 
 class RunRequest(BaseModel):
-    report_name: str = Field(..., max_length=1024)
+    report_name: str = Field(..., max_length=1024, description="The name of the report")
 
 class BaseEvaluationView(BaseModel):
-    name: str = Field(..., max_length=1024)
-    application_names: str = Field(..., max_length=1024)
-    config_name: str = Field(..., max_length=1024)
-    purpose: str = Field(..., max_length=1024)
-    eval_id: str = Field(..., max_length=1024)
-    config_id: int
-    status: str = Field(..., max_length=1024)
+    name: str = Field(..., max_length=1024, description="The name of the report")
+    application_names: str = Field(..., max_length=1024, description="The application names")
+    config_name: str = Field(..., max_length=1024, description="The config name")
+    purpose: str = Field(..., description="The purpose of the config")
+    eval_id: str = Field(..., max_length=1024, description="The eval id")
+    config_id: int = Field(..., description="The config id")
+    status: str = Field(..., max_length=1024, description="The status of the config")
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
-    passed: str
-    failed: str
-    id: int
-    create_time: Optional[datetime]
-    report_url: str = Field(default=REPORT_URL)
+    passed: str = Field(..., description="The number of passed evaluations")
+    failed: str = Field(..., description="The number of failed evaluations")
+    id: int = Field(..., description="The id of the evaluation")
+    create_time: Optional[datetime] = Field(None, description="The create time of the evaluation")
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True
@@ -39,11 +36,11 @@ class BaseEvaluationView(BaseModel):
 
 class QueryParamsBase(BaseAPIFilter):
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
-    application_names: Optional[str] = Field(None, description="The Application name", alias="application_names")
-    config_name: Optional[str] = Field(None, description="The Config name", alias="config_name")
-    purpose: Optional[str] = Field(None, description="The Purpose", alias="purpose")
-    name: Optional[str] = Field(None, description="The Name", alias="name")
-    status: Optional[str] = Field(None, description="The Status", alias="status")
+    application_names: Optional[str] = Field(None, description="The Application name for the eval", alias="application_names")
+    config_name: Optional[str] = Field(None, description="The Config name of eval", alias="config_name")
+    purpose: Optional[str] = Field(None, description="The Purpose of eval", alias="purpose")
+    name: Optional[str] = Field(None, description="The report name of eval", alias="name")
+    status: Optional[str] = Field(None, description="The Status of eval", alias="status")
 
 
 

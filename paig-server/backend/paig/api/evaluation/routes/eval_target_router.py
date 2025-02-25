@@ -25,7 +25,7 @@ async def get_ai_app_with_host(
 
 
 @evaluation_target_router.post("/application")
-async def save_application_target(
+async def save_target_application(
         request: Request,
         response: Response,
         body_params: TargetCreateRequest,
@@ -36,7 +36,7 @@ async def save_application_target(
 
 
 @evaluation_target_router.put("/application/{id}")
-async def update_application_target(
+async def update_target_application(
         request: Request,
         response: Response,
         id: int,

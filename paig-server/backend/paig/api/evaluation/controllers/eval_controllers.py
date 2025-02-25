@@ -31,7 +31,7 @@ class EvaluationController:
             resp = await self.run_evaluation(create_config.id, user, report_name)
             return resp
         except Exception as e:
-            return {"error": str(e)}
+            raise BadRequestException(str(e))
 
     async def run_evaluation(self, eval_config_id, user, report_name):
         try:
@@ -39,7 +39,7 @@ class EvaluationController:
             return resp
         except Exception as e:
             logger.error(f"Error while running evaluation: {str(e)}")
-            return {"error": str(e)}
+            raise BadRequestException(str(e))
 
     async def get_evaluation_results(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):
         if include_filters.owner:

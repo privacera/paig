@@ -18,9 +18,7 @@ logger = logging.getLogger(__name__)
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
 
-targets = {}
-
-ensure_promptfoo_config('support@help.com')
+ensure_promptfoo_config('support@paig.ai')
 
 
 
