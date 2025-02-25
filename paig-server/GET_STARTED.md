@@ -10,6 +10,9 @@
 - [Setting Up the Backend](#setting-up-the-backend)
 - [Setting up the Frontend](#setting-up-the-frontend)
 
+# Before Set-Up
+1. Fork the repository from https://github.com/privacera/paig
+
 # Setting up the Backend
 ### Steps to run the development web Server
 1. Clone the repository if not already cloned.

@@ -11,6 +11,13 @@
 - [Starting Securechat Web Server](#starting-the-securechat-web-server)
 - [Starting Securechat Web-UI](#starting-securechat-web-ui)
 
+# Clone the repository
+1. Fork the repository from https://github.com/privacera/paig
+2. Clone the repository if not already cloned.
+   ```bash
+   git clone git@github.com:<username>/paig.git
+   ```
+
 # Starting the Securechat Web Server
 
 ### Steps to run the development web Server
