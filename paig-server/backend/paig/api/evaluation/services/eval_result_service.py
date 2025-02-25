@@ -26,10 +26,10 @@ class EvaluationResultService:
     async def get_cumulative_results_by_uuid(self, uuid):
         model = await self.evaluation_repository.get_evaluations_by_field("eval_id", uuid)
         if model is None:
-            raise BadRequestException("No results found")
+            raise BadRequestException(f"No results found for {uuid}")
         cumulative_result = model.cumulative_result
         if cumulative_result is None:
-            raise BadRequestException("No results found")
+            raise BadRequestException(f"No results found for {uuid}")
         cumulative_result = json.loads(cumulative_result)
         resp_list = list()
         resp_dict = {}

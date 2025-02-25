@@ -3,7 +3,7 @@ from api.evaluation.services.eval_config_service import EvaluationConfigService
 from api.evaluation.api_schemas.eval_config_schema import EvalConfigFilter
 from typing import List
 from core.controllers.paginated_response import Pageable
-
+from api.evaluation.api_schemas.eval_config_schema import include_query_params, exclude_query_params
 
 class EvaluationConfigController:
 
@@ -11,12 +11,13 @@ class EvaluationConfigController:
                  eval_config_service: EvaluationConfigService = SingletonDepends(EvaluationConfigService)):
         self.eval_config_service = eval_config_service
 
-    async def get_all_eval_config(self, includeQuery, excludeQuery, page_number: int, size: int,
+    async def get_all_eval_config(self, includeQuery:include_query_params, excludeQuery: exclude_query_params, page_number: int, size: int,
                                    sort: List[str]) -> Pageable:
         """
         Get all evaluation configurations.
         Args:
-            search_filters (EvalConfigFilter): The search filters.
+            includeQuery (EvalConfigFilter): The filter for the evaluation configuration.
+            excludeQuery (EvalConfigFilter): The filter for the evaluation configuration.
             page_number (int): The page number.
             size (int): The number of items per page.
             sort (List[str]): The sort options.
