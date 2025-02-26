@@ -1,7 +1,7 @@
 [project]
 name = 'paig-evaluation'
 dynamic = ["version"]
-readme = "README.md"
+readme = "paig_evaluation/README.md"
 license = {file = "../LICENSE"}
 description = 'PAIG Evaluation'
 requires-python = ">= 3.10"
