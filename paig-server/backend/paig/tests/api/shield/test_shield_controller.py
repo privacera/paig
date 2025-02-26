@@ -130,3 +130,21 @@ class TestShieldController:
         # Act and Assert
         with pytest.raises(Exception):
             await controller.init_app(mock_request)
+
+    @pytest.mark.asyncio
+    async def test_guardrail_test(self, controller, mock_shield_service):
+        mock_request = {"test_field": "test_value"}
+        tenant_id = "test_tenant"
+        user_role = "test_role"
+
+        mock_response = {"result": "success", "message": "Guardrail test passed"}
+        mock_shield_service.guardrail_test = AsyncMock(return_value=mock_response)  # Use AsyncMock here
+
+        response = await controller.guardrail_test(mock_request, tenant_id, user_role)
+
+        mock_shield_service.guardrail_test.assert_awaited_once_with(mock_request, tenant_id, user_role)
+        assert response.status_code == 200
+
+        response_data = json.loads(response.body.decode())
+        assert response_data == mock_response
+

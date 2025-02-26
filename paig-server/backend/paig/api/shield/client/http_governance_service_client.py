@@ -1,4 +1,3 @@
-import json
 import logging
 
 
@@ -51,7 +50,7 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
 
         return {"x-paig-api-key": paig_key}
 
-    async def get_aws_bedrock_guardrail_info(self, tenant_id, application_key):
+    async def get_application_guardrail_name(self, tenant_id, application_key):
         """
         Retrieve all AWS Bedrock guardrail details for a specific tenant and application from the governance service API.
 
@@ -79,13 +78,13 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
             logger.debug(f"response received: {response.__str__()}")
 
             if response.status_code == 200:
-                response_content = response.json().get("content")[0]
-                guardrail_details = response_content.get("guardrailDetails", "{}") if response_content else "{}"
-                return json.loads(guardrail_details)
+                response_content = response.json().get("content", {})
+                guardrail_names = response_content[0].get("guardrails", [])
+                return guardrail_names
             else:
-                error_message = (f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed "
+                error_message = (f"Request get_application_guardrail_name({tenant_id}, {application_key}) failed "
                                  f"with status code {response.status_code}: {response.text}")
                 raise ShieldException(error_message)
         except Exception as ex:
-            logger.error(f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed with error: {ex}")
+            logger.error(f"Request get_application_guardrail_name({tenant_id}, {application_key}) failed with error: {ex}")
             raise ShieldException(ex.args[0])
