@@ -15,7 +15,7 @@ class CEvaluationCategoriesForm extends Component {
     const { _vState } = this.props;
     const evalCategories = _vState.purposeResponse;
     const suggestedCategories = evalCategories.suggested_categories.map((category) => category.Name);
-    this.props.form.fields.categories.value = suggestedCategories;
+    this.props.form.refresh({ categories: suggestedCategories });
     if (suggestedCategories.length === 0) {
       this.setState({showSuggested: false})
     }

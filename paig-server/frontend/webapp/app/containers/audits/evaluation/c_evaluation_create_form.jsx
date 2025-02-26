@@ -37,7 +37,7 @@ class CEvaluationForm extends Component {
 	constructor(props) {
 		super(props);
 
-    this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.PAIG_EVALUATION.PROPERTY);
+    this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.EVALUATION_CONFIG.PROPERTY);
 
     this.evalForm = createFSForm(evaluation_form_def);
     this.state = {
@@ -56,18 +56,12 @@ class CEvaluationForm extends Component {
   handleCreate = async () => {
     const form = this.evalForm;
     const formData = form.toJSON();
-    const data = {
-      purpose: formData.purpose,
-      name: formData.name,
-      categories: formData.categories,
-      custom_prompts: [],
-      application_ids: formData.application_ids.join(','),
-      report_name: formData.report_name
-    };
+    formData.application_ids = formData.application_ids.join(',');
+    formData.custom_prompts = [];
 
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.saveAndRunEvaluationConfig(data);
+      let response = await this.props.evaluationStore.saveAndRunEvaluationConfig(formData);
       this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Your evaluation is triggered successfully');
@@ -97,7 +91,7 @@ class CEvaluationForm extends Component {
       if (!nameField.valid) {
         return;
       }
-      if (application_ids.value.length === 0 || application_ids.value === '') {
+      if (!application_ids.value) {
         this._vState.errorMsg = "Please select atleast one application"
         return;
       }
@@ -163,17 +157,12 @@ class CEvaluationForm extends Component {
       return;
     }
     const formData = form.toJSON();
-    const data = {
-      purpose: formData.purpose,
-      name: formData.name,
-      categories: formData.categories,
-      custom_prompts: [],
-      application_ids: formData.application_ids.join(',')
-    };
+    formData.application_ids = formData.application_ids.join(',');
+    formData.custom_prompts = [];
 
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.saveEvaluationConfig(data);
+      let response = await this.props.evaluationStore.saveEvaluationConfig(formData);
       this._vState.saving = false;
       f.notifySuccess('Your evaluation is saved successfully');
       this.handlePostSave(response);

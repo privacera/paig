@@ -30,7 +30,8 @@ const {
     REPORTING,
     AI_APPLICATIONS_PERMISSIONS,
     VECTOR_DB_PERMISSIONS,
-    PAIG_EVALUATION
+    EVALUATION_CONFIG,
+    EVALUATION_REPORTS
 } = UI_CONSTANTS
 
 const SIDEBAR_MENU_ITEMS = {
@@ -99,7 +100,8 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
     },
     [AUDITS]: {
         [SECURITY]: {},
-        [PAIG_EVALUATION] : {}
+        [EVALUATION_CONFIG] : {},
+        [EVALUATION_REPORTS] : {}
     },
     [COMPLIANCE]:{
         [ADMIN_AUDITS]:{}
@@ -144,9 +146,13 @@ class UISidebarTabsUtil {
                 "value": 'true'
             }, 
             {
-                "name": "PAIG_EVALUATION",
+                "name": "EVALUATION_CONFIG",
                 "value": 'true'
             }, 
+            {
+                "name": "EVALUATION_REPORTS",
+                "value": 'true'
+            }
         
         ])
         } catch (e) {
@@ -395,8 +401,11 @@ const featurePermissionUIMap = {
     'governance.vector_db': {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
     },
-    'governance.paig_evaluation': {
-        propertyForShowHide: [`${AUDITS}.${PAIG_EVALUATION}`]
+    'governance.paig_evaluation_config': {
+        propertyForShowHide: [`${AUDITS}.${EVALUATION_CONFIG}`]
+    },
+    'governance.paig_evaluation_reports': {
+        propertyForShowHide: [`${AUDITS}.${EVALUATION_REPORTS}`]
     },
     'audits.security': {
         propertyForShowHide: [`${AUDITS}.${SECURITY}`]

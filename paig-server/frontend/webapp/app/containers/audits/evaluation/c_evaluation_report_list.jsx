@@ -159,7 +159,7 @@ class CEvaluationReportsList extends Component {
   handleDelete = (model) => {
     f._confirm.show({
       title: `Delete Report`,
-      children: <div>Are you sure you want to delete the report "{model.name}"?</div>,
+      children: <Fragment>Are you sure you want to delete the report <b>{model.name}</b>?</Fragment>,
       btnCancelText: 'Cancel',
       btnOkText: 'Delete',
       btnOkColor: 'secondary',
@@ -205,19 +205,12 @@ class CEvaluationReportsList extends Component {
   handleRunSave = async () => {
     const form = this.evalForm;
     const formData = form.toJSON();
-    const data = {
-      id: formData.id,
-      purpose: formData.purpose,
-      name: formData.name,
-      categories: JSON.parse(formData.categories || "[]"),
-      custom_prompts: [],
-      application_ids: formData.application_ids,
-      report_name: formData.report_name
-    };
+    formData.categories = JSON.parse(formData.categories || "[]"),
+    formData.custom_prompts = [];
 
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.reRunReport(data);
+      let response = await this.props.evaluationStore.reRunReport(formData);
       this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Report evaluation submitted');

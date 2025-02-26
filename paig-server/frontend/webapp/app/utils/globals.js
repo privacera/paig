@@ -24,7 +24,8 @@ const UI_CONSTANTS = {
     SAVED_REPORTS: 'SAVED_REPORTS',
     AI_APPLICATIONS_PERMISSIONS: 'AI_APPLICATIONS_PERMISSIONS',
     VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
-    PAIG_EVALUATION: 'PAIG_EVALUATION'
+    EVALUATION_CONFIG: 'EVALUATION_CONFIG',
+    EVALUATION_REPORTS: 'EVALUATION_REPORTS'
 }
 
 const PERMISSIONS = {
@@ -45,7 +46,8 @@ const FEATURE_PERMISSIONS = {
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
         VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
-        PAIG_EVALUATION: {PROPERTY: 'governance.paig_evaluation'}
+        EVALUATION_CONFIG: {PROPERTY: 'governance.paig_evaluation_config'},
+        EVALUATION_REPORTS: {PROPERTY: 'governance.paig_evaluation_reports'}
     },
     AUDITS: {
         SECURITY: {PROPERTY: 'audits.security'}

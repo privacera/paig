@@ -38,8 +38,7 @@ const VEvaluationDetailsForm = observer(({form, _vState, permission}) => {
         form={form} 
         _vState={_vState}
         permission={permission}
-      >
-      </CEvaluationAppsList>
+      />
     </Box>
   );
 })
