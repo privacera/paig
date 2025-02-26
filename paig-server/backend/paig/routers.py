@@ -8,7 +8,7 @@ from api.governance.routes.metadata_key_router import metadata_key_router
 from api.governance.routes.tag_router import tag_router
 from api.audit.routers import data_service_router
 from api.shield.routers import shield_router
-
+from api.evaluation.routers import evaluation_router_paths
 router = APIRouter()
 
 router.include_router(governance_router, prefix="/governance-service/api")
@@ -20,5 +20,6 @@ router.include_router(user_router, prefix="/account-service", tags=["User"])
 router.include_router(authz_router, prefix="/authz-service/api", tags=["Authorization"])
 router.include_router(data_service_router, prefix="/data-service", tags=["Data Service"])
 router.include_router(shield_router, prefix="/shield", tags=["Shield"])
+router.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"])
 
 __all__ = ["router"]

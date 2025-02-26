@@ -10,7 +10,7 @@ const pageSize = DEFAULTS.DEFAULT_LOOKUP_PAGE_SIZE;
 
 const cancelTokenMap = new Map();
 
-const { dashboardStore } = stores;
+const { dashboardStore, aiApplicationStore } = stores;
 
 export function usersLookup(searchString, callback, uniqKey = "uniq") {
   if (isArray(searchString)) {
@@ -57,6 +57,34 @@ export function applicationLookup(searchString, callback, uniqKey = "uniq") {
       let models = [];
       if (!isEmpty(resp.applicationName)) {
         models = Object.keys(resp.applicationName).map(k => ({label: k, value: k}));
+      }
+      callback(models);
+    })
+    .catch((err) => emptyOptions(callback));
+}
+
+export function aiApplicationLookup(searchString, callback, uniqKey = "uniq") {
+  triggerCancelAPI(uniqKey);
+  if (Array.isArray(searchString)) {
+    emptyOptions(callback);
+    return;
+  }
+  const params = {};
+  if (searchString) {
+    params['name'] = searchString;
+  }
+
+  const applicationSource = getAxiosSourceToken();
+  cancelTokenMap.set(uniqKey, applicationSource);
+
+  aiApplicationStore
+    .getAIApplications({ params, cancelToken: applicationSource.token })
+    .then((resp) => {
+      let models = [];
+      if (resp && resp.models && Array.isArray(resp.models)) {
+        models = resp.models.map(app => ({ label: app.name, value: app.name }));
+        models.push({ label: "OpenAI GPT-4o Mini", value: "openai-gpt4-mini" })
+        models.push({ label: "OpenAI GPT-4o", value:  "openai-gpt4" })
       }
       callback(models);
     })

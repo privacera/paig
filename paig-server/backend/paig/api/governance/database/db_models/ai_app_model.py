@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from core.db_models.BaseSQLModel import BaseSQLModel
 from core.db_models.utils import CommaSeparatedList
-
+from api.evaluation.database.db_models.eval_targets import EvaluationTargetModel
 
 class AIApplicationModel(BaseSQLModel):
     """
@@ -32,3 +32,9 @@ class AIApplicationModel(BaseSQLModel):
 
     app_config = relationship("AIApplicationConfigModel", back_populates="ai_app", uselist=False, cascade="all, delete-orphan")
     app_policies = relationship("AIApplicationPolicyModel", back_populates="ai_app", cascade="all, delete-orphan")
+    host = relationship(
+        "EvaluationTargetModel",
+        back_populates="ai_app",
+        cascade="all, delete-orphan",
+        primaryjoin="AIApplicationModel.id == foreign(EvaluationTargetModel.application_id)"
+    )

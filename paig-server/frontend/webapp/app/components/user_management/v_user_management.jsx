@@ -105,7 +105,6 @@ class VUserManagement extends Component{
 
   render(){
     const { pageChange, data} = this.props;
-
     return (
       <Table
         data={data}

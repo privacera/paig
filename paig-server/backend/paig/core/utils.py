@@ -1,5 +1,7 @@
 import threading
 import uuid
+from urllib.parse import urlparse
+
 import fasteners
 import pytz
 from sqlalchemy import func
@@ -63,6 +65,11 @@ def validate_boolean(status: int, field: str):
 
 def current_utc_time():
     return datetime.now().astimezone(pytz.utc)
+
+
+def epoch_to_utc(epoch_time, to_format='%Y-%m-%d %H:%M:%S.%f'):
+    utc_time = datetime.utcfromtimestamp(epoch_time/1000)
+    return utc_time.strftime(to_format)
 
 
 def generate_unique_identifier_key():
@@ -245,3 +252,8 @@ def is_colab():
 
 def is_docker():
     return os.path.exists('/.dockerenv')
+
+def is_valid_url(url):
+    parsed_url = urlparse(url)
+    # Check if the URL has a valid scheme (http or https) and netloc (domain)
+    return parsed_url.scheme in ['http', 'https'] and bool(parsed_url.netloc)

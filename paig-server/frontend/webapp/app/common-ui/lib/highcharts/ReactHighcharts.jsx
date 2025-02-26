@@ -1,5 +1,6 @@
 import React, {Component, createRef} from 'react';
 import Highcharts from 'highcharts'
+import HighchartsMore from 'highcharts/highcharts-more';
 
 import HighchartsDrillDown from 'highcharts/modules/drilldown';
 import HighchartsExporting from 'highcharts/modules/exporting';
@@ -16,6 +17,7 @@ Accessibility(Highcharts);
 AddNoDataModule(Highcharts);
 HighchartsDrillDown(Highcharts);
 HighChartWordCloud(Highcharts);
+HighchartsMore(Highcharts);
 
 class ReactHighcharts extends Component {
   constructor(props){

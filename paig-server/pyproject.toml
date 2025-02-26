@@ -54,7 +54,8 @@ dependencies = [
     "pydantic[email]",
     "posthog",
     "paig-authorizer-core",
-    "psutil"
+    "psutil",
+    "paig_evaluation"
 ]
 
 [tool.hatch.metadata]
