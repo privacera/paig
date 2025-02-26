@@ -18,7 +18,7 @@ import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_det
 import VEvaluationReportTable from 'components/audits/evaluation/v_evaluation_reports_list';
 
 const CATEGORIES = {
-  ReportName: { multi: false, category: "ReportName", type: "text", key: 'name' },
+  "Report Name": { multi: false, category: "Report Name", type: "text", key: 'name' },
   Application: { multi: false, category: "Application", type: "text", key: 'application_names' },
   Status: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['GENERATING', 'EVALUATING', 'COMPLETED', 'FAILED'] }
 }
