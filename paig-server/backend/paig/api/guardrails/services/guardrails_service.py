@@ -432,8 +432,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         guardrail_response = await self._update_guardrail_providers(guardrail_view, existing_guardrail)
 
         # Update the response data in the guardrail
-        if guardrail_response:
-            guardrail.guardrail_provider_response = guardrail_response
+        guardrail.guardrail_provider_response = guardrail_response or None
 
         # Update guardrail in the database
         guardrail = await self.repository.update_record(guardrail)
