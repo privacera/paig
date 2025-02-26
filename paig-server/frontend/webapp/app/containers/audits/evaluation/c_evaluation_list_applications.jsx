@@ -120,7 +120,7 @@ class CEvaluationAppsList extends Component {
     handleDelete = (model) => {
         f._confirm.show({
             title: `Delete Application Config`,
-            children: <Fragment>Are you sure you want to delete the application configs?</Fragment>,
+            children: <Fragment>Are you sure you want to delete <b>{model.name}</b> application configs?</Fragment>,
             btnCancelText: 'Cancel',
             btnOkText: 'Delete',
             btnOkColor: 'secondary',
