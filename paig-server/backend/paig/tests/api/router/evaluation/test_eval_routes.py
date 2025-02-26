@@ -31,7 +31,7 @@ class TestEvalRouters:
             "url": "http://localhost:8080",
             "body": {},
             "headers": {},
-            "method": "string",
+            "method": "POST",
             "transformResponse": "string",
             "name": "target_name",
             "ai_application_id": 0
@@ -45,7 +45,7 @@ class TestEvalRouters:
             "name": "string",
             "categories": ["string"],
             "custom_prompts": ["string"],
-            "application_ids": "string",
+            "application_ids": "1",
             "report_name": "string"
         }
 
@@ -73,7 +73,6 @@ class TestEvalRouters:
 
             # save and run evaluation
             post_response = await client.post(f"/{evaluation_services_base_route}/eval/save_and_run", json=post_data)
-
             assert post_response.status_code == 200
 
             # get evaluation list

@@ -31,7 +31,7 @@ class TestTargetRouters:
             "url": "http://localhost:8080",
             "body": {},
             "headers": {},
-            "method": "string",
+            "method": "POST",
             "transformResponse": "string",
             "name": "string",
             "ai_application_id": 0
@@ -64,7 +64,7 @@ class TestTargetRouters:
             "url": "http://localhost1:8080",
             "body": {},
             "headers": {},
-            "method": "updated_string",
+            "method": "POST",
             "transformResponse": "updated_string",
             "name": "updated_string"
         }

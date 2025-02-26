@@ -31,7 +31,7 @@ class TestConfigRouters:
             "url": "http://localhost:8080",
             "body": {},
             "headers": {},
-            "method": "string",
+            "method": "POST",
             "transformResponse": "string",
             "name": "string",
             "ai_application_id": 0
