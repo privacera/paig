@@ -1,3 +1,4 @@
+import copy
 from typing import List
 
 import sqlalchemy
@@ -9,7 +10,7 @@ from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOU
     ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_CANNOT_BE_UPDATED
 from core.utils import validate_id, validate_string_data, validate_boolean, generate_unique_identifier_key, \
     SingletonDepends
-from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter
+from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter, GuardrailApplicationsAssociation
 from api.governance.api_schemas.vector_db import VectorDBFilter
 from api.governance.database.db_models.ai_app_model import AIApplicationModel
 from api.governance.database.db_operations.ai_app_repository import AIAppRepository
@@ -28,7 +29,8 @@ class AIAppRequestValidator:
         ai_app_repository (AIAppRepository): The repository handling AI application database operations.
     """
 
-    def __init__(self, ai_app_repository: AIAppRepository = SingletonDepends(AIAppRepository), vector_db_repository: VectorDBRepository = SingletonDepends(VectorDBRepository)):
+    def __init__(self, ai_app_repository: AIAppRepository = SingletonDepends(AIAppRepository),
+                 vector_db_repository: VectorDBRepository = SingletonDepends(VectorDBRepository)):
         self.ai_app_repository = ai_app_repository
         self.vector_db_repository = vector_db_repository
 
@@ -93,7 +95,8 @@ class AIAppRequestValidator:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Resource", "id", [id]))
 
         if ai_app_by_id is not None and ai_app_by_id.application_key != request.application_key:
-            raise BadRequestException(get_error_message(ERROR_FIELD_CANNOT_BE_UPDATED, "AI application", "applicationKey"))
+            raise BadRequestException(
+                get_error_message(ERROR_FIELD_CANNOT_BE_UPDATED, "AI application", "applicationKey"))
 
         if request.vector_dbs:
             await self.validate_ai_application_vector_db_exists_by_name(request.vector_dbs)
@@ -146,7 +149,8 @@ class AIAppRequestValidator:
         """
         ai_app = await self.get_application_by_name(name)
         if ai_app is not None:
-            raise BadRequestException(get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "AI application", "name", [name]))
+            raise BadRequestException(
+                get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "AI application", "name", [name]))
 
     async def get_application_by_name(self, name: str):
         """
@@ -214,7 +218,8 @@ class AIAppService(BaseController[AIApplicationModel, AIApplicationView]):
         """
         return self.repository
 
-    async def list_ai_applications(self, filter: AIApplicationFilter, page_number: int, size: int, sort: List[str]) -> Pageable:
+    async def list_ai_applications(self, filter: AIApplicationFilter, page_number: int, size: int,
+                                   sort: List[str]) -> Pageable:
         """
         Retrieve a paginated list of AI applications.
 
@@ -321,3 +326,45 @@ class AIAppService(BaseController[AIApplicationModel, AIApplicationView]):
         if config.get("default_shield_server_url"):
             return config.get("default_shield_server_url")
         return f"http://127.0.0.1:{PORT}"
+
+    async def update_guardrail_application_association(self, request: GuardrailApplicationsAssociation):
+        """
+        Associates or disassociates applications with a given guardrail.
+
+        - Applications in `request.applications` will be associated with the guardrail.
+        - Applications currently linked to the guardrail but missing from `request.applications` will be disassociated.
+
+        Args:
+            request (GuardrailAssociationRequest): Guardrail name and list of applications.
+
+        Returns:
+            GuardrailApplicationsAssociation: Updated associations.
+        """
+        result = GuardrailApplicationsAssociation(guardrail=request.guardrail, applications=[])
+        await self.disassociate_guardrail(request)
+        associated_apps = await self.associate_guardrail(request)
+        result.applications = associated_apps
+
+        return result
+
+    async def associate_guardrail(self, request: GuardrailApplicationsAssociation):
+        applications = []
+        ai_apps_by_names: List[AIApplicationModel] = await self.repository.get_all(
+            {"name": ','.join(request.applications)})
+        updated_apps = []
+        for ai_app in ai_apps_by_names:
+            ai_app.guardrails = list(set(ai_app.guardrails + [request.guardrail]))
+            applications.append(ai_app.name)
+            updated_apps.append(ai_app)
+        await self.repository.update_all_records(updated_apps)
+        return applications
+
+    async def disassociate_guardrail(self, request: GuardrailApplicationsAssociation):
+        ai_apps_by_names: List[AIApplicationModel] = await self.repository.get_all(
+            {"guardrails": request.guardrail})
+        updated_apps = []
+        for ai_app in ai_apps_by_names:
+            if ai_app.name not in request.applications:
+                ai_app.guardrails = [gr for gr in ai_app.guardrails if gr != request.guardrail]
+                updated_apps.append(ai_app)
+        await self.repository.update_all_records(updated_apps)

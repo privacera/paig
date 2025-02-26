@@ -7,6 +7,7 @@ from core.db_models.BaseSQLModel import BaseSQLModel
 class EncryptionKeyType(Enum):
     MSG_PROTECT_SHIELD = 'MSG_PROTECT_SHIELD'
     MSG_PROTECT_PLUGIN = 'MSG_PROTECT_PLUGIN'
+    CRDS_PROTECT_GUARDRAIL = 'CRDS_PROTECT_GUARDRAIL'
 
 
 class EncryptionKeyStatus(Enum):

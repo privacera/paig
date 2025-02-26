@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from pydantic import Field
+from pydantic import Field, BaseModel
 
 from core.factory.database_initiator import BaseAPIFilter
 from core.api_schemas.base_view import BaseView
@@ -27,6 +27,7 @@ class AIApplicationView(BaseView):
     application_key: Optional[str] = Field(None, description="The application key", alias="applicationKey")
     vector_dbs: Optional[List[str]] = Field([], description="The vector databases associated with the AI application", alias="vectorDBs")
     guardrail_details: Optional[str] = Field(None, description="The guardrail details", alias="guardrailDetails")
+    guardrails: Optional[List[str]] = Field([], description="The guardrails associated with AI application", alias="guardrails")
 
     vector_db_id: Optional[int] = Field(None, description="The vector databases id with the AI application",
                                         alias="vectorDBId")
@@ -51,6 +52,18 @@ class AIApplicationView(BaseView):
         )
 
 
+class GuardrailApplicationsAssociation(BaseModel):
+    """
+    A model representing an AI application guardrail update request.
+
+    Attributes:
+        guardrail (str): The guardrail to update.
+        applications (List[str]): The applications to update.
+    """
+    guardrail: str = Field(..., description="The guardrail to update")
+    applications: List[str] = Field(..., description="The applications to update")
+
+
 class AIApplicationFilter(BaseAPIFilter):
     """
     Filter class for AI application queries.
@@ -66,3 +79,4 @@ class AIApplicationFilter(BaseAPIFilter):
     name: Optional[str] = Field(default=None, description="Filter by name")
     application_key: Optional[str] = Field(default=None, description="Filter by application key", alias="applicationKey")
     vector_dbs: Optional[str] = Field(default=None, description="Filter by vector db", alias="vectorDB")
+    guardrails: Optional[str] = Field(default=None, description="Filter by guardrail details", alias="guardrail")
