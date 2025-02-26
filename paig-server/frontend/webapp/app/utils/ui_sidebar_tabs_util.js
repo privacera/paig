@@ -5,8 +5,6 @@ import {UI_CONSTANTS} from 'utils/globals';
 import {SIDEBAR_MENU} from 'components/site/sidebar_menu';
 import {configProperties} from 'utils/config_properties';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
-import stores from 'data/stores/all_stores';
-import { prop } from 'cheerio/lib/api/attributes';
 
 const {
 	DASHBOARD,

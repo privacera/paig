@@ -8,7 +8,7 @@ import f from 'common-ui/utils/f';
 import UiState from 'data/ui_state';
 import FSModal from 'common-ui/lib/fs_modal';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
-import {AddButton} from 'common-ui/components/action_buttons';
+import {AddButtonWithPermission} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_table_applications';
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
@@ -146,24 +146,27 @@ class CEvaluationAppsList extends Component {
     handleEdit = async (model) => {
         this.form.clearForm();
         if (!model?.target_id) {
-            this.form.refresh({
-                id: model.id || "",
-                ai_application_id: model.ai_application_id || "",
-                desc: model.desc || "",
-                name: model.name || "",
-                url: model.url || "",
-            });
+            this.form.refresh(model);
+            // this.form.refresh({
+            //     id: model.id || "",
+            //     ai_application_id: model.ai_application_id || "",
+            //     desc: model.desc || "",
+            //     name: model.name || "",
+            //     url: model.url || "",
+            // });
             this.showEditModal();
             return;
         }
-        this.form.refresh({
-            id: model.id || "",
-            ai_application_id: model.ai_application_id || "",
-            desc: model.desc || "",
-            name: model.name || "",
-            url: model.url || "",
-            target_id: model.target_id || ""
-        });
+        this.form.refresh(model);
+        // this.form.refresh({
+        //     this.form.refresh(model);
+        //     id: model.id || "",
+        //     ai_application_id: model.ai_application_id || "",
+        //     desc: model.desc || "",
+        //     name: model.name || "",
+        //     url: model.url || "",
+        //     target_id: model.target_id || ""
+        // });
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
             const { config, name, url, id } = response;
@@ -247,7 +250,7 @@ class CEvaluationAppsList extends Component {
     }
 
     render() {
-        const {_vState } = this;
+        const {_vState} = this;
         
         return (
             <>
@@ -259,18 +262,16 @@ class CEvaluationAppsList extends Component {
                             onChange={this.handleSearchByField}
                         />
                     </Grid>
-                    <Grid item xs={6} sm={6} md={6} lg={6}>
-                    <AddButton
-                        data-track-id="add-new-eval"
+                    <AddButtonWithPermission
                         colAttr={{
-                            xs: 12,
-                            sm: 12,
-                            md: 12
+                            xs: 6,
+                            sm: 6,
+                            md: 6
                         }}
+                        permission={this.props.permission}
                         label="New Configuration"
                         onClick={this.handleAddNew}
                     />
-                    </Grid>
                 </Grid>
                 <VEvaluationAppsTable
                     form={this.props.form}

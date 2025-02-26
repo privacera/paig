@@ -149,7 +149,7 @@ class CEvaluationConfigList extends Component {
   handleDelete = (model) => {
     f._confirm.show({
       title: `Delete Config`,
-      children: <div>Are you sure you want to delete config ?</div>,
+      children: <div>Are you sure you want to delete the config "{model.name}"?</div>,
       btnCancelText: 'Cancel',
       btnOkText: 'Delete',
       btnOkColor: 'secondary',

@@ -1,5 +1,5 @@
 import React, {Component, createRef, Fragment} from 'react';
-import {inject, observer} from 'mobx-react';
+import {inject} from 'mobx-react';
 import {action} from 'mobx';
 
 import {Grid} from '@material-ui/core';
@@ -24,7 +24,6 @@ const CATEGORIES = {
 }
 
 @inject('evaluationStore')
-@observer
 class CEvaluationReportsList extends Component {
   runReportModalRef = createRef();
   state = {
@@ -98,9 +97,7 @@ class CEvaluationReportsList extends Component {
     f.beforeCollectionFetch(this.cEvalReports);
     this.props.evaluationStore.fetchEvaluationReports({
       params: this.cEvalReports.params
-    }).then(res => {
-      f.resetCollection(this.cEvalReports, res.models, res.pageState);            
-    }, f.handleError(this.cEvalReports));
+    }).then(f.handleSuccess(this.cEvalReports), f.handleError(this.cEvalReports));
   }
 
   handlePageChange = () => {
@@ -162,7 +159,7 @@ class CEvaluationReportsList extends Component {
   handleDelete = (model) => {
     f._confirm.show({
       title: `Delete Report`,
-      children: <div>Are you sure you want to delete report ?</div>,
+      children: <div>Are you sure you want to delete the report "{model.name}"?</div>,
       btnCancelText: 'Cancel',
       btnOkText: 'Delete',
       btnOkColor: 'secondary',
@@ -195,7 +192,7 @@ class CEvaluationReportsList extends Component {
     this.evalForm.clearForm();
     this.evalForm.refresh(model);
     this.evalForm.model = model;
-    this.evalForm.fields.name.value = model.config_name; // Set form.name with model.config_name
+    this.evalForm.refresh({name: model.config_name}); // Set form.name with model.config_name
     if (this.runReportModalRef.current) {
       this.runReportModalRef.current.show({
         title: 'Rerun Report Evaluation',

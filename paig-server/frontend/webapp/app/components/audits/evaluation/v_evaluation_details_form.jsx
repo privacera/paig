@@ -7,10 +7,10 @@ import Paper from '@material-ui/core/Paper';
 import { Box } from '@material-ui/core';
 
 import {FormGroupInput} from 'common-ui/components/form_fields';
-import CEvaluationAppsList from  'components/audits/evaluation/v_evaluation_list_applications'
+import CEvaluationAppsList from  'containers/audits/evaluation/c_evaluation_list_applications'
 import { Typography } from '@material-ui/core';
 
-const VEvaluationDetailsForm = observer(({form, _vState}) => {
+const VEvaluationDetailsForm = observer(({form, _vState, permission}) => {
   const { name } = form.fields;
 
   return (
@@ -34,7 +34,12 @@ const VEvaluationDetailsForm = observer(({form, _vState}) => {
       <Typography variant="h6" data-testid="header" className='m-b-sm'>
         Application Configurations
       </Typography>
-      <CEvaluationAppsList form={form} _vState={_vState}></CEvaluationAppsList>
+      <CEvaluationAppsList 
+        form={form} 
+        _vState={_vState}
+        permission={permission}
+      >
+      </CEvaluationAppsList>
     </Box>
   );
 })

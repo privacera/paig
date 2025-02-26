@@ -1,11 +1,11 @@
 import React, {Component, Fragment} from 'react';
-import {observer, inject} from 'mobx-react';
+import {inject} from 'mobx-react';
 import {capitalize} from "lodash";
 
 import {TableCell} from '@material-ui/core';
 import CheckIcon from "@material-ui/icons/Check";
 import CloseIcon from "@material-ui/icons/Close";
-import {Tooltip, IconButton, LinearProgress} from "@material-ui/core";
+import {Tooltip, LinearProgress} from "@material-ui/core";
 
 import {Utils} from 'common-ui/utils/utils';
 import Table from 'common-ui/components/table';
@@ -17,7 +17,6 @@ import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
 const moment = Utils.dateUtil.momentInstance();
 
 @inject('evaluationStore')
-@observer
 class VEvaluationReportTable extends Component{
   constructor(props) {
     super(props);
@@ -33,19 +32,21 @@ class VEvaluationReportTable extends Component{
 
     if (normalizedStatus === "completed") {
       return (
-        <Tooltip arrow placement="top" title="Completed">
-          <IconButton size="small" data-test="completed" aria-label="completed">
-            <CheckIcon className="text-success" fontSize="inherit" />
-          </IconButton>
-        </Tooltip>
+        <CustomAnchorBtn
+          size="small"
+          tooltipLabel="Completed"
+          data-testid="completed"
+          icon={<CheckIcon className="text-success" fontSize="inherit"/>}
+        />
       );
     } else if (normalizedStatus === "failed") {
       return (
-        <Tooltip arrow placement="top" title="Failed">
-          <IconButton size="small" data-test="failed" aria-label="failed">
-            <CloseIcon color="error" fontSize="inherit" />
-          </IconButton>
-        </Tooltip>
+        <CustomAnchorBtn
+          size="small"
+          tooltipLabel="Failed"
+          data-testid="failed"
+          icon={<CloseIcon className="error" fontSize="inherit"/>}
+        />
       );
     } else {
       return (

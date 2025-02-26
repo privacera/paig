@@ -14,9 +14,11 @@ import CircularProgress from "@material-ui/core/CircularProgress/CircularProgres
 
 import f from "common-ui/utils/f";
 import FSModal from 'common-ui/lib/fs_modal';
+import {FEATURE_PERMISSIONS} from 'utils/globals';
 import BaseContainer from 'containers/base_container';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
+import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import CEvaluationPurposeForm from "containers/audits/evaluation/c_evaluation_purpose_form";
 import CEvaluationCategoriesForm from "containers/audits/evaluation/c_evaluation_categories_form";
 import VEvaluationDetailsForm, {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
@@ -34,6 +36,8 @@ class CEvaluationForm extends Component {
   }
 	constructor(props) {
 		super(props);
+
+    this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.PAIG_EVALUATION.PROPERTY);
 
     this.evalForm = createFSForm(evaluation_form_def);
     this.state = {
@@ -140,7 +144,7 @@ class CEvaluationForm extends Component {
   renderStepContent = (step) => {
     switch (step) {
       case 0:
-        return <VEvaluationDetailsForm form={this.evalForm} _vState={this._vState}/>;
+        return <VEvaluationDetailsForm form={this.evalForm} _vState={this._vState} permission={this.permission}/>;
       case 1:
         return <CEvaluationPurposeForm form={this.evalForm} _vState={this._vState}/>;
       case 2:
