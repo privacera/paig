@@ -10,7 +10,7 @@
 
         <!-- This is a sample pom to maintain versioning using maven project this generates only the docker image -->
 	<properties>
-		<revision>0.0.1</revision>
+		<revision>0.0.2</revision>
 	</properties>
 
 </project>

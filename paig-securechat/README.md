@@ -16,6 +16,7 @@ Secure chat SDK provides an easy to use, plugable platform which will allow deve
 - [Docker compose with Opensearch](docker/README.md#docker-compose-with-opensearch)
 - [Docker compose with Milvus](docker/README.md#docker-compose-with-milvus)
 - [Generate hashed password](#hashedpassword)
+- [Generate API token](#apitoken)
 
 ## Overview <a name="overview"></a>
 Secure Chat SDK is a pluggable platform which allows you to add more features to your chat bot as you go along.
@@ -171,3 +172,29 @@ You can generate hashed password using two ways:
    from werkzeug.security import generate_password_hash
    print(generate_password_hash("<put your password here>", "sha256"))
       ```
+## How to generate API token <a name="apitoken"></a>
+You can generate API token using script _web-server/src/paig_securechat/standalone_generate_api_token.py_ :
+
+   i. Create virtual environment and install the dependencies.
+   ```bash
+    cd web-server
+    python -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+   ```
+    
+   ii. Run the standalone_generate_api_token.py script.
+   ```bash
+    cd src/paig_securechat/
+    python standalone_generate_api_token.py
+   ```
+  
+  One such example is :-
+   ```bash
+   python standalone_generate_api_token.py
+   Enter username: sally
+   Enter expiry in minutes : 30
+   Encoded Token: <generated token>
+   Decoded Token: <decoded token>
+   ```
+   [Standalone API token generation script](web-server/src/paig_securechat/standalone_generate_api_token.py)

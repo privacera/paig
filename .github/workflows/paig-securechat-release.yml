@@ -111,5 +111,7 @@ jobs:
         context: ./paig-securechat
         file: ./paig-securechat/docker/Dockerfile
         push: true
-        tags: privacera/paig-securechat:${{ env.VERSION }}
+        tags: |
+          privacera/paig-securechat:${{ env.VERSION }}
+          privacera/paig-securechat:latest
         no-cache: true
