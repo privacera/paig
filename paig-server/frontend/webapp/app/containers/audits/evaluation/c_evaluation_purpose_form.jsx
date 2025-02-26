@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {inject, observer} from 'mobx-react';
+import {inject} from 'mobx-react';
 
 import f from 'common-ui/utils/f';
 import VEvaluationPurposeForm from "components/audits/evaluation/v_evalutaion_purpose_form";
@@ -26,7 +26,6 @@ const hardcodedTemplates = [
 ];
 
 @inject('evaluationStore')
-@observer
 class CEvaluationPurposeForm extends Component {
   constructor(props) {
     super(props);

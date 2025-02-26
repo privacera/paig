@@ -1,5 +1,5 @@
-import React, {Component, createRef} from 'react';
-import {inject, observer} from 'mobx-react';
+import React, {Component, createRef, Fragment} from 'react';
+import {inject} from 'mobx-react';
 import {action} from 'mobx';
 
 import {Grid} from '@material-ui/core';
@@ -8,22 +8,23 @@ import BaseContainer from 'containers/base_container';
 import UiState from 'data/ui_state';
 import f from 'common-ui/utils/f';
 import {Utils} from 'common-ui/utils/utils';
-import {AddButton} from 'common-ui/components/action_buttons';
+import {FEATURE_PERMISSIONS} from 'utils/globals';
+import {AddButtonWithPermission} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationConfigTable from 'components/audits/evaluation/v_evaluation_configs_list';
 import FSModal from 'common-ui/lib/fs_modal';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
 import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
+import {permissionCheckerUtil} from "common-ui/utils/permission_checker_util";
 
 const CATEGORIES = {
   Name: { multi: false, category: "Name", type: "text", key: 'name' },
-  EvaluationPurpose: { multi: false, category: "EvaluationPurpose", type: "text", key: 'purpose' },
-  ApplicationName: { multi: false, category: "ApplicationName", type: "text", key: 'application_names' }
+  "Evaluation Purpose": { multi: false, category: "Evaluation Purpose", type: "text", key: 'purpose' },
+  "Application Name": { multi: false, category: "Application Name", type: "text", key: 'application_names' }
 }
 
 @inject('evaluationStore')
-@observer
 class CEvaluationConfigList extends Component {
   runReportModalRef = createRef();
   _vState = {
@@ -35,6 +36,7 @@ class CEvaluationConfigList extends Component {
   constructor(props) {
     super(props);
 
+    this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.EVALUATION_CONFIG.PROPERTY);
     this.evalForm = createFSForm(evaluation_form_def);
     this.dateRangeDetail = {
       daterange: Utils.dateUtil.getLast7DaysRange(),
@@ -149,7 +151,7 @@ class CEvaluationConfigList extends Component {
   handleDelete = (model) => {
     f._confirm.show({
       title: `Delete Config`,
-      children: <div>Are you sure you want to delete the config "{model.name}"?</div>,
+      children: <Fragment>Are you sure you want to delete the config <b>{model.name}</b>?</Fragment>,
       btnCancelText: 'Cancel',
       btnOkText: 'Delete',
       btnOkColor: 'secondary',
@@ -195,19 +197,12 @@ class CEvaluationConfigList extends Component {
   handleRunSave = async () => {
     const form = this.evalForm;
     const formData = form.toJSON();
-    const data = {
-      id: formData.id,
-      purpose: formData.purpose,
-      name: formData.name,
-      categories: JSON.parse(formData.categories || "[]"),
-      custom_prompts: [],
-      application_ids: formData.application_ids,
-      report_name: formData.report_name
-    };
+    formData.categories = JSON.parse(formData.categories || "[]"),
+    formData.custom_prompts = [];
 
     try {
       this._vState.saving = true;
-      let response = await this.props.evaluationStore.evaluateConfig(data);
+      let response = await this.props.evaluationStore.evaluateConfig(formData);
       this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Your evaluation is triggered successfully');
@@ -228,25 +223,25 @@ class CEvaluationConfigList extends Component {
       >
         <>
           <Grid container spacing={3}>
-            <Grid item xs={6} sm={6} md={6} lg={6}>
+            <Grid item xs={12} sm={8} md={10} lg={10}>
               <IncludeExcludeComponent
                 _vState={_vState}
                 categoriesOptions={Object.values(CATEGORIES)}
                 onChange={this.handleSearchByField}
               />
             </Grid>
-            <Grid item xs={6} sm={6} md={6} lg={6}>
-            <AddButton
-              data-track-id="add-new-eval"
-              colAttr={{
-                xs: 12,
-                sm: 12,
-                md: 12
-              }}
-              label="Add New"
+            <AddButtonWithPermission
+              permission={this.permission}
               onClick={this.handleAddNew}
+              label="Add New"
+              colAttr={{
+                lg: 2,
+                md: 2,
+                sm: 4,
+                xs: 12
+              }}
+              data-track-id="add-new-eval"
             />
-            </Grid>
           </Grid>
           <VEvaluationConfigTable
             data={this.cEvalConfigs}

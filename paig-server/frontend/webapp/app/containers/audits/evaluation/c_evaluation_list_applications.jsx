@@ -1,4 +1,4 @@
-import React, {Component, createRef} from 'react';
+import React, {Component, createRef, Fragment} from 'react';
 import {inject, observer} from 'mobx-react';
 import {action} from 'mobx';
 
@@ -120,7 +120,7 @@ class CEvaluationAppsList extends Component {
     handleDelete = (model) => {
         f._confirm.show({
             title: `Delete Application Config`,
-            children: <div>Are you sure you want to delete application configs?</div>,
+            children: <Fragment>Are you sure you want to delete the application configs?</Fragment>,
             btnCancelText: 'Cancel',
             btnOkText: 'Delete',
             btnOkColor: 'secondary',
@@ -147,26 +147,10 @@ class CEvaluationAppsList extends Component {
         this.form.clearForm();
         if (!model?.target_id) {
             this.form.refresh(model);
-            // this.form.refresh({
-            //     id: model.id || "",
-            //     ai_application_id: model.ai_application_id || "",
-            //     desc: model.desc || "",
-            //     name: model.name || "",
-            //     url: model.url || "",
-            // });
             this.showEditModal();
             return;
         }
         this.form.refresh(model);
-        // this.form.refresh({
-        //     this.form.refresh(model);
-        //     id: model.id || "",
-        //     ai_application_id: model.ai_application_id || "",
-        //     desc: model.desc || "",
-        //     name: model.name || "",
-        //     url: model.url || "",
-        //     target_id: model.target_id || ""
-        // });
         try {
             const response = await this.props.evaluationStore.fetchTargetConfig(model);
             const { config, name, url, id } = response;

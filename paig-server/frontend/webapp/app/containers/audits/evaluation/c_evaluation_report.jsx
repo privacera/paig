@@ -135,7 +135,7 @@ export class CEvaluationReport extends Component {
         newParams[`${prefix}.${obj.key}`] = value;
       }
     });
-    this.cEvaluationDetailed.params = { ...this.cEvaluationDetailed.params, ...newParams };
+    Object.assign(this.cEvaluationDetailed.params, newParams);
     this._vState.searchFilterValue = filter;
     this.getReportDetails(this.props.match.params.eval_id);
   }
