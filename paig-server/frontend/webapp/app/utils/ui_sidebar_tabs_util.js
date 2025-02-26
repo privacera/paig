@@ -401,10 +401,10 @@ const featurePermissionUIMap = {
     'governance.vector_db': {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
     },
-    'governance.paig_evaluation_config': {
+    'governance.evaluation_config': {
         propertyForShowHide: [`${AUDITS}.${EVALUATION_CONFIG}`]
     },
-    'governance.paig_evaluation_reports': {
+    'governance.evaluation_reports': {
         propertyForShowHide: [`${AUDITS}.${EVALUATION_REPORTS}`]
     },
     'audits.security': {

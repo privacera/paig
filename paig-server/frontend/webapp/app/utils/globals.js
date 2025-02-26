@@ -46,8 +46,8 @@ const FEATURE_PERMISSIONS = {
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
         VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
-        EVALUATION_CONFIG: {PROPERTY: 'governance.paig_evaluation_config'},
-        EVALUATION_REPORTS: {PROPERTY: 'governance.paig_evaluation_reports'}
+        EVALUATION_CONFIG: {PROPERTY: 'governance.evaluation_config'},
+        EVALUATION_REPORTS: {PROPERTY: 'governance.evaluation_reports'}
     },
     AUDITS: {
         SECURITY: {PROPERTY: 'audits.security'}
