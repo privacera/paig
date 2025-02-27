@@ -42,7 +42,7 @@ jobs:
         virtualenv -p python3 venv
         . venv/bin/activate
         pip install twine build pytest pytest-cov
-        
+
     - name: Build and Install paig-common wheel
       run: |
         . venv/bin/activate
@@ -50,11 +50,27 @@ jobs:
         python3 -m build -w
         pip install dist/*.whl
         cd ..
-
+        
     - name: Build and Install paig-authorizer-core wheel
       run: |
         . venv/bin/activate
         cd paig-authorizer-core
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+        
+    - name: Build and Install paig-evaluation wheel
+      run: |
+        . venv/bin/activate
+        cd paig-evaluation
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
+    - name: Build and Install paig-evaluation wheel
+      run: |
+        . venv/bin/activate
+        cd paig-evaluation
         python3 -m build -w
         pip install dist/*.whl
         cd ..
@@ -119,5 +135,4 @@ jobs:
       with:
         name: paig-server-${{ env.SANITIZED_BRANCH_NAME }}-build
         path: paig-server/dist/*.whl
-        
 

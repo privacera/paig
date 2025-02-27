@@ -964,3 +964,7 @@ span.diff-danger>span {
     margin-top: 1px !important;
     margin-right: 1px !important;
 }
+
+.eval-table tbody td, .eval-table thead th{
+  padding:8px;
+}

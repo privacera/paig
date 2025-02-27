@@ -27,6 +27,9 @@ const UI_CONSTANTS = {
     SAVED_REPORTS: 'SAVED_REPORTS',
     AI_APPLICATIONS_PERMISSIONS: 'AI_APPLICATIONS_PERMISSIONS',
     VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
+    EVALUATION: 'EVALUATION',
+    EVALUATION_CONFIG: 'EVALUATION_CONFIG',
+    EVALUATION_REPORTS: 'EVALUATION_REPORTS',
     GUARDRAILS: 'GUARDRAILS',
     RESPONSE_TEMPLATES: 'RESPONSE_TEMPLATES',
     GUARDRAIL_CONNECTION_PROVIDER: 'GUARDRAIL_CONNECTION_PROVIDER'
@@ -50,6 +53,8 @@ const FEATURE_PERMISSIONS = {
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
         VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
+        EVALUATION_CONFIG: {PROPERTY: 'governance.evaluation_config'},
+        EVALUATION_REPORTS: {PROPERTY: 'governance.evaluation_reports'},
         GUARDRAILS: {PROPERTY: 'governance.guardrails'}
     },
     AUDITS: {
@@ -295,6 +300,13 @@ const AWS_PROVIDER_CONNECTION_CONFIG_TYPE = {
     INSTANCE_ROLE: {TYPE: 'INSTANCE_ROLE', LABEL: 'Instance Role'}
 }
 
+const EVAL_REPORT_CATEGORIES = {
+    CATEGORY: { multi: false, category: "Category", type: "text", key: 'category' },
+    PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
+    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
+    STATUS: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
+}
+
 export {
     UI_CONSTANTS,
     PERMISSIONS,
@@ -321,6 +333,7 @@ export {
     OBJECT_TYPE_MAPPING,
     ADMIN_AUDITS_FIELDS_TO_HIDE_MAPPING,
     REPORT_GRID_LABELS,
+    EVAL_REPORT_CATEGORIES,
     GUARDRAIL_PROVIDER,
     GUARDRAIL_CONFIG_TYPE,
     AWS_PROVIDER_CONNECTION_CONFIG_TYPE

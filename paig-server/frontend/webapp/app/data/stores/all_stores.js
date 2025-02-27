@@ -14,6 +14,7 @@ import shieldConfigStore from './s_shield_config_store';
 import metaDataStore from './s_metadata_store';
 import metaDataValuesStore from './s_metadata_values_store';
 import vectorDBStore from './s_vector_db_store';
+import evaluationStore from './s_paig_evaluation_store';
 import vectorDBPolicyStore from './s_vector_db_policy_store';
 import dataProtectStore from './s_data_protect_store';
 import shieldAuditsReportsStore from './s_shield_audits_reports_store';
@@ -42,6 +43,7 @@ const stores = {
 	vectorDBPolicyStore,
 	dataProtectStore,
 	shieldAuditsReportsStore,
+  evaluationStore,
 	guardrailStore,
 	guardrailResponseTemplateStore,
 	guardrailConnectionProviderStore,

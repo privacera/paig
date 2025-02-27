@@ -66,7 +66,7 @@ def main(
         action: str,
     ) -> None:
 
-    if action.lower() == "stop":
+    if action and action.lower() == "stop":
         stop_server()
         return
     elif action.lower() == "status":
