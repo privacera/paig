@@ -139,14 +139,6 @@ class CEvaluationReportsList extends Component {
       let prefix = item.operator == 'is' ? 'includeQuery' : 'excludeQuery';
       let value = item.value;
       if (obj) {
-        if (obj.category && ['User', 'Application'].includes(obj.category)) {
-          if (!value.startsWith('*')) {
-            value = `*${value}`;
-          }
-          if (!value.endsWith('*')) {
-            value = `${value}*`;
-          }
-        }    
         params[`${prefix}.${obj.key}`] = value;
       }        
     });

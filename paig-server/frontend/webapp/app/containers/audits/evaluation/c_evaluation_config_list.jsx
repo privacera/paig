@@ -86,9 +86,7 @@ class CEvaluationConfigList extends Component {
     f.beforeCollectionFetch(this.cEvalConfigs);
     this.props.evaluationStore.fetchEvaluationConfigs({
       params: this.cEvalConfigs.params
-    }).then(res => {
-      f.resetCollection(this.cEvalConfigs, res.models, res.pageState);            
-    },  f.handleError(this.cEvalConfigs));
+    }).then(f.handleSuccess(this.cEvalConfigs), f.handleError(this.cEvalConfigs));
   }
 
   handlePageChange = () => {
@@ -128,17 +126,6 @@ class CEvaluationConfigList extends Component {
       let prefix = item.operator == 'is' ? 'includeQuery' : 'excludeQuery';
       let value = item.value;
       if (obj) {
-        if (obj.category && ['User', 'Application'].includes(obj.category)) {
-          if (!value.startsWith('*')) {
-            value = `*${value}`;
-          }
-          if (!value.endsWith('*')) {
-            value = `${value}*`;
-          }
-        }
-        if (obj.key === 'result') {
-          value = value.toLowerCase();
-        }       
         params[`${prefix}.${obj.key}`] = value;
       }        
     });
@@ -164,6 +151,7 @@ class CEvaluationConfigList extends Component {
       .then(() => {
         confirm.hide();
         f.notifySuccess('Config Deleted');
+        f.handlePagination(this.cEvalConfigs, this.cEvalConfigs.params);
         this.fetchEvaluationConfigs();
       }, f.handleError(null, null, {confirm}));
     }, () => {});
