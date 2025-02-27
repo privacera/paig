@@ -135,7 +135,7 @@ def main(
                 f"Required files not found. Ensure both {application_config_file} and {dynamic_prompts_file} exist.")
 
         application_config = read_yaml_file(application_config_file)
-        email = application_config.get("email", "support@privacera.com")
+        email = application_config.get("email", "promptfoo@paig.ai")
         ensure_promptfoo_config(email)
 
         generated_prompts = read_yaml_file(dynamic_prompts_file)
