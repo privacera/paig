@@ -1,4 +1,6 @@
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import selectinload
+
 from core.exceptions import NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from core.factory.database_initiator import BaseOperations
@@ -40,3 +42,14 @@ class AIAppRepository(BaseOperations[AIApplicationModel]):
             return await self.get_by(filters={"application_key": application_key}, unique=True)
         except NoResultFound as e:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "AI Application", "applicationKey", application_key))
+
+    async def get_ai_application_with_host(self, search_filters, page, size, sort):
+        results, count = await self.list_records(search_filters, page, size, sort,
+                                                 relation_load_options=[selectinload(self.model_class.host)])
+        return results, count
+
+    async def get_ai_application_names_by_in_list(self, field: str, values: list):
+        try:
+            return await self.get_all({field: values}, apply_in_list_filter=True)
+        except NoResultFound:
+            return None

@@ -41,7 +41,19 @@ const SIDEBAR_MENU = [{
      name: "Access Audits",
      isChild: true,
      sidebar: UI_CONSTANTS.SECURITY
-   }]
+   }, {
+    to: "/eval_configs",
+    name: "Security Evaluation",
+    isChild: true,
+    sidebar: UI_CONSTANTS.EVALUATION_CONFIG,
+    childrenRoutes: ["/eval_configs/"]
+  }, {
+    to: "/eval_reports",
+    name: "Evaluation Reports",
+    isChild: true,
+    sidebar: UI_CONSTANTS.EVALUATION_REPORTS,
+    childrenRoutes: ["/eval_reports"]
+  }]
  }, 
 // TODO: [PAIG-2025] Uncomment to enable Admin Audits
 //  {
