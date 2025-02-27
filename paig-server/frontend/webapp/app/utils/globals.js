@@ -24,6 +24,7 @@ const UI_CONSTANTS = {
     SAVED_REPORTS: 'SAVED_REPORTS',
     AI_APPLICATIONS_PERMISSIONS: 'AI_APPLICATIONS_PERMISSIONS',
     VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
+    EVALUATION: 'EVALUATION',
     EVALUATION_CONFIG: 'EVALUATION_CONFIG',
     EVALUATION_REPORTS: 'EVALUATION_REPORTS'
 }
@@ -242,10 +243,10 @@ const REPORT_GRID_LABELS = {
 }
 
 const EVAL_REPORT_CATEGORIES = {
-    Category: { multi: false, category: "Category", type: "text", key: 'category' },
-    Prompt: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-    Response: { multi: false, category: "Response", type: "text", key: 'response' },
-    Status: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
+    CATEGORY: { multi: false, category: "Category", type: "text", key: 'category' },
+    PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
+    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
+    STATUS: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
 }
 
 export {

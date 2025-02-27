@@ -30,6 +30,7 @@ const {
     REPORTING,
     AI_APPLICATIONS_PERMISSIONS,
     VECTOR_DB_PERMISSIONS,
+    EVALUATION,
     EVALUATION_CONFIG,
     EVALUATION_REPORTS
 } = UI_CONSTANTS
@@ -48,7 +49,9 @@ const SIDEBAR_MENU_ITEMS = {
     },
     [AUDITS]: {
         SUBMENU: {
-            [SECURITY]: {}
+            [SECURITY]: {},
+            [EVALUATION_CONFIG] : {},
+            [EVALUATION_REPORTS] : {}
         }
     },
     [COMPLIANCE]:{
@@ -88,6 +91,12 @@ const UI_FEATURE_SIDEBAR_TABS = {
         [ACCOUNT]: {
             [META_DATA]: {}
         }
+    },
+    [EVALUATION]: {
+        [AUDITS]: {
+            [EVALUATION_CONFIG]: {},
+            [EVALUATION_REPORTS]: {}
+        }
     }
 }
 
@@ -99,9 +108,7 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
         }
     },
     [AUDITS]: {
-        [SECURITY]: {},
-        [EVALUATION_CONFIG] : {},
-        [EVALUATION_REPORTS] : {}
+        [SECURITY]: {}
     },
     [COMPLIANCE]:{
         [ADMIN_AUDITS]:{}
@@ -146,14 +153,9 @@ class UISidebarTabsUtil {
                 "value": 'true'
             }, 
             {
-                "name": "EVALUATION_CONFIG",
-                "value": 'true'
-            }, 
-            {
-                "name": "EVALUATION_REPORTS",
+                "name": "EVALUATION",
                 "value": 'true'
             }
-        
         ])
         } catch (e) {
             console.error("Failed to fetch system properties", e);
