@@ -31,10 +31,10 @@ import CMetaData from 'containers/metadata/c_metadata';
 import CReporting from 'containers/reports/c_reporting';
 import CSavedReportsListing from 'containers/reports/c_saved_reports_listing';
 
-import CEvaluationForm from '../containers/audits/evaluation/c_evaluation_create_form';
-import CEvaluationConfigList from '../containers/audits/evaluation/c_evaluation_config_list';
-import CEvaluationReportsList from '../containers/audits/evaluation/c_evaluation_report_list';
-import CEvaluationReport from '../containers/audits/evaluation/c_evaluation_report';
+import CEvaluationForm from 'containers/audits/evaluation/c_evaluation_create_form';
+import CEvaluationConfigList from 'containers/audits/evaluation/c_evaluation_config_list';
+import CEvaluationReportsList from 'containers/audits/evaluation/c_evaluation_report_list';
+import CEvaluationReport from 'containers/audits/evaluation/c_evaluation_report';
 
 history.listen((location, action) => {
     // scroll to top when route changes
