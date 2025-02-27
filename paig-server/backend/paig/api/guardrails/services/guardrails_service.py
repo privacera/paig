@@ -638,6 +638,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                 raise InternalServerError(
                     f"Failed to {operation} guardrail in {provider}: Access Denied for the associated connection",
                     response['response']['details'])
+            if response['response']['details']['errorType'] == 'ConflictException':
+                raise BadRequestException(
+                    f"Failed to {operation} guardrail in {provider}: A guardrail with this name may already exist. Try using a different name.",
+                    response['response']['details'])
             raise InternalServerError(f"Failed to {operation} guardrail in {provider}", response['response']['details'])
 
     async def delete(self, id: int):

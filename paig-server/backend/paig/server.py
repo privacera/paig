@@ -74,8 +74,7 @@ def init_listeners(app_: FastAPI) -> None:
     @app_.exception_handler(CustomException)
     async def custom_exception_handler(request: Request, exc: CustomException):
         content = {"error_code": exc.error_code, "success": False, "message": exc.message}
-        if exc.details:
-            content["details"] = exc.details
+        logger.error(f"Exception occurred({exc.error_code.name}): {exc}")
         return JSONResponse(
             status_code=exc.code,
             content=content
