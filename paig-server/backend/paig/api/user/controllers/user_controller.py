@@ -36,8 +36,8 @@ class UserController:
         if user is None:
             raise UnauthorizedException("Invalid user credentials")
         # only allow owners to login
-        # if not user.is_tenant_owner:
-        #     raise UnauthorizedException("Unauthorized to perform this action")
+        if not user.is_tenant_owner:
+            raise UnauthorizedException("Unauthorized to perform this action")
         if verify_password(password, user.password):
             response = responses.RedirectResponse(url="/", status_code=303)
             response.set_cookie(
