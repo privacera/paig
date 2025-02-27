@@ -99,7 +99,7 @@ Denied topics can be specified by providing a natural language description of th
 phrases. These definitions and examples help the system identify whether a user’s input or the AI’s response falls
 within the restricted topic, ensuring that unwanted discussions are effectively filtered out.
 
-This Denied topics is powered by AWS Bedrock Guardrails and are defined using the following parameters:
+This Denied topics is supported through AWS Bedrock Guardrails and are defined using the following parameters:
 
 - **Name**: A noun or phrase representing the topic without describing it in detail. For example: Medical Advice
 

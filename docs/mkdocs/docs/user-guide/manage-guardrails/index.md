@@ -46,7 +46,7 @@ from Available Providers. This will open a dialog box where you can enter the de
 
 <!-- md:go_to_paig /#/response_templates:Go To PAIG -->
 
-To create a new guardrail connection for AWS, go to __Application > Response Template__ and click on the
+To create a new response template for Guardrails, go to __Application > Response Template__ and click on the
 ==**CREATE TEMPLATE**== button at the right top. This will open a dialog box where you can enter the details of the
 guardrail response template.
 

@@ -3,7 +3,7 @@ title: Integrating PAIG with Guardrails
 icon: material/vector-combine
 ---
 
-PAIG Guardrails, powered by AWS Bedrock Guardrails, are built to enforce safeguards and restrict specific topics,
+PAIG Guardrails are built to enforce safeguards and restrict specific topics,
 ensuring the secure and responsible use of your generative AI applications. You can configure the following policies in
 guardrails to avoid undesirable and harmful content, filter out denied topics and words, and remove sensitive
 information for privacy protection.
