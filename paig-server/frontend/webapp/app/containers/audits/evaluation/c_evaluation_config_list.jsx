@@ -19,9 +19,9 @@ import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_det
 import {permissionCheckerUtil} from "common-ui/utils/permission_checker_util";
 
 const CATEGORIES = {
-  Name: { multi: false, category: "Name", type: "text", key: 'name' },
-  "Evaluation Purpose": { multi: false, category: "Evaluation Purpose", type: "text", key: 'purpose' },
-  "Application Name": { multi: false, category: "Application Name", type: "text", key: 'application_names' }
+  NAME: { multi: false, category: "Name", type: "text", key: 'name' },
+  EVALUATION_PURPOSE: { multi: false, category: "Evaluation Purpose", type: "text", key: 'purpose' },
+  APPLICATION_NAME: { multi: false, category: "Application Name", type: "text", key: 'application_names' }
 }
 
 @inject('evaluationStore')
@@ -120,14 +120,12 @@ class CEvaluationConfigList extends Component {
       params['includeQuery.' + obj.key] = undefined;
       params['excludeQuery.' + obj.key] = undefined;
     })
-
-    filter.forEach((item) => {
-      let obj = CATEGORIES[item.category];
-      let prefix = item.operator == 'is' ? 'includeQuery' : 'excludeQuery';
-      let value = item.value;
+    filter.forEach(({ category, operator, value }) => {
+      const obj = Object.values(CATEGORIES).find(item => item.category === category);
       if (obj) {
+        const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
         params[`${prefix}.${obj.key}`] = value;
-      }        
+      }
     });
     Object.assign(this.cEvalConfigs.params, params);
 

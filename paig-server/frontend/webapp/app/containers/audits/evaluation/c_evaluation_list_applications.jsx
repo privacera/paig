@@ -15,7 +15,7 @@ import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluatio
 
 
 const CATEGORIES = {
-    Name: { multi: false, category: "Name", type: "text", key: 'name' }
+    NAME: { multi: false, category: "Name", type: "text", key: 'name' }
 }
 
 @inject('evaluationStore')
@@ -91,14 +91,12 @@ class CEvaluationAppsList extends Component {
             params['includeQuery.' + obj.key] = undefined;
             params['excludeQuery.' + obj.key] = undefined;
         })
-
-        filter.forEach((item) => {
-            let obj = CATEGORIES[item.category];
-            let prefix = item.operator == 'is' ? 'includeQuery' : 'excludeQuery';
-            let value = item.value;
+        filter.forEach(({ category, operator, value }) => {
+            const obj = Object.values(CATEGORIES).find(item => item.category === category);
             if (obj) {
-                params[`${prefix}.${obj.key}`] = value;
-            }        
+            const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
+            params[`${prefix}.${obj.key}`] = value;
+            }
         });
         Object.assign(this.cEvalAppsList.params, params);
 
