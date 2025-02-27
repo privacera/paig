@@ -129,9 +129,9 @@ export class CEvaluationReport extends Component {
     })
 
     filter.forEach(({ category, operator, value }) => {
-      const obj = EVAL_REPORT_CATEGORIES[category];
-      const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
-      if (obj.key) {
+      const obj = Object.values(EVAL_REPORT_CATEGORIES).find(item => item.category === category);
+      if (obj) {
+        const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
         newParams[`${prefix}.${obj.key}`] = value;
       }
     });

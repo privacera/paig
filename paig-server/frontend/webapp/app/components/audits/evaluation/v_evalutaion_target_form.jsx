@@ -83,76 +83,69 @@ const VEvalTargetForm = ({form}) => {
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                    <FormGroupInput
-                        disabled={ai_application_id.value}
-                        required={true}
-                        label={id ? "Name" : "Name (Auto Generated, Editable)"}
-                        placeholder="Enter configuration name"
-                        fieldObj={name}
-                        inputProps={{ 'data-testid': 'name-input' }}
-                    />
-                </Grid>
+                <FormGroupInput
+                    inputColAttr={{ xs: 12, sm: 6 }}
+                    disabled={ai_application_id.value}
+                    required={true}
+                    label={id ? "Name" : "Name (Auto Generated, Editable)"}
+                    placeholder="Enter configuration name"
+                    fieldObj={name}
+                    inputProps={{ 'data-testid': 'name-input' }}
+                />
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                    <FormGroupInput
-                        label="Connection type"
-                        placeholder="HTTP/HTTPS-Endpoint"
-                        fieldObj={connectionType}
-                        inputProps={{'data-testid': 'connection-type'}}
-                        disabled={true}
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <FormGroupInput
-                        required={true}
-                        label="Endpoint URL"
-                        placeholder="http://127.0.0.1:3535/securechat/api/v1/conversations/prompt"
-                        fieldObj={url}
-                        inputProps={{'data-testid': 'endpoint-url'}}
-                    />
-                </Grid>
+                <FormGroupInput
+                    inputColAttr={{ xs: 12, sm: 4 }}
+                    label="Connection type"
+                    placeholder="HTTP/HTTPS-Endpoint"
+                    fieldObj={connectionType}
+                    inputProps={{'data-testid': 'connection-type'}}
+                    disabled={true}
+                />
+                <FormGroupInput
+                    inputColAttr={{ xs: 12 }}
+                    required={true}
+                    label="Endpoint URL"
+                    placeholder="http://127.0.0.1:3535/securechat/api/v1/conversations/prompt"
+                    fieldObj={url}
+                    inputProps={{'data-testid': 'endpoint-url'}}
+                />
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Endpoint Configuration</Typography>
                 </Grid>
-                <Grid item xs={12} sm={4}>
-                    <FormGroupSelect2
-                        required={true}
-                        label={"Method"}
-                        showLabel={true}
-                        fieldObj={method}
-                        data={SUPPORTED_METHODS}
-                        labelKey={'name'}
-                        valueKey={'value'}
-                        disableClearable={true}
-                        onChange={handleMethodChange}
-                        data-testid="method"
-                    />
-                </Grid>
-
+                <FormGroupSelect2
+                    inputColAttr={{ xs: 12, sm: 4 }}
+                    required={true}
+                    label={"Method"}
+                    showLabel={true}
+                    fieldObj={method}
+                    data={SUPPORTED_METHODS}
+                    labelKey={'name'}
+                    valueKey={'value'}
+                    disableClearable={true}
+                    onChange={handleMethodChange}
+                    data-testid="method"
+                />
                 {/* Headers Section */}
                 <Grid item xs={12}>
                 <FormLabel>Headers</FormLabel>
                     {headersList.map((header, index) => (
                         <Grid container spacing={2} alignItems="center" key={index}>
-                            <Grid item xs={5}>
-                                <FormGroupInput
-                                    value={header.key}
-                                    onChange={(e) => handleHeaderChange(index, e.target.value, header.value)}
-                                    placeholder="Authorization"
-                                    inputProps={{ 'data-testid': `header-key-${index}` }}
-                                />
-                            </Grid>
-                            <Grid item xs={5}>
-                                <FormGroupInput
-                                    value={header.value}
-                                    onChange={(e) => handleHeaderChange(index, header.key, e.target.value)}
-                                    placeholder="Bearer {{api_key}}"
-                                    inputProps={{ 'data-testid': `header-value-${index}` }}
-                                />
-                            </Grid>
+                            <FormGroupInput
+                                inputColAttr={{ xs: 5 }}
+                                value={header.key}
+                                onChange={(e) => handleHeaderChange(index, e.target.value, header.value)}
+                                placeholder="Authorization"
+                                inputProps={{ 'data-testid': `header-key-${index}` }}
+                            />
+                            <FormGroupInput
+                                inputColAttr={{ xs: 5 }}
+                                value={header.value}
+                                onChange={(e) => handleHeaderChange(index, header.key, e.target.value)}
+                                placeholder="Bearer {{api_key}}"
+                                inputProps={{ 'data-testid': `header-value-${index}` }}
+                            />
                             <Grid item xs={2}>
                                 <IconButton onClick={() => handleRemoveHeader(index)} color="primary">
                                     <Delete />
