@@ -121,7 +121,7 @@ class CEvaluationAppsList extends Component {
             })
             .then(() => {
                 confirm.hide();
-                f.notifySuccess('Report Deleted');
+                f.notifySuccess('Application Config Deleted');
                 // Update the form fields to remove the deleted ID
                 const updatedApplicationIds = Array.isArray(this.props.form.fields.application_ids.value)
                     ? this.props.form.fields.application_ids.value.filter((id) => id !== model.target_id)
