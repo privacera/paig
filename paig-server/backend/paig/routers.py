@@ -26,6 +26,5 @@ router.include_router(data_service_router, prefix="/data-service", tags=["Data S
 router.include_router(shield_router, prefix="/shield", tags=["Shield"])
 router.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"])
 router.include_router(paig_guardrails_router, prefix="/guardrail-service/api")
-router.include_router(paig_guardrails_router, prefix="/guardrail-service/api", dependencies=[Depends(get_auth_user)])
 
 __all__ = ["router"]
