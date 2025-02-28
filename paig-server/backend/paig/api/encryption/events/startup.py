@@ -82,6 +82,9 @@ async def create_default_encryption_keys_if_not_exists():
         # Create MSG_PROTECT_PLUGIN encryption key
         await create_encryption_keys_if_not_exists(encryption_key_service, EncryptionKeyType.MSG_PROTECT_PLUGIN)
 
+        # Create CRDS_PROTECT_GUARDRAIL encryption key
+        await create_encryption_keys_if_not_exists(encryption_key_service, EncryptionKeyType.CRDS_PROTECT_GUARDRAIL)
+
 
 async def create_default_encryption_keys():
     context = set_session_context(session_id="encryption_startup")
