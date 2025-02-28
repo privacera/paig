@@ -1,5 +1,7 @@
 import pytest
 from unittest.mock import patch, MagicMock
+import os
+from unittest.mock import patch, MagicMock, mock_open
 
 from botocore.exceptions import ClientError
 
@@ -366,3 +368,132 @@ def test_handle_bedrock_exceptions(mock_boto3_client, connection_details):
 
     assert result['message'] == "Resource not found. Please verify that the resource you are trying to access exists."
     assert result['details']['errorType'] == 'ClientError'
+
+
+@patch('boto3.client')
+def test_verify_connection_details_client_error(mock_boto_client, connection_details):
+    # Mocking a ClientError during list_guardrails
+    mock_client = MagicMock()
+    mock_client.list_guardrails.side_effect = ClientError(
+        {"Error": {"Message": "Test error message"}}, "list_guardrails"
+    )
+    mock_boto_client.return_value = mock_client
+
+    provider = BedrockGuardrailProvider(connection_details)
+    result, message = provider.verify_connection_details()
+
+    assert result is False
+    assert message == {"error": "Unable to verify connection. Test error message"}
+
+@patch.object(BedrockGuardrailProvider, '_perform_guardrail_action')
+@patch.object(BedrockGuardrailProvider, 'create_bedrock_client')
+def test_update_guardrail_not_found(mock_create_bedrock_client, mock_perform_guardrail_action, connection_details, guardrail_configs):
+    provider = BedrockGuardrailProvider(connection_details)
+    created_guardrail_details = {'success': False, 'response': {}}
+
+    request = UpdateGuardrailRequest(
+        name='update_test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=guardrail_configs,
+        kmsKeyId='test_key',
+        tags=['test_tag'],
+        remoteGuardrailDetails=created_guardrail_details
+    )
+
+    provider.update_guardrail(request)
+
+    mock_create_bedrock_client.assert_called_once()
+    mock_perform_guardrail_action.assert_called_once()
+
+
+@patch.object(BedrockGuardrailProvider, '_perform_guardrail_action')
+@patch.object(BedrockGuardrailProvider, 'create_bedrock_client')
+def test_delete_guardrail_not_found(mock_create_bedrock_client, mock_perform_guardrail_action, connection_details):
+    provider = BedrockGuardrailProvider(connection_details)
+    created_guardrail_details = {'success': False, 'response': {}}
+
+    request = DeleteGuardrailRequest(
+        name='delete_test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=[],
+        kmsKeyId='test_key',
+        tags=['test_tag'],
+        remoteGuardrailDetails=created_guardrail_details
+    )
+
+    result, message = provider.delete_guardrail(request)
+
+    assert result is True
+    assert message == {}
+    mock_create_bedrock_client.assert_called_once()
+    mock_perform_guardrail_action.assert_not_called()
+
+def test_get_create_bedrock_guardrail_payload_with_kms_and_tags(connection_details, guardrail_configs):
+    provider = BedrockGuardrailProvider(connection_details)
+
+    request = CreateGuardrailRequest(
+        name='test_guardrail',
+        description='test_description',
+        connectionDetails=connection_details,
+        guardrailConfigs=guardrail_configs,
+        kmsKeyId='test_key',
+        tags=['test_tag']
+    )
+
+    payload = provider.get_create_bedrock_guardrail_payload(request, kmsKeyId='test_key', tags=['test_tag'])
+
+    assert payload['kmsKeyId'] == 'test_key'
+    assert payload['tags'] == ['test_tag']
+
+@patch('boto3.client')
+def test_perform_guardrail_action_exception(mock_boto3_client, connection_details):
+    mock_client = MagicMock()
+    mock_client.create_guardrail.side_effect = Exception("Test exception")
+    provider = BedrockGuardrailProvider(connection_details)
+
+    success, result = provider._perform_guardrail_action(mock_client.create_guardrail, {'name': 'test_guardrail'})
+    assert success == False
+    assert result['message'] == "An unknown error occurred. Please contact support."
+    assert result['details']['errorType'] == 'Exception'
+
+@patch('boto3.client')
+def test_handle_bedrock_exceptions_generic(mock_boto3_client, connection_details):
+    mock_client = MagicMock()
+    provider = BedrockGuardrailProvider(connection_details)
+
+    exception = Exception("Test exception")
+    result = provider.handle_bedrock_exceptions(exception, mock_client)
+
+    assert result['message'] == "An unknown error occurred. Please contact support."
+    assert result['details']['errorType'] == 'Exception'
+
+@patch('boto3.client')
+@patch.dict(os.environ, {
+    "AWS_ROLE_ARN": "arn:aws:iam::123456789012:role/test-role",
+    "AWS_WEB_IDENTITY_TOKEN_FILE": "test-token-file"
+})
+@patch("builtins.open", new_callable=mock_open, read_data="fake_token_data")
+def test_create_bedrock_client_with_web_identity(mock_file, mock_boto3_client):
+    mock_boto3_client.return_value = MagicMock()
+    mock_boto3_client.return_value.assume_role_with_web_identity = MagicMock(
+        return_value={
+            'Credentials': {
+                'AccessKeyId': 'fake_temp_access_key',
+                'SecretAccessKey': 'fake_temp_secret_key',
+                'SessionToken': 'fake_temp_session_token'
+            }
+        }
+    )
+
+    provider = BedrockGuardrailProvider({'region': 'us-east-1'})
+    provider.create_bedrock_client()
+
+    mock_boto3_client.assert_called_with(
+        'bedrock',
+        aws_access_key_id='fake_temp_access_key',
+        aws_secret_access_key='fake_temp_secret_key',
+        aws_session_token='fake_temp_session_token',
+        region_name='us-east-1'
+    )
