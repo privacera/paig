@@ -32,7 +32,10 @@ const {
     VECTOR_DB_PERMISSIONS,
     EVALUATION,
     EVALUATION_CONFIG,
-    EVALUATION_REPORTS
+    EVALUATION_REPORTS,
+    GUARDRAILS,
+    RESPONSE_TEMPLATES,
+    GUARDRAIL_CONNECTION_PROVIDER
 } = UI_CONSTANTS
 
 const SIDEBAR_MENU_ITEMS = {
@@ -44,7 +47,9 @@ const SIDEBAR_MENU_ITEMS = {
             },
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            }
+            },
+            [GUARDRAILS]: {},
+            [RESPONSE_TEMPLATES]: {}
         }
     },
     [AUDITS]: {
@@ -66,6 +71,7 @@ const SIDEBAR_MENU_ITEMS = {
     [ACCOUNT]: {
         SUBMENU: {
             [SHIELD_CONFIGURATION]: {},
+            [GUARDRAIL_CONNECTION_PROVIDER]: {},
             [USER_MANAGEMENT]: {
                 TABS: [PORTAL_USERS, PORTAL_GROUPS]
             },
@@ -105,7 +111,9 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
     [APPLICATIONS]: {
         [AI_APPLICATIONS]: {
             TABS: [AI_APPLICATIONS, AI_APPLICATIONS_PERMISSIONS]
-        }
+        },
+        [GUARDRAILS]: {},
+        [RESPONSE_TEMPLATES]: {}
     },
     [AUDITS]: {
         [SECURITY]: {}
@@ -118,6 +126,7 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
         [SAVED_REPORTS]: {}
     },
     [ACCOUNT]: {
+        [GUARDRAIL_CONNECTION_PROVIDER]: {},
         [USER_MANAGEMENT]: {
             TABS: [PORTAL_USERS, PORTAL_GROUPS]
         },
@@ -402,6 +411,9 @@ const featurePermissionUIMap = {
     },
     'governance.vector_db': {
         propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
+    },
+    'governance.guardrails': {
+        propertyForShowHide: [`${APPLICATIONS}.${GUARDRAILS}`, `${APPLICATIONS}.${RESPONSE_TEMPLATES}`, `${ACCOUNT}.${GUARDRAIL_CONNECTION_PROVIDER}`]
     },
     'governance.evaluation_config': {
         propertyForShowHide: [`${AUDITS}.${EVALUATION_CONFIG}`]

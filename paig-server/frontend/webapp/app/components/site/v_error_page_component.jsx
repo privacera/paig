@@ -8,7 +8,7 @@ const ErrorLogo = ({errorCode='404', imageProps={}}) => {
 			<div className="error-onimage">
 				{errorCode}
 			</div>
-			<img src={logoSvg} {...imageProps}/>
+			<img src={logoSvg} {...imageProps} />
 		</Fragment>
 	)
 }
