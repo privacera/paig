@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, status, Query
 
 from core.controllers.paginated_response import Pageable
-from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter
+from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter, GuardrailApplicationsAssociation
 from api.governance.controllers.ai_app_controller import AIAppController
 from core.utils import SingletonDepends
 
@@ -35,6 +35,17 @@ async def create_application(
     Create a new AI application.
     """
     return await ai_app_controller.create_ai_application(create_ai_app_request)
+
+
+@ai_app_router.put("/guardrails")
+async def update_application_guardrails(
+        request: GuardrailApplicationsAssociation,
+        ai_app_controller: AIAppController = ai_app_controller_instance
+):
+    """
+    Associates or disassociates applications with a given guardrail.
+    """
+    return await ai_app_controller.update_guardrail_application_association(request)
 
 
 @ai_app_router.get("/{id}", response_model=AIApplicationView)
