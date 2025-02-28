@@ -76,13 +76,15 @@ class ApplicationManager(Singleton):
 
         guardrail_instance_infos = _extract_guardrail_instance_infos(auth_req.context)
 
+        guardrail_info = next(iter(guardrail_instance_infos), {})
+
         for scanner in scanners_list:
             setattr(scanner, 'scan_for_req_type', request_type)
             setattr(scanner, 'application_key', application_key)
 
-            if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner' and guardrail_instance_infos:
+            if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
                 for attr in ['guardrail_id', 'guardrail_version', 'region', 'connection_details']:
-                    value = guardrail_instance_infos[0].get(attr)
+                    value = guardrail_info.get(attr)
                     if value:
                         setattr(scanner, attr, value)
                     elif hasattr(scanner, attr):
