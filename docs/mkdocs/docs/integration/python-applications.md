@@ -172,4 +172,4 @@ Create a folder called `privacera` in your application and copy the Privacera Sh
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Applications](../user-guide/manage-applications/index)
+    [Manage Applications](../user-guide/manage-applications/index.md)
