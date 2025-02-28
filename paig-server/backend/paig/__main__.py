@@ -7,7 +7,6 @@ import subprocess
 import signal
 import click
 import uvicorn
-import psutil
 
 PID_FILE = os.path.join(ROOT_DIR, "paig_server.pid")
 
@@ -180,6 +179,7 @@ def is_server_running():
             with open(PID_FILE, "r") as f:
                 pid = int(f.read().strip())
             # Check if the PID belongs to a process with the expected command
+            import psutil
             if psutil.pid_exists(pid):
                 process = psutil.Process(pid)
                 cmdline = " ".join(process.cmdline())
