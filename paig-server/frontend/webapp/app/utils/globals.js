@@ -23,7 +23,10 @@ const UI_CONSTANTS = {
     BUILT_IN_REPORTS: 'BUILT_IN_REPORTS',
     SAVED_REPORTS: 'SAVED_REPORTS',
     AI_APPLICATIONS_PERMISSIONS: 'AI_APPLICATIONS_PERMISSIONS',
-    VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS'
+    VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
+    EVALUATION: 'EVALUATION',
+    EVALUATION_CONFIG: 'EVALUATION_CONFIG',
+    EVALUATION_REPORTS: 'EVALUATION_REPORTS'
 }
 
 const PERMISSIONS = {
@@ -43,7 +46,9 @@ const FEATURE_PERMISSIONS = {
         AI_APPLICATIONS: {PROPERTY: 'governance.ai_applications'},
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
-        VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'}
+        VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
+        EVALUATION_CONFIG: {PROPERTY: 'governance.evaluation_config'},
+        EVALUATION_REPORTS: {PROPERTY: 'governance.evaluation_reports'}
     },
     AUDITS: {
         SECURITY: {PROPERTY: 'audits.security'}
@@ -237,6 +242,13 @@ const REPORT_GRID_LABELS = {
     TOP_REVIEWER_CONTENT_COMPLIANCE: {LABEL: "Top 20 Reviewers In Content Compliance", TOOLTIP: "Identifies the top 20 administrators active in content compliance reviews, crucial for understanding who is most engaged in monitoring sensitive user content."}
 }
 
+const EVAL_REPORT_CATEGORIES = {
+    CATEGORY: { multi: false, category: "Category", type: "text", key: 'category' },
+    PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
+    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
+    STATUS: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
+}
+
 export {
     UI_CONSTANTS,
     PERMISSIONS,
@@ -262,5 +274,6 @@ export {
     ACTION_TYPE,
     OBJECT_TYPE_MAPPING,
     ADMIN_AUDITS_FIELDS_TO_HIDE_MAPPING,
-    REPORT_GRID_LABELS
+    REPORT_GRID_LABELS,
+    EVAL_REPORT_CATEGORIES
 }
