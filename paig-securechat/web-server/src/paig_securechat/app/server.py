@@ -11,6 +11,7 @@ from core import config
 from services.AI_applications import AIApplications
 from routers import router
 from core.middlewares.sqlalchemy_middleware import SQLAlchemyMiddleware
+from core.middlewares.error_handling_middleware import ErrorHandlingMiddleware
 from core.exceptions import CustomException
 from vectordb import vector_store_factory
 from services.paig_shield import PAIGShield
@@ -88,7 +89,8 @@ def make_middleware() -> List[Middleware]:
             allow_methods=["*"],
             allow_headers=["*"],
         ),
-        Middleware(SQLAlchemyMiddleware)
+        Middleware(SQLAlchemyMiddleware),
+        Middleware(ErrorHandlingMiddleware)
     ]
     return middleware
 

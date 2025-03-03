@@ -4,6 +4,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
 from core import config
 from core import llm_constants
+from openai import PermissionDeniedError  # ✅ Import OpenAI error handling
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +28,9 @@ class LangChainServiceIntf:
         vector_store_factory_instance = llm_constants.vector_store
         self.vectordb = vector_store_factory_instance.get_application_vectordb_index(self.ai_application_name)
         self.ask_prompt_suffix = self.config.get("ask_prompt_suffix")
-        self.client_error_msg: str = self.config.get("client_error_msg")
-        self.shield_access_denied_msg: str = self.config.get("shield_access_denied_msg")
-        self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
-            "disable_conversation_chain", False)
+        self.client_error_msg: str = self.config.get("client_error_msg", "An error occurred while processing your request.")
+        self.shield_access_denied_msg: str = self.config.get("shield_access_denied_msg", "Access denied.")
+        self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get("disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
         self.source_metadata_fields = ai_application_conf[self.ai_application_name].get("source_metadata_fields", ["source", "users", "groups"])
 
@@ -40,8 +40,8 @@ class LangChainServiceIntf:
                                                retriever=self.vectordb.as_retriever(), verbose=True,
                                                return_source_documents=self.return_source_documents)
         except Exception as e:
-            logger.error(f"Exception occurred while getting llm chain with error :: {e}")
-            raise e
+            logger.error("Error getting LLM chain", exc_info=True)
+            return None
 
     def _get_conversational_retrieval_chain(self, conversation_messages=None, temperature=None):
         try:
@@ -50,10 +50,10 @@ class LangChainServiceIntf:
                 memory_key="chat_history",
                 output_key="answer",
                 return_messages=True)
-
         except Exception as e:
-            logger.error(f"Exception occur while getting conversation buffer window memory with error :: {e}")
-            raise e
+            logger.error("Error initializing conversation buffer memory", exc_info=True)
+            return None
+
         if memory and conversation_messages:
             for conversation in conversation_messages:
                 if conversation['type'] == "prompt":
@@ -62,16 +62,18 @@ class LangChainServiceIntf:
                     memory.chat_memory.add_ai_message(conversation['content'])
 
         try:
-            qa = ConversationalRetrievalChain.from_llm(self.langchain_llm, memory=memory, verbose=True,
-                                                           retriever=self.vectordb.as_retriever(
-                                                               search_kwargs={"k": self.vector_store_retriever_k}),
-                                                           return_source_documents=self.return_source_documents,
-                                                           response_if_no_docs_found=self.response_if_no_docs_found)
-
+            qa = ConversationalRetrievalChain.from_llm(
+                self.langchain_llm,
+                memory=memory,
+                verbose=True,
+                retriever=self.vectordb.as_retriever(search_kwargs={"k": self.vector_store_retriever_k}),
+                return_source_documents=self.return_source_documents,
+                response_if_no_docs_found=self.response_if_no_docs_found,
+            )
             return qa
         except Exception as e:
-            logger.error(f"Exception occurred while getting qa chain with error :: {e}")
-            raise e
+            logger.error("Error getting QA chain", exc_info=True)
+            return None
 
     def _get_retrieval_object(self, conversation_messages=None):
         if self.disable_conversation_chain:
@@ -80,58 +82,71 @@ class LangChainServiceIntf:
             return self._get_conversational_retrieval_chain(conversation_messages)
 
     def _execute_prompt(self, retrieval_object, prompt):
-        if self.disable_conversation_chain:
-            result = retrieval_object.invoke({"query": prompt})
-            return result['result']
-        else:
-            result = retrieval_object.invoke({"question": prompt})
-            answer = result['answer']
-            source_metadata = None
-            if "source_documents" in result:
-                source_metadata = list()
-                for source_document in result["source_documents"]:
-                    metadata = dict()
-                    for field in self.source_metadata_fields:
-                        if field in source_document.metadata:
-                            metadata[field] = source_document.metadata[field]
-                    if source_metadata:
-                        if metadata != source_metadata[-1]:
-                            source_metadata.append(metadata)
-                    else:
-                        source_metadata.append(metadata)
+        try:
+            if self.disable_conversation_chain:
+                result = retrieval_object.invoke({"query": prompt})
+                return result.get('result', "No result available")
+            else:
+                result = retrieval_object.invoke({"question": prompt})
+                answer = result.get('answer', "No answer available")
+                source_metadata = None
 
-            return answer, source_metadata
+                if "source_documents" in result:
+                    source_metadata = []
+                    for source_document in result["source_documents"]:
+                        metadata = {field: source_document.metadata[field] 
+                                    for field in self.source_metadata_fields 
+                                    if field in source_document.metadata}
+                        
+                        if not source_metadata or metadata != source_metadata[-1]:
+                            source_metadata.append(metadata)
+
+                return answer, source_metadata
+        
+        except PermissionDeniedError:
+            logger.error("Access denied to the requested OpenAI model.")
+            return "An error occurred while processing your request. Please try again later.", None
+
+        except Exception:
+            logger.error("Unexpected error while executing prompt", exc_info=True)
+            return "An error occurred while processing your request. Please try again later.", None
 
     def ask_prompt(self, prompt, conversation_messages=None, temperature=None, user_name=None):
-        logger.info(f"Asking prompt :: {prompt} for ai_application_name :: {self.ai_application_name}")
+        logger.info(f"Asking prompt: {prompt} for AI application: {self.ai_application_name}")
+        
         if not temperature:
             temperature = 0.1
+
         try:
             if self.ask_prompt_suffix:
                 prompt = prompt + self.ask_prompt_suffix
 
             if self.paig_shield.DISABLE_PAIG_SHIELD_PLUGIN_FLAG:
                 retrieval_object = self._get_retrieval_object(conversation_messages)
+                if retrieval_object is None:
+                    return "Unable to retrieve data at the moment.", None
                 reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
-                logger.info(f"Reply :: {reply}")
+                logger.info(f"Reply: {reply}")
             else:
-                logger.info(f"Authorizing for  :: {user_name}")
+                logger.info(f"Authorizing for user: {user_name}")
                 ai_app = self.paig_shield.get_paig_config_map(self.ai_application_name)
-                kwargs = {
-                    "username": user_name
-                }
-                if ai_app is not None:
+                kwargs = {"username": user_name}
+                if ai_app:
                     kwargs['application'] = ai_app
+
                 with paig_shield_client.create_shield_context(**kwargs):
                     retrieval_object = self._get_retrieval_object(conversation_messages)
+                    if retrieval_object is None:
+                        return "Unable to retrieve data at the moment.", None
                     reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
-                    logger.info(f"Reply :: {reply}")
+                    logger.info(f"Reply: {reply}")
+
             return reply, source_metadata
 
-        except paig_client.exception.AccessControlException as e:
-            logger.exception(f"Access Denied, message: {e}")
+        except paig_client.exception.AccessControlException:
+            logger.warning("Access denied while executing prompt.")
             return self.shield_access_denied_msg, None
-        except Exception as ex:
-            logging.exception(
-                f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
+        
+        except Exception:
+            logger.error("Unexpected error when executing prompt", exc_info=True)
             return self.client_error_msg, None
