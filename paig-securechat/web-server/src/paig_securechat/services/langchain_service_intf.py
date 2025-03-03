@@ -12,7 +12,6 @@ from paig_client import client as paig_shield_client
 import paig_client.exception
 from core.llm_constants import paig_shield
 
-
 class LangChainServiceIntf:
 
     def __init__(self, ai_application_name):
@@ -37,10 +36,10 @@ class LangChainServiceIntf:
     def _get_retrievalqa(self):
         try:
             return RetrievalQA.from_chain_type(llm=self.langchain_llm, chain_type='map_reduce',
-                                               retriever=self.vectordb.as_retriever(), verbose=True,
+                                               retriever=self.vectordb.as_retriever(), verbose=False,
                                                return_source_documents=self.return_source_documents)
         except Exception as e:
-            logger.error("Error getting LLM chain", exc_info=True)
+            logger.error("Error getting LLM chain: %s", str(e))
             return None
 
     def _get_conversational_retrieval_chain(self, conversation_messages=None, temperature=None):
@@ -51,7 +50,7 @@ class LangChainServiceIntf:
                 output_key="answer",
                 return_messages=True)
         except Exception as e:
-            logger.error("Error initializing conversation buffer memory", exc_info=True)
+            logger.error("Error initializing conversation buffer memory: %s", str(e))
             return None
 
         if memory and conversation_messages:
@@ -65,14 +64,14 @@ class LangChainServiceIntf:
             qa = ConversationalRetrievalChain.from_llm(
                 self.langchain_llm,
                 memory=memory,
-                verbose=True,
+                verbose=False,
                 retriever=self.vectordb.as_retriever(search_kwargs={"k": self.vector_store_retriever_k}),
                 return_source_documents=self.return_source_documents,
                 response_if_no_docs_found=self.response_if_no_docs_found,
             )
             return qa
         except Exception as e:
-            logger.error("Error getting QA chain", exc_info=True)
+            logger.error("Error getting QA chain: %s", str(e))
             return None
 
     def _get_retrieval_object(self, conversation_messages=None):
@@ -85,14 +84,13 @@ class LangChainServiceIntf:
         try:
             if self.disable_conversation_chain:
                 result = retrieval_object.invoke({"query": prompt})
-                return result.get('result', "No result available")
+                return result.get('result', "No result available"), None
             else:
                 result = retrieval_object.invoke({"question": prompt})
                 answer = result.get('answer', "No answer available")
-                source_metadata = None
+                source_metadata = []
 
                 if "source_documents" in result:
-                    source_metadata = []
                     for source_document in result["source_documents"]:
                         metadata = {field: source_document.metadata[field] 
                                     for field in self.source_metadata_fields 
@@ -102,14 +100,14 @@ class LangChainServiceIntf:
                             source_metadata.append(metadata)
 
                 return answer, source_metadata
-        
+
         except PermissionDeniedError:
             logger.error("Access denied to the requested OpenAI model.")
-            return "An error occurred while processing your request. Please try again later.", None
+            return self.shield_access_denied_msg, None
 
-        except Exception:
-            logger.error("Unexpected error while executing prompt", exc_info=True)
-            return "An error occurred while processing your request. Please try again later.", None
+        except Exception as e:
+            logger.error("Unexpected error while executing prompt: %s", str(e))
+            return self.client_error_msg, None
 
     def ask_prompt(self, prompt, conversation_messages=None, temperature=None, user_name=None):
         logger.info(f"Asking prompt: {prompt} for AI application: {self.ai_application_name}")
@@ -124,9 +122,8 @@ class LangChainServiceIntf:
             if self.paig_shield.DISABLE_PAIG_SHIELD_PLUGIN_FLAG:
                 retrieval_object = self._get_retrieval_object(conversation_messages)
                 if retrieval_object is None:
-                    return "Unable to retrieve data at the moment.", None
-                reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
-                logger.info(f"Reply: {reply}")
+                    return self.client_error_msg, None
+                return self._execute_prompt(retrieval_object, prompt)
             else:
                 logger.info(f"Authorizing for user: {user_name}")
                 ai_app = self.paig_shield.get_paig_config_map(self.ai_application_name)
@@ -137,16 +134,13 @@ class LangChainServiceIntf:
                 with paig_shield_client.create_shield_context(**kwargs):
                     retrieval_object = self._get_retrieval_object(conversation_messages)
                     if retrieval_object is None:
-                        return "Unable to retrieve data at the moment.", None
-                    reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
-                    logger.info(f"Reply: {reply}")
-
-            return reply, source_metadata
+                        return self.client_error_msg, None
+                    return self._execute_prompt(retrieval_object, prompt)
 
         except paig_client.exception.AccessControlException:
             logger.warning("Access denied while executing prompt.")
             return self.shield_access_denied_msg, None
         
-        except Exception:
-            logger.error("Unexpected error when executing prompt", exc_info=True)
+        except Exception as e:
+            logger.error("Unexpected error when executing prompt: %s", str(e))
             return self.client_error_msg, None
