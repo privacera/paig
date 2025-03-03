@@ -51,7 +51,8 @@ const Routes = () => (
 	<Switch>
 		<Route exact path="/" component={RedirectToPath} />
 
-        <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.DASHBOARD])} />
+        <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.LENS, UI_CONSTANTS.DASHBOARD])} />
+        <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.LENS, UI_CONSTANTS.SECURITY])} />
 
         <Route path="/ai_application/create" name="Create Application" component={Authorization(CAIApplicationCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
         <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
@@ -61,21 +62,20 @@ const Routes = () => (
         <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db" name="Vector DB" component={Authorization(CVectorDB, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
 
-        <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.SECURITY])} />
         {/* TODO: [PAIG-2025] Uncomment this route once Admin Audits implemented */}
         {/* <Route path="/admin_audits" name="Admin Audits" component={Authorization(CAdminAudits, [UI_CONSTANTS.COMPLIANCE, UI_CONSTANTS.ADMIN_AUDITS])} /> */}
 
         {/* TODO: [PAIG-2025] Uncomment this route once Shield Configuration implemented */}
         {/* <Route path="/shield_configuration" name="Shield Configuration" component={Authorization(CShieldConfig, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.SHIELD_CONFIGURATION])} /> */}
-        <Route path="/user_management" name="User Management" component={Authorization(CUserManagementMain, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.USER_MANAGEMENT])} />
+        <Route path="/users" name="Users" component={Authorization(CUserManagementMain, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.USER_MANAGEMENT])} />
         <Route path="/tags" name="Tags" component={Authorization(CSensitiveData, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.SENSITIVE_DATA])} />
         <Route path="/vector_db_metadata" name="Vector DB Metadata" component={Authorization(CMetaData, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.META_DATA])} />
 
         {/*Reports*/}
         {/* TODO: [PAIG-2025] Uncomment this route once Saved Reports implemented */}
         {/* <Route path="/saved_reports" name="Saved Reports" component={Authorization(CSavedReportsListing, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.SAVED_REPORTS])} /> */}
-        <Route exact path="/built_in_reports" name="Built-in Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
-        <Route path="/built_in_reports/:reportType/new" name="Built-in Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
+        <Route exact path="/reports" name="Reports" component={Authorization(CReporting, [UI_CONSTANTS.LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
+        <Route path="/reports/:reportType/new" name="Reports" component={Authorization(CReporting, [UI_CONSTANTS.LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
         {/* TODO: [PAIG-2025] Uncomment this route once Saved Reports implemented */}
         {/* <Route path="/reports/:reportType/:configId" name="Saved Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} /> */}
         
