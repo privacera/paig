@@ -14,9 +14,7 @@ from sqlalchemy import select
 import asyncio
 
 config = load_config_file()
-default_ai_app = load_default_ai_config()
 database_url = config["database"]["url"]
-security_config = config["security"]
 
 def create_or_update_tables(root_dir: str = None):
     try:
@@ -37,6 +35,8 @@ def create_or_update_tables(root_dir: str = None):
 
 
 async def check_and_create_default_user():
+    security_config = config["security"]
+
     engine = None
     try:
         engine = create_async_engine(url=database_url)
@@ -76,6 +76,8 @@ async def check_and_create_default_user():
 
 
 async def check_and_create_default_ai_application():
+    default_ai_app = load_default_ai_config()
+
     engine = None
     try:
         engine = create_async_engine(url=database_url)
