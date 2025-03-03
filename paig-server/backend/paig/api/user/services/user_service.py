@@ -138,7 +138,8 @@ class UserService:
             groups = [group.name for group in user.groups]
             user_dict = user.to_ui_dict()
             user_dict['tenantId'] = DEFAULT_TENANT_ID
-            user_dict['userInvited'] = True
+            # We were not storing userInvited and setting it TRUE by default
+            # user_dict['userInvited'] = True
             user_dict['groups'] = groups
             users_list.append(user_dict)
         return create_pageable_response(users_list, total_count, page, size, sort)
