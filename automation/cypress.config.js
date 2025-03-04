@@ -1,5 +1,5 @@
 const { defineConfig } = require("cypress");
-const registerReportPortalPlugin = require('@reportportal/agent-js-cypress/lib/plugin');
+//const registerReportPortalPlugin = require('@reportportal/agent-js-cypress/lib/plugin');
 
 const defaultConfig = {
   "invalidCred": {
@@ -29,10 +29,13 @@ const defaultConfig = {
 }
 
 module.exports = defineConfig({
-//  reporter: 'cypress-multi-reporters',
-//  reporterOptions: {
-//    configFile: 'reporter_config.json'
-//  },
+  reporter: 'mochawesome',
+  reporterOptions: {
+    reportDir: "cypress/reports/mochawesome-report",
+    overwrite: false,
+    html: false,
+    json: true
+  },
   defaultCommandTimeout: 20000,
   pageLoadTimeout: 100000,
   e2e: {
@@ -54,7 +57,7 @@ module.exports = defineConfig({
         }
       }
 
-      registerReportPortalPlugin(on, config);
+//      registerReportPortalPlugin(on, config);
 
       // implement node event listeners here
       return config;
