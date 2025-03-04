@@ -8,6 +8,9 @@ import api.shield.scanners.AWSBedrockGuardrailScanner as awsGuardrailScanner
 
 logger = logging.getLogger(__name__)
 
+guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
+anonymizer = PresidioAnonymizerEngine()
+
 def process_guardrail_response(input_data: dict) -> dict:
 
     result = {
@@ -61,7 +64,6 @@ def process_guardrail_response(input_data: dict) -> dict:
 
 async def get_guardrail_by_id(request: dict, tenant_id: str) -> dict:
     guardrail_id = request.get("guardrailId")
-    guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
     response = await guardrail_service_client.get_guardrail_info_by_id(tenant_id, guardrail_id)
     return response
 
@@ -104,7 +106,6 @@ def mask_message(message: str, redact_policies_dict: dict, analyzer_results: lis
     # update the input text message with redacted values
     custom_mask_analyzer_result = [x for x in analyzer_results if
                                    x.entity_type in redact_policies_dict.keys()]
-    anonymizer = PresidioAnonymizerEngine()
     masked_message = anonymizer.mask(message, redact_policies_dict, custom_mask_analyzer_result)
 
     return masked_message
