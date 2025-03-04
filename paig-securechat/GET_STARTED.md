@@ -55,7 +55,7 @@
 
 10. In development mode, the swagger api server will be available at http://localhost:<3535>/docs
 
-## Starting Securechat Web-UI
+# Starting Securechat Web-UI
 
 ### Steps to run the development web UI
 1. Change directory to the web-ui repository
@@ -78,7 +78,7 @@
     npm start
     ```
 
-## Using PAIG Shield config for governance of the chatbot (Optional)
+# Using PAIG Shield config for governance of the chatbot (Optional)
    1. Start PAIG Server in `paig-server/backend/paig` by using the command below
       
         ```bash
