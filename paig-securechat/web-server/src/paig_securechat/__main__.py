@@ -1,5 +1,7 @@
 import os
 import sys
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(ROOT_DIR)
 import logging
 import click
 import uvicorn
@@ -8,9 +10,6 @@ from core.utils import set_up_standalone_mode
 
 # Configure logging
 logger = logging.getLogger(__name__)
-
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(ROOT_DIR)
 
 @click.command()
 @click.option(
@@ -64,18 +63,17 @@ def main(debug: bool,
          openai_api_key,
          action: str
          ) -> None:
+    def _is_colab():
+        try:
+            import google.colab
+        except ImportError:
+            return False
+        try:
+            from IPython.core.getipython import get_ipython
+        except ImportError:
+            return False
+        return True
     try:
-        def _is_colab():
-            try:
-                import google.colab
-            except ImportError:
-                return False
-            try:
-                from IPython.core.getipython import get_ipython
-            except ImportError:
-                return False
-            return True
-
         set_up_standalone_mode(
             ROOT_DIR,
             debug,
@@ -106,9 +104,9 @@ def main(debug: bool,
             print("Please provide an action. Options: create_tables, run")
 
     except Exception as e:
-        logger.critical(f"Application failed to start: {str(e)}", exc_info=False)  # Log without stack trace
-        print("error: The application failed to start. Please try again later.")  # User-friendly message
-        sys.exit(1)  # Exit with an error code
+        logger.critical(f"Application failed to start: {str(e)}", exc_info=True)  # Log with full traceback
+        print("Error: The application failed to start. Please try again later.")
+        sys.exit(1)  # Exit with error code
 
 
 if __name__ == "__main__":
