@@ -75,8 +75,7 @@ class ApplicationManager(Singleton):
         ]
 
         guardrail_instance_infos = _extract_guardrail_instance_infos(auth_req.context)
-
-        guardrail_info = next(iter(guardrail_instance_infos), {})
+        guardrail_info = next((g for g in guardrail_instance_infos if isinstance(g, dict)), {})
 
         for scanner in scanners_list:
             setattr(scanner, 'scan_for_req_type', request_type)
