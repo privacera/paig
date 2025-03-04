@@ -1,5 +1,10 @@
 import logging
 from api.shield.utils.custom_exceptions import BadRequestException
+from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
+from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
+from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
+from api.shield.scanners.PIIScanner import PIIScanner
+import api.shield.scanners.AWSBedrockGuardrailScanner as awsGuardrailScanner
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +61,12 @@ def process_guardrail_response(input_data: dict) -> dict:
 
 async def get_guardrail_by_id(request: dict, tenant_id: str) -> dict:
     guardrail_id = request.get("guardrailId")
-    from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
     guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
     response = await guardrail_service_client.get_guardrail_info_by_id(tenant_id, guardrail_id)
     return response
 
 async def decrypted_connection_details(tenant_id: str, connection_details: dict):
     try:
-        from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
         tenant_data_encryptor_service = TenantDataEncryptorService()
         await tenant_data_encryptor_service.decrypt_guardrail_connection_details(tenant_id, connection_details)
     except Exception as e:
@@ -101,14 +104,12 @@ def mask_message(message: str, redact_policies_dict: dict, analyzer_results: lis
     # update the input text message with redacted values
     custom_mask_analyzer_result = [x for x in analyzer_results if
                                    x.entity_type in redact_policies_dict.keys()]
-    from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine
     anonymizer = PresidioAnonymizerEngine()
     masked_message = anonymizer.mask(message, redact_policies_dict, custom_mask_analyzer_result)
 
     return masked_message
 
 def test_paig_guardrail(transformed_response: dict, message: str) -> dict:
-    from api.shield.scanners.PIIScanner import PIIScanner
     scanner = PIIScanner(name="PIIScanner", model_path="_")
     scanner_result = scanner.scan(message)
 
@@ -133,7 +134,6 @@ async def test_aws_guardrail(tenant_id: str, transformed_response: dict, message
         return {}
 
     aws_guardrail_details = guardrail_provider_details.get("AWS", {})
-    import api.shield.scanners.AWSBedrockGuardrailScanner as awsGuardrailScanner
     aws_guardrail_id = aws_guardrail_details.get("guardrailId")
     aws_guardrail_version = aws_guardrail_details.get("version")
     aws_guardrail_region = "us-east-1"
