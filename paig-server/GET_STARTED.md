@@ -6,38 +6,29 @@
 - **NodeJS** ==14.17.5 
 - **OS** : Linux/Debian based
 
-## CONTENTS
-- [Setting Up the Backend](#setting-up-the-backend)
-- [Setting up the Frontend](#setting-up-the-frontend)
-
-# Before Set-Up
+# Fork and Clone the repository
 1. Fork the repository from https://github.com/privacera/paig
-
-# Setting up the Backend
-### Steps to run the development web Server
-1. Clone the repository if not already cloned.
+2. Clone the repository if not already cloned.
    ```bash
    git clone git@github.com:<username>/paig.git
    ```
-2. Change directory to the paig-server.
+
+# Backend Set-Up
+
+### Steps to run the development web Server
+1. Run the script to build the web UI.
    ```bash
-   cd paig/paig-server
-   ```
-3. Run the script to build the web UI.
-   ```bash
-   cd scripts
+   cd paig/paig-server/scripts
    source ./build_ui.sh
    ```
-4. Go to the backend directory.
-   ```bash
-   cd backend
-   ```
-5. Create a virtual environment.
+2. Create a virtual environment in the backend directory.
     ```bash
+    cd ../backend
     python -m venv venv
     ```
    OR
    ```bash
+    cd ../backend
     python3 -m venv venv
     ```
 6. Activate the virtual environment.
@@ -48,17 +39,14 @@
     ```bash
     pip install -r requirements.txt
     ```
-8. Change directory to the paig.
-    ```bash
-    cd paig
-    ```
 9. Run the web server.
    ```bash
+   cd paig
    python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port> --background <true|false>
    ```
-   **Note**: If any error comes true repeating **_step 3_** then try again
 
    One Such example is:
+   
    ```bash
    python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545
    ```
@@ -69,27 +57,18 @@
    password: welcome1
    ```
 
-### PAIG Server Background Mode
-PAIG can be run in the background mode by setting the background flag to true.
+### PAIG Server Commands
 
-1. To Start the PAIG in the background mode:
-```bash
-python __main__.py run --background true
-```
-**Note:** Please use help command to see all available options you can pass on command line.
-```bash
-python __main__.py --help
-```
-2. To Stop the PAIG Server:
-```bash
-python __main__.py stop
-```
-3. To Check the status of the PAIG Server:
-```bash
-python __main__.py status
-```
+| Command | Description |
+|---------|------------|
+| python __main__.py run | Start PAIG Server using default options |
+| python __main__.py run --background true | Start PAIG Server in background mode |
+| python __main__.py --help | View all available command-line options |
+| python __main__.py stop | Stop the PAIG Server |
+| python __main__.py status | Check the status of the PAIG Server |
 
-# Setting up the Frontend
+# Frontend Set-Up
+
 ### Steps to run the development web UI
 1. Change directory to the frontend/webapp repository
 2. Install the dependencies
