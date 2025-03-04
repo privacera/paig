@@ -26,13 +26,13 @@ class CUserManagementMain extends Component {
 		title: "Users",
 		view: CUsers,
 		index: 0,
-		tab: `${UI_CONSTANTS.USER_MANAGEMENT}.${UI_CONSTANTS.PORTAL_USERS}`,
+		tab: `${UI_CONSTANTS.USERS}.${UI_CONSTANTS.PORTAL_USERS}`,
 		trackId: 'users-tab'
 	}, {
 		title: "Groups",
 		view: CGroups,
 		index: 1,
-		tab: `${UI_CONSTANTS.USER_MANAGEMENT}.${UI_CONSTANTS.PORTAL_GROUPS}`,
+		tab: `${UI_CONSTANTS.USERS}.${UI_CONSTANTS.PORTAL_GROUPS}`,
 		trackId: 'groups-tab'
 	}]
 	constructor(props) {
