@@ -19,5 +19,5 @@ Here are some of the Quick Starts for trying out the integrations with PAIG.
 
 | Description | Google Colab | Jupyter Notebook | Python Code | Docker |
 |  | --- | --- | --- | --- |
-| Using OpenAI | [:privacera-google-colab: Open In Colab](https://colab.research.google.com/github/privacera/notebooks/blob/main/paig-os/google-colab/PAIG_OpenAI.ipynb){ target="_blank" .md-button--primary }| [Download Jupyter Notebook](https://raw.githubusercontent.com/privacera/notebooks/main/paig-os/jupyter-notebook/PAIG_OpenAI_jupyter.ipynb){:link-download="PAIG_OpenAI_jupyter.ipynb"} | | |
+| Using OpenAI | [:privacera-google-colab: Open In Colab](https://colab.research.google.com/github/privacera/paig/blob/main/notebooks/paig-os/google-colab/PAIG_OpenAI.ipynb){ target="_blank" .md-button--primary }| [Download Jupyter Notebook](https://raw.githubusercontent.com/privacera/paig/main/notebooks/paig-os/jupyter-notebook/PAIG_OpenAI_jupyter.ipynb){:link-download="PAIG_OpenAI_jupyter.ipynb"} | | |
 
