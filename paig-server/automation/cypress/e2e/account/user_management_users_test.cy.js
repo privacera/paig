@@ -16,7 +16,7 @@ describe("Test User Management page for users tab", () => {
 
     beforeEach(() => {
         cy.visit('/#/dashboard');
-        cy.visit('/#/user_management');
+        cy.visit('/#/users');
         // Generate unique name and description for each test case
         uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         firstName = commonUtils.generateRandomWord(10)+ uniqueSuffix;
