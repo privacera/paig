@@ -38,7 +38,7 @@ If you already added the Application to the PAIG, then you can skip this step.
 ## **Using Google Colab Notebook**
 
 After you have downloaded the Privacera Shield configuration file, you can go to
-<!-- md:go_to_google_collab https://colab.research.google.com/github/privacera/notebooks/blob/main/paig_langchain_openai.ipynb:Google Colab NoteBook -->
+<!-- md:go_to_google_collab https://colab.research.google.com/github/privacera/notebooks/blob/main/google-colab/paig_langchain_openai_colab.ipynb:Google Colab NoteBook -->
 
 !!! note "Pre-requisite"
     1. You need to authorize the Google Colab to access GitHub
