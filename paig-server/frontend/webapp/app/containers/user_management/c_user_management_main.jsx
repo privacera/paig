@@ -111,7 +111,7 @@ class CUserManagementMain extends Component {
 }
 
 CUserManagementMain.defaultProps = {
-	view: UI_CONSTANTS.ACCOUNT,
+	view: UI_CONSTANTS.SETTINGS,
 	_vName: "c_user_management_main"
 }
 

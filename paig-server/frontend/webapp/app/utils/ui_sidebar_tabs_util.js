@@ -60,8 +60,8 @@ const SIDEBAR_MENU_ITEMS = {
     },
     [PAIG_GUARD]:{
         SUBMENU: {
-            [SENSITIVE_DATA]: {}
-            
+            [SENSITIVE_DATA]: {},
+            [META_DATA]: {}
         }
     },
     [SETTINGS]: {
@@ -76,7 +76,7 @@ const SIDEBAR_MENU_ITEMS = {
 
 const UI_FEATURE_SIDEBAR_TABS = {
     [SHIELD_CONFIGURATION]: {
-        [PAIG_GUARD]: {
+        [SETTINGS]: {
             [SHIELD_CONFIGURATION]: {}
         }
     },
