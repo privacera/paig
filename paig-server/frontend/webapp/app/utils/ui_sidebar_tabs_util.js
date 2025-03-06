@@ -106,8 +106,6 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
     },
     [PAIG_LENS]: {
         [DASHBOARD]: {},
-        [EVALUATION_CONFIG] : {},
-        [EVALUATION_REPORTS] : {},
         [SECURITY]: {},
         [BUILT_IN_REPORTS]: {}
     },
