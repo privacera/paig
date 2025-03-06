@@ -1,0 +1,110 @@
+name: automation-ci
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'paig-server/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'paig-server/**'
+  workflow_dispatch: # Allows manual trigger
+  schedule:
+    - cron: '30 2 * * *'  # Runs every day at 8 AM IST (2:30 AM UTC)
+    - cron: '30 11 * * *'  # Runs every day at 5:00 PM IST (11:30 AM UTC)
+
+permissions:
+  contents: read
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4  # Ensure the repo is checked out
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Prepare venv
+      run: |
+        python3 -m pip install virtualenv
+        virtualenv -p python3 venv
+        . venv/bin/activate
+        pip install twine build pytest pytest-cov
+
+    - name: Install PAIG-Server dependencies
+      run: |
+        . venv/bin/activate
+        pip install -r paig-server/backend/requirements.txt
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: https://registry.npmjs.org/
+
+    - name: Install Node.js dependencies and build UI
+      run: |
+        cd paig-server/scripts
+        sh build_ui.sh
+
+    - name: Build the wheel
+      run: |
+        . venv/bin/activate
+        cd paig-server
+        python3 -m build -w
+
+    - name: Install created package
+      run: |
+        rm -rf venv
+        virtualenv -p python3 venv && . venv/bin/activate
+        cd paig-server
+        pip install dist/*.whl
+
+    - name: Run Paig Server
+      run: |
+        . venv/bin/activate
+        paig-server run --background true
+
+    - name: Install Cypress Dependencies
+      run: |
+        cd paig-server/automation
+        npm install
+
+    - name: Run Cypress Tests
+      uses: cypress-io/github-action@v6
+      with:
+        working-directory: paig-server/automation
+        start: npx cypress run
+        wait-on: http://localhost:4545
+        browser: chrome
+        headless: true
+
+    - name: Generate Cypress Report
+      if: always()
+      run: |
+        cd paig-server/automation
+        npm run generate:report
+
+    - name: Upload Cypress Report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-report
+        path: paig-server/automation/cypress/reports/
+
+    - name: Upload Cypress Screenshots on Failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: cypress-screenshots
+        path: paig-server/automation/cypress/screenshots
+
+    - name: Stop Paig Server
+      if: always()
+      run: |
+        . venv/bin/activate
+        paig-server stop
