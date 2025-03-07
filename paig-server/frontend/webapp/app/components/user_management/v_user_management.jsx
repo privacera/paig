@@ -31,19 +31,18 @@ class VUserManagement extends Component{
       <TableCell key="4" >Groups</TableCell>,
       <TableCell key="5" className="table-search-156">Email</TableCell>,
       <TableCell key="6" >Roles</TableCell>,
-      <TableCell key="7" className="text-center">Invite Status</TableCell>,
-      <TableCell key="8" className="text-center">Enabled</TableCell>
+      <TableCell key="7" className="text-center">Enabled</TableCell>
     ])
 
     if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {
-      headers.push(<TableCell width="100px" key="9">Actions</TableCell>);
+      headers.push(<TableCell width="100px" key="8">Actions</TableCell>);
     }
 
     return headers;
   }
 
   getRowData = (model) => {
-    const {handleDelete, handleEdit, showPolicyViewModal, permission, importExportUtil, handleInvite} = this.props;
+    const {handleDelete, handleEdit, showPolicyViewModal, permission, importExportUtil} = this.props;
     let roleNamesArr = Array.isArray(model.roles) ? model.roles : []; 
     let rows = [
       // <TableCell column="select" key="select-all" className='p-xxs'>
@@ -62,19 +61,8 @@ class VUserManagement extends Component{
         <GroupIcon fontSize="small" color="action" /> {model.groups?.length || 0}
       </TableCell>,
       <TableCell key="5">{model.email || "--"}</TableCell>,
-      <TableCell key="6">{roleNamesArr.join(", ") || "--"}</TableCell>,
+      <TableCell key="6">{roleNamesArr.join(", ") || "--"}</TableCell>,   
       <TableCell key="7" className="text-center">
-        {
-          model.userInvited 
-          ? <DoneIcon data-testid="user-invited" className="text-success" /> 
-          : (
-              permissionCheckerUtil.checkHasUpdatePermission(permission) 
-              ? <Button data-testid="user-invite-btn" variant="outlined" color="primary" onClick={() => handleInvite(model)}>Invite</Button>
-              : <ClearIcon data-testid="user-not-invited" color="secondary"/>  
-            )
-        }
-      </TableCell>,    
-      <TableCell key="8" className="text-center">
         {
           model.status == STATUS.enabled.value
           ? <DoneIcon data-testid="account-enabled" className="text-success" />
@@ -85,7 +73,7 @@ class VUserManagement extends Component{
 
     if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {
       rows.push(
-        <TableCell key="9" column="actions">
+        <TableCell key="8" column="actions">
           <div className="d-flex">
             <ActionButtonsWithPermission
               permission={permission}
