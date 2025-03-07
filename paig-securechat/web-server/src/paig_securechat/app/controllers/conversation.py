@@ -32,7 +32,7 @@ class ConversationController:
             raise NotFoundException(f"Conversations with user id {user_id} not found")
         except Exception as err:
             logger.error(f"Error occurred while fetching conversations {err}")
-            raise InternalServerError(f"Error occurred while fetching conversations {err}")
+            raise InternalServerError(f"Error occurred while fetching conversations")
 
     async def delete_conversation(self, conversation_uuid: str):
         try:
@@ -43,7 +43,7 @@ class ConversationController:
             raise NotFoundException(f"No active conversation with uuid {conversation_uuid} found")
         except Exception as err:
             logger.error(f"Error occurred while deleting conversation {err}")
-            raise InternalServerError(f"Error occurred while deleting conversation {err}")
+            raise InternalServerError(f"Error occurred while deleting conversation")
 
     async def get_messages_by_conversation_uuid(self, user_id, conversation_uuid: str, skip: int = 0, limit: int = 100):
 
@@ -74,7 +74,7 @@ class ConversationController:
             raise NotFoundException(f"Messages with conversation_uuid {conversation_uuid} not found")
         except Exception as err:
             logger.error(f"Error occurred while fetching messages {err}")
-            raise InternalServerError(f"Error occurred while fetching messages {err}")
+            raise InternalServerError(f"Error occurred while fetching messages")
 
     async def create_conversation(self, user_id: int, prompt: str, ai_application_name: str):
         conversation_uuid = get_uuid()
@@ -94,7 +94,7 @@ class ConversationController:
             resp['title'] = new_conversation_resp.title
         except Exception as err:
             logger.error(f"Error occurred while creating new conversation {err}")
-            raise InternalServerError(f"Error occurred while creating new conversation {err}")
+            raise InternalServerError(f"Error occurred while creating new conversation")
         try:
             ask_prompt_resp = await self.ask_prompt(user_id, conversation_uuid, prompt)
             resp['messages'] = ask_prompt_resp
@@ -115,7 +115,7 @@ class ConversationController:
             raise NotFoundException(f"No active conversation with uuid {conversation_uuid} found")
         except Exception as err:
             logger.error(f"Error occurred while fetching conversation info {err}")
-            raise InternalServerError(f"Error occurred while fetching conversation info {err}")
+            raise InternalServerError(f"Error occurred while fetching conversation info")
 
         prompt_uuid = get_uuid()
         prompt_params = {
@@ -131,7 +131,7 @@ class ConversationController:
             resp.append(create_prompt_resp.__dict__)
         except Exception as err:
             logger.error(f"Error occurred while creating prompt message {err}")
-            raise InternalServerError(f"Error occurred while creating prompt message {err}")
+            raise InternalServerError(f"Error occurred while creating prompt message")
 
         history_limit = 5
         if (ai_application_name in self.config['AI_applications'] and 'conversation_history_k' in self.config['AI_applications'][ai_application_name]):

@@ -1,15 +1,11 @@
-import os
-import sys
+import os, sys
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(ROOT_DIR)
-import logging
 import click
 import uvicorn
 from database_setup import create_or_update_tables
 from core.utils import set_up_standalone_mode
 
-# Configure logging
-logger = logging.getLogger(__name__)
 
 @click.command()
 @click.option(
@@ -63,6 +59,7 @@ def main(debug: bool,
          openai_api_key,
          action: str
          ) -> None:
+
     def _is_colab():
         try:
             import google.colab
@@ -73,40 +70,34 @@ def main(debug: bool,
         except ImportError:
             return False
         return True
-    try:
-        set_up_standalone_mode(
-            ROOT_DIR,
-            debug,
-            config_path,
-            custom_config_path,
-            disable_paig_shield_plugin,
-            host,
-            port,
-            openai_api_key,
-            single_user_mode=_is_colab()
+
+    set_up_standalone_mode(
+        ROOT_DIR,
+        debug,
+        config_path,
+        custom_config_path,
+        disable_paig_shield_plugin,
+        host,
+        port,
+        openai_api_key,
+        single_user_mode=_is_colab()
+    )
+
+    if not os.path.exists("securechat"):
+        os.makedirs("securechat")
+    if action == 'create_tables':
+        create_or_update_tables(ROOT_DIR)
+    elif action == 'run':
+        create_or_update_tables(ROOT_DIR)
+    # consider using hypercorn
+        uvicorn.run(
+            app="app.server:app",
+            host=host,
+            port=port,
+            workers=1,
         )
-
-        if not os.path.exists("securechat"):
-            os.makedirs("securechat")
-
-        if action == 'create_tables':
-            create_or_update_tables(ROOT_DIR)
-        elif action == 'run':
-            create_or_update_tables(ROOT_DIR)
-            # Start Uvicorn server
-            uvicorn.run(
-                app="app.server:app",
-                host=host,
-                port=port,
-                workers=1,
-            )
-        else:
-            print("Please provide an action. Options: create_tables, run")
-
-    except Exception as e:
-        logger.critical(f"Application failed to start: {str(e)}", exc_info=True)  # Log with full traceback
-        print("Error: The application failed to start. Please try again later.")
-        sys.exit(1)  # Exit with error code
+    else:
+        return print("Please provide an action. Options: create_tables, run")
 
 
 if __name__ == "__main__":

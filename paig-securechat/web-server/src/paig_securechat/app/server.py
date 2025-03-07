@@ -1,3 +1,4 @@
+import traceback
 from core.logging_init import set_logging
 set_logging()
 
@@ -11,7 +12,6 @@ from core import config
 from services.AI_applications import AIApplications
 from routers import router
 from core.middlewares.sqlalchemy_middleware import SQLAlchemyMiddleware
-from core.middlewares.error_handling_middleware import ErrorHandlingMiddleware
 from core.exceptions import CustomException
 from vectordb import vector_store_factory
 from services.paig_shield import PAIGShield
@@ -23,6 +23,10 @@ from core import constants
 from core.utils import set_paig_api_key
 import webbrowser
 import logging
+from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +57,44 @@ def init_listeners(app_: FastAPI) -> None:
     async def custom_exception_handler(request: Request, exc: CustomException):
         return JSONResponse(
             status_code=exc.code,
-            content={"error_code": exc.error_code, "message": exc.message},
+            content={"error_code": exc.error_code, "success": False, "message": exc.message},
         )
+
+    @app_.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request: Request, exc: RequestValidationError):
+        message = "Request validation failed"
+        try:
+            err = exc.errors()[0]
+            message = f"{err['loc'][-1]}: {err['msg']}"
+        except:
+            pass
+        return JSONResponse(content=jsonable_encoder({
+            "error_code": 400,
+            "success": False,
+            "message": message
+        }), status_code=status.HTTP_400_BAD_REQUEST)
+
+    @app_.exception_handler(Exception)
+    async def unhandled_exception_handler(request: Request, exc: Exception):
+        tb_str = traceback.format_exc()
+        # Log the exception with the traceback
+        logging.error(f"Unhandled exception occurred: {exc}\n{tb_str}")
+        return JSONResponse(
+            status_code=500,
+            content={"error_code": 500, "success": False,
+                     "message": "An unexpected error occurred. Please try again later."}
+        )
+
+    @app_.exception_handler(StarletteHTTPException)
+    async def path_not_found_exception_handler(request: Request, exc: StarletteHTTPException):
+        if exc.status_code == 404:
+            return JSONResponse(content=jsonable_encoder({
+                    "error_code": 404,
+                    "success": False,
+                    "message": "Path Not Found",
+                    "path": request.url.path
+                }), status_code=status.HTTP_404_NOT_FOUND)
+
 
 
 def init_cache() -> None:
@@ -89,8 +129,7 @@ def make_middleware() -> List[Middleware]:
             allow_methods=["*"],
             allow_headers=["*"],
         ),
-        Middleware(SQLAlchemyMiddleware),
-        Middleware(ErrorHandlingMiddleware)
+        Middleware(SQLAlchemyMiddleware)
     ]
     return middleware
 

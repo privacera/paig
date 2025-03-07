@@ -39,9 +39,9 @@ class LangChainServiceIntf:
             return RetrievalQA.from_chain_type(llm=self.langchain_llm, chain_type='map_reduce',
                                                retriever=self.vectordb.as_retriever(), verbose=True,
                                                return_source_documents=self.return_source_documents)
-        except Exception:
-            logger.error("Failed to get LLM chain due to an internal error.")
-            return None
+        except Exception as e:
+            logger.error(f"Exception occurred while getting llm chain with error :: {e}")
+            raise e
 
     def _get_conversational_retrieval_chain(self, conversation_messages=None, temperature=None):
         try:
@@ -51,10 +51,9 @@ class LangChainServiceIntf:
                 output_key="answer",
                 return_messages=True)
 
-        except Exception:
-            logger.error("Failed to initialize conversation buffer memory.")
-            return None
-
+        except Exception as e:
+            logger.error(f"Exception occur while getting conversation buffer window memory with error :: {e}")
+            raise e
         if memory and conversation_messages:
             for conversation in conversation_messages:
                 if conversation['type'] == "prompt":
@@ -64,14 +63,15 @@ class LangChainServiceIntf:
 
         try:
             qa = ConversationalRetrievalChain.from_llm(self.langchain_llm, memory=memory, verbose=True,
-                                                       retriever=self.vectordb.as_retriever(
-                                                           search_kwargs={"k": self.vector_store_retriever_k}),
-                                                       return_source_documents=self.return_source_documents,
-                                                       response_if_no_docs_found=self.response_if_no_docs_found)
+                                                           retriever=self.vectordb.as_retriever(
+                                                               search_kwargs={"k": self.vector_store_retriever_k}),
+                                                           return_source_documents=self.return_source_documents,
+                                                           response_if_no_docs_found=self.response_if_no_docs_found)
+
             return qa
-        except Exception:
-            logger.error("Failed to create QA chain due to an internal error.")
-            return None
+        except Exception as e:
+            logger.error(f"Exception occurred while getting qa chain with error :: {e}")
+            raise e
 
     def _get_retrieval_object(self, conversation_messages=None):
         if self.disable_conversation_chain:
@@ -80,33 +80,32 @@ class LangChainServiceIntf:
             return self._get_conversational_retrieval_chain(conversation_messages)
 
     def _execute_prompt(self, retrieval_object, prompt):
-        try:
-            if self.disable_conversation_chain:
-                result = retrieval_object.invoke({"query": prompt})
-                return result['result']
-            else:
-                result = retrieval_object.invoke({"question": prompt})
-                answer = result['answer']
-                source_metadata = None
-                
-                if "source_documents" in result:
-                    source_metadata = []
-                    for source_document in result["source_documents"]:
-                        metadata = {field: source_document.metadata[field] for field in self.source_metadata_fields if field in source_document.metadata}
-                        if metadata and (not source_metadata or metadata != source_metadata[-1]):
+        if self.disable_conversation_chain:
+            result = retrieval_object.invoke({"query": prompt})
+            return result['result']
+        else:
+            result = retrieval_object.invoke({"question": prompt})
+            answer = result['answer']
+            source_metadata = None
+            if "source_documents" in result:
+                source_metadata = list()
+                for source_document in result["source_documents"]:
+                    metadata = dict()
+                    for field in self.source_metadata_fields:
+                        if field in source_document.metadata:
+                            metadata[field] = source_document.metadata[field]
+                    if source_metadata:
+                        if metadata != source_metadata[-1]:
                             source_metadata.append(metadata)
+                    else:
+                        source_metadata.append(metadata)
 
-                return answer, source_metadata
-        except Exception:
-            logger.error("Failed to execute prompt due to an internal error.")
-            return self.client_error_msg, None
+            return answer, source_metadata
 
     def ask_prompt(self, prompt, conversation_messages=None, temperature=None, user_name=None):
-        logger.info(f"Asking prompt: {prompt} for AI application: {self.ai_application_name}")
-        
+        logger.info(f"Asking prompt :: {prompt} for ai_application_name :: {self.ai_application_name}")
         if not temperature:
             temperature = 0.1
-
         try:
             if self.ask_prompt_suffix:
                 prompt = prompt + self.ask_prompt_suffix
@@ -114,24 +113,25 @@ class LangChainServiceIntf:
             if self.paig_shield.DISABLE_PAIG_SHIELD_PLUGIN_FLAG:
                 retrieval_object = self._get_retrieval_object(conversation_messages)
                 reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
+                logger.info(f"Reply :: {reply}")
             else:
-                logger.info(f"Authorizing user: {user_name}")
+                logger.info(f"Authorizing for  :: {user_name}")
                 ai_app = self.paig_shield.get_paig_config_map(self.ai_application_name)
-                kwargs = {"username": user_name}
-
-                if ai_app:
-                    kwargs["application"] = ai_app
-
+                kwargs = {
+                    "username": user_name
+                }
+                if ai_app is not None:
+                    kwargs['application'] = ai_app
                 with paig_shield_client.create_shield_context(**kwargs):
                     retrieval_object = self._get_retrieval_object(conversation_messages)
                     reply, source_metadata = self._execute_prompt(retrieval_object, prompt)
-
+                    logger.info(f"Reply :: {reply}")
             return reply, source_metadata
 
-        except paig_client.exception.AccessControlException:
-            logger.warning("Access denied for user request.")
+        except paig_client.exception.AccessControlException as e:
+            logger.exception(f"Access Denied, message: {e}")
             return self.shield_access_denied_msg, None
-
-        except Exception:
-            logger.error("Unexpected error while processing the prompt. Contact support if the issue persists.")
+        except Exception as ex:
+            logging.exception(
+                f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
             return self.client_error_msg, None
