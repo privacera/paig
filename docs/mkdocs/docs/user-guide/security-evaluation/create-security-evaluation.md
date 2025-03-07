@@ -2,7 +2,7 @@
 
 This section provides detailed guidance on creating a security evaluation in PAIG. 
 
-## Get Started
+## Creating a Security Evaluation
 
 To create a security evaluation in PAIG, follow these steps:
 

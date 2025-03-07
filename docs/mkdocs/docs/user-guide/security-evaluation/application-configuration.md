@@ -2,7 +2,7 @@
 
 This section provides detailed guidance on configuring a GenAI application for security evaluation in PAIG.
 
-## Get Started
+## Configuring GenAI Application
 
 
 Before running the evaluation your GenAI application must be configured in PAIG Security Evaluation.
