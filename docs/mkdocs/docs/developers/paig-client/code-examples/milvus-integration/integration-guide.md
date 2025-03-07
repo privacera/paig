@@ -51,7 +51,7 @@ Detailed instructions for inserting data with dynamic fields can be found in mil
 
 ### 1. Create Vector DB
 
-Log in to the PAIG portal and navigate to **Application > VectorDB**. Click the **CREATE VECTOR DB** button in the top right corner. Select **Milvus** as the type and complete the required details to create a new VectorDB.
+Log in to the PAIG portal and navigate to **Paig Navigator > VectorDB**. Click the **CREATE VECTOR DB** button in the top right corner. Select **Milvus** as the type and complete the required details to create a new VectorDB.
 
 !!! info "**Enable User/Group Access-Limited Retrieval** (Optional)" 
     Once the Vector DB is created, go to the **Permissions** tab and enable the **User/Group Access-Limited Retrieval** option. 
@@ -59,7 +59,7 @@ Log in to the PAIG portal and navigate to **Application > VectorDB**. Click the 
 
 ### 2. Create AI Application
 
-Navigate to **Application > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
+Navigate to **Paig Navigator > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
 select the VectorDB created in the previous step to link the application with the VectorDB.
 
 ### 3. Download Application Configuration File
@@ -104,7 +104,7 @@ After creating the metadata fields, you can select a field and assign values by 
 
 ### 2. Define Policies
 
-In the PAIG portal, go to **Application > VectorDB**. Select the VectorDB created earlier and navigate to the **Permissions** tab.
+In the PAIG portal, go to **Paig Navigator > VectorDB**. Select the VectorDB created earlier and navigate to the **Permissions** tab.
 
 Under the **RAG Contextual Data Filtering** section, click the **ADD DATA FILTERING** button to create a new policy. 
 Define the policy using the metadata fields and values you configured.
@@ -122,5 +122,5 @@ To test the integration, perform a Milvus operation within this context. The dat
 
 ### 4. Monitor and Audit
 
-To monitor and audit data access and retrieval operations, go to the **Security > Access Audits** section in the PAIG portal. 
+To monitor and audit data access and retrieval operations, go to the **Paig Lens > Access Audits** section in the PAIG portal. 
 Click on the **More Details** link for the most recent audit record to view the actual filter expression applied during data retrieval from Milvus.
