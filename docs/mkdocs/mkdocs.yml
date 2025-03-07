@@ -261,6 +261,11 @@ nav:
         - user-guide/reporting/index.md
         - Reports: user-guide/reporting/reports.md
       - Users and Groups: user-guide/user-management.md
+      - Security Evaluation:
+            - user-guide/security-evaluation/index.md
+            - Application Configuration: user-guide/security-evaluation/application-configuration.md
+            - Create Security Evaluation: user-guide/security-evaluation/create-security-evaluation.md
+            - Analyze Security Evaluation: user-guide/security-evaluation/analyze-security-evaluation.md
   - FAQ:
       - faq/index.md
 
