@@ -1,7 +1,7 @@
 The Privacera Shield configuration file is required to initialize the Privacera Shield library. This file can be
 downloaded from the PAIG portal.
 
-Navigate to **Application -> AI Applications** and select the application you want to download the configuration file
+Navigate to **Paig Navigator -> AI Applications** and select the application you want to download the configuration file
 for.
 Click on the **DOWNLOAD APP CONFIG** button from the right top to download the configuration file.
 

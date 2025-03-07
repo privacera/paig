@@ -13,7 +13,7 @@ one.
 
 To manage your VectorDB instances:
 
-1. **Navigate to VectorDB**: Select the 'VectorDB' option from the left navigation pane in the PAIG portal.
+1. **Navigate to VectorDB**: Select the 'VectorDB' option from the left navigation pane in the PAIG Navigator section of the PAIG portal.
 2. **View Registered Instances**: On this page, you will see a list of all VectorDB instances that are registered with
    PAIG. You can select an instance to view and manage its details or proceed to create a new one.
 
