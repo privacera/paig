@@ -205,7 +205,7 @@ class CVectorDBMain extends Component {
 }
 
 CVectorDBMain.defaultProps = {
-    view: UI_CONSTANTS.APPLICATIONS,
+    view: UI_CONSTANTS.PAIG_NAVIGATOR,
     _vName: 'c_vector_db_main'
 };
 

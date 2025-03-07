@@ -181,7 +181,7 @@ class CReporting extends Component {
   }
 
   handleSelect = (reportType) => {
-    hashHistory.push(`/built_in_reports/${reportType}/new`);
+    hashHistory.push(`/reports/${reportType}/new`);
   }
 
   handleBack = () => {
