@@ -216,7 +216,6 @@ class CUserManagement extends Component {
           showPolicyViewModal={showPolicyViewModal}
           permission={permission}
           importExportUtil={importExportUtil}
-          handleInvite={handleInvite}
         />
         <CUserManagementForm
           ref={ref => this.modalForm = ref}

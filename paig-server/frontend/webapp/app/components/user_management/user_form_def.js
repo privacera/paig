@@ -77,9 +77,6 @@ const user_form_def = {
   },
   status: {
     defaultValue: STATUS.enabled.value
-  },
-  userInvited: {
-    defaultValue: true
   }
 }
 
