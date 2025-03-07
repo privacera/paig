@@ -13,8 +13,6 @@ an application to view and manage or create a new application.
 
 ## Creating a New Application
 
-<!-- md:go_to_paig /#/ai_applications:Go To PAIG -->
-
 
 To configure a new application, go to __Application > AI Application__ and click the ==**CREATE APPLICATION**== button on 
 the right top. This will open a dialog box where you can enter the details of the application. 
