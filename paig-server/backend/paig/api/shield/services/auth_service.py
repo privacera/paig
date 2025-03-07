@@ -27,6 +27,7 @@ from api.shield.logfile.log_message_in_s3 import LogMessageInS3File
 from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
+from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
 from opentelemetry import metrics
 
 from core.utils import SingletonDepends
@@ -65,6 +66,8 @@ class AuthService:
         self.account_service_client = account_service_factory.get_account_service_client()
         governance_service_factory: GovernanceServiceFactory = SingletonDepends(GovernanceServiceFactory)
         self.governance_service_client = governance_service_factory.get_governance_service_client()
+        guardrail_service_factory: GuardrailServiceFactory = SingletonDepends(GuardrailServiceFactory)
+        self.guardrail_service_client = guardrail_service_factory.get_guardrail_service_client()
         self.fluentd_logger_client = FluentdRestHttpClient()
         self.tenant_data_encryptor_service = TenantDataEncryptorService(self.account_service_client)
         self.presidio_anonymizer_engine = PresidioAnonymizerEngine()
@@ -80,9 +83,6 @@ class AuthService:
             description="Count of Fluentd failures while logging audits",
             unit="1"
         )
-
-        self.ignore_access_control_application_keys = config_utils.get_property_value_list("ignore_access_control_application_keys", [])
-        logger.info("Found ignore_access_control_application_keys = " + str(self.ignore_access_control_application_keys))
 
         logger.info(f"AuthService Initialized in {self._shield_run_mode} mode!")
 
@@ -109,14 +109,11 @@ class AuthService:
         logger.debug("Auth Request After Decrypt : " + json_utils.mask_json_fields(json.dumps(auth_req.__dict__),
                                                                                    ['messages']))
         decrypt_time = f"{((time.perf_counter() - decrypt_start_time) * 1000):.3f}"
-        
-        gov_result = await self.governance_service_client.get_aws_bedrock_guardrail_info(auth_req.tenant_id, auth_req.application_key)
-        auth_req.context.update(gov_result)
 
         # loop through the messages in request to scan for traits
         message_analyze_start_time = time.perf_counter()
         scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                              analyzer_result_map, auth_req, True)
+                                                              analyzer_result_map, auth_req, True, {})
         message_analyze_time = f"{((time.perf_counter() - message_analyze_start_time) * 1000):.3f}"
         logger.debug(f"All resulted tags from input text {all_result_traits}")
 
@@ -132,22 +129,10 @@ class AuthService:
         # process for non authz scanners
         non_authz_scan_timings_per_message = 0
         if is_allowed:
-            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
-                                                                            analyzer_result_map, auth_req, False)
-
-            if Guardrail.BLOCKED.value in access_control_traits:
-                authz_service_res.authorized = is_allowed = False
-                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
-
-                logger.debug(f"Non Authz scanner blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
-
-        # Overriding the access control results for the application keys configured under
-        # property ignore_access_control_application_keys
-        if auth_req.application_key in self.ignore_access_control_application_keys:
-            logger.info(f"Overriding access control results for application_key=" + auth_req.application_key)
-            authz_service_res.authorized = is_allowed = True
-            authz_service_res.masked_traits = {}
-            masked_messages = []
+            is_allowed, non_authz_scan_timings_per_message = await self.do_guardrail_scan(access_control_traits,
+                                                                                          all_result_traits,
+                                                                                          analyzer_result_map, auth_req,
+                                                                                          authz_service_res)
 
         masking_start_time = time.perf_counter()
         # post authz process i.e masking the message
@@ -208,7 +193,7 @@ class AuthService:
                                     original_masked_text_list)
 
     def analyze_scan_messages(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
-                              is_authz_scan):
+                              is_authz_scan, masked_traits_dict):
         """
         Analyzes the messages in the authorization request to extract traits and generate scan results.
 
@@ -231,6 +216,7 @@ class AuthService:
                 all_result_traits.update(scanner_data.get_traits())
                 scanner_analyzer_results.extend(scanner_data.get("analyzer_result", []))
                 access_control_traits.update(scanner_data.get("actions", []))
+                masked_traits_dict.update(scanner_data.get("masked_traits", {}))
 
             analyzer_result_map[request_text] = scanner_analyzer_results
 
@@ -531,3 +517,34 @@ class AuthService:
                                                                     "Access is denied")
 
         return response_text_message
+
+    async def do_guardrail_scan(self, access_control_traits, all_result_traits, analyzer_result_map, auth_req,
+                                    authz_service_res):
+        guardrail_name = await self.governance_service_client.get_application_guardrail_name(auth_req.tenant_id, auth_req.application_key)
+        if not guardrail_name:
+            logger.debug("No guardrail info association for the application. Hence, skipping guardrail scan.")
+            return True, 0
+
+        guardrail_info = await self.guardrail_service_client.get_guardrail_info_by_name(auth_req.tenant_id, guardrail_name)
+        non_authz_scan_timings_per_message = 0
+        is_allowed = True
+        if guardrail_info:
+            await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrail_connection_details", {}))
+            auth_req.context.update({"guardrail_info": guardrail_info})
+            auth_req.context.update({"pii_traits": all_result_traits})
+            masked_traits = {}
+            non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
+                                                                            analyzer_result_map, auth_req, False,
+                                                                            masked_traits)
+
+            if Guardrail.BLOCKED.value in access_control_traits:
+                authz_service_res.authorized = is_allowed = False
+                authz_service_res.masked_traits = {}
+                authz_service_res.status_message = self.generate_access_denied_message(all_result_traits)
+
+                logger.debug(
+                    f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
+            authz_service_res.masked_traits.update(masked_traits)
+            auth_req.context.pop("guardrail_info")
+            auth_req.context.pop("pii_traits")
+        return is_allowed, non_authz_scan_timings_per_message

@@ -1,5 +1,4 @@
 import logging
-import boto3
 import os
 
 from api.shield.enum.ShieldEnums import Guardrail, RequestType
@@ -44,13 +43,14 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         guardrail_id, guardrail_version, region = self._get_guardrail_details()
         if not guardrail_id or not guardrail_version or not region:
-            logger.error("AWSBedrockGuardrailScanner: Guardrail details not found. Hence skipping the scan.")
+            logger.debug("AWSBedrockGuardrailScanner: Guardrail details not found. Hence skipping the scan.")
             return ScannerResult(traits=[])
 
-        bedrock_client = boto3.client(
-            'bedrock-runtime',
-            region_name=region
-        )
+        from api.guardrails.providers.backend.bedrock import BedrockGuardrailProvider
+        connection_details = self.get_property('connection_details')
+        bedrock_client_provider = BedrockGuardrailProvider(connection_details if connection_details else {})
+        bedrock_client = bedrock_client_provider.create_bedrock_client('bedrock-runtime')
+
         guardrail_source = Guardrail.INPUT.value if self.get_property('scan_for_req_type') in [
             RequestType.PROMPT.value,
             RequestType.ENRICHED_PROMPT.value,
@@ -64,7 +64,7 @@ class AWSBedrockGuardrailScanner(Scanner):
             source=guardrail_source,
             content=[{'text': {'text': message}}]
         )
-        logger.info(f"AWSBedrockGuardrailScanner: Response received: {response}")
+        logger.debug(f"AWSBedrockGuardrailScanner: Response received: {response}")
 
         if response.get('action') == Guardrail.GUARDRAIL_INTERVENED.value:
             outputs = response.get('outputs', [])
@@ -88,17 +88,17 @@ class AWSBedrockGuardrailScanner(Scanner):
         """
         default_guardrail_id = self.get_property('guardrail_id')
         default_guardrail_version = self.get_property('guardrail_version')
-        default_region = self.get_property('region')
+        default_region = getattr(self,'region', 'us-east-1')
         guardrail_id = os.environ.get('BEDROCK_GUARDRAIL_ID', default_guardrail_id)
         guardrail_version = os.environ.get('BEDROCK_GUARDRAIL_VERSION', default_guardrail_version)
         region = os.environ.get('BEDROCK_REGION', default_region)
 
         if not guardrail_id:
-            logger.error("Bedrock Guardrail ID not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail ID not found in properties or environment variables.")
         if not guardrail_version:
-            logger.error("Bedrock Guardrail version not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail version not found in properties or environment variables.")
         if not region:
-            logger.error("Bedrock Guardrail region not found in properties or environment variables.")
+            logger.debug("Bedrock Guardrail region not found in properties or environment variables.")
 
         return guardrail_id, guardrail_version, region
 
@@ -113,10 +113,12 @@ class AWSBedrockGuardrailScanner(Scanner):
                 for data_key, policy_data_value in policy_data.items():
                     for value in policy_data_value:
                         # Extract the tag data from the policy
-                        tag_data = (value.get('type') or value.get('name') or value.get('match', '')).replace(' ', '_').upper()
+                        tag_data = (value.get('type') or value.get('name') or data_key).replace(' ', '_').upper()
                         # If the tag data is 'DENY' that indicates there's a off topic policy, hence extract the name of the policy
                         if tag_data == "DENY":
                             tag_data = value.get('name').replace(' ', '_').upper()
+                        if tag_data == "CUSTOMWORDS":
+                            tag_data = value.get('match').replace(' ', '_').upper()
                         tag_set.add(tag_data)
                         action_set.add(value.get('action'))
         return tag_set, action_set
