@@ -12,7 +12,7 @@ describe("Test User Management page for groups tab", () => {
 
     beforeEach(() => {
         cy.visit('/#/dashboard');
-        cy.visit('/#/user_management');
+        cy.visit('/#/users');
         cy.get('[data-testid="groups-tab"]').click();
         // Generate unique name and description for each test case
         uniqueSuffix = `${Date.now()}-${Math.floor(Math.random() * 10000)}`;

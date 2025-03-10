@@ -92,7 +92,7 @@ In this tutorial, we will be using **rebecca** and **aaron** as users. Please cr
 
 <a href="images/create_user.gif">![Create User Image](images/create_user.gif){ loading=lazy }</a>
 
-- Log in to the PAIG portal and Navigate to **Account > User Management** and click on the **ADD USER** button in the top right corner. 
+- Log in to the PAIG portal and Navigate to **Settings > Users** and click on the **ADD USER** button in the top right corner. 
 - Fill in the required details, keep the usernames in lowercase, select the role as **USER**.
 - Click on **SAVE**.
 
@@ -100,13 +100,13 @@ In this tutorial, we will be using **rebecca** and **aaron** as users. Please cr
 
 <a href="images/create_milvus_vector_db.gif">![Create Vector DB Image](images/create_milvus_vector_db.gif){ loading=lazy }</a>
 
-Log in to the PAIG portal and navigate to **Application > VectorDB**. Click the **CREATE VECTOR DB** button in the top right corner. Select **Milvus** as the type and complete the required details to create a new VectorDB.
+Log in to the PAIG portal and navigate to **Paig Navigator > VectorDB**. Click the **CREATE VECTOR DB** button in the top right corner. Select **Milvus** as the type and complete the required details to create a new VectorDB.
 
 ### Create AI Application
 
 <a href="images/create_milvus_ai_app.gif">![Create AI Application Image](images/create_milvus_ai_app.gif){ loading=lazy }</a>
 
-Navigate to **Application > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
+Navigate to **Paig Navigator > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
 select the VectorDB created in the previous step to link the application with the VectorDB.
 
 ### Download Application Configuration File
@@ -179,7 +179,7 @@ This means she should only have access to those specific records and receive rev
 #### Setup User/Group Access-Limited Retrieval
 This setting ensures that every user receives filtered records based on their access, as defined in the users field of the VectorDB records.
 
-- On the PAIG portal, navigate to the Vector Database you created earlier. In the PAIG portal, go to **Application > VectorDB**, select the appropriate VectorDB, and navigate to the Permissions tab. 
+- On the PAIG portal, navigate to the Vector Database you created earlier. In the PAIG portal, go to **Paig Navigator > VectorDB**, select the appropriate VectorDB, and navigate to the Permissions tab. 
 - Make sure the **User/Group Access-Limited Retrieval** toggle is turned on. 
 
 #### Query the Milvus collection as user `rebecca`
@@ -192,7 +192,7 @@ This same use case is applicable to groups as well.
 
 <a href="images/output-rebecca.png">![Output_Rebecca](images/output-rebecca.png){ loading=lazy }</a>
 
-To monitor and audit data access and retrieval operations, navigate to the **Security > Access Audits** section in the PAIG portal
+To monitor and audit data access and retrieval operations, navigate to the **Paig Lens > Access Audits** section in the PAIG portal
 
 
 ## Restricting access based on metadata policies
@@ -203,7 +203,7 @@ The metadata column is in JSON format and contains the country information.
 
 <a href="images/create_metadata.gif">![Create Metadata Image](images/create_metadata.gif){ loading=lazy }</a>
 
-We need to create the necessary metadata fields for filtering. In the PAIG portal, go to **Account > Vector DB Metadata**. 
+We need to create the necessary metadata fields for filtering. In the PAIG portal, go to **Paig Guard > Vector DB Metadata**. 
 Click the plus icon to add the metadata fields you want to use for data filtering. 
 
 For this example, add the following JSON metadata:
@@ -219,7 +219,7 @@ These fields and values can later be referenced in your policies.
 
 <a href="images/disable_user_retrieval.gif">![Disable User Retrieval Image](images/disable_user_retrieval.gif){ loading=lazy }</a>
 
-- Now, navigate to the Vector Database you created. In the PAIG portal, go to **Application > VectorDB**, select the VectorDB, and navigate to the Permissions tab.
+- Now, navigate to the Vector Database you created. In the PAIG portal, go to **Paig Navigator > VectorDB**, select the VectorDB, and navigate to the Permissions tab.
 - First, **disable** the **User/Group Access-Limited Retrieval** toggle, as we are focusing on filtering based on metadata in this use case. 
 While these two features can be used together if needed, we will keep them separate for clarity.
 
@@ -239,7 +239,7 @@ You will see output like below, This approach ensures that Aaron only receives r
 
 <a href="images/output-aaron.png">![Output_Aaron](images/output-aaron.png){ loading=lazy }</a>
 
-To monitor and audit data access and retrieval operations, navigate to the **Security > Access Audits** section in the PAIG portal
+To monitor and audit data access and retrieval operations, navigate to the **Paig Lens > Access Audits** section in the PAIG portal
 
 
 ## Conclusion

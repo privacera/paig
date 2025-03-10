@@ -278,8 +278,6 @@ describe('Guardrail Connection Provider', () => {
             cy.get('[data-testid="snackbar"]').should('contain', 'deleted successfully');
 
             cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
-
-            cy.get('[data-testid="tbody-with-data"]').should('exist');
         });
     });
 })

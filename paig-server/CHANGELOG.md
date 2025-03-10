@@ -1,6 +1,12 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+## [v0.0.5] - 2025-03-06
+### Added
+- Paig-eval Frontend and Backend implementation.
+- Backend API for guardrails service.
+- UI Cypress automation tests for User and Login operations.
+
 ## [v0.0.4] - 2025-02-24
 ### Added
 - AWS Bedrock guardrails support.

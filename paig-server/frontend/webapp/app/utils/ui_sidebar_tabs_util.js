@@ -7,14 +7,16 @@ import {configProperties} from 'utils/config_properties';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 
 const {
+    PAIG_LENS,
+    PAIG_NAVIGATOR,
+    PAIG_GUARD,
+    SETTINGS,
 	DASHBOARD,
-    APPLICATIONS,
     AI_APPLICATIONS,
     SECURITY,
     AUDITS,
     ACCOUNT,
     SHIELD_CONFIGURATION,
-    USER_MANAGEMENT,
     PORTAL_USERS,
     PORTAL_GROUPS,
     VECTOR_DB,
@@ -33,14 +35,14 @@ const {
     EVALUATION,
     EVALUATION_CONFIG,
     EVALUATION_REPORTS,
+    USERS,
     GUARDRAILS,
     RESPONSE_TEMPLATES,
     GUARDRAIL_CONNECTION_PROVIDER
 } = UI_CONSTANTS
 
 const SIDEBAR_MENU_ITEMS = {
-	[DASHBOARD]: {},
-    [APPLICATIONS]: {
+    [PAIG_NAVIGATOR]: {
         SUBMENU: {
             [AI_APPLICATIONS]: {
                 TABS: [AI_APPLICATIONS, AI_APPLICATIONS_PERMISSIONS]
@@ -52,54 +54,50 @@ const SIDEBAR_MENU_ITEMS = {
             [RESPONSE_TEMPLATES]: {}
         }
     },
-    [AUDITS]: {
+    [PAIG_LENS]: {
         SUBMENU: {
-            [SECURITY]: {},
+            [DASHBOARD]: {},
             [EVALUATION_CONFIG] : {},
-            [EVALUATION_REPORTS] : {}
+            [EVALUATION_REPORTS] : {},
+            [SECURITY]: {},
+            [BUILT_IN_REPORTS]: {}
         }
     },
-    [COMPLIANCE]:{
+    [PAIG_GUARD]:{
         SUBMENU: {
-            [ADMIN_AUDITS]: {}
+            [SENSITIVE_DATA]: {},
+            [META_DATA]: {},
+            [GUARDRAIL_CONNECTION_PROVIDER]: {}
         }
     },
-    [REPORTS]: {
-        [BUILT_IN_REPORTS]: {},
-        [SAVED_REPORTS]: {}
-    },
-    [ACCOUNT]: {
+    [SETTINGS]: {
         SUBMENU: {
-            [SHIELD_CONFIGURATION]: {},
-            [GUARDRAIL_CONNECTION_PROVIDER]: {},
-            [USER_MANAGEMENT]: {
+            [USERS]: {
                 TABS: [PORTAL_USERS, PORTAL_GROUPS]
             },
-            [SENSITIVE_DATA]: {},
-            [META_DATA]: {}
+            [SHIELD_CONFIGURATION]: {}
         }
-    },
-    [DOCS]: {}
+    }
 }
 
 const UI_FEATURE_SIDEBAR_TABS = {
     [SHIELD_CONFIGURATION]: {
-        [ACCOUNT]: {
+        [SETTINGS]: {
             [SHIELD_CONFIGURATION]: {}
         }
     },
     [VECTOR_DB]: {
-        [APPLICATIONS]: {
+        [PAIG_NAVIGATOR]: {
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
             }
         },
-        [ACCOUNT]: {
+        [PAIG_GUARD]: {
             [META_DATA]: {}
         }
     },
     [EVALUATION]: {
-        [AUDITS]: {
+        [PAIG_LENS]: {
             [EVALUATION_CONFIG]: {},
             [EVALUATION_REPORTS]: {}
         }
@@ -107,32 +105,27 @@ const UI_FEATURE_SIDEBAR_TABS = {
 }
 
 const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
-	[DASHBOARD]: {},
-    [APPLICATIONS]: {
+    [PAIG_NAVIGATOR]: {
         [AI_APPLICATIONS]: {
             TABS: [AI_APPLICATIONS, AI_APPLICATIONS_PERMISSIONS]
         },
         [GUARDRAILS]: {},
         [RESPONSE_TEMPLATES]: {}
     },
-    [AUDITS]: {
-        [SECURITY]: {}
+    [PAIG_LENS]: {
+        [DASHBOARD]: {},
+        [SECURITY]: {},
+        [BUILT_IN_REPORTS]: {}
     },
-    [COMPLIANCE]:{
-        [ADMIN_AUDITS]:{}
-    },
-    [REPORTS]: {
-        [BUILT_IN_REPORTS]: {},
-        [SAVED_REPORTS]: {}
-    },
-    [ACCOUNT]: {
+    [PAIG_GUARD]: {
+        [SENSITIVE_DATA]:{},
         [GUARDRAIL_CONNECTION_PROVIDER]: {},
-        [USER_MANAGEMENT]: {
-            TABS: [PORTAL_USERS, PORTAL_GROUPS]
-        },
-        [SENSITIVE_DATA]: {}
     },
-    [DOCS]: {}
+    [SETTINGS]: {
+        [USERS]: {
+            TABS: [PORTAL_USERS, PORTAL_GROUPS]
+        }
+    }
 }
 
 class UISidebarTabsUtil {
@@ -401,47 +394,47 @@ class UISidebarTabsUtil {
 
 const featurePermissionUIMap = {
     'portal.dashboard': {
-        propertyForShowHide: [DASHBOARD]
+        propertyForShowHide: [`${PAIG_LENS}.${DASHBOARD}`]
+    },
+    'governance.guardrails': {
+        propertyForShowHide: [`${PAIG_NAVIGATOR}.${GUARDRAILS}`, `${PAIG_NAVIGATOR}.${RESPONSE_TEMPLATES}`, `${PAIG_GUARD}.${GUARDRAIL_CONNECTION_PROVIDER}`]
+    },
+    'governance.evaluation_config': {
+        propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_CONFIG}`]
+    },
+    'governance.evaluation_reports': {
+        propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_REPORTS}`]
+    },
+    'audits.security': {
+        propertyForShowHide: [`${PAIG_LENS}.${SECURITY}`]
+    },
+    "portal.reports": {
+        propertyForShowHide: [`${PAIG_LENS}.${BUILT_IN_REPORTS}`, `${PAIG_LENS}.${SAVED_REPORTS}`]
+    },
+    'compliance.admin_audits':{
+        propertyForShowHide: [`${PAIG_LENS}.${ADMIN_AUDITS}`]
     },
     'portal.docs': {
         propertyForShowHide: [DOCS]
     },
     'governance.ai_applications': {
-        propertyForShowHide: [`${APPLICATIONS}.${AI_APPLICATIONS}.${AI_APPLICATIONS}`, `${APPLICATIONS}.${AI_APPLICATIONS}.${AI_APPLICATIONS_PERMISSIONS}`]
+        propertyForShowHide: [`${PAIG_NAVIGATOR}.${AI_APPLICATIONS}.${AI_APPLICATIONS}`, `${PAIG_NAVIGATOR}.${AI_APPLICATIONS}.${AI_APPLICATIONS_PERMISSIONS}`]
     },
     'governance.vector_db': {
-        propertyForShowHide: [`${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB}`, `${APPLICATIONS}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
-    },
-    'governance.guardrails': {
-        propertyForShowHide: [`${APPLICATIONS}.${GUARDRAILS}`, `${APPLICATIONS}.${RESPONSE_TEMPLATES}`, `${ACCOUNT}.${GUARDRAIL_CONNECTION_PROVIDER}`]
-    },
-    'governance.evaluation_config': {
-        propertyForShowHide: [`${AUDITS}.${EVALUATION_CONFIG}`]
-    },
-    'governance.evaluation_reports': {
-        propertyForShowHide: [`${AUDITS}.${EVALUATION_REPORTS}`]
-    },
-    'audits.security': {
-        propertyForShowHide: [`${AUDITS}.${SECURITY}`]
-    },
-    'compliance.admin_audits':{
-        propertyForShowHide: [`${COMPLIANCE}.${ADMIN_AUDITS}`]
+        propertyForShowHide: [`${PAIG_NAVIGATOR}.${VECTOR_DB}.${VECTOR_DB}`, `${PAIG_NAVIGATOR}.${VECTOR_DB}.${VECTOR_DB_PERMISSIONS}`]
     },
     'account.shield_configuration': {
-        propertyForShowHide: [`${ACCOUNT}.${SHIELD_CONFIGURATION}`]
+        propertyForShowHide: [`${SETTINGS}.${SHIELD_CONFIGURATION}`]
     },
     'account.user': {
-        propertyForShowHide: [`${ACCOUNT}.${USER_MANAGEMENT}.${PORTAL_USERS}`, `${ACCOUNT}.${USER_MANAGEMENT}.${PORTAL_GROUPS}`]
+        propertyForShowHide: [`${SETTINGS}.${USERS}.${PORTAL_USERS}`, `${SETTINGS}.${USERS}.${PORTAL_GROUPS}`]
     },
     'account.sensitive_data': {
-        propertyForShowHide: [`${ACCOUNT}.${SENSITIVE_DATA}`]
+        propertyForShowHide: [`${PAIG_GUARD}.${SENSITIVE_DATA}`]
     },
     'account.meta_data': {
-        propertyForShowHide: [`${ACCOUNT}.${META_DATA}`]
-    },
-    "portal.reports": {
-        propertyForShowHide: [`${REPORTS}.${BUILT_IN_REPORTS}`, `${REPORTS}.${SAVED_REPORTS}`]
-    },
+        propertyForShowHide: [`${PAIG_GUARD}.${META_DATA}`]
+    }
 }
 
 const uiSidebarTabsUtil = new UISidebarTabsUtil();  

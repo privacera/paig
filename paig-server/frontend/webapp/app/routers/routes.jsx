@@ -63,47 +63,50 @@ const Routes = () => (
 	<Switch>
 		<Route exact path="/" component={RedirectToPath} />
 
-        <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.DASHBOARD])} />
+        {/* Paig Navigator */}
+        <Route path="/ai_application/create" name="Create Application" component={Authorization(CAIApplicationCreate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.AI_APPLICATIONS])} />
+        <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.AI_APPLICATIONS])} />
+        <Route path="/ai_applications" name="AI Applications" component={Authorization(CAIApplications, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.AI_APPLICATIONS])} />
 
-        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
-        <Route path="/guardrail_connection_provider/:provider" name="Guardrail Connections" component={Authorization(CGuardrailProviderConnectedList, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
-        <Route path="/guardrail_connection_provider" name="Guardrail Connections" component={Authorization(CGuardrailConnectionProvider, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
+        <Route path="/vector_db/create" name="Create Vector DB" component={Authorization(CVectorDBCreate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
+        <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
+        <Route path="/vector_db" name="Vector DB" component={Authorization(CVectorDB, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
 
-        <Route path="/ai_application/create" name="Create Application" component={Authorization(CAIApplicationCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
-        <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
-        <Route path="/ai_applications" name="AI Applications" component={Authorization(CAIApplications, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.AI_APPLICATIONS])} />
+        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
+        <Route path="/guardrail_connection_provider/:provider" name="Guardrail Connections" component={Authorization(CGuardrailProviderConnectedList, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
+        <Route path="/guardrail_connection_provider" name="Guardrail Connections" component={Authorization(CGuardrailConnectionProvider, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
 
-        <Route path="/eval_reports" name="Evaluation Reports" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.EVALUATION_REPORTS])} />
-        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.EVALUATION_CONFIG])} />
-        <Route path="/eval_configs" name="Security Evaluations" component={Authorization(CEvaluationConfigList, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.EVALUATION_CONFIG])} />
-        <Route path="/eval_report/:eval_id" name="Evaluation Report" component={Authorization(CEvaluationReport, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.EVALUATION_REPORTS])} />
+        {/* Paig Lens */}
+        <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.DASHBOARD])} />
 
-        <Route path="/vector_db/create" name="Create Vector DB" component={Authorization(CVectorDBCreate, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
-        <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
-        <Route path="/vector_db" name="Vector DB" component={Authorization(CVectorDB, [UI_CONSTANTS.APPLICATIONS, UI_CONSTANTS.VECTOR_DB])} />
+        <Route path="/eval_reports" name="Evaluation Reports" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
+        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
+        <Route path="/eval_configs" name="Security Evaluation" component={Authorization(CEvaluationConfigList, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
+        <Route path="/eval_report/:eval_id" name="Evaluation Report" component={Authorization(CEvaluationReport, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
 
-        <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.AUDITS, UI_CONSTANTS.SECURITY])} />
+        <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.SECURITY])} />
         {/* TODO: [PAIG-2025] Uncomment this route once Admin Audits implemented */}
-        {/* <Route path="/admin_audits" name="Admin Audits" component={Authorization(CAdminAudits, [UI_CONSTANTS.COMPLIANCE, UI_CONSTANTS.ADMIN_AUDITS])} /> */}
+        {/* <Route path="/admin_audits" name="Admin Audits" component={Authorization(CAdminAudits, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.ADMIN_AUDITS])} /> */}
+
+        <Route exact path="/reports" name="Reports" component={Authorization(CReporting, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
+        <Route path="/reports/:reportType/new" name="Reports" component={Authorization(CReporting, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
+        {/* TODO: [PAIG-2025] Uncomment this route once Saved Reports implemented */}
+        {/* <Route path="/saved_reports" name="Saved Reports" component={Authorization(CSavedReportsListing, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.SAVED_REPORTS])} /> */}
+        {/* <Route path="/reports/:reportType/:configId" name="Saved Reports" component={Authorization(CReporting, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} /> */}
+        {/* <Route path="/report/:configId" name="Saved Reports" component={Authorization(CReporting, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.BUILT_IN_REPORTS])} /> */}
+
+        {/* Paig Guard */}
+        <Route path="/tags" name="Tags" component={Authorization(CSensitiveData, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.SENSITIVE_DATA])} />
+        <Route path="/vector_db_metadata" name="Vector DB Metadata" component={Authorization(CMetaData, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.META_DATA])} />
+        
+        {/* Settings */}
+        <Route path="/users" name="Users" component={Authorization(CUserManagementMain, [UI_CONSTANTS.SETTINGS, UI_CONSTANTS.USERS])} />
 
         {/* TODO: [PAIG-2025] Uncomment this route once Shield Configuration implemented */}
-        {/* <Route path="/shield_configuration" name="Shield Configuration" component={Authorization(CShieldConfig, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.SHIELD_CONFIGURATION])} /> */}
-        <Route path="/user_management" name="User Management" component={Authorization(CUserManagementMain, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.USER_MANAGEMENT])} />
-        <Route path="/tags" name="Tags" component={Authorization(CSensitiveData, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.SENSITIVE_DATA])} />
-        <Route path="/vector_db_metadata" name="Vector DB Metadata" component={Authorization(CMetaData, [UI_CONSTANTS.ACCOUNT, UI_CONSTANTS.META_DATA])} />
-
-        {/*Reports*/}
-        {/* TODO: [PAIG-2025] Uncomment this route once Saved Reports implemented */}
-        {/* <Route path="/saved_reports" name="Saved Reports" component={Authorization(CSavedReportsListing, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.SAVED_REPORTS])} /> */}
-        <Route exact path="/built_in_reports" name="Built-in Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
-        <Route path="/built_in_reports/:reportType/new" name="Built-in Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} />
-        {/* TODO: [PAIG-2025] Uncomment this route once Saved Reports implemented */}
-        {/* <Route path="/reports/:reportType/:configId" name="Saved Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} /> */}
-        
-        {/* <Route path="/report/:configId" name="Saved Reports" component={Authorization(CReporting, [UI_CONSTANTS.REPORTS, UI_CONSTANTS.BUILT_IN_REPORTS])} /> */}
+        {/* <Route path="/shield_configuration" name="Shield Configuration" component={Authorization(CShieldConfig, [UI_CONSTANTS.SETTINGS, UI_CONSTANTS.SHIELD_CONFIGURATION])} /> */}
 
 		<Route path="/not_found"  component={CPageNotFound} />
         <Route path="/forbidden" component={CForbiddenError}  />
