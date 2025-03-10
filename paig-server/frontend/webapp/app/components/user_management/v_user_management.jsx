@@ -63,15 +63,9 @@ class VUserManagement extends Component{
       </TableCell>,
       <TableCell key="5">{model.email || "--"}</TableCell>,
       <TableCell key="6">{roleNamesArr.join(", ") || "--"}</TableCell>,
-      <TableCell key="7" className="text-center">
+      <TableCell key="7" className="text-center" data-testid="user-invited">
         {
-          model.userInvited 
-          ? <DoneIcon data-testid="user-invited" className="text-success" /> 
-          : (
-              permissionCheckerUtil.checkHasUpdatePermission(permission) 
-              ? <Button data-testid="user-invite-btn" variant="outlined" color="primary" onClick={() => handleInvite(model)}>Invite</Button>
-              : <ClearIcon data-testid="user-not-invited" color="secondary"/>  
-            )
+          <span data-testid="user-invited">NA</span>
         }
       </TableCell>,    
       <TableCell key="8" className="text-center">
