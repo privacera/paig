@@ -26,8 +26,8 @@ within specific categories. These filters apply to both user inputs and AI outpu
 - **Management**: Content filtering settings allow you to fine-tune detection levels based on your application’s needs. Administrators can enable or disable this content filter and can also modify the individual filter strength to balance strictness and flexibility, ensuring that your AI application effectively screens harmful content without unnecessary restrictions.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/psvjflzmmw.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_psvjflzmmw popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
-<figcaption>How to add Guardrails</figcaption>
+<script src="https://fast.wistia.com/embed/medias/x7womy2xla.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_x7womy2xla popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Content Moderation Filters</figcaption>
 </figure>
 
 ### Filter strength
@@ -67,8 +67,8 @@ as `allowing, blocking, or redacting` detected sensitive data. Admins can also d
 manage, selecting from a list of predefined sensitive elements or adding custom regex patterns for enhanced flexibility.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/c02mx4eyyn.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_c02mx4eyyn popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
-<figcaption>How to add Guardrails</figcaption>
+<script src="https://fast.wistia.com/embed/medias/3y1bjvupob.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_3y1bjvupob popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Sensitive Data Filtering</figcaption>
 </figure>
 
 ### Adding New Elements
@@ -107,8 +107,8 @@ or create new ones tailored to their needs. Admins can refine filtering rules by
 keywords, ensuring accurate detection and enforcement of content restrictions across user interactions.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/7xal6pacrh.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_7xal6pacrh popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
-<figcaption>How to add Guardrails</figcaption>
+<script src="https://fast.wistia.com/embed/medias/tqut6cn4lx.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_tqut6cn4lx popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Off-topic Filters</figcaption>
 </figure>
 
 ### Adding New Off-Topic
@@ -134,8 +134,8 @@ filtering rules, ensuring that the application enforces content restrictions eff
 requirements.
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/w4rpm06baf.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_w4rpm06baf popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
-<figcaption>How to add Guardrails</figcaption>
+<script src="https://fast.wistia.com/embed/medias/392x6tyebu.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_392x6tyebu popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Denied Terms Filter</figcaption>
 </figure>
 
 ### Adding New Term
@@ -176,8 +176,8 @@ security needs of their application.
 
 
 <figure markdown>
-<script src="https://fast.wistia.com/embed/medias/721rgfag3h.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_721rgfag3h popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
-<figcaption>How to add Guardrails</figcaption>
+<script src="https://fast.wistia.com/embed/medias/go2la9z0ea.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_go2la9z0ea popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
+<figcaption>How to add Prompt Safety</figcaption>
 </figure>
 
 ---
