@@ -5,7 +5,7 @@ server_host: "localhost"
 # OPENAI CONFIGS Server Config -------------------------------------------------
 openai:
     key_file: "/workdir/chatbot/local_configs/openai.key"
-    model_name: "gpt-4o"
+    model_name: "gpt-4o-mini"
     index_path: "/workdir/storage/index/${openai.model_name}.llama"
     use_langchain: False
     ask_prompt_suffix: null
