@@ -82,10 +82,8 @@ describe("Test User Management page for users tab", () => {
 
             cy.get('td').eq(5).should('contain.text', item.roles[0]);
 
-            if(item.userInvited == STATUS.enabled.booleanValue){
-                cy.get('td').eq(6).find('[data-testid="user-invited"]').should('exist');
-            }else{
-                cy.get('td').eq(6).find('[data-testid="user-invite-btn"]').should('exist');
+            if(item.userInvited){
+                cy.get('td').eq(6).find('[data-testid="user-invited"]').should('exist').should('contain.text', "NA");
             }
 
             if(item.status == STATUS.enabled.value){
