@@ -3,7 +3,7 @@
 This section provides detailed guidance on analyzing the security evaluation results in PAIG.
 
 ## Analyzing Security Evaluation
-1. **Navigate to the Security Evaluation Module**: Log in to the PAIG platform and access the Security Evaluation Reports module from  `Security` > `Evaluation Reports`.
+1. **Navigate to the Security Evaluation Module**: Log in to the PAIG platform and access the Security Evaluation Reports module from  `Paig Lens` > `Evaluation Reports`.
 2. **View Evaluation Reports**: 
     - The evaluation reports page displays all the evaluations that have been run.
     - Click on the eye icon button next to the evaluation you want to analyze.

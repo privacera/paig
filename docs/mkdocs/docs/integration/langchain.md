@@ -21,16 +21,12 @@ For both options, you'll need to create a Privacera Shield Application in PAIG a
 
 ## **Adding AI Application in PAIG**
 
-<!-- md:go_to_paig /#/ai_applications:Go To PAIG -->
-
 As a first step, you need to add your AI Application in PAIG and we will use that application to integrate PAIG. 
 If you already added the Application to the PAIG, then you can skip this step.
 
 --8<-- "docs/integration/snippets/create_application.md"
 
 ## **Downloading Privacera Shield Configuration File**
-
-<!-- md:go_to_paig /#/ai_applications:Go To PAIG -->
 
 --8<-- "docs/integration/snippets/download_application_config.md"
 
@@ -44,7 +40,7 @@ After you have downloaded the Privacera Shield configuration file, you can go to
     1. You need to authorize the Google Colab to access GitHub
 
 
-## **Using Python Sample Application****
+## **Using Python Sample Application**
 
 The following are the prerequisites for trying out with LangChain
 
@@ -135,8 +131,8 @@ export OPENAI_API_KEY="<your-openai-api-key>"
 python3 sample_langchain_integration.py
 ```
 
-**Check the security audits**
-Now go to [Security Audits](/#/audits_security){:target="_blank"} to check the prompts and response for the `testuser`.
+**Check the PAIG Lens Access Audits**
+Now go to PAIG Lens Access Audits to check the prompts and responses for the `testuser`.
 
 ## **Code Breakup and explanation**
 

@@ -6,7 +6,7 @@ This section provides detailed guidance on creating a security evaluation in PAI
 
 To create a security evaluation in PAIG, follow these steps:
 
-1. **Navigate to the Security Evaluation Module**: Log in to the PAIG platform and access the Security Evaluation module from  `Security` > `Security Evaluation`.
+1. **Navigate to the Security Evaluation Module**: Log in to the PAIG platform and access the Security Evaluation module from  `Paig Lens` > `Security Evaluation`.
 2. **Add New**: Click on the `Add New` button to create a new security evaluation.
 3. **Fill in the Details**: 
     - Enter the name of the evaluation by which your configuration will be saved.
