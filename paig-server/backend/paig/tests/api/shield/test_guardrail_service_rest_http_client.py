@@ -76,7 +76,7 @@ class TestHttpGuardrailServiceClient:
     @pytest.mark.asyncio
     async def test_get_guardrail_info_by_id_non_200_status(self, mocker):
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=lambda
-            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_configs_endpoint' else None)
+            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_endpoint' else None)
 
         mock_response = Mock()
         mock_response.status_code = 404
@@ -92,7 +92,7 @@ class TestHttpGuardrailServiceClient:
     @pytest.mark.asyncio
     async def test_get_guardrail_info_by_id_success(self, mocker):
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=lambda
-            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_configs_endpoint' else None)
+            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_endpoint' else None)
 
         mock_response = Mock()
         mock_response.status_code = 200
@@ -107,7 +107,7 @@ class TestHttpGuardrailServiceClient:
     @pytest.mark.asyncio
     async def test_get_guardrail_info_by_name_empty_response(self, mocker):
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=lambda
-            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_configs_endpoint' else None)
+            key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_endpoint' else None)
 
         mock_response = Mock()
         mock_response.status_code = 200
