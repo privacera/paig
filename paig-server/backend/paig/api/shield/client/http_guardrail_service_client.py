@@ -6,7 +6,6 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.guardrail_service_interface import IGuardrailServiceClient
-from api.shield.view.guardrail_view import GuardrailView
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +96,7 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
                 raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_name: {guardrail_name}. "
                                       f"Status code: {response.status}, Response: {response.text}")
             response_content = response.json().get("content", {})
+            from api.shield.view.guardrail_view import GuardrailView
             guardrail_info : GuardrailView = GuardrailView(**response_content[0])
             return guardrail_info.dict(exclude_none=True, exclude_unset=True)
         except Exception as ex:

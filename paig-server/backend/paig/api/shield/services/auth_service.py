@@ -28,7 +28,6 @@ from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
-from api.shield.services.guardrail_service import process_guardrail_response
 from opentelemetry import metrics
 
 from core.utils import SingletonDepends
@@ -501,6 +500,7 @@ class AuthService:
         Returns:
             str: The access denied message indicating the reason for the denial.
         """
+        from api.shield.services.guardrail_service import process_guardrail_response
         response_text_message = "Access is denied"
         transformed_response = process_guardrail_response(guardrail_info)
 
