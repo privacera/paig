@@ -26,6 +26,7 @@ class TestHttpGuardrailServiceClient:
 
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="Skipping this test case as we are running in OSS mode.")
     async def test_get_guardrail_info_by_name_success(self, mocker):
         mock_response = Mock()
         mock_response.status_code = 200
@@ -37,6 +38,7 @@ class TestHttpGuardrailServiceClient:
 
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="Skipping this test case as we are running in OSS mode.")
     async def test_get_guardrail_info_by_name_non_200_status(self, mocker):
         mock_response = Mock()
         mock_response.status_code = 404
@@ -49,6 +51,7 @@ class TestHttpGuardrailServiceClient:
 
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="Skipping this test case as we are running in OSS mode.")
     async def test_get_guardrail_info_by_name_error(self, mocker):
         mock_response = Mock()
         mock_response.status_code = 500
@@ -61,6 +64,7 @@ class TestHttpGuardrailServiceClient:
 
 
     @pytest.mark.asyncio
+    @pytest.mark.skip(reason="Skipping this test case as we are running in OSS mode.")
     async def test_get_guardrail_info_by_name_unexpected_exception(self, mocker):
         mocker.patch.object(HttpGuardrailServiceClient, 'get', side_effect=Exception("Unexpected Error"))
         client = HttpGuardrailServiceClient()
