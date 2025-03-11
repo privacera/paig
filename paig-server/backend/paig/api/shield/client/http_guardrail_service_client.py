@@ -6,7 +6,7 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.guardrail_service_interface import IGuardrailServiceClient
-from api.guardrails.api_schemas.guardrail import GuardrailView
+from api.shield.view.guardrail_view import GuardrailView
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
         :param tenant_id:
         :return:
         """
-        url = config_utils.get_property_value("guardrail_service_get_guardrail_configs_endpoint")
+        url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
         logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-id={guardrail_id}")
 
         try:
