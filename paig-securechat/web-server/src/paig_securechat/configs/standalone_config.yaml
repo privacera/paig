@@ -5,7 +5,7 @@ shield_access_denied_msg: "Access Denied. You are not authorized to access this 
 
 openai:
     key_file: "custom-configs/openai.key"
-    model: "gpt-4o"
+    model: "gpt-4o-mini"
     temperature: 0.1
 
 paig:

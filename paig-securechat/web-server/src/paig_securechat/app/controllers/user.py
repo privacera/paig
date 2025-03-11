@@ -21,7 +21,7 @@ class UserController:
             return {"user_id": user.user_id, "user_name": user.user_name}
         except Exception as err:
             logging.error(f"Error occurred while logging in user. {err}")
-            raise InternalServerError(f"Error occurred while logging in user. {err}")
+            raise InternalServerError(f"Error occurred while logging in user.")
 
     async def get_user(self, user):
         user = await self.user_repository.get_user(user_name=user['user_name'], user_id=user['user_id'])

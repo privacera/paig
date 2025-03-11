@@ -18,16 +18,12 @@ pip install paig_client
 
 ## **Adding AI Application in PAIG**
 
-<!-- md:go_to_paig /#/ai_applications:Go To PAIG -->
-
 As a first step, you need to add your AI Application in PAIG and we will use that application to integrate PAIG.
 If you already added the Application to the PAIG, then you can skip this step.
 
 --8<-- "docs/integration/snippets/create_application.md"
 
 ## **Downloading Privacera Shield Configuration File**
-
-<!-- md:go_to_paig /#/ai_applications:Go To PAIG -->
 
 --8<-- "docs/integration/snippets/download_application_config.md"
 

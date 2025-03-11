@@ -54,7 +54,7 @@ Secure Chat provides a web interface to interact with the chat bot. It is a Reac
         paig run
         ```
    2. Log into PAIG url: http://127.0.0.1:4545 using `admin/welcome1` as default username and password.
-   3. To create a new application, go to `Application` > `AI Applications` and click the `CREATE APPLICATION` button on the right top. This will open a dialog box where you can enter the details of the application. 
+   3. To create a new application, go to `Paig Navigator` > `AI Applications` and click the `CREATE APPLICATION` button on the right top. This will open a dialog box where you can enter the details of the application. 
    4. Once the application is created, Navigate to Application -> AI Applications and select the application you want to download the configuration file for. 
    5. Click on the `DOWNLOAD APP CONFIG` button from the right top to download the configuration file. 
 

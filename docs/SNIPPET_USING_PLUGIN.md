@@ -12,7 +12,7 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
 ## 1. Create a New Application
 
 1. **Access PAIG Portal**:
-   - Navigate to `Application > AI Application` in the PAIG portal.
+   - Navigate to `Paig Navigator > AI Application` in the PAIG portal.
 2. **Create Application**:
    - Click the **CREATE APPLICATION** button in the top-right corner.
    - Enter the required details and click **CREATE**.
@@ -20,7 +20,7 @@ PAIG provides a platform to secure and govern your AI applications. You can use 
 ## 2. Download the AI Application Configuration
 
 1. **Navigate to AI Applications**:
-   - Go to `Application > AI Applications` in the PAIG portal.
+   - Go to `Paig Navigator > AI Applications` in the PAIG portal.
 2. **Download Configuration**:
    - Select the desired application.
    - Click the **DOWNLOAD APP CONFIG** button in the top-right corner.
