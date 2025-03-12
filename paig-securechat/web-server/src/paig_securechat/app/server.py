@@ -20,7 +20,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 import os
 from core import constants
-from core.utils import set_paig_api_key
+from core.utils import set_paig_app_api_key
 import webbrowser
 import logging
 from fastapi.exceptions import RequestValidationError
@@ -136,7 +136,7 @@ def make_middleware() -> List[Middleware]:
 
 def create_app() -> FastAPI:
     init_settings()
-    set_paig_api_key()
+    set_paig_app_api_key()
     init_paig_shield()
     init_vector_db()
     app_ = FastAPI(
