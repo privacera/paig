@@ -1,13 +1,13 @@
 import sys
 import uuid
 from typing import List, Dict
-
+import constants
 from .promptfoo_utils import (
     suggest_promptfoo_redteam_plugins_with_openai,
     generate_promptfoo_redteam_config,
     run_promptfoo_redteam_evaluation,
-    get_all_security_plugins_with_description,
-    get_suggested_plugins_with_description,
+    get_suggested_plugins_with_info,
+    get_all_security_plugins_with_info,
     check_and_install_npm_dependency,
     get_response_object,
     validate_generate_prompts_request_params,
@@ -34,7 +34,7 @@ def get_suggested_plugins(purpose: str) -> Dict:
             suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
             if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
                 if isinstance(suggested_plugins['plugins'], list):
-                    response['result'] = get_suggested_plugins_with_description(suggested_plugins['plugins'])
+                    response['result'] = get_suggested_plugins_with_info(suggested_plugins['plugins'])
                     response['status'] = 'success'
                     response['message'] = 'Suggested plugins fetched successfully'
                 else:
@@ -48,7 +48,7 @@ def get_suggested_plugins(purpose: str) -> Dict:
 
 
 
-def get_all_plugins(plugin_file_path: str = None) -> Dict:
+def get_all_plugins() -> Dict:
     """
     Get all security plugins.
 
@@ -58,7 +58,7 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
     response = get_response_object()
     response['result'] = []
     try:
-        all_plugins = get_all_security_plugins_with_description(plugin_file_path)
+        all_plugins = get_all_security_plugins_with_info()
         if isinstance(all_plugins, list):
             response['result'] = all_plugins
             response['status'] = 'success'
@@ -71,11 +71,12 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
         return response
 
 
-def init_setup():
+def init_setup(plugin_file_path: str = None):
     """
     Initialize the setup by checking and installing the npm dependency.
     """
     response = get_response_object()
+    constants.PLUGIN_FILE_PATH = plugin_file_path
     try:
         if 'npm_dependency' in eval_config:
             if 'promptfoo' in eval_config['npm_dependency']:
