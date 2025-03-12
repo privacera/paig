@@ -92,6 +92,6 @@ class ShieldService:
 
         guardrail_response = await guardrail_service.get_guardrail_by_id(request, tenant_id)
         processed_response = guardrail_service.process_guardrail_response(guardrail_response)
-        response = await guardrail_service.test_guardrail(tenant_id, processed_response, request.get("message"))
+        response = await guardrail_service.do_test_guardrail(tenant_id, processed_response, request.get("message"))
 
         return response
