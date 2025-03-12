@@ -1,6 +1,7 @@
 import json
 import os
 from typing import List, Dict
+from zipfile import compressor_names
 
 import openai
 import yaml
@@ -12,6 +13,7 @@ from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
 import subprocess
 from typing import Union
+import constants
 
 
 logger = logging.getLogger("paig_eval")
@@ -151,7 +153,7 @@ def check_and_install_npm_dependency(package_name, version):
         install_npm_dependency(package_name, version)
 
 
-def get_suggested_plugins_with_description(plugins) -> List:
+def get_suggested_plugins_with_info(plugins) -> List:
     """
     Get suggested plugins with description.
 
@@ -163,19 +165,24 @@ def get_suggested_plugins_with_description(plugins) -> List:
     """
     suggested_security_plugins = []
     security_plugins = read_and_get_security_plugins()
+    if isinstance(security_plugins, str):
+        return suggested_security_plugins
     for plugin in plugins:
         if plugin in security_plugins:
+            plugin_info = security_plugins[plugin]
             suggested_security_plugins.append(
                 {
                     "Name": plugin,
-                    "Description": security_plugins[plugin]
+                    "Description":plugin_info['description'],
+                    "Severity": plugin_info['severity'],
+                    "Type": plugin_info['type']
                 }
             )
 
     return suggested_security_plugins
 
 
-def get_all_security_plugins_with_description(plugin_file_path: str = None) -> List[Dict]:
+def get_all_security_plugins_with_info() -> List[Dict]:
     """
     Returns a list of all available security plugins with descriptions.
 
@@ -183,51 +190,62 @@ def get_all_security_plugins_with_description(plugin_file_path: str = None) -> L
         List[Dict]:  A list of dictionaries containing the plugin name and description.
     """
 
-    security_plugins = read_and_get_security_plugins(plugin_file_path)
+    security_plugins = read_and_get_security_plugins()
     security_plugins_with_description = []
     if isinstance(security_plugins, str):
         return security_plugins
-    for plugin_name, plugin_description in security_plugins.items():
+    for plugin_name, plugin_info in security_plugins.items():
         security_plugins_with_description.append(
             {
                 "Name": plugin_name,
-                "Description": plugin_description
+                "Description": plugin_info['description'],
+                "Severity": plugin_info['severity'],
+                "Type": plugin_info['type']
             }
         )
     return security_plugins_with_description
 
 
-def read_and_get_security_plugins(plugin_file_path: str = None) -> Union[str, List[Dict]]:
+def read_and_get_security_plugins() -> Union[str, Dict]:
     """
     Reads the security plugins from the specified file and returns a list of available plugins.
 
-    Args:
-        plugin_file_path (str): The path to the security plugins file.
-
     Returns:
-        Union[str, List[Dict]]: Error message if the file is not found or a list of security plugins.
+        Union[str, Dict]: Error message if the file is not found or a dict of security plugins
     """
-    # Default plugin file path
-    if not plugin_file_path:
-        plugin_file_path = os.path.join(os.path.dirname(__file__), "conf/security_plugins.json")
+    # check if already set
+    if constants.SECURITY_PLUGINS:
+        return constants.SECURITY_PLUGINS
 
     # Check if file exists
-    if not os.path.exists(plugin_file_path):
-        return f"Error: Security plugins file not found, file_path={plugin_file_path}"
+    if constants.PLUGIN_FILE_PATH and not os.path.exists(constants.PLUGIN_FILE_PATH):
+        return f"Error: Custom Security plugins file not found, file_path={constants.PLUGIN_FILE_PATH}"
+
+    # Check if default file exist
+    if constants.DEFAULT_PLUGIN_FILE_PATH and not os.path.exists(constants.DEFAULT_PLUGIN_FILE_PATH):
+        return f"Error: Default Security plugins file not found, file_path={constants.DEFAULT_PLUGIN_FILE_PATH}"
 
     # Read JSON content
-    security_plugins = read_json_file(plugin_file_path)
+    security_plugins = read_json_file(constants.DEFAULT_PLUGIN_FILE_PATH)
 
     # Handle invalid JSON response
     if not isinstance(security_plugins, dict):
         return "Error: Invalid security plugins data."
 
-    # Extract plugins
-    all_plugins_dict = security_plugins.get('local_plugins', {})
-    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') not in {'1', 'true', 'True'}:
-        all_plugins_dict.update(security_plugins.get('remote_plugins', {}))
+    if constants.PLUGIN_FILE_PATH:
+        custom_security_plugins = read_json_file(constants.PLUGIN_FILE_PATH)
+        # Handle invalid JSON response
+        if not isinstance(custom_security_plugins, dict):
+            return "Error: Invalid custom security plugins data."
+        security_plugins.update(custom_security_plugins)
 
-    return all_plugins_dict
+
+    # Extract plugins
+    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') not in {'1', 'true', 'True'}:
+        security_plugins = {k: v for k, v in security_plugins.items() if not v.get("remote", False)}
+
+
+    return security_plugins
 
 
 def validate_generate_prompts_request_params(application_config, plugins, targets):
@@ -296,7 +314,7 @@ def validate_evaluate_request_params(paig_eval_id, generated_prompts, base_promp
     return True, ""
 
 
-def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, plugin_file_path: str = None) -> Dict | str:
+def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
     """
     Suggests plugins to test security vulnerabilities based on the purpose of the application using OpenAI.
 
@@ -306,7 +324,7 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, plugin_file_path
     Returns:
         List[Dict[str, str]] | str: The list of suggested plugins with descriptions or an error message.
     """
-    security_plugins = read_and_get_security_plugins(plugin_file_path)
+    security_plugins = read_and_get_security_plugins()
     if isinstance(security_plugins, str):
         return security_plugins
 
