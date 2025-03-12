@@ -76,6 +76,13 @@ def current_utc_time():
     return datetime.now().astimezone(pytz.utc)
 
 
+def normalize_datetime(dt):
+    import pytz
+    if dt.tzinfo is None:  # If naive, assume UTC
+        return dt.replace(tzinfo=pytz.UTC)
+    return dt.astimezone(pytz.UTC)
+
+
 def epoch_to_utc(epoch_time, to_format='%Y-%m-%d %H:%M:%S.%f'):
     utc_time = datetime.utcfromtimestamp(epoch_time / 1000)
     return utc_time.strftime(to_format)

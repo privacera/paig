@@ -10,7 +10,7 @@ class AdminAuditModel(Base):
     acted_by_user_name = Column(String(255), nullable=True, index=True)
     action = Column(String(255), nullable=True)
     log_id = Column(String(255), nullable=True, index=True)
-    log_time = Column(DateTime, index=True, nullable=True, default=current_utc_time())
+    log_time = Column(DateTime, index=True, nullable=False, default=lambda: current_utc_time())
     object_id = Column(Integer, nullable=True)
     object_name = Column(String(255), nullable=True)
     object_type = Column(String(255), nullable=True)

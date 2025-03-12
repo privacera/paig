@@ -1,8 +1,8 @@
-"""Added admin audit table
+"""Added admin audit tables
 
-Revision ID: 1a63ada85a7c
+Revision ID: 13a819d8b0ca
 Revises: 67a256363095
-Create Date: 2025-03-11 18:45:23.362933
+Create Date: 2025-03-12 15:26:48.906232
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '1a63ada85a7c'
+revision: str = '13a819d8b0ca'
 down_revision: Union[str, None] = '67a256363095'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

@@ -27,7 +27,7 @@ from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOU
     ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
 from core.middlewares.request_session_context_middleware import get_user
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends, \
-    generate_unique_identifier_key
+    generate_unique_identifier_key, normalize_datetime
 
 config = load_config_file()
 
@@ -364,8 +364,12 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         transformed_audit.acted_by_user_name = user.get("username")
 
         if guardrail:
+            guardrail.create_time = normalize_datetime(guardrail.create_time)
+            guardrail.update_time = normalize_datetime(guardrail.update_time)
             transformed_audit.object_state = guardrail.model_dump(exclude_none=True, mode="json")
         if previous_guardrail:
+            previous_guardrail.create_time = normalize_datetime(previous_guardrail.create_time)
+            previous_guardrail.update_time = normalize_datetime(previous_guardrail.update_time)
             transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json")
 
         return transformed_audit
