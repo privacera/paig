@@ -33,6 +33,10 @@ def reset_user(context: Token):
 
 class RequestSessionContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        # Skip the middleware if the request is not for guardrail-service
+        if not request.url.path.startswith("/guardrail-service"):
+            return await call_next(request)
+
         token_user_info = await get_auth_token_user_info(request)
         context = set_user(token_user_info)
         try:
