@@ -10,7 +10,6 @@ from api.shield.model.scanner_result import ScannerResult
 
 logger = logging.getLogger(__name__)
 
-guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
 anonymizer = PresidioAnonymizerEngine()
 
 def process_guardrail_response(input_data: dict) -> dict:
@@ -66,6 +65,7 @@ def process_guardrail_response(input_data: dict) -> dict:
 
 async def get_guardrail_by_id(request: dict, tenant_id: str) -> dict:
     guardrail_id = request.get("guardrailId")
+    guardrail_service_client = GuardrailServiceFactory().get_guardrail_service_client()
     response = await guardrail_service_client.get_guardrail_info_by_id(tenant_id, guardrail_id)
     return response
 
@@ -77,11 +77,11 @@ async def decrypted_connection_details(tenant_id: str, connection_details: dict)
         raise BadRequestException(
             f"Invalid guardrail connection details: {connection_details} for tenant {tenant_id}. Got error {e}")
 
-async def test_guardrail(tenant_id: str, transformed_response: dict, message: str) -> list:
+async def do_test_guardrail(tenant_id: str, transformed_response: dict, message: str) -> list:
 
-    final_result = [test_paig_guardrail(transformed_response, message)]
+    final_result = [paig_guardrail_test(transformed_response, message)]
     if isinstance(final_result[0], dict) and "DENY" not in final_result[0].get("action", ""):
-        test_aws_guardrail_result = await test_aws_guardrail(tenant_id, transformed_response, message)
+        test_aws_guardrail_result = await aws_guardrail_test(tenant_id, transformed_response, message)
         if test_aws_guardrail_result:
             final_result.append(test_aws_guardrail_result)
 
@@ -120,7 +120,7 @@ def merge_scanner_results(scanner_results: list) -> ScannerResult:
         analyzer_results.extend(result.get("analyzer_result", []))
     return ScannerResult(traits=sorted(traits), analyzer_result=analyzer_results)
 
-def test_paig_guardrail(transformed_response: dict, message: str) -> dict:
+def paig_guardrail_test(transformed_response: dict, message: str) -> dict:
     pii_scanner = PIIScanner(name="PIIScanner", model_path="_")
     pii_scanner_result = pii_scanner.scan(message)
 
@@ -141,7 +141,7 @@ def test_paig_guardrail(transformed_response: dict, message: str) -> dict:
 
     return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
 
-async def test_aws_guardrail(tenant_id: str, transformed_response: dict, message: str) -> None|dict:
+async def aws_guardrail_test(tenant_id: str, transformed_response: dict, message: str) -> None|dict:
 
     # check if AWS guardrail is present
     guardrail_provider_details = transformed_response.get("guardrail_provider_details", {})

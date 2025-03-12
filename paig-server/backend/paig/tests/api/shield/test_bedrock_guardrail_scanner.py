@@ -1,7 +1,5 @@
-from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
-
-import pytest
 import os
+from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
 
 
 class TestAWSBedrockGuardrailScanner:

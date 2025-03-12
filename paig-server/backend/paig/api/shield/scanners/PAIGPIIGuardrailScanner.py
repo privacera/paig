@@ -1,8 +1,6 @@
 import logging
-import os
 
 from api.shield.model.scanner_result import ScannerResult
-from api.shield.model.analyzer_result import AnalyzerResult
 from api.shield.scanners.BaseScanner import Scanner
 
 logger = logging.getLogger(__name__)
@@ -48,7 +46,7 @@ class PAIGPIIGuardrailScanner(Scanner):
         deny_policies_list , redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, pii_traits)
 
         if len(deny_policies_list) > 0:
-            return ScannerResult(traits=[], actions=["BLOCKED"], output_text=f'f{sensitive_data_config.get("response_message")}')
+            return ScannerResult(traits=[], actions=["BLOCKED"], output_text=sensitive_data_config.get("response_message"))
         if len(redact_policies_dict) > 0:
             return ScannerResult(traits=[], actions=["REDACT"], masked_traits=redact_policies_dict)
 

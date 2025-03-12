@@ -8,8 +8,11 @@ class LocalGuardrailServiceClient(IGuardrailServiceClient):
     Local client implementation for fetching Guardrail Config info.
 
     Methods:
-        get_guardrail_info(guardrail_id):
-            Retrieves Guardrail Config details for the specified guardrail id from a local data source.
+        get_guardrail_info_by_id(tenant_id: str, guardrail_id: int):
+            Retrieves Guardrail Config details for the specific tenant and guardrail id from local data sources.
+
+        get_guardrail_info_by_name(tenant_id: str, guardrail_name: str):
+            Retrieves Guardrail Config details for the specified tenant and guardrail name from local data sources.
     """
 
     def __init__(self):
@@ -19,7 +22,7 @@ class LocalGuardrailServiceClient(IGuardrailServiceClient):
         from api.guardrails.services.guardrails_service import GuardrailService
         self.guardrail_service: GuardrailService = SingletonDepends(GuardrailService)
 
-    async def get_guardrail_info_by_id(self, tenant_id, guardrail_id):
+    async def get_guardrail_info_by_id(self, tenant_id: str, guardrail_id: int):
         """
         Retrieve Guardrail Config details for the specified guardrail id from the local data source.
         :param tenant_id:

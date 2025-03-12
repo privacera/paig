@@ -1,6 +1,5 @@
 import logging
 
-
 from paig_common.async_base_rest_http_client import AsyncBaseRESTHttpClient
 from api.shield.utils.custom_exceptions import ShieldException
 
@@ -23,8 +22,11 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
            get_headers(tenant_id: str):
                Returns headers for API requests based on the provided tenant_id.
 
-           get_guardrail_info(tenant_id: str, guardrail_id: int):
-               Retrieves all the guardrail details for a specific tenant from the Guardrail service API.
+           get_guardrail_info_by_id(tenant_id: str, guardrail_id: int):
+                Retrieves Guardrail Config details for the specific tenant and guardrail id from guardrail service api
+
+           get_guardrail_info_by_name(tenant_id: str, guardrail_name: str):
+                Retrieves Guardrail Config details for the specified tenant and guardrail name from guardrail service api
        """
 
     def __init__(self):
@@ -96,7 +98,7 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
                 raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_name: {guardrail_name}. "
                                       f"Status code: {response.status}, Response: {response.text}")
             response_content = response.json().get("content", {})
-            from api.shield.view.guardrail_view import GuardrailView
+            from api.guardrails.api_schemas.guardrail import GuardrailView
             guardrail_info : GuardrailView = GuardrailView(**response_content[0])
             return guardrail_info.dict(exclude_none=True, exclude_unset=True)
         except Exception as ex:
