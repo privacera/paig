@@ -2,6 +2,7 @@ import asyncio
 import json
 import traceback
 import uuid
+
 from api.evaluation.database.db_operations.eval_config_repository import EvaluationConfigHistoryRepository
 from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
@@ -47,6 +48,7 @@ def generate_common_fields(eval_run_id, eval_id):
     }
 
 async def insert_eval_results(eval_id, eval_run_id, report):
+    all_plugins_info = get_all_plugins()
     results = report["result"]
     if 'results' not in results:
         logger.info(f'No result is generated for eval_id: {eval_id}')
@@ -89,7 +91,11 @@ async def insert_eval_results(eval_id, eval_run_id, report):
         if res['failureReason'] == 2:
             response['status'] = 'ERROR'
         if 'testCase' in res and 'metadata' in res['testCase'] and 'pluginId' in res['testCase']['metadata']:
-            response['category'] = res['testCase']['metadata']['pluginId']
+            category = res['testCase']['metadata']['pluginId']
+            response['category'] = category
+            response['category_type'] = all_plugins_info.get(category, {}).get('type', None)
+            if not res['success']:
+                response['category_severity'] = all_plugins_info.get(category, {}).get('severity', None)
         response_records.append(response)
     # Insert the prompt and response records
     await bulk_insert_into_table('eval_result_prompt', prompt_records)
@@ -194,20 +200,27 @@ class EvaluationService:
     def get_paig_evaluator(self):
         return PAIGEvaluator()
 
-    async def get_target_hosts(self, apps):
+    async def get_target_hosts(self, apps, auth_user):
         final_target = list()
         app_names = list()
+        target_users = list()
         for app in apps:
             target_host = json.loads(app.config)
-            if 'headers'in target_host['config'] and target_host['config']['headers'] == {}:
-                del target_host['config']['headers']
+            target_user = app.target_user
+            if 'headers'in target_host['config']:
+                if auth_user and app.id in auth_user.keys():
+                    target_host['config']['headers']['authorization'] = auth_user[app.id]['token']
+                    target_user = auth_user[app.id]['username']
+                elif target_host['config']['headers'] == {}:
+                    del target_host['config']['headers']
             target_host['label'] = app.name
             app_names.append(app.name)
             final_target.append(target_host)
-        return final_target, app_names
+            target_users.append(target_user)
+        return final_target, app_names, target_users
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None):
+    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
@@ -215,7 +228,7 @@ class EvaluationService:
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if len(apps) != len(app_ids):
             raise BadRequestException('Applications are not configured properly.Please check the configuration')
-        target_hosts, application_names = await self.get_target_hosts(apps)
+        target_hosts, application_names, target_users = await self.get_target_hosts(apps, auth_user)
         # Insert evaluation record
         eval_id = str(uuid.uuid4())
         eval_params = {
@@ -227,7 +240,8 @@ class EvaluationService:
             "config_name": eval_config.name,
             "application_names": ','.join(application_names),
             "base_run_id": base_run_id,
-            "name": report_name
+            "name": report_name,
+            "target_users": target_users
         }
         eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
         eval_run_id = eval_model.id

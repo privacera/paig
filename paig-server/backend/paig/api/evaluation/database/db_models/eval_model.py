@@ -30,6 +30,7 @@ class EvaluationModel(CommonBase):
     passed = Column(String(255), default='0')
     failed = Column(String(255), default='0')
     base_run_id = Column(String(255))
+    target_users = Column(String(255), nullable=True)
 
 
     # Relationship with EvaluationConfigHistoryModel based on config_id
@@ -87,6 +88,8 @@ class EvaluationResultResponseModel(CommonBase):
     failure_reason = Column(Text(), nullable=True)
     category_score = Column(Text(), nullable=True)
     category = Column(String(255), nullable=True)
+    category_severity = Column(String(255), nullable=True)
+    category_type = Column(String(255), nullable=True)
 
     # Back-reference to EvaluationResultPromptsModel
     prompt = relationship("EvaluationResultPromptsModel", back_populates="responses")
