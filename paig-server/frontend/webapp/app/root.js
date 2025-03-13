@@ -175,6 +175,7 @@ class Root extends Component {
               </IconButton>
             )}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            data-testid="snackbar"
           >
             { state.loaded ? renderComponent : <PaigLoader /> }
             {

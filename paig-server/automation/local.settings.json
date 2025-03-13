@@ -1,10 +1,6 @@
 {
-  "baseUrl": "http://localhost:4545",
+  "baseUrl": "http://localhost:9090",
   "env": {
-    "isLocal": true,
-    "login": {
-      "username": "admin",
-      "password": "welcome1"
-    }
+    "isLocal": true
   }
 }
