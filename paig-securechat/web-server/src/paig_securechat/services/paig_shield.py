@@ -24,9 +24,9 @@ class PAIGShield:
                 paig_shield_client.setup(frameworks=self.ai_application_conf["shield_frameworks"])
             except paig_client.exception.AccessControlException as err:
                 logger.error(f"PAIG Shield plugin setup failed with error {err}")
-                if 'PAIG_API_KEY' in os.environ:
-                    logger.error(f"Invalid PAIG_API_KEY key.")
-                    sys.exit('PAIG Shield plugin setup failed. Please provide valid PAIG_API_KEY key.')
+                if 'PAIG_APP_API_KEY' in os.environ:
+                    logger.error(f"Invalid PAIG_APP_API_KEY key.")
+                    sys.exit('PAIG Shield plugin setup failed. Please provide valid PAIG_APP_API_KEY key.')
                 elif 'PRIVACERA_SHIELD_CONF_FILE' in os.environ:
                     logger.error(f"PAIG Shield configuration file used is {os.environ['PRIVACERA_SHIELD_CONF_FILE']}")
                     sys.exit(f"PAIG Shield plugin setup failed. Please confirm if the configuration file {os.environ['PRIVACERA_SHIELD_CONF_FILE']} is correct and exists")
@@ -37,8 +37,8 @@ class PAIGShield:
         """Handles PAIG Shield setup using a configuration file."""
         if not paig_shield_config_file:
             if app_count > 1:
-                logger.error(f"AI Application {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' in configuration file")
-                sys.exit(f"AI Application {ai_application_name} missing required 'paig_api_key' or 'paig_shield_config_file' configuration file")
+                logger.error(f"AI Application {ai_application_name} missing required 'paig_app_api_key' or 'paig_shield_config_file' in configuration file")
+                sys.exit(f"AI Application {ai_application_name} missing required 'paig_app_api_key' or 'paig_shield_config_file' configuration file")
             if 'PRIVACERA_SHIELD_CONF_FILE' in os.environ:
                 logger.info(f"AI Application {ai_application_name} setup using 'PRIVACERA_SHIELD_CONF_FILE' environment variable")
                 return
@@ -60,20 +60,20 @@ class PAIGShield:
 
     def set_paig_config_map(self, ai_application_name, ai_application_config, app_count):
         """Sets up PAIG Shield configuration using either API key or config file."""
-        paig_api_key = ai_application_config.get('paig_api_key')
+        paig_app_api_key = ai_application_config.get('paig_app_api_key')
 
-        if paig_api_key:
+        if paig_app_api_key:
             try:
-                ai_app = paig_shield_client.setup_app(application_config_api_key=paig_api_key)
+                ai_app = paig_shield_client.setup_app(application_config_api_key=paig_app_api_key)
                 self.paig_config_map[ai_application_name] = ai_app
             except paig_client.exception.AccessControlException as err:
                 logger.error(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
                 sys.exit(f"PAIG Shield plugin setup failed for {ai_application_name} with error {err}")
             return
 
-        if app_count == 1 and 'PAIG_API_KEY' in os.environ:
-            logger.info(f"AI Application {ai_application_name} setup using 'PAIG_API_KEY' environment variable")
+        if app_count == 1 and 'PAIG_APP_API_KEY' in os.environ:
+            logger.info(f"AI Application {ai_application_name} setup using 'PAIG_APP_API_KEY' environment variable")
             return
 
-        logger.info("'paig_api_key' is not provided in config. Trying to setup PAIG Shield using configuration file.")
+        logger.info("'paig_app_api_key' is not provided in config. Trying to setup PAIG Shield using configuration file.")
         self.paig_shield_setup_app_with_file(ai_application_name, ai_application_config.get('paig_shield_config_file'), app_count)
