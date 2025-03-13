@@ -440,7 +440,7 @@ async def test_create_guardrail_when_guardrail_provider_does_not_give_success_as
         assert mock_gr_connection_get_all.called
         assert mock_bedrock_guardrail_create.called
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to create guardrail in AWS: The security token included in the connection is expired"
+        assert exc_info.value.message == "Failed to create guardrail: The security token included in the connection is expired"
 
 
 @pytest.mark.asyncio
@@ -707,7 +707,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success_a
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to update guardrail in AWS: The associated connection details(AWS Secret Access Key) are invalid"
+        assert exc_info.value.message == "Failed to update guardrail: The associated connection details(AWS Secret Access Key) are invalid"
         assert mock_get_record_by_id.called
         assert mock_guardrail_get_by_name.called
         assert mock_gr_connection_get_all.called
@@ -788,7 +788,7 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success_w
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to delete guardrail in AWS"
+        assert exc_info.value.message == "Failed to delete guardrail"
         assert exc_info.value.details == {"errorType": "InternalFailure", "details": "AWS Error (InternalFailure)"}
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
@@ -819,7 +819,7 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_gives_success_w
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to delete guardrail in AWS: Access Denied for the associated connection"
+        assert exc_info.value.message == "Failed to delete guardrail: Access Denied for the associated connection"
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
         assert mock_gr_connection_get_all.called
