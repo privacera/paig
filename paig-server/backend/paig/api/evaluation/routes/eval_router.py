@@ -28,7 +28,7 @@ async def evaluation_run(
     user: dict = Depends(get_auth_user),
 ):
     try:
-        return await evaluation_controller.run_evaluation(config_id, user['username'], body_params.report_name)
+        return await evaluation_controller.run_evaluation(config_id, user['username'], body_params.report_name, body_params.auth_user)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

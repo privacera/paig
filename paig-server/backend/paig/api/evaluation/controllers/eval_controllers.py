@@ -33,9 +33,9 @@ class EvaluationController:
         except Exception as e:
             raise BadRequestException(str(e))
 
-    async def run_evaluation(self, eval_config_id, user, report_name):
+    async def run_evaluation(self, eval_config_id, user, report_name, auth_user=None):
         try:
-            resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name)
+            resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
             return resp
         except Exception as e:
             logger.error(f"Error while running evaluation: {str(e)}")

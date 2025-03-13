@@ -1,3 +1,5 @@
+from email.policy import default
+
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional
 from core.factory.database_initiator import BaseAPIFilter
@@ -14,6 +16,7 @@ class SaveAndRunRequest(ConfigCreateRequest):
 
 class RunRequest(BaseModel):
     report_name: str = Field(..., max_length=1024, description="The name of the report")
+    auth_user: dict | None = Field(default=None, max_length=1024, description="Run as user")
 
 class BaseEvaluationView(BaseModel):
     name: str = Field(..., max_length=1024, description="The name of the report")
