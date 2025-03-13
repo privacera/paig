@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime
+from sqlalchemy import Column, Integer, String, JSON, Double
 from core.db_session import Base
-from core.utils import current_utc_time
+from core.utils import current_utc_time_epoch
 
 
 class AdminAuditModel(Base):
@@ -10,7 +10,7 @@ class AdminAuditModel(Base):
     acted_by_user_name = Column(String(255), nullable=True, index=True)
     action = Column(String(255), nullable=True)
     log_id = Column(String(255), nullable=True, index=True)
-    log_time = Column(DateTime, index=True, nullable=False, default=lambda: current_utc_time())
+    log_time = Column(Double, index=True, nullable=False, default=lambda: current_utc_time_epoch())
     object_id = Column(Integer, nullable=True)
     object_name = Column(String(255), nullable=True)
     object_type = Column(String(255), nullable=True)

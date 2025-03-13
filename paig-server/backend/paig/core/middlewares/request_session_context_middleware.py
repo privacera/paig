@@ -1,7 +1,5 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from core.security.authentication import get_auth_token_user_info
-
 from contextvars import ContextVar, Token
 
 session_context_user: ContextVar[dict] = ContextVar("login_user")
@@ -37,6 +35,7 @@ class RequestSessionContextMiddleware(BaseHTTPMiddleware):
         if not request.url.path.startswith("/guardrail-service"):
             return await call_next(request)
 
+        from core.security.authentication import get_auth_token_user_info
         token_user_info = await get_auth_token_user_info(request)
         context = set_user(token_user_info)
         try:

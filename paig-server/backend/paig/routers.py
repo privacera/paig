@@ -11,7 +11,6 @@ from api.governance.routes.tag_router import tag_router
 from api.audit.routers import data_service_router
 from api.shield.routers import shield_router
 from api.evaluation.routers import evaluation_router_paths
-from core.security.authentication import get_auth_user
 
 router = APIRouter()
 

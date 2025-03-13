@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 from typing import Optional
 from core.factory.database_initiator import BaseAPIFilter
@@ -13,7 +11,7 @@ class BaseAdminAuditView(BaseModel):
     acted_by_user_name: Optional[str] = Field(None, description="The acted by user name", alias="actedByUserName")
     action: Optional[str] = Field(None, description="The Action performed CREATE/UPDATE/DELETE")
     log_id: Optional[str] = Field(None, description="The Admin audit log ID", alias="logId")
-    log_time: Optional[datetime] = Field(None, description="The Admin audit log time", alias="logTime")
+    log_time: Optional[int] = Field(None, description="The Admin audit log time", alias="logTime")
     object_id: Optional[int] = Field(None, description="The Object ID", alias="objectId")
     object_name: Optional[str] = Field(None, description="The Object name", alias="objectName")
     object_type: Optional[str] = Field(None, description="The Object type", alias="objectType")

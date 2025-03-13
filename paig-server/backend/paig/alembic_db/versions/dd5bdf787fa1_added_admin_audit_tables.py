@@ -1,8 +1,8 @@
 """Added admin audit tables
 
-Revision ID: 13a819d8b0ca
+Revision ID: dd5bdf787fa1
 Revises: 67a256363095
-Create Date: 2025-03-12 15:26:48.906232
+Create Date: 2025-03-13 12:46:38.278494
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '13a819d8b0ca'
+revision: str = 'dd5bdf787fa1'
 down_revision: Union[str, None] = '67a256363095'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,7 +27,7 @@ def upgrade() -> None:
     sa.Column('acted_by_user_name', sa.String(length=255), nullable=True),
     sa.Column('action', sa.String(length=255), nullable=True),
     sa.Column('log_id', sa.String(length=255), nullable=True),
-    sa.Column('log_time', sa.DateTime(), nullable=False),
+    sa.Column('log_time', sa.Double(), nullable=False),
     sa.Column('object_id', sa.Integer(), nullable=True),
     sa.Column('object_name', sa.String(length=255), nullable=True),
     sa.Column('object_type', sa.String(length=255), nullable=True),
