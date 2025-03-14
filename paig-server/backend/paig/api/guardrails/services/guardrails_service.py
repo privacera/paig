@@ -624,28 +624,35 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             if (operation == 'delete' and 'errorType' in response['response']['details'] and
                     response['response']['details']['errorType'] == 'ResourceNotFoundException'):
                 return
+
             if response['response']['details']['errorType'] == 'ClientError':
                 if 'ExpiredTokenException' in response['response']['details']['details']:
                     raise InternalServerError(
                         f"Failed to {operation} guardrail: The security token included in the connection is expired",
                         response['response']['details'])
+
                 error_messages = ('UnrecognizedClientException', 'InvalidSignatureException')
                 if any(error in response['response']['details']['details'] for error in error_messages):
                     raise InternalServerError(
-                        f"Failed to {operation} guardrail: The associated connection details(AWS Secret Access Key) are invalid",
+                        f"Failed to {operation} guardrail: The associated connection details(Secret Access Key) are invalid",
                         response['response']['details'])
+
             if response['response']['details']['errorType'] == 'AccessDeniedException':
                 raise InternalServerError(
                     f"Failed to {operation} guardrail: Access Denied for the associated connection",
                     response['response']['details'])
+
             if response['response']['details']['errorType'] == 'ConflictException':
                 raise BadRequestException(
                     f"Failed to {operation} guardrail: A guardrail with this name may already exist. Try using a different name.",
                     response['response']['details'])
+
             if response['response']['details']['errorType'] == 'ValidationException':
                 raise BadRequestException(
                     f"Failed to {operation} guardrail: {self.extract_details(response['response']['details']['details'])}",
                     response['response']['details'])
+
+            # Raise InternalServerError for any other error
             raise InternalServerError(f"Failed to {operation} guardrail", response['response']['details'])
 
     def extract_details(self, error_message):
@@ -654,6 +661,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         if match:
             return match.group(1).strip()
+        else:
+            return error_message
 
     async def delete(self, id: int):
         """

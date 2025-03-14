@@ -707,7 +707,7 @@ async def test_update_guardrail_when_guardrail_provider_does_not_gives_success_a
 
         # Assertions
         assert exc_info.type == InternalServerError
-        assert exc_info.value.message == "Failed to update guardrail: The associated connection details(AWS Secret Access Key) are invalid"
+        assert exc_info.value.message == "Failed to update guardrail: The associated connection details(Secret Access Key) are invalid"
         assert mock_get_record_by_id.called
         assert mock_guardrail_get_by_name.called
         assert mock_gr_connection_get_all.called
