@@ -1,4 +1,3 @@
-import json
 import logging
 
 
@@ -15,7 +14,7 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
     """
        HTTP client for interacting with an governance service API, implementing the IGovernanceServiceClient interface.
 
-       This client supports fetching AWS Bedrock guardrail details from a remote service using HTTP requests.
+       This client supports fetching AWS Bedrock guardrail names from a remote service using HTTP requests.
 
        Methods:
            init_singleton():
@@ -24,8 +23,8 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
            get_headers(tenant_id: str):
                Returns headers for API requests based on the provided tenant_id.
 
-           get_all_encryption_keys(tenant_id):
-               Retrieves all AWS Bedrock guardrail details for a specific tenant from the governance service API.
+           get_application_guardrail_name(tenant_id, application_key):
+               Retrieves all AWS Bedrock guardrail names for a specific tenant and application from the governance service API.
        """
 
     def __init__(self):
@@ -51,16 +50,16 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
 
         return {"x-paig-api-key": paig_key}
 
-    async def get_aws_bedrock_guardrail_info(self, tenant_id, application_key):
+    async def get_application_guardrail_name(self, tenant_id, application_key) -> list:
         """
-        Retrieve all AWS Bedrock guardrail details for a specific tenant and application from the governance service API.
+        Retrieve all AWS Bedrock guardrail names for a specific tenant and application from the governance service API.
 
         Args:
             tenant_id (str): Identifier of the tenant whose AWS Bedrock guardrail details are to be fetched.
             application_key (str): Identifier of the application for which AWS Bedrock guardrail details are to be fetched.
 
         Returns:
-            dict: Dictionary containing AWS Bedrock guardrail details associated with the specified tenant_id and application_key.
+            list: List containing AWS Bedrock guardrail names associated with the specified tenant_id and application_key.
 
         Raises:
             ShieldException: If the API request fails or returns a non-200 status code.
@@ -79,13 +78,16 @@ class HttpGovernanceServiceClient(AsyncBaseRESTHttpClient, IGovernanceServiceCli
             logger.debug(f"response received: {response.__str__()}")
 
             if response.status_code == 200:
-                response_content = response.json().get("content")[0]
-                guardrail_details = response_content.get("guardrailDetails", "{}") if response_content else "{}"
-                return json.loads(guardrail_details)
+                response_content = response.json().get("content", [])
+                if response_content:
+                    guardrail_names = response_content[0].get("guardrails", [])
+                    return guardrail_names
+                else :
+                    return []
             else:
-                error_message = (f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed "
+                error_message = (f"Request get_application_guardrail_name({tenant_id}, {application_key}) failed "
                                  f"with status code {response.status_code}: {response.text}")
                 raise ShieldException(error_message)
         except Exception as ex:
-            logger.error(f"Request get_aws_bedrock_guardrail_info({tenant_id}, {application_key}) failed with error: {ex}")
+            logger.error(f"Request get_application_guardrail_name({tenant_id}, {application_key}) failed with error: {ex}")
             raise ShieldException(ex.args[0])
