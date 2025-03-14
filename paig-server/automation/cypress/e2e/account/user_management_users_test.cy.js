@@ -216,9 +216,24 @@ describe("Test User Management page for users tab", () => {
         });
 
         cy.wait(3000);
-        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').each(($checkbox, index) => {
-            if (Math.random() > 0.5) {
-                cy.wrap($checkbox).click();
+        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').then(($checkboxes) => {
+            if ($checkboxes.length === 0) {
+                cy.log('No checkboxes found');
+                return;
+            }
+
+            let atLeastOneChecked = false;
+
+            $checkboxes.each((index, checkbox) => {
+                if (Math.random() > 0.5) {
+                    cy.wrap(checkbox).click().should('be.checked');
+                    atLeastOneChecked = true;
+                }
+            });
+
+            // If no checkbox was checked, forcefully check the first one
+            if (!atLeastOneChecked) {
+                cy.wrap($checkboxes[0]).click().should('be.checked');
             }
         });
 
