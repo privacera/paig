@@ -1,4 +1,6 @@
 from api.audit.RDS_service.db_operations.access_audit_repository import AccessAuditRepository
+from api.audit.RDS_service.db_operations.admin_audit_repository import AdminAuditRepository
+from api.audit.api_schemas.admin_audit_schema import BaseAdminAuditView
 from core.exceptions import NotFoundException, BadRequestException
 from core.controllers.paginated_response import create_pageable_response
 from api.audit.factory.service_interface import DataServiceInterface
@@ -6,13 +8,16 @@ from api.audit.api_schemas.access_audit_schema import BaseAccessAuditView
 from core.utils import SingletonDepends
 
 
-
 class RdsService(DataServiceInterface):
-    def __init__(self, access_audit_repository):
+    def __init__(self, access_audit_repository, admin_audit_repository):
         self.access_audit_repository = access_audit_repository
+        self.admin_audit_repository = admin_audit_repository
 
     async def create_access_audit(self, access_audit_params: BaseAccessAuditView):
         return await self.access_audit_repository.create_access_audit(access_audit_params)
+
+    async def create_admin_audit(self, admin_audit_params: BaseAdminAuditView):
+        return await self.admin_audit_repository.create_admin_audit(admin_audit_params)
 
     async def get_access_audits(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):
         if include_filters.user_id:
@@ -138,5 +143,6 @@ class RdsService(DataServiceInterface):
         return {interval: result_dict}
 
 
-def get_rds_service(access_audit_repository: AccessAuditRepository = SingletonDepends(AccessAuditRepository)):
-    return RdsService(access_audit_repository=access_audit_repository)
+def get_rds_service(access_audit_repository: AccessAuditRepository = SingletonDepends(AccessAuditRepository),
+                    admin_audit_repository: AdminAuditRepository = SingletonDepends(AdminAuditRepository)):
+    return RdsService(access_audit_repository=access_audit_repository, admin_audit_repository=admin_audit_repository)
