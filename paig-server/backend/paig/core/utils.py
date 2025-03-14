@@ -77,7 +77,7 @@ def current_utc_time():
 
 
 def current_utc_time_epoch():
-    return int(current_utc_time().replace(microsecond=0).timestamp() * 1000)
+    return int(current_utc_time().timestamp() * 1000)
 
 
 def normalize_datetime(dt):

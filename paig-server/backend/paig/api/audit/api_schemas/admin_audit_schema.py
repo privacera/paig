@@ -8,7 +8,7 @@ from fastapi import Query
 class BaseAdminAuditView(BaseModel):
 
     acted_by_user_id: Optional[str] = Field(None, description="The acted by user ID", alias="actedByUserId")
-    acted_by_user_name: Optional[str] = Field(None, description="The acted by user name", alias="actedByUserName")
+    acted_by_user_name: Optional[str] = Field(None, description="The acted by user name", alias="actedByUsername")
     action: Optional[str] = Field(None, description="The Action performed CREATE/UPDATE/DELETE")
     log_id: Optional[str] = Field(None, description="The Admin audit log ID", alias="logId")
     log_time: Optional[int] = Field(None, description="The Admin audit log time", alias="logTime")
@@ -29,7 +29,7 @@ class BaseAdminAuditView(BaseModel):
 
 class QueryParamsBase(BaseAPIFilter):
     acted_by_user_id: Optional[str] = Field(None, description="The acted by User ID", alias="actedByUserId")
-    acted_by_user_name: Optional[str] = Field(None, description="The acted by User name", alias="actedByUserName")
+    acted_by_user_name: Optional[str] = Field(None, description="The acted by User name", alias="actedByUsername")
     action: Optional[str] = Field(None, description="The Action", alias="action")
     log_id: Optional[str] = Field(None, description="The Admin audit log ID", alias="logId")
     log_time: Optional[int] = Field(None, description="The Admin audit log time", alias="logTime")
@@ -42,7 +42,7 @@ class QueryParamsBase(BaseAPIFilter):
 
 def include_query_params(
         include_query_acted_by_user_id: Optional[str] = Query(None, alias="includeQuery.actedByUserId"),
-        include_query_acted_by_user_name: Optional[str] = Query(None, alias="includeQuery.actedByUserName"),
+        include_query_acted_by_user_name: Optional[str] = Query(None, alias="includeQuery.actedByUsername"),
         include_query_action: Optional[str] = Query(None, alias="includeQuery.action"),
         include_query_log_id: Optional[str] = Query(None, alias="includeQuery.logId"),
         include_query_log_time: Optional[int] = Query(None, alias="includeQuery.logTime"),
@@ -53,7 +53,7 @@ def include_query_params(
 ) -> QueryParamsBase:
     return QueryParamsBase(
         actedByUserId=include_query_acted_by_user_id,
-        actedByUserName=include_query_acted_by_user_name,
+        actedByUsername=include_query_acted_by_user_name,
         action=include_query_action,
         logId=include_query_log_id,
         logTime=include_query_log_time,
@@ -66,7 +66,7 @@ def include_query_params(
 
 def exclude_query_params(
         exclude_query_acted_by_user_id: Optional[str] = Query(None, alias="excludeQuery.actedByUserId"),
-        exclude_query_acted_by_user_name: Optional[str] = Query(None, alias="excludeQuery.actedByUserName"),
+        exclude_query_acted_by_user_name: Optional[str] = Query(None, alias="excludeQuery.actedByUsername"),
         exclude_query_action: Optional[str] = Query(None, alias="excludeQuery.action"),
         exclude_query_log_id: Optional[str] = Query(None, alias="excludeQuery.logId"),
         exclude_query_log_time: Optional[int] = Query(None, alias="excludeQuery.logTime"),
@@ -77,7 +77,7 @@ def exclude_query_params(
 ) -> QueryParamsBase:
     return QueryParamsBase(
         actedByUserId=exclude_query_acted_by_user_id,
-        actedByUserName=exclude_query_acted_by_user_name,
+        actedByUsername=exclude_query_acted_by_user_name,
         action=exclude_query_action,
         logId=exclude_query_log_id,
         logTime=exclude_query_log_time,

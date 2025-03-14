@@ -360,7 +360,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         transformed_audit.log_id = generate_unique_identifier_key()
         transformed_audit.log_time = current_utc_time_epoch()
 
-        user: dict = get_user()
+        user: dict = self.get_request_user()
         transformed_audit.acted_by_user_id = user.get("id")
         transformed_audit.acted_by_user_name = user.get("username")
 
@@ -374,6 +374,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json")
 
         return transformed_audit
+
+    def get_request_user(self):
+        return get_user()
 
     async def save_guardrail_version_history(self, guardrail):
         guardrail_dict = model_to_dict(guardrail)

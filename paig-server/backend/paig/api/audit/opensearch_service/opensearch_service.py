@@ -26,10 +26,10 @@ class OpenSearchService(DataServiceInterface):
             admin_audit_params = admin_audit_params.dict(by_alias=True)
         await self._insert_audit(admin_audit_params, is_admin_audits=True)
 
-    async def _insert_audit(self, access_audit_params, is_admin_audits):
+    async def _insert_audit(self, audit_params, is_admin_audits):
         index_name = self.opensearch_client.get_index_name(is_admin_audits)
         try:
-            response = self.opensearch_client.get_client().index(index=index_name, body=access_audit_params)
+            response = self.opensearch_client.get_client().index(index=index_name, body=audit_params)
         except OpenSearchException as e:
             logger.error(f'OpenSearch exception occurred: {str(e)}')
             raise HTTPException(status_code=500, detail="OpenSearch exception occurred")
