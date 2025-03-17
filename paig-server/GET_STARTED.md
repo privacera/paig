@@ -2,7 +2,7 @@
 
 ## REQUIREMENTS
 
-- **Python** >=3.10
+- **Python**: 3.10, 3.11, or 3.12
 - **NodeJS** ==14.17.5 
 - **OS** : Linux/Debian based
 
@@ -14,8 +14,8 @@
    ```
 
 # Backend Set-Up
-## Steps to run the development web Server:
-### Linux/Mac Commands:
+
+### Steps to run the development web Server:
 1. Run the script to build the web UI.
    ```bash
    cd paig/paig-server/scripts
@@ -32,8 +32,15 @@
     python3 -m venv venv
     ```
 3. Activate the virtual environment.
+
+   - On macOS/Linux:
     ```bash
     source venv/bin/activate
+    ```
+   
+   - On Windows:
+    ```bash
+    venv/Scripts/activate
     ```
 4. Install the dependencies.
     ```bash
@@ -66,48 +73,8 @@
 | python __main__.py --help | View all available command-line options |
 | python __main__.py stop | Stop the PAIG Server |
 | python __main__.py status | Check the status of the PAIG Server |
+ 
 
-### Windows Commands:
-1. Run the script to build the web UI.
-   ```bash
-   cd paig/paig-server/scripts
-   sh build_ui.sh
-   ```
-2. Create a virtual environment in the backend directory.
-    ```bash
-    cd ../backend
-    python -m venv venv
-    ```
-   OR
-   ```bash
-    cd ../backend
-    python3 -m venv venv
-    ```
-3. Activate the virtual environment.
-    ```bash
-    .\venv\Scripts\activate
-    ```
-4. Install the dependencies.
-    ```bash
-    pip install -r requirements.txt
-    ```
-5. Run the web server.
-    ```bash
-    cd paig
-    python __main__.py run 
-   ```
-   One Such example is:
-   
-   ```bash
-   python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545
-   ```
-   **Note:** *Admin user credentials.*
-   ```bash
-   PAIG URL: http://127.0.0.1:4545
-   username: admin
-   password: welcome1
-   ```
-   
 # Frontend Set-Up
 
 ### Steps to run the development web UI
