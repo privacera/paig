@@ -365,13 +365,13 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         transformed_audit.acted_by_user_name = user.get("username")
 
         if guardrail:
-            guardrail.create_time = normalize_datetime(guardrail.create_time)
-            guardrail.update_time = normalize_datetime(guardrail.update_time)
             transformed_audit.object_state = guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
+            transformed_audit.object_state['createTime'] = normalize_datetime(guardrail.create_time)
+            transformed_audit.object_state['updateTime'] = normalize_datetime(guardrail.update_time)
         if previous_guardrail:
-            previous_guardrail.create_time = normalize_datetime(previous_guardrail.create_time)
-            previous_guardrail.update_time = normalize_datetime(previous_guardrail.update_time)
             transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
+            transformed_audit.object_state_previous['createTime'] = normalize_datetime(previous_guardrail.create_time)
+            transformed_audit.object_state_previous['updateTime'] = normalize_datetime(previous_guardrail.update_time)
 
         return transformed_audit
 
