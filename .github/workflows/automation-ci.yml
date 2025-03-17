@@ -78,10 +78,12 @@ jobs:
       uses: cypress-io/github-action@v6
       with:
         working-directory: paig-server/automation
-        start: npx cypress run --env environmentName=ci
+        start: npm run cy:run
         wait-on: http://localhost:4545
         browser: chrome
         headless: true
+      env:
+        CYPRESS_ENVIRONMENT_NAME: ci
 
     - name: Generate Cypress Report
       if: always()
