@@ -5,7 +5,7 @@
   "main": "cypress.config.js",
   "scripts": {
     "cy:run": "npx cypress run --env CYPRESS_ENVIRONMENT_NAME=ci",
-    "test": "npx cypress run --env environmentName=$ENV",
+    "test": "npx cypress run --env environmentName=ci",
     "testOnChrome": "npx cypress run --browser chrome --env environmentName=$ENV",
     "testOnFirefox": "npx cypress run --browser firefox --env environmentName=$ENV",
     "generate:report": "npx mochawesome-merge cypress/reports/mochawesome-report/*.json > cypress/reports/report.json && npx marge cypress/reports/report.json -o cypress/reports",
