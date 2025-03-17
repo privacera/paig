@@ -82,8 +82,8 @@ jobs:
         wait-on: http://localhost:4545
         browser: chrome
         headless: true
-      env:
-        environmentName: ci
+        env:
+          environmentName: ci
 
     - name: Generate Cypress Report
       if: always()
