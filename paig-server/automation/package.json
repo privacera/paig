@@ -4,7 +4,7 @@
   "description": "This is to test cypress e2e test cases",
   "main": "cypress.config.js",
   "scripts": {
-    "cy:run": "npx cypress run --env environmentName=ci",
+    "cy:run": "npx cypress run --env CYPRESS_ENVIRONMENT_NAME=ci",
     "test": "npx cypress run --env environmentName=$ENV",
     "testOnChrome": "npx cypress run --browser chrome --env environmentName=$ENV",
     "testOnFirefox": "npx cypress run --browser firefox --env environmentName=$ENV",

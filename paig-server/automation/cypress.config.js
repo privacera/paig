@@ -40,7 +40,7 @@ module.exports = defineConfig({
   pageLoadTimeout: 100000,
   e2e: {
     setupNodeEvents(on, config) {
-      const environmentName = config.env.environmentName || 'local';
+      const environmentName = config.env.CYPRESS_ENVIRONMENT_NAME || 'local';
       const environmentFilename = `./${environmentName}.settings.json`;
 
       const settings = require(environmentFilename);
