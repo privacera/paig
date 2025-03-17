@@ -83,7 +83,7 @@ jobs:
         browser: chrome
         headless: true
       env:
-        CYPRESS_ENVIRONMENT_NAME: ci
+        environmentName: ci
 
     - name: Generate Cypress Report
       if: always()
