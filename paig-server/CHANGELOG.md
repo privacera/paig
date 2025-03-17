@@ -1,6 +1,14 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+## [v0.0.6] - 2025-03-17
+### Added
+- Paig lens support added. PAIG UI navigation bar updated.
+- Mysql compatibility improved.
+
+### Changed
+- UI Change - User Invited column updated to 'NA' in User Management
+
 ## [v0.0.5] - 2025-03-06
 ### Added
 - Paig-eval Frontend and Backend implementation.
