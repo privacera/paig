@@ -76,9 +76,9 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_eval_config_history_id'), 'eval_config_history', ['id'], unique=False)
     op.create_table('eval_result_prompt',
-    sa.Column('eval_run_id', sa.String(length=255), nullable=False),
+    sa.Column('eval_run_id', sa.Integer(), nullable=False),
     sa.Column('eval_id', sa.String(length=255), nullable=False),
-    sa.Column('prompt_uuid', sa.String(length=255), nullable=False),
+    sa.Column('prompt_uuid', sa.String(length=255), nullable=False, unique=True),
     sa.Column('prompt', sa.Text(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=True),
@@ -102,7 +102,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_eval_target_id'), 'eval_target', ['id'], unique=False)
     op.create_table('eval_result_response',
-    sa.Column('eval_run_id', sa.String(length=255), nullable=False),
+    sa.Column('eval_run_id', sa.Integer(), nullable=False),
     sa.Column('eval_result_prompt_uuid', sa.String(length=255), nullable=False),
     sa.Column('eval_id', sa.String(length=255), nullable=False),
     sa.Column('response', sa.Text(), nullable=True),
