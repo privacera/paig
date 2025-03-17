@@ -628,18 +628,18 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             if response['response']['details']['errorType'] == 'ClientError':
                 if 'ExpiredTokenException' in response['response']['details']['details']:
                     raise InternalServerError(
-                        f"Failed to {operation} guardrail: The security token included in the connection is expired",
+                        f"Failed to {operation} guardrail: The security token included in the connection is expired.",
                         response['response']['details'])
 
                 error_messages = ('UnrecognizedClientException', 'InvalidSignatureException')
                 if any(error in response['response']['details']['details'] for error in error_messages):
                     raise InternalServerError(
-                        f"Failed to {operation} guardrail: The associated connection details(Secret Access Key) are invalid",
+                        f"Failed to {operation} guardrail: The provided authentication credentials for the associated connection are invalid.",
                         response['response']['details'])
 
             if response['response']['details']['errorType'] == 'AccessDeniedException':
                 raise InternalServerError(
-                    f"Failed to {operation} guardrail: Access Denied for the associated connection",
+                    f"Failed to {operation} guardrail: Access Denied for the associated connection.",
                     response['response']['details'])
 
             if response['response']['details']['errorType'] == 'ConflictException':
