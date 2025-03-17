@@ -367,11 +367,11 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         if guardrail:
             guardrail.create_time = normalize_datetime(guardrail.create_time)
             guardrail.update_time = normalize_datetime(guardrail.update_time)
-            transformed_audit.object_state = guardrail.model_dump(exclude_none=True, mode="json")
+            transformed_audit.object_state = guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
         if previous_guardrail:
             previous_guardrail.create_time = normalize_datetime(previous_guardrail.create_time)
             previous_guardrail.update_time = normalize_datetime(previous_guardrail.update_time)
-            transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json")
+            transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
 
         return transformed_audit
 
