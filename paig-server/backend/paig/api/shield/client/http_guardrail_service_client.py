@@ -34,6 +34,7 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
         Initialize the client instance with the base URL from configuration.
         """
         super().__init__(config_utils.get_property_value("guardrail_service_base_url"))
+        self.url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
 
     @staticmethod
     def get_headers(tenant_id: str):
@@ -52,19 +53,18 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
 
         return {"x-paig-api-key": paig_key}
 
-    async def get_guardrail_info_by_id(self, tenant_id: str, guardrail_id: int):
+    async def get_guardrail_info_by_id(self, tenant_id: str, guardrail_id: int) -> dict:
         """
         Retrieve Guardrail Config details for the specified guardrail id from the Guardrail service API.
         :param guardrail_id:
         :param tenant_id:
         :return:
         """
-        url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
-        logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-id={guardrail_id}")
+        logger.debug(f"Using base-url={self.baseUrl} uri={self.url} for tenant-id={tenant_id} and guardrail-id={guardrail_id}")
 
         try:
             response = await self.get(
-                url=url+"/"+str(guardrail_id),
+                url=self.url+"/"+str(guardrail_id),
                 headers=self.get_headers(tenant_id),
                 params={"extended": "true"}
             )
@@ -76,19 +76,18 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
             logger.error(f"Request get_guardrail_info_by_id({tenant_id}, {guardrail_id}) failed with error: {ex}")
             raise ShieldException(ex.args[0])
 
-    async def get_guardrail_info_by_name(self, tenant_id, guardrail_name):
+    async def get_guardrail_info_by_name(self, tenant_id, guardrail_name) -> dict:
         """
         Retrieve Guardrail Config details for the specified guardrail name from the Guardrail service API.
         :param tenant_id:
         :param guardrail_name:
         :return:
         """
-        url = config_utils.get_property_value("guardrail_service_get_guardrail_endpoint")
-        logger.debug(f"Using base-url={self.baseUrl} uri={url} for tenant-id={tenant_id} and guardrail-name={guardrail_name}")
+        logger.debug(f"Using base-url={self.baseUrl} uri={self.url} for tenant-id={tenant_id} and guardrail-name={guardrail_name}")
 
         try:
             response = await self.get(
-                url=url,
+                url=self.url,
                 headers=self.get_headers(tenant_id),
                 params={"name": guardrail_name[0],
                         "extended": "true",
