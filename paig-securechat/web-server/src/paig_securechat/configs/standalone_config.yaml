@@ -9,7 +9,7 @@ openai:
     temperature: 0.1
 
 paig:
-  key_file: "custom-configs/paig.key"
+  key_file: "custom-configs/paig_app.key"
 
 bedrock:
   embedding_model: "amazon.titan-embed-text-v1"
