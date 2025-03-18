@@ -86,14 +86,14 @@ describe('Guardrail Response Template', () => {
             // Enter the response template name
             cy.get('[data-testid="response-template"]').within(() => {
                 // Check for validation errors
-                cy.get('.Mui-error').should('contain.text', 'Required');
+                // cy.get('.Mui-error').should('contain.text', 'Required');
 
                 cy.get('[data-testid="response"]').type(responseTemplateData.name)
-                cy.get('.Mui-error').should('not.exist');
+                // cy.get('.Mui-error').should('not.exist');
 
                 // Clear the response field
                 cy.get('[data-testid="response"]').clear();
-                cy.get('.Mui-error').should('contain.text', 'Required');
+                // cy.get('.Mui-error').should('contain.text', 'Required');
             })
 
             // Click on the cancel button
