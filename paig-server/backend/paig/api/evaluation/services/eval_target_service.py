@@ -114,6 +114,7 @@ class EvaluationTargetService:
         new_params['config'] = transformed_eval
         new_params['name'] = body_params['name']
         new_params['url'] = body_params['url']
+        new_params['target_user'] = body_params['username']
         try:
             eval_target = await self.eval_target_repository.create_app_target(new_params)
             return eval_target
@@ -142,6 +143,8 @@ class EvaluationTargetService:
         new_params['url'] = body_params['url']
         if 'name' in body_params:
             new_params['name'] = body_params['name']
+        if 'username' in body_params:
+            new_params['target_user'] = body_params['username']
         try:
             eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
             return eval_target
@@ -174,6 +177,7 @@ class EvaluationTargetService:
             resp['id'] = target_model.id
             resp['target_id'] = target_model.id
             resp['ai_application_id'] = target_model.application_id
+            resp['username'] = target_model.target_user
             return resp
         except Exception as e:
             logger.error(f"Error in get_app_target_by_id: {e}")

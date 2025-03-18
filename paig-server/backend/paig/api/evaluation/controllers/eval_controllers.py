@@ -109,3 +109,8 @@ class EvaluationController:
         return create_pageable_response(results_list, total_count, page, size, sort)
 
 
+    async def get_result_by_severity(self, eval_uuid):
+        return await self.evaluation_result_service.get_result_by_severity(eval_uuid)
+
+    async def get_result_by_category(self, eval_uuid):
+        return await self.evaluation_result_service.get_result_by_category(eval_uuid)

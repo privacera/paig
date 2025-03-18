@@ -8,7 +8,7 @@ from api.evaluation.database.db_operations.eval_target_repository import Evaluat
 from core.utils import SingletonDepends
 from api.evaluation.database.db_operations.eval_repository import EvaluationRepository
 from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins
-from paig_evaluation.promptfoo_utils import ensure_promptfoo_config
+from paig_evaluation.promptfoo_utils import ensure_promptfoo_config, get_security_plugin_map
 import logging
 from core.utils import current_utc_time
 from core.exceptions import BadRequestException
@@ -48,7 +48,7 @@ def generate_common_fields(eval_run_id, eval_id):
     }
 
 async def insert_eval_results(eval_id, eval_run_id, report):
-    all_plugins_info = get_all_plugins()
+    all_plugins_info = get_security_plugin_map()
     results = report["result"]
     if 'results' not in results:
         logger.info(f'No result is generated for eval_id: {eval_id}')
@@ -241,7 +241,7 @@ class EvaluationService:
             "application_names": ','.join(application_names),
             "base_run_id": base_run_id,
             "name": report_name,
-            "target_users": target_users
+            "target_users": ','.join(target_users)
         }
         eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
         eval_run_id = eval_model.id

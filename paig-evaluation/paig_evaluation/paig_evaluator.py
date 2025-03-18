@@ -1,7 +1,7 @@
 import sys
 import uuid
 from typing import List, Dict
-import constants
+from . import constants
 from .promptfoo_utils import (
     suggest_promptfoo_redteam_plugins_with_openai,
     generate_promptfoo_redteam_config,
