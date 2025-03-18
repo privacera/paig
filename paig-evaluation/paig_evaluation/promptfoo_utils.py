@@ -1,7 +1,6 @@
 import json
 import os
 from typing import List, Dict
-from zipfile import compressor_names
 
 import openai
 import yaml
@@ -13,7 +12,7 @@ from .command_utils import run_command_in_background, wait_for_process_complete
 from .file_utils import write_yaml_file, read_yaml_file, read_json_file
 import subprocess
 from typing import Union
-import constants
+from . import constants
 
 
 logger = logging.getLogger("paig_eval")
@@ -204,6 +203,17 @@ def get_all_security_plugins_with_info() -> List[Dict]:
             }
         )
     return security_plugins_with_description
+
+def get_security_plugin_map() -> Dict:
+    """
+    Returns a dictionary of all available security plugins with descriptions.
+
+    Returns:
+        Dict: A dictionary containing the plugin name and description.
+    """
+
+    return read_and_get_security_plugins()
+
 
 
 def read_and_get_security_plugins() -> Union[str, Dict]:

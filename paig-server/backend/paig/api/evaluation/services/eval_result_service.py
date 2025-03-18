@@ -2,7 +2,7 @@ import json
 
 from core.exceptions import BadRequestException
 import logging
-from api.evaluation.database.db_operations.eval_repository import EvaluationRepository, EvaluationPromptRepository
+from api.evaluation.database.db_operations.eval_repository import EvaluationRepository, EvaluationPromptRepository, EvaluationResponseRepository
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)
@@ -15,10 +15,12 @@ class EvaluationResultService:
     def __init__(
         self,
         evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository),
-        evaluation_prompt_repository: EvaluationPromptRepository = SingletonDepends(EvaluationPromptRepository)
+        evaluation_prompt_repository: EvaluationPromptRepository = SingletonDepends(EvaluationPromptRepository),
+        evaluation_response_repository: EvaluationResponseRepository = SingletonDepends(EvaluationResponseRepository)
     ):
         self.evaluation_repository = evaluation_repository
         self.evaluation_prompt_repository = evaluation_prompt_repository
+        self.evaluation_response_repository = evaluation_response_repository
 
     async def get_eval_results_with_filters(self, *args):
         return await self.evaluation_repository.get_eval_results_with_filters(*args)
@@ -45,9 +47,24 @@ class EvaluationResultService:
         resp_dict['result'] = resp_list
         resp_dict['eval_id'] = model.eval_id
         resp_dict['report_name'] = model.name
+        resp_dict['owner'] = model.owner
+        resp_dict['create_time'] = model.create_time
         return resp_dict
 
     async def get_detailed_results_by_uuid(self,
         *args
     ):
         return await self.evaluation_prompt_repository.get_detailed_results_by_uuid(*args)
+
+    async def get_result_by_severity(self, uuid):
+        rows = await self.evaluation_response_repository.get_result_by_severity(uuid)
+        # Initialize all possible severity levels with 0
+        severity_levels = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "CRITICAL": 0}
+
+        # Update with actual values from the query result
+        for severity, count in rows:
+            severity_levels[severity] = count
+        return severity_levels
+
+    async def get_result_by_category(self, uuid):
+        return await self.evaluation_response_repository.get_result_by_category(uuid)
