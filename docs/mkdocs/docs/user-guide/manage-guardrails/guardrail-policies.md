@@ -187,6 +187,6 @@ security needs of their application.
 
 -   :material-book-open-page-variant-outline: __Read More__
 
-    [Reporting](../reporting/)
+    [Reporting](../reporting/reports.md)
 
 </div>
