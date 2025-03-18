@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, ForeignKey, Text
+from sqlalchemy import Column, String, ForeignKey, Text, Integer
 from sqlalchemy.orm import relationship
 from api.evaluation.database.db_models.base_model import CommonBase
 
@@ -54,9 +54,9 @@ class EvaluationResultPromptsModel(CommonBase):
     prompt: The prompt text
     """
     __tablename__ = "eval_result_prompt"
-    eval_run_id = Column(String(255), ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
+    eval_run_id = Column(Integer, ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
     eval_id = Column(String(255), nullable=False)
-    prompt_uuid = Column(String(255), nullable=False)
+    prompt_uuid = Column(String(255), nullable=False, unique=True)
     prompt = Column(Text(), nullable=False)
 
     # One-to-Many relationship with EvaluationResultResponseModel
@@ -79,7 +79,7 @@ class EvaluationResultResponseModel(CommonBase):
     category: The category ran for against the prompt
     """
     __tablename__ = "eval_result_response"
-    eval_run_id = Column(String(255), ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
+    eval_run_id = Column(Integer, ForeignKey('eval_run.id', ondelete="CASCADE"), nullable=False)
     eval_result_prompt_uuid = Column(String(255), ForeignKey('eval_result_prompt.prompt_uuid'), nullable=False)
     eval_id = Column(String(255), nullable=False)
     response = Column(Text(), nullable=True)
