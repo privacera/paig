@@ -320,9 +320,8 @@ describe('Guardrail Form PAIG provider', () => {
             cy.get('[data-testid="test-text"]').type('Test Guardrail Text');
             cy.get('[data-testid="test-guardrail"]').should('be.visible').and('contain', 'TEST INPUT').click();
 
-            // uncomment this when backend is available
-            // cy.wait(5000);
-            // cy.get('[data-testid="test-output"]').should('be.visible').and('not.be.empty');
+             cy.wait(5000);
+             cy.get('[data-testid="test-output"]').should('be.visible').and('not.be.empty');
 
             cy.intercept('GET', '/governance-service/api/ai/application?size=*').as('getApplications');
 

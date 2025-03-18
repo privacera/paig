@@ -13,6 +13,7 @@ const VResponseTemplateForm = ({ form}) => {
                 label="Response"
                 fieldObj={response}
                 inputProps={{'data-testid': 'response'}}
+                data-testid="response-template"
             />
             <FormGroupInput
                 as="textarea"
