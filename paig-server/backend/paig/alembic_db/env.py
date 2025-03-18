@@ -29,7 +29,7 @@ from api.governance.database.db_models import ai_app_config_model
 from api.governance.database.db_models import metadata_key_model, metadata_value_model
 from api.governance.database.db_models import tag_model
 from api.user.database.db_models import user_model, groups_model
-from api.audit.RDS_service.db_models import access_audit_model
+from api.audit.RDS_service.db_models import access_audit_model, admin_audit_model
 from api.encryption.database.db_models import encryption_master_key_model, encryption_key_model
 from api.evaluation.database.db_models import eval_model, eval_targets, eval_config
 from api.guardrails.database.db_models import guardrail_model, gr_connection_model

@@ -23,11 +23,11 @@ class TestHttpGovernanceServiceClient:
     async def test_fetch_guardrail_details_success(self, mocker):
         mock_response = mocker.Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {"content": [{"guardrailDetails": '{"key": "value"}'}]}
+        mock_response.json.return_value = {"content": [{"guardrails": '{"key": "value"}'}]}
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
-        result = await client.get_aws_bedrock_guardrail_info('tenant123', 'appKey123')
-        assert result == {"key": "value"}
+        result = await client.get_application_guardrail_name('tenant123', 'appKey123')
+        assert result == '{"key": "value"}'
 
     # Handles missing or invalid tenant ID gracefully
     @pytest.mark.asyncio
@@ -38,7 +38,7 @@ class TestHttpGovernanceServiceClient:
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
         with pytest.raises(ShieldException) as excinfo:
-            await client.get_aws_bedrock_guardrail_info('', 'appKey123')
+            await client.get_application_guardrail_name('', 'appKey123')
         assert "Bad Request" in str(excinfo.value)
 
     # Manages scenarios where the API key is not set in configuration
@@ -55,8 +55,8 @@ class TestHttpGovernanceServiceClient:
         mock_response.json.return_value = {"content": [{}]}
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
-        result = await client.get_aws_bedrock_guardrail_info('tenant123', 'appKey123')
-        assert result == {}
+        result = await client.get_application_guardrail_name('tenant123', 'appKey123')
+        assert result == []
 
     # Handles non-200 HTTP status codes by raising ShieldException
     @pytest.mark.asyncio
@@ -67,5 +67,5 @@ class TestHttpGovernanceServiceClient:
         mocker.patch.object(HttpGovernanceServiceClient, 'get', return_value=mock_response)
         client = HttpGovernanceServiceClient()
         with pytest.raises(ShieldException) as excinfo:
-            await client.get_aws_bedrock_guardrail_info('tenant123', 'appKey123')
+            await client.get_application_guardrail_name('tenant123', 'appKey123')
         assert "Not Found" in str(excinfo.value)

@@ -28,15 +28,16 @@ Cypress.Commands.add('login', (username, password) => {
     cy.clearSession();
     cy.visit("/");
 
-    if (Cypress.env('isLocal')) {
+    if (!Cypress.env('isLocal')) {
         let login = Cypress.env('login');
         console.log('login', login);
 
         cy.get("#userName").type(login.username);
         cy.get("#password").type(login.password);
         cy.get("#kc-form-buttons").click();
-        cy.url().should("include", "/dashboard");
     }
+
+    cy.url().should("include", "/dashboard");
 });
 
 Cypress.Commands.add('clearSession', () => {

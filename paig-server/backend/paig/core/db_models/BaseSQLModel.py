@@ -8,8 +8,8 @@ class BaseSQLModel(Base):
     __abstract__ = True
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     status = Column(Integer, nullable=False, default=1)
-    create_time = Column(DateTime, index=True, nullable=False, default=current_utc_time())
-    update_time = Column(DateTime, index=True, nullable=False, default=current_utc_time(), onupdate=current_utc_time())
+    create_time = Column(DateTime, index=True, nullable=False, default=lambda: current_utc_time())
+    update_time = Column(DateTime, index=True, nullable=False, default=lambda: current_utc_time(), onupdate=lambda: current_utc_time())
 
     def set_attribute(self, attributes):
         """

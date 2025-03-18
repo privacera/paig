@@ -41,6 +41,10 @@ class AIApplicationStore extends BaseStore {
     downloadShieldConfig(opts = {}) {
         return this.baseUrl + `/shield/config/properties/download`;
     }
+    associateGuardrailToApplication(data, opts = {}) {
+        opts.path = 'guardrails';
+        return this.update('', data, opts);
+    }
 }
 
 const aiApplicationStore = new AIApplicationStore();

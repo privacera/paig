@@ -5,7 +5,7 @@
   "main": "cypress.config.js",
   "scripts": {
     "test": "npx cypress run --env environmentName=$ENV",
-    "testOnChrome": "npx cypress run --browser chrome --env environmentName=$ENV",
+    "testOnChrome": "npx cypress run --browser chrome --headed --config viewportWidth=1920,viewportHeight=1080 --env environmentName=$ENV",
     "testOnFirefox": "npx cypress run --browser firefox --env environmentName=$ENV",
     "generate:report": "npx mochawesome-merge cypress/reports/mochawesome-report/*.json > cypress/reports/report.json && npx marge cypress/reports/report.json -o cypress/reports",
     "send:report": "node send_results_to_slack.js"

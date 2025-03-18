@@ -1,0 +1,10 @@
+{
+  "baseUrl": "http://127.0.0.1:4545",
+  "env": {
+    "isLocal": false,
+    "login": {
+      "username": "admin",
+      "password": "welcome1"
+    }
+  }
+}
