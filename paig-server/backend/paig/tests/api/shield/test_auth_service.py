@@ -121,7 +121,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -153,7 +153,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data()
@@ -162,7 +162,7 @@ class TestAuthService:
         await auth_service.authorize(mock_auth_req)
 
         # Assertions
-        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()*2
+        assert auth_service.application_manager.scan_messages.call_count == mock_auth_req.messages.__len__()
 
     def test_init_log_message_in_file(self, mocker):
         # Mock dependencies
@@ -334,7 +334,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Call the authorize method
         auth_res = await auth_service.authorize(auth_req)
@@ -614,7 +614,7 @@ class TestAuthService:
         mocker.patch.object(auth_service.application_manager, 'scan_messages', return_value=({}, {}))
         mocker.patch('api.shield.services.auth_service.AuthService.audit', return_value=(0, 0))
 
-        mocker.patch.object(auth_service.governance_service_client, 'get_aws_bedrock_guardrail_info', new_callable=AsyncMock, return_value={})
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value={})
 
         # Create a mock AuthorizeRequest object
         mock_auth_req = authorize_req_data_with_streamid()
@@ -708,106 +708,3 @@ class TestAuthService:
         assert instance.clientIp == payload["clientIp"]
         assert instance.clientHostname == payload["clientHostname"]
         assert instance.numberOfTokens == payload["numberOfTokens"]
-
-    def test_generate_access_denied_message_default(self, mocker):
-
-        # Initialize AuthService
-        auth_service = self.get_auth_service()
-
-        side_effect = lambda prop, default: {
-            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
-            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
-            "OFF_TOPIC-WEATHER": "off-topic (weather)",
-            "OFF_TOPIC-SPORTS": "off-topic (sports)",
-            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
-            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
-            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
-            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
-            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
-            "OFF_TOPIC-JOKE": "off-topic (jokes)",
-            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
-            "OFF_TOPIC-HISTORY": "off-topic (history)",
-            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
-            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
-            "MISCONDUCT": "inappropriate topics",
-            "SEXUAL": "sexual topics",
-            "VIOLENCE": "violent topics",
-            "CRIMINAL": "criminal topics",
-            "PASSWORD": "personal sensitive information"
-        }.get(prop)
-
-        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
-
-        message = auth_service.generate_access_denied_message(['PERSON'])
-
-        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss PERSON"
-
-    def test_generate_access_denied_message_single_trait(self, mocker):
-
-        # Initialize AuthService
-        auth_service = self.get_auth_service()
-
-        side_effect = lambda prop, default: {
-            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
-            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
-            "OFF_TOPIC-WEATHER": "off-topic (weather)",
-            "OFF_TOPIC-SPORTS": "off-topic (sports)",
-            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
-            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
-            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
-            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
-            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
-            "OFF_TOPIC-JOKE": "off-topic (jokes)",
-            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
-            "OFF_TOPIC-HISTORY": "off-topic (history)",
-            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
-            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
-            "MISCONDUCT": "inappropriate topics",
-            "SEXUAL": "sexual topics",
-            "VIOLENCE": "violent topics",
-            "CRIMINAL": "criminal topics",
-            "PASSWORD": "personal sensitive information"
-        }.get(prop)
-
-        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
-
-        message = auth_service.generate_access_denied_message(['MISCONDUCT'])
-
-        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics"
-
-    def test_generate_access_denied_message_multiple_traits(self, mocker):
-
-        # Initialize AuthService
-        auth_service = self.get_auth_service()
-
-        side_effect = lambda prop, default: {
-            "default_access_denied_message": "Sorry, you are not allowed to ask this question.",
-            "default_access_denied_message_multi_trait": "Sorry, you are not allowed to ask this question as it is against policy to discuss",
-            "OFF_TOPIC-WEATHER": "off-topic (weather)",
-            "OFF_TOPIC-SPORTS": "off-topic (sports)",
-            "OFF_TOPIC-SHOPPING": "off-topic (shopping)",
-            "OFF_TOPIC-RESTRICTEDLANGUAGE": "using unauthorized languages",
-            "OFF_TOPIC-RECIPE": "off-topic (recipe)",
-            "OFF_TOPIC-NONPROFESSIONAL": "off-topic (personal)",
-            "OFF_TOPIC-LYRICS": "off-topic (lyrics)",
-            "OFF_TOPIC-JOKE": "off-topic (jokes)",
-            "OFF_TOPIC-INVESTMENT": "off-topic (investment advice)",
-            "OFF_TOPIC-HISTORY": "off-topic (history)",
-            "OFF_TOPIC-FASHIONADVICE": "off-topic (fashion advice)",
-            "OFF_TOPIC-COMPETITIONCOMPARISION": "off-topic (competitors)",
-            "MISCONDUCT": "inappropriate topics",
-            "SEXUAL": "sexual topics",
-            "VIOLENCE": "violent topics",
-            "CRIMINAL": "criminal topics",
-            "PASSWORD": "personal sensitive information"
-        }.get(prop)
-
-        mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=side_effect)
-
-        message = auth_service.generate_access_denied_message(['MISCONDUCT', 'OFF_TOPIC-INVESTMENT'])
-
-        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or off-topic (investment advice)"
-
-        message = auth_service.generate_access_denied_message(['MISCONDUCT', 'PERSON'])
-
-        assert message == "Sorry, you are not allowed to ask this question as it is against policy to discuss inappropriate topics or PERSON"

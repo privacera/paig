@@ -1,7 +1,5 @@
-from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
-
-import pytest
 import os
+from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
 
 
 class TestAWSBedrockGuardrailScanner:
@@ -118,3 +116,28 @@ class TestAWSBedrockGuardrailScanner:
         result = scanner.scan('trigger message')
         assert result.traits == []
         assert result.actions == []
+
+    def test_extract_and_populate_assessment_info(self):
+        scanner = AWSBedrockGuardrailScanner(
+            name='TestScanner',
+            guardrail_id='guardrail_id',
+            guardrail_version='guardrail_version',
+            region='us-west-2'
+        )
+
+        assessments = [
+            {
+                'policy1': {
+                    'data1': [{'type': 'DENY', 'action': 'BLOCK_ACCESS', 'name': 'Some Name'}],
+                    'data2': [{'type': 'CUSTOMWORDS', 'action': 'FLAG_REVIEW', 'match': 'Custom Match'}],
+                    'data3': [{'type': 'OTHER', 'action': 'LOG_ONLY'}]
+                }
+            }
+        ]
+
+        tag_set, action_set = scanner._extract_and_populate_assessment_info(assessments)
+
+        expected_tags = {'SOME_NAME', 'CUSTOM_MATCH', 'OTHER'}
+        expected_actions = {'BLOCK_ACCESS', 'FLAG_REVIEW', 'LOG_ONLY'}
+        assert tag_set == expected_tags
+        assert action_set == expected_actions
