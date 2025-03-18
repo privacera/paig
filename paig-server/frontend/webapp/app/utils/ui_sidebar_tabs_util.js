@@ -49,9 +49,7 @@ const SIDEBAR_MENU_ITEMS = {
             },
             [VECTOR_DB]: {
                 TABS: [VECTOR_DB, VECTOR_DB_PERMISSIONS]
-            },
-            [GUARDRAILS]: {},
-            [RESPONSE_TEMPLATES]: {}
+            }
         }
     },
     [PAIG_LENS]: {
@@ -67,6 +65,8 @@ const SIDEBAR_MENU_ITEMS = {
         SUBMENU: {
             [SENSITIVE_DATA]: {},
             [META_DATA]: {},
+            [GUARDRAILS]: {},
+            [RESPONSE_TEMPLATES]: {},
             [GUARDRAIL_CONNECTION_PROVIDER]: {}
         }
     },
@@ -108,9 +108,7 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
     [PAIG_NAVIGATOR]: {
         [AI_APPLICATIONS]: {
             TABS: [AI_APPLICATIONS, AI_APPLICATIONS_PERMISSIONS]
-        },
-        [GUARDRAILS]: {},
-        [RESPONSE_TEMPLATES]: {}
+        }
     },
     [PAIG_LENS]: {
         [DASHBOARD]: {},
@@ -119,6 +117,8 @@ const UI_DEFAULT_FEATURE_SIDEBAR_TABS = {
     },
     [PAIG_GUARD]: {
         [SENSITIVE_DATA]:{},
+        [GUARDRAILS]: {},
+        [RESPONSE_TEMPLATES]: {},
         [GUARDRAIL_CONNECTION_PROVIDER]: {},
     },
     [SETTINGS]: {
@@ -397,7 +397,7 @@ const featurePermissionUIMap = {
         propertyForShowHide: [`${PAIG_LENS}.${DASHBOARD}`]
     },
     'governance.guardrails': {
-        propertyForShowHide: [`${PAIG_NAVIGATOR}.${GUARDRAILS}`, `${PAIG_NAVIGATOR}.${RESPONSE_TEMPLATES}`, `${PAIG_GUARD}.${GUARDRAIL_CONNECTION_PROVIDER}`]
+        propertyForShowHide: [`${PAIG_GUARD}.${GUARDRAILS}`, `${PAIG_GUARD}.${RESPONSE_TEMPLATES}`, `${PAIG_GUARD}.${GUARDRAIL_CONNECTION_PROVIDER}`]
     },
     'governance.evaluation_config': {
         propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_CONFIG}`]

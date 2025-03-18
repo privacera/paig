@@ -83,8 +83,6 @@ jobs:
         headless: true
         env: |
           CYPRESS_ENVIRONMENT_NAME=ci
-      env:
-        CYPRESS_ENVIRONMENT_NAME: ci
 
     - name: Generate Cypress Report
       if: always()

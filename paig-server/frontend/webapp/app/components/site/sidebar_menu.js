@@ -24,18 +24,6 @@ const SIDEBAR_MENU = [{
         isChild: true,
         sidebar: UI_CONSTANTS.VECTOR_DB,
         childrenRoutes: ["/vector_db/", "/vector_db/create", "/vector_db/:id"]
-    }, {
-        to: "/guardrails",
-        name: "Guardrails",
-        isChild: true,
-        sidebar: UI_CONSTANTS.GUARDRAILS,
-        childrenRoutes: ["/guardrails", "/guardrails/create", "/guardrails/edit/:id"]
-    }, {
-        to: "/response_templates",
-        name: "Response Templates",
-        isChild: true,
-        sidebar: UI_CONSTANTS.RESPONSE_TEMPLATES,
-        childrenRoutes: []
     }]
 }, {
     menuToggleAttrName: "paig_lens",
@@ -109,6 +97,23 @@ const SIDEBAR_MENU = [{
     //   sidebar: UI_CONSTANTS.SHIELD_CONFIGURATION
     // },
     {
+        to: "/guardrails",
+        name: "Guardrails",
+        isChild: true,
+        sidebar: UI_CONSTANTS.GUARDRAILS,
+        childrenRoutes: ["/guardrails", "/guardrails/create", "/guardrails/edit/:id"]
+    }, {
+        to: "/response_templates",
+        name: "Response Templates",
+        isChild: true,
+        sidebar: UI_CONSTANTS.RESPONSE_TEMPLATES,
+        childrenRoutes: []
+    }, {
+        to: "/guardrail_connection_provider",
+        name: "Guardrail Connections",
+        isChild: true,
+        sidebar: UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER
+    }, {
         to: "/tags",
         name: "Tags",
         isChild: true,
@@ -118,11 +123,6 @@ const SIDEBAR_MENU = [{
         name: "Vector DB Metadata",
         isChild: true,
         sidebar: UI_CONSTANTS.META_DATA
-    }, {
-        to: "/guardrail_connection_provider",
-        name: "Guardrail Connections",
-        isChild: true,
-        sidebar: UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER
     }]
 }, {
     menuToggleAttrName: "settings",

@@ -83,15 +83,18 @@ describe('Guardrail Response Template', () => {
             // Click on the save button
             cy.get('[data-test="modal-ok-btn"]').contains('Save').click();
 
+            cy.wait(1000);
             // Check for validation errors
             cy.get('.Mui-error').should('contain.text', 'Required');
 
             // Enter the response template name
             cy.get('[data-testid="response"]').type(responseTemplateData.name)
+            cy.wait(1000);
             cy.get('.Mui-error').should('not.exist');
 
             // Clear the response field
             cy.get('[data-testid="response"]').clear();
+            cy.wait(1000);
             cy.get('.Mui-error').should('contain.text', 'Required');
 
             // Click on the cancel button

@@ -72,10 +72,10 @@ const Routes = () => (
         <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db" name="Vector DB" component={Authorization(CVectorDB, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
 
-        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.GUARDRAILS])} />
-        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
+        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
         <Route path="/guardrail_connection_provider/:provider" name="Guardrail Connections" component={Authorization(CGuardrailProviderConnectedList, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
         <Route path="/guardrail_connection_provider" name="Guardrail Connections" component={Authorization(CGuardrailConnectionProvider, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
 
