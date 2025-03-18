@@ -1,7 +1,7 @@
 """Added admin audit tables
 
 Revision ID: dd5bdf787fa1
-Revises: 67a256363095
+Revises: f32841395145
 Create Date: 2025-03-13 12:46:38.278494
 
 """
@@ -14,7 +14,7 @@ import core.db_models.utils
 
 # revision identifiers, used by Alembic.
 revision: str = 'dd5bdf787fa1'
-down_revision: Union[str, None] = '67a256363095'
+down_revision: Union[str, None] = 'f32841395145'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
