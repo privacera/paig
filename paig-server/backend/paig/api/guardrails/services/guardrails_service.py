@@ -4,6 +4,8 @@ from typing import List
 
 import sqlalchemy
 
+from api.audit.api_schemas.admin_audit_schema import BaseAdminAuditView
+from api.audit.controllers.data_store_controller import get_service_instance
 from api.governance.api_schemas.ai_app import GuardrailApplicationsAssociation
 from api.governance.services.ai_app_service import AIAppService
 from api.guardrails import model_to_dict, dict_to_model
@@ -23,7 +25,9 @@ from core.controllers.paginated_response import Pageable, create_pageable_respon
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
     ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
-from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends
+from core.middlewares.request_session_context_middleware import get_user
+from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends, \
+    generate_unique_identifier_key, normalize_datetime, current_utc_time_epoch
 
 config = load_config_file()
 
@@ -203,7 +207,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                      GRVersionHistoryRepository),
                  guardrail_request_validator: GuardrailRequestValidator = SingletonDepends(GuardrailRequestValidator),
                  guardrail_connection_service: GRConnectionService = SingletonDepends(GRConnectionService),
-                 ai_app_governance_service: AIAppService = SingletonDepends(AIAppService)):
+                 ai_app_governance_service: AIAppService = SingletonDepends(AIAppService),
+                 data_service=SingletonDepends(get_service_instance())):
         """
         Initialize the GuardrailService.
 
@@ -219,6 +224,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         self.guardrail_connection_service = guardrail_connection_service
         self.gr_version_history_repository = gr_version_history_repository
         self.ai_app_governance_service = ai_app_governance_service
+        self.data_service = data_service
 
     def get_repository(self) -> GuardrailRepository:
         """
@@ -322,6 +328,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         # Save the guardrail in the history table
         await self.save_guardrail_version_history(guardrail)
 
+        # log the audit
+        audit_log = self.prepare_audit_log_object("CREATE", guardrail=GuardrailView.model_validate(guardrail))
+        await self.data_service.create_admin_audit(audit_log)
+
         result = GuardrailView(**request.model_dump(mode="json"))
         result.id = guardrail.id
         result.status = guardrail.status
@@ -329,6 +339,44 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         result.update_time = guardrail.update_time
 
         return result
+
+    def prepare_audit_log_object(self, action: str, guardrail: GuardrailView = None, previous_guardrail: GuardrailView = None):
+        transformed_audit: BaseAdminAuditView = BaseAdminAuditView()
+
+        transformed_audit.transaction_id = generate_unique_identifier_key()
+        transformed_audit.transaction_sequence_number = 1
+
+        if guardrail:
+            transformed_audit.object_id = guardrail.id
+            transformed_audit.object_name = guardrail.name
+        elif previous_guardrail:
+            transformed_audit.object_id = previous_guardrail.id
+            transformed_audit.object_name = previous_guardrail.name
+        else:
+            raise InternalServerError("No Guardrail object found to log audit")
+
+        transformed_audit.object_type = "GUARDRAIL"
+        transformed_audit.action = action
+        transformed_audit.log_id = generate_unique_identifier_key()
+        transformed_audit.log_time = current_utc_time_epoch()
+
+        user: dict = self.get_request_user()
+        transformed_audit.acted_by_user_id = user.get("id")
+        transformed_audit.acted_by_user_name = user.get("username")
+
+        if guardrail:
+            transformed_audit.object_state = guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
+            transformed_audit.object_state['createTime'] = normalize_datetime(guardrail.create_time)
+            transformed_audit.object_state['updateTime'] = normalize_datetime(guardrail.update_time)
+        if previous_guardrail:
+            transformed_audit.object_state_previous = previous_guardrail.model_dump(exclude_none=True, mode="json", by_alias=True)
+            transformed_audit.object_state_previous['createTime'] = normalize_datetime(previous_guardrail.create_time)
+            transformed_audit.object_state_previous['updateTime'] = normalize_datetime(previous_guardrail.update_time)
+
+        return transformed_audit
+
+    def get_request_user(self):
+        return get_user()
 
     async def save_guardrail_version_history(self, guardrail):
         guardrail_dict = model_to_dict(guardrail)
@@ -439,6 +487,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Save the guardrail in the history table
         await self.save_guardrail_version_history(guardrail)
+
+        # log the audit
+        audit_log = self.prepare_audit_log_object("UPDATE", guardrail=GuardrailView.model_validate(guardrail), previous_guardrail=existing_guardrail)
+        await self.data_service.create_admin_audit(audit_log)
 
         guardrail_view.guardrail_provider_response = None
         return guardrail_view
@@ -692,6 +744,10 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         # Disassociated the guardrail from the applications
         await self._disassociate_guardrail_from_applications(guardrail.name)
+
+        # log the audit
+        audit_log = self.prepare_audit_log_object("DELETE", previous_guardrail=guardrail)
+        await self.data_service.create_admin_audit(audit_log)
 
     async def get_history(self, id, filter: GRVersionHistoryFilter, page_number: int, size: int, sort: List[str]) -> Pageable:
         """
