@@ -56,7 +56,7 @@ module.exports = {
     }),
     new MiniCssExtractPlugin({
       //filename: `${commonPaths.cssFolder}/[name].css`,
-      filename: `${commonPaths.cssFolder}/style.css`,
+      filename: `${commonPaths.cssFolder}/styles.css`,
       chunkFilename: `${commonPaths.cssFolder}/[id].css`,
     })
   ],

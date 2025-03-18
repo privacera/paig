@@ -10,7 +10,7 @@ const pageSize = DEFAULTS.DEFAULT_LOOKUP_PAGE_SIZE;
 
 const cancelTokenMap = new Map();
 
-const { userStore, groupStore, sensitiveDataStore, metaDataStore, metaDataValuesStore, vectorDBStore } = stores;
+const { userStore, groupStore, sensitiveDataStore, metaDataStore, metaDataValuesStore, vectorDBStore, guardrailStore } = stores;
 
 let sensitiveDataCancelToken = null;
 function getAxiosSourceToken() {
@@ -180,6 +180,33 @@ export function vectorDBLookUps(searchString, callback) {
   }
 
   vectorDBStore.getVectorDBs({ params, cancelToken: vectorDBCancelToken.token})
+  .then(resp => {
+    let models = resp.models ?? [];
+    models = models.map(d => ({label: d.name, value: d.name}))
+    callback(models);
+  }).catch(() => callback([]));
+}
+
+let guardrailCancelToken = null;
+export function guardrailLookUps(searchString, callback) {
+  if (guardrailCancelToken) {
+    guardrailCancelToken.cancel();
+    guardrailCancelToken = null;
+  }
+  guardrailCancelToken = getAxiosSourceToken();
+  if (Array.isArray(searchString)) {
+    callback([])
+    return;
+  }
+  searchString = searchString.trim();
+  const params = {
+    size: pageSize
+  }
+  if (searchString) {
+    params.name = searchString;
+  }
+
+  guardrailStore.searchGuardrail({ params, cancelToken: guardrailCancelToken.token})
   .then(resp => {
     let models = resp.models ?? [];
     models = models.map(d => ({label: d.name, value: d.name}))
