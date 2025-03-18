@@ -101,7 +101,7 @@ def test_get_plugin_app_config_with_api_key(mock_fetch_config):
 @patch.object(PAIGApplication, 'fetch_application_config_from_server')
 def test_get_plugin_app_config_with_env_api_key(mock_fetch_config):
     mock_fetch_config.return_value = {"apiKeyConfig": "valueFromEnv"}
-    with patch.dict(os.environ, {"PAIG_API_KEY": "env-api-key"}):
+    with patch.dict(os.environ, {"PAIG_APP_API_KEY": "env-api-key"}):
         result = PAIGApplication.get_plugin_app_config({})
         assert result == {"apiKeyConfig": "valueFromEnv"}
         mock_fetch_config.assert_called_with("env-api-key", {})

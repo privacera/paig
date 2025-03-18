@@ -6,7 +6,7 @@ from unittest.mock import mock_open
 
 from core.utils import (
     get_uuid, generate_title, extract_keywords, summarize_conversation,
-    construct_title, recursive_merge_dicts, set_paig_api_key
+    construct_title, recursive_merge_dicts, set_paig_app_api_key
 )
 
 
@@ -54,11 +54,11 @@ def test_recursive_merge_dicts():
 
 
 
-def test_set_paig_api_key():
+def test_set_paig_app_api_key():
     with patch("os.environ", {}), patch("os.path.exists", return_value=True), \
          patch("builtins.open", mock_open(read_data="test-paig-api-key")), \
          patch("core.config.Config", {"paig": {"key_file": "test_paig.key"}}):
-        set_paig_api_key()
-        assert os.environ["PAIG_API_KEY"] == "test-paig-api-key"
+        set_paig_app_api_key()
+        assert os.environ["PAIG_APP_API_KEY"] == "test-paig-api-key"
         # unset the environment variable
-        del os.environ["PAIG_API_KEY"]
+        del os.environ["PAIG_APP_API_KEY"]

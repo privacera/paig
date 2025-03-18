@@ -22,7 +22,7 @@ def test_langchain_llm_get_all_methods_to_intercept(setup_paig_plugin_with_app_c
     langchain_llm_setup.find_all_methods_to_intercept()
     # Verify that the number of intercepted methods matches the expected count.
     # Note: This value may change if the LangChain dependency is updated
-    assert len(langchain_llm_setup.list_of_methods_to_intercept) == 122
+    assert len(langchain_llm_setup.list_of_methods_to_intercept) == 123
     langchain_llm_setup.undo_setup_interceptors()
 
 

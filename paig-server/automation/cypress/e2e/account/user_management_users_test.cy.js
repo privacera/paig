@@ -216,9 +216,20 @@ describe("Test User Management page for users tab", () => {
         });
 
         cy.wait(3000);
-        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').each(($checkbox, index) => {
-            if (Math.random() > 0.5) {
-                cy.wrap($checkbox).click();
+        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').then($checkboxes => {
+            if ($checkboxes.length) {
+                let selected = false;
+                $checkboxes.each((index, $checkbox) => {
+                    if (Math.random() > 0.5) {
+                        cy.wrap($checkbox).click();
+                        selected = true;
+                    }
+                });
+                if (!selected) {
+                    cy.wrap($checkboxes[0]).click();
+                }
+            } else {
+                cy.log('No checkboxes available to select.');
             }
         });
 
@@ -607,7 +618,7 @@ describe("Test User Management page for users tab", () => {
         cy.get(`[data-testid="tbody-with-data"]`).should('not.have.text', updatedFirstName);
     });
 
-    it.skip("should add a new user and verify the association group and number of group chips displayed in the UI", () => {
+    it("should add a new user and verify the association group and number of group chips displayed in the UI", () => {
         //create the user
         createNewUser(firstName, lastName, email, username, role.user, status.disabled);
         cy.get('[data-testid="custom-dialog"]').should('not.exist');
@@ -659,7 +670,7 @@ describe("Test User Management page for users tab", () => {
         cy.get(`[data-testid="tbody-with-data"]`).should('not.have.text', updatedFirstName);
     });
 
-    it.skip("should increase counters when checkboxes are selected or deselected inside Edit User", () => {
+    it("should increase counters when checkboxes are selected or deselected inside Edit User", () => {
         // Create the user
         createNewUser(firstName, lastName, email, username, role.user, status.disabled);
         cy.get('#notistack-snackbar').should('contain.text', `User "${firstName}" created successfully`);

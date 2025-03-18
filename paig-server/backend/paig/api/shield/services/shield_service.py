@@ -1,6 +1,7 @@
 import logging
 import json
 
+from api.shield.services import guardrail_service
 from api.shield.services.auth_service import AuthService
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
@@ -54,14 +55,14 @@ class ShieldService:
 
         authz_client_type = config_utils.get_property_value("authz_client", "local")
         if authz_client_type == "http":
-            # Initialize ranger plugin
+            # Initialize authz
             from api.shield.client.http_authz_service_client import HttpAuthzClient
             authz_rest_client = SingletonDepends(HttpAuthzClient)
             await authz_rest_client.post_init_authz(tenant_id=x_tenant_id, user_role=x_user_role, application_key=application_key)
 
-            logger.info(f"Ranger plugin initialization completed for tenant: {x_tenant_id}")
+            logger.info(f"authz initialization completed for tenant: {x_tenant_id}")
         else:
-            logger.info(f"Skipping Ranger plugin initialization for tenant {x_tenant_id} since shield running in local mode")
+            logger.info(f"Skipping authz initialization for tenant {x_tenant_id} since shield running in local mode")
 
     async def authorize(self, auth_req: AuthorizeRequest):
         logger.debug(f"Processing authorization request for tenant: {auth_req.tenant_id}")
@@ -85,3 +86,12 @@ class ShieldService:
         await self.auth_service.audit_stream_data(stream_shield_audit)
 
         return stream_shield_audit
+
+    # noinspection PyMethodMayBeStatic
+    async def guardrail_test(self, request: dict, tenant_id: str , user_role: str):
+
+        guardrail_response = await guardrail_service.get_guardrail_by_id(request, tenant_id)
+        processed_response = guardrail_service.process_guardrail_response(guardrail_response)
+        response = await guardrail_service.do_test_guardrail(tenant_id, processed_response, request.get("message"))
+
+        return response

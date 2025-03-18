@@ -14,6 +14,16 @@ class DataServiceInterface(ABC):
         """
         pass
 
+    @abstractmethod
+    async def create_admin_audit(self, admin_audit_params):
+        """
+        Create admin audit
+        Attributes:
+            admin_audit_params dict (BaseAdminAuditView): Admin audit params dict
+        Returns:
+            AdminAuditModel: Admin audit object
+        """
+        pass
 
     @abstractmethod
     async def get_access_audits(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):

@@ -1,6 +1,8 @@
 import pytest
 from fastapi import FastAPI
 from httpx import AsyncClient
+
+from api.audit.RDS_service.db_operations.admin_audit_repository import AdminAuditRepository
 from core.security.authentication import get_auth_user
 from api.audit.RDS_service.db_operations.access_audit_repository import AccessAuditRepository
 from api.audit.RDS_service.rds_service import RdsService
@@ -69,7 +71,8 @@ class TestDataServiceRouters:
     @pytest.fixture
     def rds_service(self, db_session, set_context_session):
         access_audit_repo_mock = AccessAuditRepository()
-        return RdsService(access_audit_repo_mock)
+        admin_audit_repo_mock = AdminAuditRepository()
+        return RdsService(access_audit_repo_mock, admin_audit_repo_mock)
 
     @pytest.mark.asyncio
     async def test_get_access_audits(self, client: AsyncClient, app: FastAPI, rds_service, access_audits_data):

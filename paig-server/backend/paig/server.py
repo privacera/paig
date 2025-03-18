@@ -2,6 +2,7 @@ import traceback
 
 from api.shield.utils.config_utils import load_shield_configs
 from core.logging_init import set_logging
+from core.middlewares.request_session_context_middleware import RequestSessionContextMiddleware
 
 set_logging()
 
@@ -135,7 +136,8 @@ def make_middleware() -> List[Middleware]:
             allow_headers=["*"],
         ),
         Middleware(SQLAlchemyMiddleware),
-        Middleware(RequestCounterMiddleware)
+        Middleware(RequestCounterMiddleware),
+        Middleware(RequestSessionContextMiddleware)
     ]
     return middleware
 

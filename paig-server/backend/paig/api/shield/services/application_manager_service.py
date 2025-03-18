@@ -60,6 +60,7 @@ class ApplicationManager(Singleton):
             application_key (str): The application key.
             request_type (str): The request type.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
+            auth_req (AuthorizeRequest): The request object.
 
         Returns:
             list: The list of scanners for the application key.
@@ -74,15 +75,26 @@ class ApplicationManager(Singleton):
             if getattr(scanner, 'enforce_access_control', False) == is_authz_scan and request_type in getattr(scanner, 'request_types', [])
         ]
 
+        guardrail_instance_infos = _extract_guardrail_instance_infos(auth_req.context)
+        guardrail_info = next((g for g in guardrail_instance_infos if isinstance(g, dict)), {})
+
         for scanner in scanners_list:
             setattr(scanner, 'scan_for_req_type', request_type)
             setattr(scanner, 'application_key', application_key)
 
             if getattr(scanner, 'name') == 'AWSBedrockGuardrailScanner':
-                for attr in ['guardrail_id', 'guardrail_version', 'region']:
-                    value = auth_req.context.get(attr)
+                for attr in ['guardrail_id', 'guardrail_version', 'region', 'connection_details']:
+                    value = guardrail_info.get(attr)
                     if value:
                         setattr(scanner, attr, value)
+                    elif hasattr(scanner, attr):
+                        delattr(scanner, attr)
+            if getattr(scanner, 'name') == 'PAIGPIIGuardrailScanner':
+                from api.shield.services.guardrail_service import process_guardrail_response
+                guardrails_configs = process_guardrail_response(auth_req.context.get("guardrail_info", {}))
+                sensitive_data_configs = guardrails_configs.get("config_type", {}).get("SENSITIVE_DATA", {})
+                setattr(scanner, 'sensitive_data_config', sensitive_data_configs)
+                setattr(scanner, 'pii_traits', auth_req.context.get('pii_traits'))
 
         return scanners_list
 
@@ -91,9 +103,8 @@ class ApplicationManager(Singleton):
         Scan the given messages for all the scanners where the enforce access control flag is true.
 
         Args:
-            application_key (str): The application key.
             message (str): The message to scan.
-            request_type (str): The request type.
+            auth_req (AuthorizeRequest): The request object.
             is_authz_scan (bool): The flag to determine if the scan is an authz or non authz.
 
         Returns:
@@ -143,3 +154,25 @@ def scan_with_scanner(scanner: Scanner, message: str, tenant_id: str) -> (str, S
                                                      {"scanner": scanner.name,
                                                       "tenant_id": tenant_id})
     return scanner.name, result, message_scan_time
+
+def _extract_guardrail_instance_infos(context: dict) -> list:
+    """
+    Extract the guardrail instance information from the context.
+
+    Args:
+        context (dict): The context.
+
+    Returns:
+        dict: The guardrail instance information.
+    """
+    result = []
+    guardrail = context.get('guardrail_info', {})
+    if guardrail.get('guardrail_provider', '') == 'AWS':
+        aws_guardrail_connection_details = guardrail.get('guardrail_connection_details', {})
+        region = aws_guardrail_connection_details.get('region')
+        aws_response = guardrail.get('guardrail_provider_response', {}).get('AWS', {}).get('response', {})
+        guardrail_id, version = aws_response.get('guardrailId'), aws_response.get('version')
+        if guardrail_id and version:
+            result.append({'guardrail_id': guardrail_id, 'guardrail_version': version,
+                           'region':region, 'connection_details': aws_guardrail_connection_details})
+    return result

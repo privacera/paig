@@ -2,7 +2,7 @@
 
 ## REQUIREMENTS
 
-- **Python** >=3.10
+- **Python**: 3.10, 3.11, or 3.12
 - **NodeJS** ==14.17.5 
 - **OS** : Linux/Debian based
 
@@ -15,7 +15,7 @@
 
 # Backend Set-Up
 
-### Steps to run the development web Server
+### Steps to run the development web Server:
 1. Run the script to build the web UI.
    ```bash
    cd paig/paig-server/scripts
@@ -31,15 +31,22 @@
     cd ../backend
     python3 -m venv venv
     ```
-6. Activate the virtual environment.
+3. Activate the virtual environment.
+
+   - On macOS/Linux:
     ```bash
     source venv/bin/activate
     ```
-7. Install the dependencies.
+   
+   - On Windows:
+    ```bash
+    venv/Scripts/activate
+    ```
+4. Install the dependencies.
     ```bash
     pip install -r requirements.txt
     ```
-9. Run the web server.
+5. Run the web server.
    ```bash
    cd paig
    python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port> --background <true|false>
@@ -66,6 +73,7 @@
 | python __main__.py --help | View all available command-line options |
 | python __main__.py stop | Stop the PAIG Server |
 | python __main__.py status | Check the status of the PAIG Server |
+ 
 
 # Frontend Set-Up
 

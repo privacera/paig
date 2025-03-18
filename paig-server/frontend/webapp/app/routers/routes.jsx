@@ -36,6 +36,13 @@ import CEvaluationConfigList from 'containers/audits/evaluation/c_evaluation_con
 import CEvaluationReportsList from 'containers/audits/evaluation/c_evaluation_report_list';
 import CEvaluationReport from 'containers/audits/evaluation/c_evaluation_report';
 
+import CGuardrailListing from 'containers/guardrail/c_guardrail_listing';
+import CResponseTemplate from 'containers/guardrail/c_response_template';
+import CGuardrailForm from 'containers/guardrail/forms/c_guardrail_form';
+
+import CGuardrailConnectionProvider from 'containers/guardrail/c_guardrail_connection_provider';
+import CGuardrailProviderConnectedList from 'containers/guardrail/c_guardrail_provider_connected_list';
+
 history.listen((location, action) => {
     // scroll to top when route changes
     window.scrollTo(0, 0);
@@ -55,7 +62,7 @@ const checkComponentPermission = (permissionProperty) => {
 const Routes = () => (
 	<Switch>
 		<Route exact path="/" component={RedirectToPath} />
-        
+
         {/* Paig Navigator */}
         <Route path="/ai_application/create" name="Create Application" component={Authorization(CAIApplicationCreate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.AI_APPLICATIONS])} />
         <Route path="/ai_application/:id" name="AI Application Details" component={Authorization(CAIApplicationMain, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.AI_APPLICATIONS])} />
@@ -64,6 +71,13 @@ const Routes = () => (
         <Route path="/vector_db/create" name="Create Vector DB" component={Authorization(CVectorDBCreate, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db/:id" name="Update Vector DB" component={Authorization(CVectorDBMain, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
         <Route path="/vector_db" name="Vector DB" component={Authorization(CVectorDB, [UI_CONSTANTS.PAIG_NAVIGATOR, UI_CONSTANTS.VECTOR_DB])} />
+
+        <Route path="/guardrails/create" name="Create Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails/edit/:id" name="Update Guardrail" component={Authorization(CGuardrailForm, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/guardrails" name="Guardrails" component={Authorization(CGuardrailListing, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAILS])} />
+        <Route path="/response_templates" name="Response Templates" component={Authorization(CResponseTemplate, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.RESPONSE_TEMPLATES])} />
+        <Route path="/guardrail_connection_provider/:provider" name="Guardrail Connections" component={Authorization(CGuardrailProviderConnectedList, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
+        <Route path="/guardrail_connection_provider" name="Guardrail Connections" component={Authorization(CGuardrailConnectionProvider, [UI_CONSTANTS.PAIG_GUARD, UI_CONSTANTS.GUARDRAIL_CONNECTION_PROVIDER])} />
 
         {/* Paig Lens */}
         <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.DASHBOARD])} />
