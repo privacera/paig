@@ -34,6 +34,9 @@ within specific categories. These filters apply to both user inputs and AI outpu
 The filter strength can be set to Low, Medium, or High, and you have the flexibility to apply the same setting for both
 user prompts and model responses or configure them separately.
 
+As you increase the filter strength, the likelihood of filtering harmful content increases and the probability of seeing
+harmful content in your application reduces.
+
 Every input and output statement is evaluated and classified into one of four confidence levels (`NONE, LOW, MEDIUM,
 HIGH`) for each harmful content category.
 

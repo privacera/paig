@@ -57,3 +57,46 @@ guardrail response template.
 </figure>
 
 {{ read_csv('snippets/create_guardrail_response_template_params.csv') }}
+
+
+## Troubleshooting
+
+### AWS Credentials Issues
+
+/// details | Invalid or Expired Security Token
+- **Error**: "Unable to verify connection. The security token included in the request is invalid/expired"
+- **Solution**: Update the AWS credentials in your Guardrail Connection with valid credentials
+///
+
+/// details | Invalid Authentication Credentials
+- **Error**: "The provided authentication credentials for the associated connection are invalid"
+- **Solution**: Verify and update the AWS credentials in your Guardrail Connection
+///
+
+/// details | Access Denied
+- **Error**: "Access Denied for the associated connection"
+- **Solution**: Ensure you have write access to AWS Bedrock Guardrails
+///
+
+### Guardrail Configuration Issues
+
+/// details | Duplicate Guardrail Name
+- **Error**: "A guardrail with this name may already exist"
+- **Solution**: Choose a different name as another user may have already created a guardrail with the same name in the same AWS account
+///
+
+/// details | Duplicate Denied Terms
+- **Error**: "Validation error: Custom words cannot have case-insensitive duplicates"
+- **Solution**: Review your guardrail configuration and remove any duplicate terms from the denied words list
+///
+
+/// details | Topic definition length exceeded
+- **Error**: "Validation error: Failed to satisfy constraint: Member must have length less than or equal to 200"
+- **Solution**: Reduce the length of the topic definition to meet the character limit
+
+/// details | Guardrails Not Applied
+- **Error**: "Guardrails not applied in the AI application"
+- **Solution**: Check the guardrail association by either:
+    1. Visiting the AI application page
+    2. Editing the Guardrail configuration and selecting the AI Application
+///
