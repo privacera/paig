@@ -17,7 +17,8 @@ view and manage or create a new guardrail.
 
 To configure a new guardrail, go to __Application > Guardrails__ and click the ==**CREATE GUARDRAIL**== button on the
 right top. This will open a dialog box where you can enter the details of the guardrail. You need to set up the
-guardrail connection and configure the response template beforehand.
+[guardrail connection](#creating-a-new-guardrail-connection) and configure the
+[response template](#creating-a-new-guardrail-response-template) beforehand.
 
 <figure markdown>
 <script src="https://fast.wistia.com/embed/medias/le53t61d0n.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_le53t61d0n popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
