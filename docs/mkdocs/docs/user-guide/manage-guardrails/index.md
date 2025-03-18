@@ -57,19 +57,3 @@ guardrail response template.
 </figure>
 
 {{ read_csv('snippets/create_guardrail_response_template_params.csv') }}
-
-
----
-:octicons-tasklist-16: **What Next?**
-
-<div class="grid cards" markdown>
-
--   :material-book-open-page-variant-outline: __Read More__
-
-    [Reporting](../reporting/reports.md)
-
--   :material-lightning-bolt-outline: __How To__
-
-    [Manage Guardrail Policies](guardrail-policies.md)
-
-</div>
