@@ -1,6 +1,10 @@
 # paig-client Changelog
 All notable changes to paig-client will be documented in this file.
 
+## [v0.0.4] - 2025-03-13
+### changed
+- Updated the `PAIG_API_KEY` environment variable to `PAIG_APP_API_KEY` to fetch the application configuration from the PAIG server.
+
 ## [v0.0.3] - 2025-02-17
 ### Added
 - Added support for `PAIG_API_KEY` to fetch application config from PAIG server.
