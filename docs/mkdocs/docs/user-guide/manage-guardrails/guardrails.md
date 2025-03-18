@@ -291,7 +291,7 @@ blocks the request and logs the attempt.
 
 -   :material-book-open-page-variant-outline: __Read More__
 
-    [Reporting](../reporting/)
+    [Reporting](../reporting/reports.md)
 
 -   :material-lightning-bolt-outline: __How To__
 
