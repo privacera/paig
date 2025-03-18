@@ -559,7 +559,7 @@ class PAIGApplication:
             api_key = kwargs.get("application_config_api_key")
             plugin_app_config_dict = self.fetch_application_config_from_server(api_key, kwargs)
         else:
-            api_key = os.environ.get('PAIG_API_KEY')
+            api_key = os.environ.get('PAIG_APP_API_KEY')
             plugin_app_config_dict = self.fetch_application_config_from_server(api_key, kwargs)
 
         return plugin_app_config_dict
