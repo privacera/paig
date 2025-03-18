@@ -78,12 +78,16 @@ jobs:
       uses: cypress-io/github-action@v6
       with:
         working-directory: paig-server/automation
-#        start: npm run cy:run
         wait-on: http://localhost:4545
         browser: chrome
         headless: true
+        runTests: false  # Disable auto-run of Cypress
       env:
         CYPRESS_ENVIRONMENT_NAME: ci
+      # Manually run Cypress as part of the same step
+      continue-on-error: false
+      run: |
+        npm run cy:run
 
     - name: Generate Cypress Report
       if: always()
