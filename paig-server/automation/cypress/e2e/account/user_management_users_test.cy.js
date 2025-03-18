@@ -730,10 +730,11 @@ describe("Test User Management page for users tab", () => {
             });
 
             // Count the number of group chips displayed in the UI
-            cy.get('[data-testid="tbody-with-data"]').its('length').then((chipCount) => {
-                // Assert that the number of chips matches the number of groups associated
-                expect(chipCount).to.eq(groupsAssociated);
+            cy.get('[data-testid="tag-chip"]').should('exist').then(($chips) => {
+                const chipCount = $chips.length;
+                expect(chipCount).to.equal(groupsAssociated);
             });
+
             cy.get('[data-test="modal-cancel-btn"]').contains('Close').click();
         });
 
