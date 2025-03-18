@@ -31,25 +31,6 @@ class AdminAuditRepository(BaseOperations[AdminAuditModel]):
         session.add(model)
         return model
 
-    async def _build_datetime_series(self, min_value, max_value, interval):
-        formatted_date = func.datetime(AdminAuditModel.log_time/1000, 'unixepoch')
-        formatted_start_time = datetime.fromtimestamp(min_value/1000, timezone.utc)
-        formatted_end_time = datetime.fromtimestamp(max_value/1000, timezone.utc)
-        (
-            offset_interval,
-            formatted_start_time,
-            formatted_end_time,
-            formatted_time
-        ) = format_time_for_datetime_series(
-            interval,
-            formatted_start_time,
-            formatted_end_time,
-            formatted_date
-        )
-        formatted_ms = func.strftime('%s', formatted_time)
-        cte = await self.generate_datetime_series(formatted_start_time, formatted_end_time, offset_interval)
-        return cte, formatted_ms
-
     async def get_access_audits_with_filters(self, include_filters, exclude_filters, page, size, sort, min_value, max_value):
         all_filters = list()
         skip = 0 if page is None else (page * size)
