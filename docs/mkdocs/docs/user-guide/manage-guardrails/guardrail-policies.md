@@ -34,6 +34,9 @@ within specific categories. These filters apply to both user inputs and AI outpu
 The filter strength can be set to Low, Medium, or High, and you have the flexibility to apply the same setting for both
 user prompts and model responses or configure them separately.
 
+As you increase the filter strength, the likelihood of filtering harmful content increases and the probability of seeing
+harmful content in your application reduces.
+
 Every input and output statement is evaluated and classified into one of four confidence levels (`NONE, LOW, MEDIUM,
 HIGH`) for each harmful content category.
 
@@ -179,14 +182,3 @@ security needs of their application.
 <script src="https://fast.wistia.com/embed/medias/go2la9z0ea.jsonp" async></script><script src="https://fast.wistia.com/assets/external/E-v1.js" async></script><span class="wistia_embed wistia_async_go2la9z0ea popover=true" style="display:inline-block;height:106px;position:relative;width:150px">&nbsp;</span>
 <figcaption>How to add Prompt Safety</figcaption>
 </figure>
-
----
-:octicons-tasklist-16: **What Next?**
-
-<div class="grid cards" markdown>
-
--   :material-book-open-page-variant-outline: __Read More__
-
-    [Reporting](../reporting/reports.md)
-
-</div>
