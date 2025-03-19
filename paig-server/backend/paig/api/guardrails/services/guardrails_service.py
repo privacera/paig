@@ -31,6 +31,9 @@ from core.utils import validate_id, validate_string_data, validate_boolean, Sing
 
 config = load_config_file()
 
+error_topic_example_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.example"
+error_topic_definition_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.definition"
+
 
 class GuardrailRequestValidator:
     """
@@ -700,6 +703,18 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
                     response['response']['details'])
 
             if response['response']['details']['errorType'] == 'ValidationException':
+                if response['response']['details']['details'].endswith('Member must have length less than or equal to 200') \
+                    and re.search(error_topic_definition_pattern, response['response']['details']['details']):
+                    raise BadRequestException(
+                        f"Failed to {operation} guardrail: The guardrail Off-topic definition must be less than or equal to 200 characters.",
+                        response['response']['details'])
+                
+                if "Member must have length less than or equal to 100" in response['response']['details']['details'] \
+                    and re.search(error_topic_example_pattern, response['response']['details']['details']):
+                    raise BadRequestException(
+                        f"Failed to {operation} guardrail: The guardrail Off-topic sample phrases must be less than or equal to 100 characters.",
+                        response['response']['details'])
+                
                 raise BadRequestException(
                     f"Failed to {operation} guardrail: {self.extract_details(response['response']['details']['details'])}",
                     response['response']['details'])
