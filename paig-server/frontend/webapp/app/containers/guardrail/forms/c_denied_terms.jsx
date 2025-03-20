@@ -82,6 +82,7 @@ class CDeniedTerms extends Component {
     handleAdd = () => {
         this.form.clearForm();
         this.form.model = null;
+        this.form.index = null;
         this.Modal.show({
             title: 'Add Terms',
             btnOkText: 'Add'
@@ -127,16 +128,17 @@ class CDeniedTerms extends Component {
 
         let models = f.models(this.cDeniedTerms);
 
-        let index = models.findIndex(m => (m.term || '').toLowerCase() === (data.term || '').toLowerCase());
+        let index = models.findIndex((m, i) =>
+            this.form.index !== i && (m.term || '').toLowerCase() === (data.term || '').toLowerCase()
+        );
+
+        if (index !== -1) {
+            f.notifyError(`The term ${data.term} already exists`);
+            return;
+        }
+
         if (this.form.index != null) {
-            if (index !== this.form.index) {
-                f.notifyError(`The term ${data.term} already exists`);
-                return;
-            }
-            Object.assign(models[index], data);
-        } else if (index !== -1) {
-                f.notifyError(`The term ${data.term} already exists`);
-                return;
+            Object.assign(models[this.form.index], data);
         } else {
             models.push(data);
         }
