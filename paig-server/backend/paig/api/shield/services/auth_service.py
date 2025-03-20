@@ -540,6 +540,7 @@ class AuthService:
                                                                             analyzer_result_map, auth_req, False,
                                                                             masked_traits)
 
+            authz_service_res.masked_traits.update(masked_traits)
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
                 authz_service_res.masked_traits = {}
@@ -547,7 +548,6 @@ class AuthService:
 
                 logger.debug(
                     f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
-            authz_service_res.masked_traits.update(masked_traits)
             auth_req.context.pop("guardrail_info")
             auth_req.context.pop("pii_traits")
         return is_allowed, non_authz_scan_timings_per_message
