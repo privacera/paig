@@ -32,7 +32,6 @@ class LangChainServiceIntf:
         self.client_error_msg: str = self.config.get("client_error_msg")
         self.shield_access_denied_msg: str = self.config.get("shield_access_denied_msg")
         self.show_shield_access_control_message: bool = self.config.get("show_shield_access_control_message", "true") in ["true", "True", True]
-        logger.info(f"show_shield_access_control_message :: {self.show_shield_access_control_message}")
         self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
             "disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
@@ -134,11 +133,8 @@ class LangChainServiceIntf:
 
         except paig_client.exception.AccessControlException as e:
             logger.exception(f"Access Denied, message: {e}")
-            logger.info(f"show_shield_access_control_message :: {self.show_shield_access_control_message}")
             if self.show_shield_access_control_message:
-                logger.info("error message before :: " + str(e))
                 error_message = re.sub(r"ERROR:\s*PAIG-\d{6}:\s*", "", str(e))
-                logger.info("error message after :: " + error_message)
                 return error_message, None
             return self.shield_access_denied_msg, None
         except Exception as ex:
