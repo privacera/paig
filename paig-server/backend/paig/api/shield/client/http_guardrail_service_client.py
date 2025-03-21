@@ -5,6 +5,7 @@ from api.shield.utils.custom_exceptions import ShieldException
 
 from api.shield.utils import config_utils
 from api.shield.interfaces.guardrail_service_interface import IGuardrailServiceClient
+from api.guardrails.api_schemas.guardrail import GuardrailView
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,8 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
             if response.status_code != 200:
                 raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_id: {guardrail_id}. "
                                       f"Status code: {response.status}, Response: {response.text}")
-            return response.json()
+            guardrail_info : GuardrailView = GuardrailView(**response.json())
+            return guardrail_info.dict(exclude_none=True, exclude_unset=True)
         except Exception as ex:
             logger.error(f"Request get_guardrail_info_by_id({tenant_id}, {guardrail_id}) failed with error: {ex}")
             raise ShieldException(ex.args[0])
@@ -95,9 +97,8 @@ class HttpGuardrailServiceClient(AsyncBaseRESTHttpClient, IGuardrailServiceClien
             )
             if response.status_code != 200:
                 raise ShieldException(f"Failed to fetch guardrail details for tenant {tenant_id} guardrail_name: {guardrail_name}. "
-                                      f"Status code: {response.status}, Response: {response.text}")
+                                      f"Status code: {response.status_code}, Response: {response.text}")
             response_content = response.json().get("content", {})
-            from api.guardrails.api_schemas.guardrail import GuardrailView
             guardrail_info : GuardrailView = GuardrailView(**response_content[0])
             return guardrail_info.dict(exclude_none=True, exclude_unset=True)
         except Exception as ex:
