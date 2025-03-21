@@ -267,8 +267,8 @@ nav:
             - Create Security Evaluation: user-guide/security-evaluation/create-security-evaluation.md
             - Analyze Security Evaluation: user-guide/security-evaluation/analyze-security-evaluation.md
   - Resources:
-      - resources/index.md
-      - FAQ: resources/faq/index.md
       - Release Notes: resources/releases/index.md
+      - FAQ: resources/faq/index.md
+
 
 
