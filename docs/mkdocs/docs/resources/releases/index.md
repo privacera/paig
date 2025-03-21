@@ -56,6 +56,24 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
     - **🚀 New Features**: 
         - Initial release of the PAIG Server.  
 
+## **PAIG Client Releases**
+
+=== "v0.0.4 (2025-03-18)"
+    - **🔄 Improvements & Updates**:
+        - Renamed the environment variable `PAIG_API_KEY` to `PAIG_APP_API_KEY` for better clarity.
+
+=== "v0.0.3 (2025-02-07)"
+    - **🚀 New Features**:
+        - Added support for `PAIG_API_KEY` to enable secure authentication and seamless integration with the PAIG server.
+
+=== "v0.0.2 (2024-11-12)"
+    - **🔄 Improvements & Updates**:
+         - Enhanced README documentation for better usability and understanding.
+
+=== "v0.0.1 (2024-09-06)"
+    - **🚀 New Features**:
+        - Initial release of the PAIG Client.
+
 ## **PAIG SecureChat**
 
 === "v0.0.3 (2025-03-19)"
@@ -75,22 +93,3 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 === "v0.0.1 (2024-10-22)"
     - **🚀 New Features**:
         - Initial release of PAIG SecureChat.
-
-## **PAIG Client Releases**
-
-=== "v0.0.4 (2025-03-18)"
-    - **🔄 Improvements & Updates**:
-        - Renamed the environment variable `PAIG_API_KEY` to `PAIG_APP_API_KEY` for better clarity.
-
-=== "v0.0.3 (2025-02-07)"
-    - **🚀 New Features**:
-        - Added support for `PAIG_API_KEY` to enable secure authentication and seamless integration with the PAIG server.
-
-=== "v0.0.2 (2024-11-12)"
-    - **🔄 Improvements & Updates**:
-         - Enhanced README documentation for better usability and understanding.
-
-=== "v0.0.1 (2024-09-06)"
-    - **🚀 New Features**:
-        - Initial release of the PAIG Client.
-
