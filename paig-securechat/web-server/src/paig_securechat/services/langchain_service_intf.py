@@ -134,10 +134,13 @@ class LangChainServiceIntf:
         except paig_client.exception.AccessControlException as e:
             logger.exception(f"Access Denied, message: {e}")
             if self.show_shield_access_control_message:
-                error_message = re.sub(r"ERROR:\s*PAIG-\d{6}:\s*", "", str(e))
-                return error_message, None
+                return LangChainServiceIntf.remove_error_code(str(e)), None
             return self.shield_access_denied_msg, None
         except Exception as ex:
             logging.exception(
                 f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
             return self.client_error_msg, None
+
+    @staticmethod
+    def remove_error_code(error_message):
+        return re.sub(r"ERROR:\s*PAIG-\d{6}:\s*", "", error_message)
