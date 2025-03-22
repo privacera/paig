@@ -48,6 +48,6 @@ class PAIGPIIGuardrailScanner(Scanner):
         if len(deny_policies_list) > 0:
             return ScannerResult(traits=[], actions=["BLOCKED"], output_text=sensitive_data_config.get("response_message"))
         if len(redact_policies_dict) > 0:
-            return ScannerResult(traits=[], actions=["REDACT"], masked_traits=redact_policies_dict)
+            return ScannerResult(traits=[], actions=["ANONYMIZED"], masked_traits=redact_policies_dict)
 
         return ScannerResult(traits=[])
