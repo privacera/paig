@@ -12,15 +12,15 @@ import {AddButtonWithPermission} from 'common-ui/components/action_buttons';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_table_applications';
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
-
-
+import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
+import {FEATURE_PERMISSIONS} from 'utils/globals';
 const CATEGORIES = {
     NAME: { multi: false, category: "Name", type: "text", key: 'name' }
 }
 
 @inject('evaluationStore')
 @observer
-class CEvaluationAppsList extends Component {
+class CEvaluationAppsList extends Component {    
     modalRef = createRef();
     _vState = {
         searchFilterValue: [],
@@ -31,6 +31,7 @@ class CEvaluationAppsList extends Component {
     }
     constructor(props) {
         super(props);
+        this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.EVALUATION_CONFIG.PROPERTY);
         this.form = createFSForm(eval_target_form_def);
         this.cEvalAppsList = f.initCollection();
         this.cEvalAppsList.params = {
@@ -72,7 +73,6 @@ class CEvaluationAppsList extends Component {
         this.props.evaluationStore.fetchEvaluationAppsList({
             params: this.cEvalAppsList.params
         }).then(res => {
-            console.log('res', res);
             f.resetCollection(this.cEvalAppsList, res.models, res.pageState);            
         },  f.handleError(this.cEvalAppsList));
     }
@@ -221,8 +221,7 @@ class CEvaluationAppsList extends Component {
     }
 
     render() {
-        const {_vState} = this;
-        
+        const {_vState, tabsState} = this;
         return (
             <>
                 <Grid container spacing={3}>
@@ -239,8 +238,8 @@ class CEvaluationAppsList extends Component {
                             sm: 6,
                             md: 6
                         }}
-                        permission={this.props.permission}
-                        label="New Configuration"
+                        permission={this.permission}
+                        label={this.props.tabsState?"Add New":"New Configuration"}
                         onClick={this.handleAddNew}
                     />
                 </Grid>
@@ -253,6 +252,7 @@ class CEvaluationAppsList extends Component {
                     handleDelete={this.handleDelete}
                     handleEdit={this.handleEdit}
                     parent_vState={this.props._vState}
+                    tabsState={this.props.tabsState}
                 />
                 <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
                     <VEvalTargetForm form={this.form} _vState={this.props._vState}/>
