@@ -1,7 +1,6 @@
-import React, {Component, createRef, Fragment} from 'react';
-import {inject} from 'mobx-react';
-import {action} from 'mobx';
-
+import React, {Component, createRef, Fragment, useState} from 'react';
+import {inject, observer} from 'mobx-react';
+import {action, observable} from 'mobx';
 import {Grid} from '@material-ui/core';
 import { withRouter } from 'react-router';
 
@@ -15,8 +14,7 @@ import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import VEvaluationConfigTable from 'components/audits/evaluation/v_evaluation_configs_list';
 import FSModal from 'common-ui/lib/fs_modal';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
-import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
-import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
+import VRunReportForm, {evaluation_run_form_def} from 'components/audits/evaluation/v_run_report_form';
 import {permissionCheckerUtil} from "common-ui/utils/permission_checker_util";
 
 const CATEGORIES = {
@@ -26,19 +24,21 @@ const CATEGORIES = {
 }
 
 @inject('evaluationStore')
+@observer
 class CEvaluationConfigList extends Component {
   runReportModalRef = createRef();
-  _vState = {
+  @observable _vState = {
     searchFilterValue: [],
     showNextPage: null,
     prevNextValueList:[''],
     pageNumber: 0,
+    asUser: false
   }
   constructor(props) {
     super(props);
 
     this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.EVALUATION_CONFIG.PROPERTY);
-    this.evalForm = createFSForm(evaluation_form_def);
+    this.evalForm = createFSForm(evaluation_run_form_def);
     this.dateRangeDetail = {
       daterange: Utils.dateUtil.getLast7DaysRange(),
       chosenLabel: 'Last 7 Days'
@@ -160,13 +160,14 @@ class CEvaluationConfigList extends Component {
     console.log(model);
   };
 
-  handleRun = (model) => {
+  handleRun = (model, asUser) => {
     this.evalForm.clearForm();
     this.evalForm.refresh(model);
     this.evalForm.model = model;
+    this._vState.asUser = asUser;
     if (this.runReportModalRef.current) {
       this.runReportModalRef.current.show({
-        title: 'Run Report',
+        title: asUser?'Run Report As User':'Run Report',
         btnOkText: 'Run',
         btnCancelText: 'Cancel'
       })
@@ -236,7 +237,7 @@ class CEvaluationConfigList extends Component {
             handleRun={this.handleRun}
           />
           <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>
-            <VRunReportForm form={this.evalForm} mode="run_report"/>
+            <VRunReportForm form={this.evalForm} mode="run_report"  asUser={this._vState.asUser}/>
           </FSModal>
         </>
     );
