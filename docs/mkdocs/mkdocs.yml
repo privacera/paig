@@ -268,8 +268,8 @@ nav:
             - Analyze Security Evaluation: user-guide/security-evaluation/analyze-security-evaluation.md
   - Resources:
       - resources/index.md
-      - Release Notes: resources/releases/index.md
       - FAQ: resources/faq/index.md
+      - Release Notes: resources/releases/index.md
 
 
 
