@@ -62,5 +62,5 @@ security:
     client_id: "OKTA_CLIENT_ID"
   expire_minutes: 1440
   basic_auth:
-    enabled: "false"
+    enabled: "true"
     credentials_path: "configs/user_secrets.csv"

@@ -13,6 +13,7 @@ from werkzeug.security import check_password_hash
 import pandas as pd
 import os
 import sys
+from core import constants
 
 logger = logging.getLogger(__name__)
 user_router = APIRouter()
@@ -37,6 +38,7 @@ if basic_auth_enabled:
         sys.exit(f"User secrets csv file not found at {user_secrets_path}")
     try:
         user_secrets_df = pd.read_csv(user_secrets_path)
+        constants.USER_SECRETS_DF = user_secrets_df
         if user_secrets_df.empty:
             logger.error(f"User secrets csv file is empty, File Path: {user_secrets_path}")
             sys.exit(f"User secrets csv file is empty, File Path: {user_secrets_path}")
