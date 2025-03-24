@@ -9,7 +9,7 @@ import Table from 'common-ui/components/table';
 import {DATE_TIME_FORMATS} from 'common-ui/utils/globals';
 import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
-
+import {PopperMenu} from 'common-ui/components/generic_components'
 const moment = Utils.dateUtil.momentInstance();
 
 @inject('evaluationStore')
@@ -37,6 +37,10 @@ class VEvaluationConfigTable extends Component{
     return headers;
   }
 
+  handleContextMenuSelection = (model, asUser) => {
+    this.props.handleRun(model, asUser);
+  }
+
   getRowData = (model) => {
     const {handleDelete, handleRun, handleEdit, permission} = this.props;
     let rows = [
@@ -48,12 +52,27 @@ class VEvaluationConfigTable extends Component{
       <TableCell key="6">{model.owner || "--"}</TableCell>,
       <TableCell key="7">{model.eval_run_count}</TableCell>,
       <TableCell key="9" column="actions">
-        <CustomAnchorBtn
-          tooltipLabel="Run"
-          color="primary"
-          icon={<PlayCircleOutlineIcon fontSize="small" />}
-          onClick={() => handleRun(model)}
-        />
+        <PopperMenu 
+              buttonType="IconButton"
+              label={ <CustomAnchorBtn
+                tooltipLabel="Run"
+                color="primary"
+                icon={<PlayCircleOutlineIcon fontSize="small" />}
+              />}  
+              buttonProps={{size: 'small'}}
+              menuOptions={[
+                { 
+                  label: 'Run',
+                  onClick: () => this.handleContextMenuSelection(model, false),
+                  dataid: 'I'
+                },
+                {
+                  label: 'Run as user',
+                  onClick: () => this.handleContextMenuSelection(model, true),
+                  dataid: 'E'
+                }
+              ]}
+          />
         <ActionButtonsWithPermission
           permission={permission}
           hideEdit={true}

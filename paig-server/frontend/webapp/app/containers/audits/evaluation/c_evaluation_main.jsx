@@ -102,7 +102,7 @@ class CEvaluationConfigMain extends Component {
 				titleColAttr={{sm: 8, md: 10}}
 			>
 			  <PaperTabsContainer>
-				<Tabs className="tabs-view" aria-label="user-management" value={tabsState.defaultState} >
+				<Tabs className="tabs-view" aria-label="eval-security" value={tabsState.defaultState} >
 					{tabs}
 				</Tabs>
 				{tabsPanel}
