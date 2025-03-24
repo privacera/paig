@@ -60,4 +60,5 @@ security:
   expire_minutes: 1440
   basic_auth:
     enabled: "true"
+    enable_header_auth: "true"
     credentials_path: "${{CONFIG_PATH}}/user_secrets.csv"
