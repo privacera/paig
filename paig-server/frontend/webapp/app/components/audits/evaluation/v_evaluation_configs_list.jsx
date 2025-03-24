@@ -74,6 +74,7 @@ class VEvaluationConfigTable extends Component{
         getHeaders={this.getHeaders}
         getRowData={this.getRowData}
         pageChange={pageChange}
+        hasElevation={false}
       />
     )
   }

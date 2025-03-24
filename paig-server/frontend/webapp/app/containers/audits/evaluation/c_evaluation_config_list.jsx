@@ -3,6 +3,7 @@ import {inject} from 'mobx-react';
 import {action} from 'mobx';
 
 import {Grid} from '@material-ui/core';
+import { withRouter } from 'react-router';
 
 import BaseContainer from 'containers/base_container';
 import UiState from 'data/ui_state';
@@ -203,10 +204,6 @@ class CEvaluationConfigList extends Component {
   render() {
     const {_vState} = this;
     return (
-      <BaseContainer
-        handleRefresh={this.handleRefresh}
-        titleColAttr={{ lg: 12, md: 12 }}
-      >
         <>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={8} md={10} lg={10}>
@@ -242,7 +239,6 @@ class CEvaluationConfigList extends Component {
             <VRunReportForm form={this.evalForm} mode="run_report"/>
           </FSModal>
         </>
-      </BaseContainer>
     );
   }
 }
@@ -251,4 +247,4 @@ CEvaluationConfigList.defaultProps = {
   vName: 'evaluationConfigLists'
 }
 
-export default CEvaluationConfigList;
+export default withRouter(CEvaluationConfigList);
