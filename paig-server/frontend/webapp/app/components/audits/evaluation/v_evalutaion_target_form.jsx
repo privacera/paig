@@ -23,13 +23,41 @@ const VEvalTargetForm = ({form}) => {
         headers,
         body,
         transformResponse,
-        method
+        method,
+        username
     } = form.fields;
 
     // Initialize headers list from form field or default to empty array
-    const initialHeaders = headers.value && headers.value.length > 0 ? headers.value : [{ key: '', value: '' }];
+    // const initialHeaders = headers.value && headers.value.length > 0 ? headers.value.sort((a, b) => (a.key === 'Authorization' ? -1 : b.key === 'Authorization' ? 1 : 0))  : [{ key: '', value: '' }];
+    const authHeader = headers.value?.find(h => h.key?.toLowerCase() === 'authorization');
+    const initialHeaders = headers.value?.filter(h => h.key?.toLowerCase() !== 'authorization') || [];
+    if (authHeader) {
+        initialHeaders.unshift(authHeader); // Ensure Authorization is at index 0
+    }
+    console.log('initialHeaders', initialHeaders);
+    let initialAuthType = 'noauth';
+    let initialToken = '';
+    let initialPassword = '';
+    if (authHeader) {
+        const authValue = authHeader.value;
+        if (authValue.startsWith('Bearer ')) {
+            initialAuthType = 'bearertoken';
+            initialToken = authValue.trim();
+        } else if (authValue.startsWith('Basic ')) {
+            try {
+                const decoded = atob(authValue.replace('Basic ', '').trim());
+                const [user, pass] = decoded.split(':');
+                initialAuthType = 'basicauth';
+                initialPassword = pass || '';
+            } catch (e) {
+                console.warn('Invalid Basic Auth encoding');
+            }
+        }
+    }
     const [headersList, setHeadersList] = useState(initialHeaders);
-
+    const [authType, setAuthType] = useState(initialAuthType);
+    const [password, setPassword] = useState(initialPassword);
+    const [token, setToken] = useState(initialToken);
     // Update headers field in form
     const updateFormHeaders = (updatedHeaders) => {
         setHeadersList(updatedHeaders);
@@ -80,6 +108,17 @@ const VEvalTargetForm = ({form}) => {
         name.value = generateReportName();
     }, [id.value, name]);
 
+    useEffect(() => {
+        let newHeaders = headersList.filter(h => h.key.toLowerCase() !== 'authorization');
+        if (authType === 'basicauth' && username.value && password) {
+            const authValue = `Basic ${btoa(`${username.value}:${password}`)}`;
+            newHeaders = [{ key: 'Authorization', value: authValue }, ...newHeaders];
+        } else if (authType === 'bearertoken' && token) {
+            newHeaders = [{ key: 'Authorization', value: `Bearer ${token}` }, ...newHeaders];
+        }
+        setHeadersList(newHeaders);
+    }, [authType, username, password, token]);
+
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
@@ -127,6 +166,49 @@ const VEvalTargetForm = ({form}) => {
                     onChange={handleMethodChange}
                     data-testid="method"
                 />
+                <Grid item xs={12}>
+                <FormGroupSelect2
+                    inputColAttr={{ xs: 12, sm: 4 }}
+                    label="Authorization Type"
+                    data={[
+                        { label: 'No Auth', value: 'noauth' },
+                        { label: 'Basic Auth', value: 'basicauth' },
+                        { label: 'Bearer Token', value: 'bearertoken' }
+                    ]}
+                    value={authType}
+                    onChange={(value) => setAuthType(value)}
+                    required={true}
+                    multiple={false}
+                    disableClearable={true}
+                />
+                </Grid>
+                <FormGroupInput
+                    inputColAttr={{ xs: 12, sm: 6 }}
+                    required={true}
+                    label="Username - user as target user for AI Application"
+                    placeholder="Enter username"
+                    fieldObj={username}
+                    inputProps={{ 'data-testid': 'name-input' }}
+                />
+                {authType === 'basicauth' && (<Grid item xs={12}><FormGroupInput
+                        inputColAttr={{ xs: 12, sm: 6 }}
+                        label={'Password'}
+                        type={'password'}
+                        value={password}
+                        placeholder="password"
+                        inputProps={{ 'data-testid': 'userpassword-input' }}
+                        onChange={(e) => setPassword(e.target.value)}
+                      /></Grid>)}
+                {authType === 'bearertoken' && (<Grid item xs={12}><FormGroupInput
+                        inputColAttr={{ xs: 12, sm: 6 }}
+                        required={true}
+                        label={"Bearer Token"}
+                        value={token}
+                        placeholder="Bearer <token>"
+                        inputProps={{ 'data-testid': 'token-input' }}
+                        onChange={(e) => setToken(e.target.value)}
+                        /></Grid>
+                 )}
                 {/* Headers Section */}
                 <Grid item xs={12}>
                 <FormLabel>Headers</FormLabel>
@@ -136,21 +218,25 @@ const VEvalTargetForm = ({form}) => {
                                 inputColAttr={{ xs: 5 }}
                                 value={header.key}
                                 onChange={(e) => handleHeaderChange(index, e.target.value, header.value)}
-                                placeholder="Authorization"
+                                placeholder="Header"
                                 inputProps={{ 'data-testid': `header-key-${index}` }}
+                                disabled={header.key.toLowerCase() === 'authorization'}
                             />
                             <FormGroupInput
                                 inputColAttr={{ xs: 5 }}
                                 value={header.value}
                                 onChange={(e) => handleHeaderChange(index, header.key, e.target.value)}
-                                placeholder="Bearer {{api_key}}"
+                                placeholder="Value"
                                 inputProps={{ 'data-testid': `header-value-${index}` }}
+                                disabled={header.key.toLowerCase() === 'authorization'}
                             />
+                            {header.key.toLowerCase() !== 'authorization' && (
                             <Grid item xs={2}>
                                 <IconButton onClick={() => handleRemoveHeader(index)} color="primary">
                                     <Delete />
                                 </IconButton>
                             </Grid>
+                            )}
                         </Grid>
                     ))}
 
@@ -205,6 +291,12 @@ const eval_target_form_def = {
             fn: (field) => (field.value || '').trim().length > 0
         }
     },
+    username: {
+        validators: {
+            errorMessage: 'Username is required!',
+            fn: (field) => (field.value || '').trim().length > 0
+        }
+    },
     connectionType: {
         defaultValue: 'HTTP/HTTPS-Endpoint'
     },
@@ -215,7 +307,7 @@ const eval_target_form_def = {
         }
     },
     headers: {
-        defaultValue: [{ key: 'Authorization', value: 'Bearer {{api_key}}' }]
+        defaultValue: []
     },
     body: {
         validators: {

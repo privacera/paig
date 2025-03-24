@@ -75,9 +75,10 @@ const VRunReportForm = observer(({form, mode, asUser = false}) => {
         onChange={(value) => setAuthType(value)}
         required={true}
         multiple={false}
+        disableClearable={true}
       />
       <FormGroupInput
-        label="Username- user as target user for AI Application"
+        label="Username - user as target user for AI Application"
         value={username}
         placeholder="username"
         inputProps={{ 'data-testid': 'username-input' }}

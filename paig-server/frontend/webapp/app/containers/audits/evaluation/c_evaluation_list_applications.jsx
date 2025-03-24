@@ -14,6 +14,7 @@ import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_tabl
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import {FEATURE_PERMISSIONS} from 'utils/globals';
+import Alert from '@material-ui/lab/Alert';
 const CATEGORIES = {
     NAME: { multi: false, category: "Name", type: "text", key: 'name' }
 }
@@ -224,6 +225,15 @@ class CEvaluationAppsList extends Component {
         const {_vState, tabsState} = this;
         return (
             <>
+                {this.props.tabsState && (
+                    <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                        <Alert severity="info">
+                        Create and configure an AI endpoint by providing its name, url and headers - you can then use it in an evaluation
+                        </Alert>
+                    </Grid>
+                    </Grid>
+                )}
                 <Grid container spacing={3}>
                     <Grid item xs={6} sm={6} md={6} lg={6}>
                         <IncludeExcludeComponent
