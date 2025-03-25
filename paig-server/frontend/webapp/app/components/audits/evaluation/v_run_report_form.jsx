@@ -40,10 +40,10 @@ const VRunReportForm = observer(({form, mode, asUser = false}) => {
   useEffect(() => {
     if (asUser) {
       if (authType === 'basicauth' && username && password) {
-        auth_user.value = { applicationID: 
+        auth_user.value = { [applicationID]: 
           { 'token': 'Basic ' + btoa(`${username}:${password}`), 'username': username}};
       } else if (authType === 'bearertoken' && token) {
-        auth_user.value = { applicationID: 
+        auth_user.value = { [applicationID]: 
           {'token': token, 'username': username}};
       } else {
         auth_user.value = null; // Reset if input is incomplete
