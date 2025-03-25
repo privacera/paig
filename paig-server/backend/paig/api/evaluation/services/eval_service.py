@@ -208,9 +208,14 @@ class EvaluationService:
             target_host = json.loads(app.config)
             target_user = app.target_user
             if 'headers'in target_host['config']:
-                if auth_user and app.id in auth_user.keys():
-                    target_host['config']['headers']['authorization'] = auth_user[app.id]['token']
-                    target_user = auth_user[app.id]['username']
+                if auth_user and str(app.id) in auth_user.keys():
+                    headers = target_host['config']['headers']
+                    existing_auth_key = next((key for key in headers.keys() if key.lower() == 'authorization'), None)
+                    # Remove the old key if found
+                    if existing_auth_key:
+                        del headers[existing_auth_key]
+                    headers['Authorization'] = auth_user[str(app.id)]['token']
+                    target_user = auth_user[str(app.id)]['username']
                 elif target_host['config']['headers'] == {}:
                     del target_host['config']['headers']
             target_host['label'] = app.name
@@ -245,6 +250,8 @@ class EvaluationService:
         }
         eval_model= await self.evaluation_repository.create_new_evaluation(eval_params)
         eval_run_id = eval_model.id
+        if base_run_id is None:
+            eval_config.generated_config = None
         asyncio.create_task(
             asyncio.to_thread(
                 threaded_run_evaluation,

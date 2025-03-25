@@ -34,7 +34,8 @@ class TestEvalRouters:
             "method": "POST",
             "transformResponse": "string",
             "name": "target_name",
-            "ai_application_id": 0
+            "ai_application_id": 0,
+            "username": "test"
         }
         # Create application
         post_response = await client.post(f"/{evaluation_services_base_route}/target/application", json=post_data)

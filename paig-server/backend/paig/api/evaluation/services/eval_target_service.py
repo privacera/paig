@@ -147,6 +147,8 @@ class EvaluationTargetService:
             new_params['target_user'] = body_params['username']
         try:
             eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
+            eval_target = eval_target.__dict__
+            eval_target['username'] = eval_target.pop('target_user')
             return eval_target
         except Exception as e:
             logger.error(f"Error in update_app_target: {e}")
