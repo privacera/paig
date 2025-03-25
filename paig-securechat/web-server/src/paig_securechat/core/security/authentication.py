@@ -11,7 +11,6 @@ from core import constants, config
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
-BASIC_AUTH_ENABLED = conf.get("security", {}).get("basic_auth", {}).get("enabled", False)
 BASIC_AUTH_HEADER_ENABLED = conf.get("security", {}).get("basic_auth", {}).get("enable_header_auth", False)
 
 async def get_auth_user(
@@ -41,7 +40,7 @@ async def get_auth_user(
 async def __validate_basic_auth(authorization: str):
     """Validates Basic Authentication credentials."""
 
-    if not (BASIC_AUTH_ENABLED or BASIC_AUTH_HEADER_ENABLED):
+    if not (BASIC_AUTH_HEADER_ENABLED):
         raise UnauthorizedException("Basic authentication is disabled")
 
     try:
