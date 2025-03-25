@@ -28,7 +28,7 @@ basic_auth_header_enabled = basic_auth_config.get("enable_header_auth", False)
 
 user_secrets_df = pd.DataFrame()
 
-if basic_auth_enabled:
+if basic_auth_enabled or basic_auth_header_enabled:
     user_secrets_path = basic_auth_config.get("credentials_path", None)
 
     if not user_secrets_path:
