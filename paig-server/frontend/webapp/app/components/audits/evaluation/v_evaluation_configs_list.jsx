@@ -41,6 +41,8 @@ class VEvaluationConfigTable extends Component{
     this.props.handleRun(model, asUser);
   }
 
+
+
   getRowData = (model) => {
     const {handleDelete, handleRun, handleEdit, permission} = this.props;
     let rows = [
@@ -69,7 +71,8 @@ class VEvaluationConfigTable extends Component{
                 {
                   label: 'Run as user',
                   onClick: () => this.handleContextMenuSelection(model, true),
-                  dataid: 'E'
+                  dataid: 'E',
+                  disabled: !model.application_names || model.application_names.includes(',')
                 }
               ]}
           />

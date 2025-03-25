@@ -34,24 +34,24 @@ const VEvalTargetForm = ({form}) => {
     if (authHeader) {
         initialHeaders.unshift(authHeader); // Ensure Authorization is at index 0
     }
-    console.log('initialHeaders', initialHeaders);
     let initialAuthType = 'noauth';
     let initialToken = '';
     let initialPassword = '';
     if (authHeader) {
         const authValue = authHeader.value;
-        if (authValue.startsWith('Bearer ')) {
-            initialAuthType = 'bearertoken';
-            initialToken = authValue.trim();
-        } else if (authValue.startsWith('Basic ')) {
+        if (authValue.startsWith('Basic ')) {
             try {
                 const decoded = atob(authValue.replace('Basic ', '').trim());
                 const [user, pass] = decoded.split(':');
                 initialAuthType = 'basicauth';
                 initialPassword = pass || '';
+                username.value = user
             } catch (e) {
                 console.warn('Invalid Basic Auth encoding');
             }
+        } else {
+            initialAuthType = 'bearertoken';
+            initialToken = authValue.trim();
         }
     }
     const [headersList, setHeadersList] = useState(initialHeaders);
@@ -91,6 +91,18 @@ const VEvalTargetForm = ({form}) => {
         form.fields.method.value = method;
     };
 
+
+    const update_auths = () => {
+        let newHeaders = headersList.filter(h => h.key.toLowerCase() !== 'authorization');
+        if (authType === 'basicauth' && username.value && password) {
+            const authValue = `Basic ${btoa(`${username.value}:${password}`)}`;
+            newHeaders = [{ key: 'Authorization', value: authValue }, ...newHeaders];
+        } else if (authType === 'bearertoken' && token) {
+            newHeaders = [{ key: 'Authorization', value: `${token}` }, ...newHeaders];
+        }
+        updateFormHeaders(newHeaders);
+    }
+
     useEffect(() => {
         const generateReportName = () => {
             if (!id.value) {
@@ -109,15 +121,13 @@ const VEvalTargetForm = ({form}) => {
     }, [id.value, name]);
 
     useEffect(() => {
-        let newHeaders = headersList.filter(h => h.key.toLowerCase() !== 'authorization');
-        if (authType === 'basicauth' && username.value && password) {
-            const authValue = `Basic ${btoa(`${username.value}:${password}`)}`;
-            newHeaders = [{ key: 'Authorization', value: authValue }, ...newHeaders];
-        } else if (authType === 'bearertoken' && token) {
-            newHeaders = [{ key: 'Authorization', value: `Bearer ${token}` }, ...newHeaders];
-        }
-        setHeadersList(newHeaders);
-    }, [authType, username, password, token]);
+        update_auths()
+    }, [authType, password, token]);
+
+    const handleUsernameChange = (e) => {
+        username.value = e.target.value
+        update_auths()
+    };
 
     return (
         <FormHorizontal>
@@ -188,6 +198,7 @@ const VEvalTargetForm = ({form}) => {
                     label="Username - user as target user for AI Application"
                     placeholder="Enter username"
                     fieldObj={username}
+                    onChange={(value) =>handleUsernameChange(value)}
                     inputProps={{ 'data-testid': 'name-input' }}
                 />
                 {authType === 'basicauth' && (<Grid item xs={12}><FormGroupInput

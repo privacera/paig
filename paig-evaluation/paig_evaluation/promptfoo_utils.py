@@ -484,7 +484,7 @@ def run_promptfoo_redteam_evaluation(paig_eval_id: str, promptfoo_redteam_config
         write_yaml_file(promptfoo_generated_prompts_file_name, promptfoo_redteam_config)
 
         # Run promptfoo redteam evaluation
-        command = f"promptfoo redteam eval --config {promptfoo_generated_prompts_file_name} --output {output_file_name}"
+        command = f"promptfoo redteam eval --no-cache --config {promptfoo_generated_prompts_file_name} --output {output_file_name}"
 
         process = run_command_in_background(command)
         wait_for_process_complete(process, verbose=verbose)

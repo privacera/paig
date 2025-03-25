@@ -49,6 +49,7 @@ class EvaluationResultService:
         resp_dict['report_name'] = model.name
         resp_dict['owner'] = model.owner
         resp_dict['create_time'] = model.create_time
+        resp_dict["target_users"] = model.target_users
         return resp_dict
 
     async def get_detailed_results_by_uuid(self,
