@@ -8,6 +8,7 @@ from core.exceptions import UnauthorizedException
 from core.security.jwt import JWTHandler
 from core import constants, config
 
+
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
@@ -21,13 +22,13 @@ async def get_auth_user(
 
     if constants.SINGLE_USER_MODE:
         return await user_controller.get_user_by_user_name({"user_name": constants.DEFAULT_USER_NAME})
-    
+
     if "Authorization" in request.headers:
         authorization = request.headers["Authorization"]
 
         if authorization.startswith("Basic "):
-            return await __validate_basic_auth(authorization)
-        
+            return await __validate_basic_auth(authorization, user_controller)
+
         elif authorization.startswith("Bearer "):
             user_name = await __validate_token(authorization)
             user = await user_controller.get_user_by_user_name({"user_name": user_name})
@@ -37,10 +38,10 @@ async def get_auth_user(
 
     return await __validate_session(request, user_controller)
 
-async def __validate_basic_auth(authorization: str):
+async def __validate_basic_auth(authorization: str, user_controller: UserController):
     """Validates Basic Authentication credentials."""
 
-    if not (BASIC_AUTH_HEADER_ENABLED):
+    if not BASIC_AUTH_HEADER_ENABLED:
         raise UnauthorizedException("Basic authentication is disabled")
 
     try:
@@ -50,18 +51,23 @@ async def __validate_basic_auth(authorization: str):
     except (IndexError, ValueError, base64.binascii.Error):
         raise UnauthorizedException("Invalid Basic Authentication header")
 
+    # Validate credentials
+    authorize_credentials_with_df(username, password)
+
+    # Fetch the actual user from the database
+    user = await user_controller.get_user_by_user_name({"user_name": username})
+    if user is None:
+        raise UnauthorizedException("Unauthorized user")
+
+    return user  
+
+def authorize_credentials_with_df(username: str, password: str):
+    """Validates the given username and password against a DataFrame."""
+
     df: pd.DataFrame = constants.USER_SECRETS_DF
 
     if df is None or df.empty:
         raise UnauthorizedException("User authentication data not available")
-
-    authorize_credentials_with_df(username, password, df)
-
-    return {"user_id": 1, "user_name": username}  # Replace 1 with the actual user_id if needed
-
-
-def authorize_credentials_with_df(username: str, password: str, df: pd.DataFrame):
-    """Validates the given username and password against a DataFrame."""
 
     if "Username" not in df.columns or "Secrets" not in df.columns:
         raise UnauthorizedException("User authentication data format error")
@@ -75,7 +81,6 @@ def authorize_credentials_with_df(username: str, password: str, df: pd.DataFrame
 
     if not check_password_hash(stored_hashed_password, password):
         raise UnauthorizedException("Invalid username or password")
-
 
 async def __validate_token(authorization: str):
     """Validates Bearer token authentication."""
@@ -113,6 +118,7 @@ async def __validate_session(request: Request, user_controller: UserController):
         raise UnauthorizedException("Unauthorized session")
 
     user_obj = await user_controller.get_user(user)
+
     if user_obj is None:
         raise UnauthorizedException("Unauthorized session")
 

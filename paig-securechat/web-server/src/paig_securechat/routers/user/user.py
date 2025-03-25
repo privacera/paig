@@ -78,7 +78,7 @@ async def user_login(
     elif basic_auth_enabled:
         user_name = body_params.user_name.strip()
         user_secret = body_params.password.strip()
-        authorize_credentials_with_df(user_name, user_secret, user_secrets_df)
+        authorize_credentials_with_df(user_name, user_secret)
 
     # Retrieve user details after authentication
     user_name = body_params.user_name.strip()
