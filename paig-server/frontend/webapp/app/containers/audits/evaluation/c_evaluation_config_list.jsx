@@ -2,9 +2,7 @@ import React, {Component, createRef, Fragment, useState} from 'react';
 import {inject, observer} from 'mobx-react';
 import {action, observable} from 'mobx';
 import {Grid} from '@material-ui/core';
-import { withRouter } from 'react-router';
 
-import BaseContainer from 'containers/base_container';
 import UiState from 'data/ui_state';
 import f from 'common-ui/utils/f';
 import {Utils} from 'common-ui/utils/utils';
@@ -248,4 +246,4 @@ CEvaluationConfigList.defaultProps = {
   vName: 'evaluationConfigLists'
 }
 
-export default withRouter(CEvaluationConfigList);
+export default CEvaluationConfigList;

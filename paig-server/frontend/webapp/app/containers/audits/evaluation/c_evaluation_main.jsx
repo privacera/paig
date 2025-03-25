@@ -27,13 +27,13 @@ class CEvaluationConfigMain extends Component {
 		title: "CONFIGURATION",
 		view: CEvaluationConfigList,
 		index: 0,
-		tab: `${UI_CONSTANTS.EVALUATION_CONFIG}`,
+		tab: `${UI_CONSTANTS.EVALUATION_SECURITY}.${UI_CONSTANTS.EVALUATION_CONFIG}`,
 		trackId: 'eval-config-tab'
 	}, {
 		title: "ENDPOINTS",
 		view: CEvaluationAppsList,
 		index: 1,
-		tab: `${UI_CONSTANTS.EVALUATION_CONFIG}`,
+		tab:  `${UI_CONSTANTS.EVALUATION_SECURITY}.${UI_CONSTANTS.EVALUATION_ENDPOINT}`,
 		trackId: 'eval-endpoint-tab'
 	}
     ]
@@ -95,7 +95,7 @@ class CEvaluationConfigMain extends Component {
 			  )
 			})
 		}
-	  
+
 		return (
 			<BaseContainer
 				handleRefresh={handleRefresh}
@@ -110,6 +110,11 @@ class CEvaluationConfigMain extends Component {
 			</BaseContainer>
 		)	  
 	}
+}
+
+CEvaluationConfigMain.defaultProps = {
+	view: UI_CONSTANTS.PAIG_LENS,
+	_vName: "c_evaluation_main"
 }
 
 export default CEvaluationConfigMain;

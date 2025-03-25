@@ -84,8 +84,8 @@ const Routes = () => (
         <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.DASHBOARD])} />
 
         <Route path="/eval_reports" name="Evaluation Reports" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
-        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
-        <Route path="/eval_configs" name="Security Evaluation" component={Authorization(CEvaluationConfigMain, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
+        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_SECURITY, UI_CONSTANTS.EVALUATION_CONFIG])} />
+        <Route path="/eval_configs" name="Security Evaluation" component={Authorization(CEvaluationConfigMain, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_SECURITY])} />
         <Route path="/eval_report/:eval_id" name="Evaluation Report" component={Authorization(CEvaluationReport, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
 
         <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.SECURITY])} />
