@@ -23,8 +23,9 @@ async def get_auth_user(
     if constants.SINGLE_USER_MODE:
         return await user_controller.get_user_by_user_name({"user_name": constants.DEFAULT_USER_NAME})
 
-    if "Authorization" in request.headers:
+    if hasattr(request, "headers") and "Authorization" in request.headers:
         authorization = request.headers["Authorization"]
+
 
         if authorization.startswith("Basic "):
             return await __validate_basic_auth(authorization, user_controller)
