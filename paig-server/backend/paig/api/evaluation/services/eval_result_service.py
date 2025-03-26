@@ -25,6 +25,9 @@ class EvaluationResultService:
     async def get_eval_results_with_filters(self, *args):
         return await self.evaluation_repository.get_eval_results_with_filters(*args)
 
+    async def get_evaluation(self, uuid):
+        return await self.evaluation_repository.get_evaluations_by_field('eval_id', uuid)
+
     async def get_cumulative_results_by_uuid(self, uuid):
         model = await self.evaluation_repository.get_evaluations_by_field("eval_id", uuid)
         if model is None:
@@ -61,11 +64,14 @@ class EvaluationResultService:
         rows = await self.evaluation_response_repository.get_result_by_severity(uuid)
         # Initialize all possible severity levels with 0
         severity_levels = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "CRITICAL": 0}
-
+        result_dict = dict()
         # Update with actual values from the query result
-        for severity, count in rows:
-            severity_levels[severity] = count
-        return severity_levels
+        for severity, app_name, count in rows:
+            severity_level = severity_levels
+            if severity in severity_levels:
+                severity_level[severity] = count
+            result_dict[app_name] = severity_level
+        return result_dict
 
     async def get_result_by_category(self, uuid):
         return await self.evaluation_response_repository.get_result_by_category(uuid)

@@ -38,6 +38,15 @@ async def evaluation_delete(
     return await evaluation_controller.delete_evaluation(eval_id)
 
 
+@evaluation_result_router.get("/{eval_id}")
+async def evaluation_get(
+    eval_id: str,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+    return await evaluation_controller.get_evaluation(eval_id)
+
+
 @evaluation_result_router.get("/{eval_uuid}/cumulative")
 async def get_cumulative_result(
     eval_uuid: str,

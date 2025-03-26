@@ -60,6 +60,12 @@ class EvaluationController:
     async def delete_evaluation(self, eval_id):
         return await self.evaluation_service.delete_evaluation(eval_id)
 
+    async def get_evaluation(self, eval_id):
+        eval_result = await self.evaluation_result_service.get_evaluation(eval_id)
+        if eval_result is None:
+            raise NotFoundException("No results found")
+        return BaseEvaluationView.model_validate(eval_result)
+
     async def get_categories(self, purpose):
         return await self.evaluation_service.get_categories(purpose)
 
@@ -103,6 +109,8 @@ class EvaluationController:
                 resp_dict['category_score'] = json.loads(resp.category_score)
                 resp_dict['status'] = resp.status
                 resp_dict['category'] = resp.category
+                resp_dict['category_type'] = resp.category_type
+                resp_dict['category_severity'] = resp.category_severity
                 responses.append(resp_dict)
             dict_record['responses'] = responses
             results_list.append(dict_record)
