@@ -14,28 +14,30 @@ class AiApplicationApiKey extends FSBaseModel {
     let date = moment(this.tokenExpiry);
 
     let duration = moment.duration(date.diff(moment()));
-    let days = date.diff(moment(), 'days');
-    let hours = duration.hours();
-    let minutes = duration.minutes();
-    let seconds = duration.seconds();
+    const isFuture = duration.asSeconds() > 0;
 
-    let expiry = [];
-    if (days > 0) {
-      expiry.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (!isFuture) {
+      duration = moment.duration(moment().diff(date));
     }
-    if (hours > 0) {
-      expiry.push(`${hours} hr${hours > 1 ? 's' : ''}`);
-    } else if (minutes > 0) {
-      expiry.push(`${minutes} min${minutes > 1 ? 's' : ''}`);
-    } else if (seconds > 0) {
-      expiry.push(`${seconds} sec${seconds > 1 ? 's' : ''}`);
+
+    const units = [
+      { unit: 'year', value: duration.years() },
+      { unit: 'month', value: duration.months() },
+      { unit: 'day', value: duration.days() },
+      { unit: 'hour', value: duration.hours() },
+      { unit: 'minute', value: duration.minutes() },
+      { unit: 'second', value: duration.seconds() }
+    ];
+
+    for (const { unit, value } of units) {
+      if (value > 0) {
+        return isFuture
+          ? `in ${value} ${unit}${value > 1 ? 's' : ''}`
+          : `${value} ${unit}${value > 1 ? 's' : ''} ago`;
+      }
     }
-    if (expiry.length) {
-      expiry = expiry.join(' ');
-    } else {
-      expiry = null;
-    }
-    return expiry;
+
+    return 'just now';
   }
 }
 

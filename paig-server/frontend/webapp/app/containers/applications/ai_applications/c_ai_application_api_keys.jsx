@@ -17,7 +17,7 @@ import {AddButtonWithPermission} from 'common-ui/components/action_buttons';
 import {Loader, getSkeleton} from 'common-ui/components/generic_components';
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import VAIApplicationApiKeys from 'components/applications/ai_applications/v_ai_application_api_keys';
-import {VAIApplicationApiKeysForm, ai_application_api_keys_form_def} from 'components/applications/ai_applications/v_ai_application_form';
+import VAIApplicationApiKeysForm, {ai_application_api_keys_form_def} from 'components/applications/ai_applications/v_ai_application_api_key_form';
 
 const moment = Utils.dateUtil.momentInstance();
 
@@ -121,10 +121,6 @@ class CAIApplicationApiKeys extends Component {
     }, () => {});
   }
 
-  handleCreate = () => {
-    this.modalForm?.handleCreate?.();
-  }
-
   handleSave = async () => {
     await this.form.validate();
     const form = this.form;
@@ -188,8 +184,7 @@ class CAIApplicationApiKeys extends Component {
     this.cApiKeys.params.page = undefined;
     let params = {
       apiKeyName: undefined,
-      description: undefined,
-      // keyStatus: `${API_KEY_STATUS.ACTIVE.VALUE},${API_KEY_STATUS.DISABLED.VALUE}`
+      description: undefined
     };
     val && val.map(item => {
       let value = item.value.trim();
@@ -199,8 +194,6 @@ class CAIApplicationApiKeys extends Component {
           break;
         case "Description":
           params.description = value;
-        // case "Status":
-        //   params.keyStatus = value.toUpperCase() === "REVOKED" ? API_KEY_STATUS.DISABLED.VALUE : value.toUpperCase();
           break
         default:
           params[item.category] = value;
@@ -229,7 +222,6 @@ class CAIApplicationApiKeys extends Component {
                       categoriesOptions={[
                         { multi: false, category: "Key Name", type: "text" },
                         { multi: false, category: "Description", type: "text" }]}
-                        // { multi: false, category: "Status", type: "text", options: () => [API_KEY_STATUS.ACTIVE.LABEL, API_KEY_STATUS.DISABLED.LABEL] }]}
                       onChange={handleSearchByField}
                     />
                   </Grid>
