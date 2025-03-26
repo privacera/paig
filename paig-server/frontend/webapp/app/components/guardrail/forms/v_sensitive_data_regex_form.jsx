@@ -30,7 +30,7 @@ const VSensitiveDataRegexForm = ({form}) => {
                 disableClearable={true}
                 labelKey="LABEL"
                 valueKey="VALUE"
-                inputProps={{'data-testid': 'action'}}
+                data-testid="action"
             />
             <FormGroupInput
                 as="textarea"

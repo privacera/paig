@@ -134,7 +134,7 @@ class CSensitiveDataRegex extends Component {
                         permission={this.permission}
                         onClick={this.handleAdd}
                         label="Add Regex"
-                        data-test="add-regex"
+                        data-testid="add-regex"
                     />
                 </Grid>
                 <VSensitiveDataRegex

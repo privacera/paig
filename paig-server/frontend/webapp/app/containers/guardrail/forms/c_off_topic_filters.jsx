@@ -158,7 +158,7 @@ class COffTopicFilters extends Component {
                             error.offTopicFilters?.offTopic &&
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                    <Alert severity="error">
+                                    <Alert severity="error" data-testid="off-topic-error-alert">
                                         {error.offTopicFilters.offTopic}
                                     </Alert>
                                 </Grid>

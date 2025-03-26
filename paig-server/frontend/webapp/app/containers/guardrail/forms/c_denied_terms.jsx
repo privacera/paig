@@ -179,7 +179,7 @@ class CDeniedTerms extends Component {
                             error.deniedTermsFilters?.deniedTerms &&
                             <Grid container spacing={3} className="m-b-xs">
                                 <Grid item xs={12}>
-                                    <Alert severity="error">
+                                    <Alert severity="error" data-testid="denied-terms-error-alert">
                                         {error.deniedTermsFilters.deniedTerms}
                                     </Alert>
                                 </Grid>
@@ -194,7 +194,7 @@ class CDeniedTerms extends Component {
                             </Grid>
                             <FormGroupCheckbox
                                 label="Block all profanity"
-                                inputProps={{'data-testid': 'profanity-filter'}}
+                                data-testid="profanity-filter"
                                 checked={this._vState.profanity}
                                 onChange={this.handleProfanityChange}
                             />

@@ -100,6 +100,9 @@ class VContentModeration extends Component {
                 data={data}
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
+                tableRowAttr={{
+                    'data-testid': 'content-moderation-table'
+                }}
             />
         )
     }
