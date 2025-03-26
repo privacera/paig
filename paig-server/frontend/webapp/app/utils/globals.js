@@ -34,6 +34,8 @@ const UI_CONSTANTS = {
     EVALUATION_ENDPOINT: 'EVALUATION_ENDPOINT',
     EVALUATION_SECURITY: 'EVALUATION_SECURITY',
     EVALUATION_REPORTS: 'EVALUATION_REPORTS',
+    EVALUATION_REPORT_OVERVIEW: 'EVALUATION_REPORT_OVERVIEW',
+    EVALUATION_REPORT_DETAILS: 'EVALUATION_REPORT_DETAILS',
     USERS: 'USERS',
     GUARDRAILS: 'GUARDRAILS',
     RESPONSE_TEMPLATES: 'RESPONSE_TEMPLATES',
@@ -306,10 +308,9 @@ const AWS_PROVIDER_CONNECTION_CONFIG_TYPE = {
 }
 
 const EVAL_REPORT_CATEGORIES = {
-    CATEGORY: { multi: false, category: "Category", type: "text", key: 'category' },
+    TYPE: { multi: false, category: "Type", type: "text", key: 'category_type' },
     PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
-    STATUS: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
+    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' }
 }
 
 export {

@@ -12,6 +12,13 @@ from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
 
 
+def create_like_filter(model_attr, key, include_query, exclude_list):
+    """Helper function to create like/notlike filters."""
+    if key in include_query and include_query[key]:
+        value = f"%{include_query[key]}%"
+        return model_attr.notlike(value) if key in exclude_list else model_attr.like(value)
+    return None
+
 class EvaluationRepository(BaseOperations[EvaluationModel]):
 
     def __init__(self):
@@ -129,26 +136,23 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
             search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
         if to_time:
             search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
-        if 'prompt' in include_query and include_query['prompt']:
-            if 'prompt' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.prompt.notlike('%' + include_query['prompt'] + '%'))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.prompt.like('%' + include_query['prompt'] + '%'))
-        if 'response' in include_query and include_query['response']:
-            if 'response' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.notlike('%' + include_query['response'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.like('%' + include_query['response'] + '%')))
-        if 'category' in include_query and include_query['category']:
-            if 'category' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.notlike('%' + include_query['category'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.like('%' + include_query['category'] + '%')))
-        if 'status' in include_query and include_query['status']:
-            if 'status' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.notlike('%' + include_query['status'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.like('%' + include_query['status'] + '%')))
+        prompt_filter = create_like_filter(EvaluationResultPromptsModel.prompt, 'prompt', include_query, exclude_list)
+        if prompt_filter is not None:
+            search_filters.append(prompt_filter)
+
+        # Filters on EvaluationResultResponseModel (inside responses relationship)
+        response_filters = {
+            'response': EvaluationResultResponseModel.response,
+            'category': EvaluationResultResponseModel.category,
+            'status': EvaluationResultResponseModel.status,
+            'category_type': EvaluationResultResponseModel.category_type  # Fixed: was mistakenly filtering on `status`
+        }
+
+        for key, model_attr in response_filters.items():
+            response_filter = create_like_filter(model_attr, key, include_query, exclude_list)
+            if response_filter is not None:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(response_filter))
+
         if len(search_filters) > 0:
             query = query.filter(*search_filters)
 
@@ -178,13 +182,14 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
         query = (
             select(
                 EvaluationResultResponseModel.category_severity,
+                EvaluationResultResponseModel.application_name,
                 func.count().label("count")
             )
             .where(
                 EvaluationResultResponseModel.eval_id == eval_id,
                 EvaluationResultResponseModel.category_type.isnot(None)  # Exclude NULL category_type
             )
-            .group_by(EvaluationResultResponseModel.category_severity)
+            .group_by(EvaluationResultResponseModel.category_severity, EvaluationResultResponseModel.application_name)
         )
 
         result = await session.execute(query)

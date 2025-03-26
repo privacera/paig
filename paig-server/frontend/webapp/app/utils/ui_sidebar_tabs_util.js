@@ -37,6 +37,8 @@ const {
     EVALUATION_ENDPOINT,
     EVALUATION_SECURITY,
     EVALUATION_REPORTS,
+    EVALUATION_REPORT_OVERVIEW,
+    EVALUATION_REPORT_DETAILS,
     USERS,
     GUARDRAILS,
     RESPONSE_TEMPLATES,
@@ -60,7 +62,9 @@ const SIDEBAR_MENU_ITEMS = {
             [EVALUATION_SECURITY] : {
                 TABS: [EVALUATION_CONFIG, EVALUATION_ENDPOINT]
             },
-            [EVALUATION_REPORTS] : {},
+            [EVALUATION_REPORTS] : {
+                TABS: [EVALUATION_REPORT_OVERVIEW, EVALUATION_REPORT_DETAILS]
+            },
             [SECURITY]: {},
             [BUILT_IN_REPORTS]: {}
         }
@@ -105,7 +109,9 @@ const UI_FEATURE_SIDEBAR_TABS = {
             [EVALUATION_SECURITY]: {
                 TABS: [EVALUATION_CONFIG, EVALUATION_ENDPOINT]
             },
-            [EVALUATION_REPORTS]: {}
+            [EVALUATION_REPORTS]: {
+                TABS: [EVALUATION_REPORT_OVERVIEW, EVALUATION_REPORT_DETAILS]
+            }
         }
     }
 }
@@ -409,7 +415,7 @@ const featurePermissionUIMap = {
         propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_SECURITY}.${EVALUATION_CONFIG}`, `${PAIG_LENS}.${EVALUATION_SECURITY}.${EVALUATION_ENDPOINT}`]
     },
     'governance.evaluation_reports': {
-        propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_REPORTS}`]
+        propertyForShowHide: [`${PAIG_LENS}.${EVALUATION_REPORTS}.${EVALUATION_REPORT_OVERVIEW}`, `${PAIG_LENS}.${EVALUATION_REPORTS}.${EVALUATION_REPORT_DETAILS}`]
     },
     'audits.security': {
         propertyForShowHide: [`${PAIG_LENS}.${SECURITY}`]

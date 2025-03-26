@@ -6,17 +6,17 @@ import Box from '@material-ui/core/Box';
 
 import f from 'common-ui/utils/f';
 import {DEFAULTS} from 'common-ui/utils/globals';
-import {EVAL_REPORT_CATEGORIES} from 'utils/globals';
-import BaseContainer from 'containers/base_container';
-import VEvaluationOverview from 'components/audits/evaluation/v_evaluation_report';
+import VEvaluationReportOverview from 'components/audits/evaluation/v_evaluation_report_overview';
 
 @inject('evaluationStore')
 @observer
-export class CEvaluationReport extends Component {
+export class CEvaluationReportOverview extends Component {
   @observable _vState = {
     reportData: null,
     loading: true,
-    searchFilterValue: []
+    searchFilterValue: [],
+    reportSeverity: null,
+    reportStats: null
   }
   constructor(props) {
     super(props);
@@ -37,11 +37,11 @@ export class CEvaluationReport extends Component {
   }
 
   fetchAllApi = () => {
-    if (this.props.match.params.eval_id) {
+    if (this.props.parent_vState && this.props.parent_vState.eval_id) {
       // Get report details
-      this.getReportOverview(this.props.match.params.eval_id);
-      // Get table data
-      this.getReportDetails(this.props.match.params.eval_id);
+      this.getReportOverview(this.props.parent_vState.eval_id);
+      this.getReportCategoryStats(this.props.parent_vState.eval_id);
+      this.getReportSeverity(this.props.parent_vState.eval_id);
     } else {
       this._vState.reportData = null;
       this._vState.loading = false;
@@ -58,6 +58,30 @@ export class CEvaluationReport extends Component {
       }, f.handleError(null, () => {
         this._vState.loading = false;
         this._vState.reportData = null;
+      }));
+  }
+
+  getReportSeverity = (id) => {
+    this._vState.loading = true;
+    this.props.evaluationStore.fetchReportSeverity(id)
+      .then((response) => {
+        this._vState.reportSeverity = response;
+        this._vState.loading = false;
+      }, f.handleError(null, () => {
+        this._vState.loading = false;
+        this._vState.reportSeverity = null;
+      }));
+  }
+
+  getReportCategoryStats = (id) => {
+    this._vState.loading = true;
+    this.props.evaluationStore.fetchReportCategoryStats(id)
+      .then((response) => {
+        this._vState.reportStats = response;
+        this._vState.loading = false;
+      }, f.handleError(null, () => {
+        this._vState.loading = false;
+        this._vState.reportStats = null;
       }));
   }
 
@@ -101,13 +125,6 @@ export class CEvaluationReport extends Component {
     f.resetCollection(this.cEvaluationOverview, [chartData]);
   };
 
-  getReportDetails = (id) => {
-    f.beforeCollectionFetch(this.cEvaluationDetailed);
-    this.props.evaluationStore.fetchReportDetailed(id, {
-      params: this.cEvaluationDetailed.params
-    })
-    .then(f.handleSuccess(this.cEvaluationDetailed), f.handleError(this.cEvaluationDetailed));
-  }
 
   handleRedirect = () => {
     this.props.history.push('/eval_reports');
@@ -121,24 +138,6 @@ export class CEvaluationReport extends Component {
     this.fetchAllApi();
   }
 
-  handleSearchByField = (filter) => {
-    const newParams = { page: undefined };
-    Object.values(EVAL_REPORT_CATEGORIES).forEach(obj => {
-      newParams[`includeQuery.${obj.key}`] = undefined;
-      newParams[`excludeQuery.${obj.key}`] = undefined;
-    })
-
-    filter.forEach(({ category, operator, value }) => {
-      const obj = Object.values(EVAL_REPORT_CATEGORIES).find(item => item.category === category);
-      if (obj) {
-        const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
-        newParams[`${prefix}.${obj.key}`] = value;
-      }
-    });
-    Object.assign(this.cEvaluationDetailed.params, newParams);
-    this._vState.searchFilterValue = filter;
-    this.getReportDetails(this.props.match.params.eval_id);
-  }
 
   renderTitle = () => {
     const { reportData } = this._vState;
@@ -150,29 +149,18 @@ export class CEvaluationReport extends Component {
   };
 
   render() {
-    const {_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField} = this;
+    const {_vState, parent_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField} = this;
     return (
-      <BaseContainer
-        showRefresh={false}
-        showBackButton={true}
-        backButtonProps={{
-          size: 'small',
-          onClick: handleBackButton
-        }}
-        titleColAttr={{sm: 12, md: 12}}
-        nameProps={{maxWidth: '100%'}}
-        title={this.renderTitle()}
-      >
-        <VEvaluationOverview 
+        <VEvaluationReportOverview 
           _vState={_vState}
+          parent_vState={parent_vState}
           cEvaluationOverview={cEvaluationOverview} 
           data={cEvaluationDetailed}
           handlePageChange={handlePageChange}
           handleSearchByField={handleSearchByField}
         />
-      </BaseContainer>
     );
   }
 }
 
-export default CEvaluationReport;
+export default CEvaluationReportOverview;
