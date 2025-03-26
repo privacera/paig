@@ -1,55 +1,50 @@
 import uuid
-from . import constants
 import os
+import logging
+from . import constants
 
+logger = logging.getLogger(__name__)
 
 def get_uuid() -> str:
     return uuid.uuid4().hex
 
+def normalize_path(path: str) -> str:
+    """Convert file paths to be OS-compatible by correcting slashes."""
+    if path:
+        #print(f"Before normalize: {path}")  # Print before normalization
+        normalized_path = os.path.normpath(path).replace("\\", "/")  # Convert to YAML-friendly format
+        #print(f"After normalize: {normalized_path}")  # Print after normalization
+        return normalized_path
+    return path
 
 def generate_title(conversation):
-    main_topic = conversation[-1] # Assuming the last user message represents the current topic.
+    main_topic = conversation[-1]  # Assuming the last user message represents the current topic.
     keywords = extract_keywords(conversation)
     conversation_summary = summarize_conversation(conversation)
     title = construct_title(main_topic, keywords, conversation_summary)
     return title
 
-
 def extract_keywords(conversation):
-    # You can implement your own logic here to extract keywords.
-    # This could involve tokenization, removing stop words, and counting word frequency.
-    # For simplicity, let's assume keywords are the unique words in the conversation.
     words = ' '.join(conversation).split()
     keywords = set(words)
     return keywords
 
-
 def summarize_conversation(conversation):
-    # You can implement your own logic here to summarize the conversation.
-    # For simplicity, let's assume the summary is the last few sentences of the conversation.
     summary = ' '.join(conversation[-3:])  # Assuming the last 3 sentences as the summary.
     return summary
 
-
 def construct_title(main_topic, keywords, conversation_summary):
-    # Step 5: Generate the title based on the identified components.
-    # You can implement your own logic here to construct the title.
-    # This is a basic example; you can make it more sophisticated.
     title = f"{main_topic} - {conversation_summary[:30]}"  # Combine main topic and a snippet of the summary.
     return title
 
-
 def recursive_merge_dicts(dict1, dict2):
     result = dict1.copy()
-
     for key, value in dict2.items():
         if key in result and isinstance(result[key], dict) and isinstance(value, dict):
             result[key] = recursive_merge_dicts(result[key], value)
         else:
             result[key] = value
-
     return result
-
 
 def set_up_standalone_mode(
         ROOT_DIR,
@@ -80,7 +75,6 @@ def set_up_standalone_mode(
     constants.ROOT_DIR = ROOT_DIR
     constants.MODE = "standalone"
     constants.SINGLE_USER_MODE = single_user_mode
-
 
 def set_paig_app_api_key():
     from core import config
