@@ -385,7 +385,7 @@ describe('Guardrail Form PAIG provider', () => {
 
         cy.get('[data-testid="snackbar"]').should('be.visible').and('contain', 'The email regex Test Regex Updated already exists');
 
-        cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click();
+        cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click({ multiple: true });
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
@@ -398,8 +398,6 @@ describe('Guardrail Form PAIG provider', () => {
         });
 
         cy.get('[data-testid="snackbar"]').should('be.visible').and('contain', 'The pattern ^[a-zA-Z0-9]*$ already exists');
-
-        cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click();
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
@@ -598,7 +596,7 @@ describe('Guardrail Form PAIG provider', () => {
 
         cy.get('[data-testid="snackbar"]').should('contain', 'The topic Test Topic Updated already exists');
 
-        cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
+        cy.get('[data-testid="snackbar-close-btn"]').should('exist').click({ multiple: true });
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
@@ -758,7 +756,7 @@ describe('Guardrail Form PAIG provider', () => {
 
         cy.get('[data-testid="snackbar"]').should('be.visible').and('contain', 'The term Test Term Updated already exists');
 
-        cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click();
+        cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click({ multiple: true });
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
@@ -843,7 +841,7 @@ describe('Guardrail Form PAIG provider', () => {
 
             cy.get('[data-testid="snackbar"]').should('contain', 'deleted successfully');
 
-            cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
+            cy.get('[data-testid="snackbar-close-btn"]').should('exist').click({ multiple: true });
         });
     });
 });
