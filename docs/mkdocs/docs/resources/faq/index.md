@@ -1,8 +1,5 @@
 ---
 title: Frequently Asked Questions
-icon: material/frequently-asked-questions
-hide:
-  - navigation
 ---
 
 <!--
@@ -12,12 +9,12 @@ hide:
 # Frequently Asked Questions
 
 ## General
---8<-- "docs/faq/snippets/general.md"
+--8<-- "docs/resources/faq/snippets/general.md"
 
 ---
 
 ### Administration
---8<-- "docs/faq/snippets/administration.md"
+--8<-- "docs/resources/faq/snippets/administration.md"
 
 ---
 

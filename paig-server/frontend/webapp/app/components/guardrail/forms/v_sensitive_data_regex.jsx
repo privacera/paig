@@ -71,6 +71,9 @@ class VSensitiveDataRegex extends Component {
                 noDataText="No regex found"
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
+                tableRowAttr={{
+                    'data-testid': 'sensitive-data-regex-table'
+                }}
             />
         )
     }

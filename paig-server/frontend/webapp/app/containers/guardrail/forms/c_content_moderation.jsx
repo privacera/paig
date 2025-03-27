@@ -136,7 +136,7 @@ class CContentModeration extends Component {
                             error.contentModerationFilters?.contentModeration &&
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                    <Alert severity="error">
+                                    <Alert severity="error" data-testid="content-moderation-error-alert">
                                         {error.contentModerationFilters.contentModeration}
                                     </Alert>
                                 </Grid>
