@@ -7,19 +7,23 @@ from api.evaluation.database.db_operations.eval_config_repository import Evaluat
 from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
 from api.evaluation.database.db_operations.eval_repository import EvaluationRepository
-from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins
-from paig_evaluation.promptfoo_utils import ensure_promptfoo_config, get_security_plugin_map
+from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, init_config as eval_init_config
+from paig_evaluation.promptfoo_utils import get_security_plugin_map
 import logging
 from core.utils import current_utc_time
 from core.exceptions import BadRequestException
+from core.config import load_config_file
 
+
+config = load_config_file()
 logger = logging.getLogger(__name__)
 
 
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
 
-ensure_promptfoo_config('promptfoo@paig.ai')
+
+eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
 
 
