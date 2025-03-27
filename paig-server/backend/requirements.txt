@@ -35,7 +35,7 @@ fasteners
 APScheduler==3.10.4
 pydantic[email]
 posthog
-paig-authorizer-core
+paig-authorizer-core==0.0.2
 click==8.1.7
 psutil
 paig_evaluation
