@@ -11,7 +11,8 @@ from .promptfoo_utils import (
     check_and_install_npm_dependency,
     get_response_object,
     validate_generate_prompts_request_params,
-    validate_evaluate_request_params
+    validate_evaluate_request_params,
+    ensure_promptfoo_config
 )
 from .config import load_config_file
 
@@ -71,12 +72,16 @@ def get_all_plugins() -> Dict:
         return response
 
 
-def init_setup(plugin_file_path: str = None):
+def init_config(plugin_file_path: str = None, email: str = None) -> Dict:
+    constants.PLUGIN_FILE_PATH = plugin_file_path
+    if email:
+        ensure_promptfoo_config('promptfoo@paig.ai')
+
+def init_setup() -> Dict:
     """
     Initialize the setup by checking and installing the npm dependency.
     """
     response = get_response_object()
-    constants.PLUGIN_FILE_PATH = plugin_file_path
     try:
         if 'npm_dependency' in eval_config:
             if 'promptfoo' in eval_config['npm_dependency']:
