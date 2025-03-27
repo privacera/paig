@@ -254,3 +254,29 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
                     final_stats[category_type][application_name]["severity"] = new_severity
 
         return final_stats
+
+    async def get_all_categories_from_result(self, eval_id):
+        query = (
+            select(
+                EvaluationResultResponseModel.category_type,
+                EvaluationResultResponseModel.category
+            )
+            .where(EvaluationResultResponseModel.eval_id == eval_id)
+            .distinct()
+        )
+
+        result = await session.execute(query)
+        rows = result.fetchall()
+        result = dict()
+        result['category'] = list()
+        result['category_type'] = list()
+
+        for category_type, category in rows:
+            if category:
+                result['category'].append(category)
+            if category_type:
+                result['category_type'].append(category_type)
+
+        result['category'] = list(set(result['category']))
+        result['category_type'] = list(set(result['category_type']))
+        return result

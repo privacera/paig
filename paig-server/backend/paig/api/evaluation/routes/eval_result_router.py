@@ -96,3 +96,11 @@ async def get_result_by_category(
     user: dict = Depends(get_auth_user),
 ):
    return await evaluation_controller.get_result_by_category(eval_uuid)
+
+@evaluation_result_router.get("/{eval_uuid}/category")
+async def get_all_categories_from_result(
+    eval_uuid: str,
+    evaluation_controller: EvaluationController = evaluator_controller_instance,
+    user: dict = Depends(get_auth_user),
+):
+   return await evaluation_controller.get_all_categories_from_result(eval_uuid)

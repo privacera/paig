@@ -1,6 +1,5 @@
-import React, {Component, Fragment, useState} from "react";
+import React, {Component, Fragment, useEffect} from "react";
 import {observer} from "mobx-react";
-
 import {Box, Grid, Paper, Typography, TableCell} from "@material-ui/core";
 
 import f from 'common-ui/utils/f';
@@ -25,8 +24,11 @@ const PaperCard = (props) => {
 class VEvaluationReportDetails extends Component {
   constructor(props) {
     super(props);
-    this.state = { selectedValue: 'Show All', selectedCategory: null }; // Default selected
-}
+    this.state = { 
+      selectedValue: 'Show All', 
+      selectedCategory: null, // Default selected
+    };
+  }
 
   getHeaders = () => {
     const { data } = this.props;
@@ -114,22 +116,16 @@ class VEvaluationReportDetails extends Component {
     );
   };
 
-  getCategories = () => {
-    const { data } = this.props;
-    const dataModels = f.models(data) || [];
-    const categories = [...new Set(dataModels[0]?.responses?.map(response => response.category).filter(Boolean) || [])];
-    return categories.map(category => ({ name: category }));
-  }
 
   handleCategorySelection = (selectedValue) => {
     this.setState({ selectedCategory: selectedValue }, () => {
         this.props.handleCategoryChange(selectedValue);
     });
-  };
+  };  
 
   render() {
-    const { _vState, cEvaluationOverview, data, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange } = this.props;
-    const evaluationDataList = f.models(cEvaluationOverview) || [];
+    const { _vState, data, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange, reportCategories } = this.props;
+    const { selectedCategory } = this.state;
     return (
       <Fragment>
         <PaperCard boxProps={{ mb: 2 }}>
@@ -148,8 +144,8 @@ class VEvaluationReportDetails extends Component {
                         // inputColAttr={{ xs: 12, sm: 4 }}
                         required={false}
                         showLabel={false}
-                        value={this.state.selectedCategory}
-                        data={this.getCategories()}
+                        value={selectedCategory}
+                        data={reportCategories?.category?.map(category => ({ name: category }))}
                         labelKey={'name'}
                         valueKey={'name'}
                         onChange={(newValue) => this.handleCategorySelection(newValue)}
