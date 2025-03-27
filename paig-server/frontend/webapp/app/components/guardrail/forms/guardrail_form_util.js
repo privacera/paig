@@ -150,7 +150,7 @@ const validators = {
 		if (!data.name) errors.name = 'Name is required.';
 
 		if (data.guardrailProvider && !data.guardrailConnectionName) {
-		    errors.guardrailConnections = 'Please select an account for enabled guardrail connections.';
+		    errors.guardrailConnections = 'Please select a connection from below enabled connection provider.';
 		}
 
 		return {basicInfo: errors};
