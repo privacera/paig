@@ -23,7 +23,7 @@ def upgrade() -> None:
     sa.Column('public_key', sa.String(length=1024), nullable=False),
     sa.Column('private_key', sa.String(length=2048), nullable=False),
     sa.Column('key_status', sa.Enum('ACTIVE', 'PASSIVE', 'DISABLED', 'DELETED', name='encryptionkeystatus'), nullable=False),
-    sa.Column('key_type', sa.Enum('MSG_PROTECT_SHIELD', 'MSG_PROTECT_PLUGIN', name='encryptionkeytype'), nullable=False),
+    sa.Column('key_type', sa.Enum('MSG_PROTECT_SHIELD', 'MSG_PROTECT_PLUGIN', 'CRDS_PROTECT_GUARDRAIL', name='encryptionkeytype'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
