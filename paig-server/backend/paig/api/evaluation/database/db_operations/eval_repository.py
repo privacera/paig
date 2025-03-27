@@ -208,6 +208,7 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
             select(
                 EvaluationResultResponseModel.category_type,
                 EvaluationResultResponseModel.category,
+                EvaluationResultResponseModel.application_name,
                 func.count().label("total"),
                 func.sum(case((EvaluationResultResponseModel.status == "PASSED", 1), else_=0)).label("pass_count"),
                 func.sum(case((EvaluationResultResponseModel.status == "FAILED", 1), else_=0)).label("fail_count"),
@@ -215,39 +216,41 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
                 func.max(severity_order).label("max_severity")
             )
             .where(EvaluationResultResponseModel.eval_id == eval_id)
-            .group_by(EvaluationResultResponseModel.category_type, EvaluationResultResponseModel.category)
+            .group_by(EvaluationResultResponseModel.category_type, EvaluationResultResponseModel.category, EvaluationResultResponseModel.application_name)
         )
 
         result = await session.execute(query)
         rows = result.fetchall()
 
-        category_stats = {}
+        final_stats = dict()
         severity_map = {4: "CRITICAL", 3: "HIGH", 2: "MEDIUM", 1: "LOW"}
 
-        for category_type, category, total, pass_count, fail_count, error_count, max_severity in rows:
-            if category_type not in category_stats:
-                category_stats[category_type] = {
+        for category_type, category, application_name, total, pass_count, fail_count, error_count, max_severity in rows:
+            if category_type not in final_stats:
+                final_stats[category_type] = dict()
+            if application_name not in final_stats[category_type]:
+                final_stats[category_type][application_name] = {
                     "categories": {},
                     "total": 0,
                     "passes": 0,
                     "severity": None
                 }
 
-            category_stats[category_type]["categories"][category] = {
+            final_stats[category_type][application_name]["categories"][category] = {
                 "pass": pass_count,
                 "fail": fail_count,
                 "error": error_count,
                 "total": pass_count + fail_count + error_count
             }
-            category_stats[category_type]["total"] += total
-            category_stats[category_type]["passes"] += pass_count
+            final_stats[category_type][application_name]["total"] += total
+            final_stats[category_type][application_name]["passes"] += pass_count
 
             # If max_severity is 0, ignore it (equivalent to NULL/NONE)
             if max_severity > 0:
                 new_severity = severity_map[max_severity]
-                if category_stats[category_type]["severity"] is None or \
+                if final_stats[category_type][application_name]["severity"] is None or \
                         list(severity_map.values()).index(new_severity) > list(severity_map.values()).index(
-                    category_stats[category_type]["severity"]):
-                    category_stats[category_type]["severity"] = new_severity
+                    final_stats[category_type][application_name]["severity"]):
+                    final_stats[category_type][application_name]["severity"] = new_severity
 
-        return category_stats
+        return final_stats
