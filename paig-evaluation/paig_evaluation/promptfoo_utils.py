@@ -251,7 +251,7 @@ def read_and_get_security_plugins() -> Union[str, Dict]:
 
 
     # Extract plugins
-    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') not in {'1', 'true', 'True'}:
+    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') in {'1', 'true', 'True'}:
         security_plugins = {k: v for k, v in security_plugins.items() if not v.get("remote", False)}
 
 

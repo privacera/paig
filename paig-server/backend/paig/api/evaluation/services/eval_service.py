@@ -86,7 +86,9 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             "response": res['response']['output'] if 'response' in res else 'NA',
             "failure_reason": res['error'] if res['failureReason'] else None,
             "category_score": json.dumps(res['namedScores']),
-            "status": 'PASSED' if res['success'] else 'FAILED'
+            "status": 'PASSED' if res['success'] else 'FAILED',
+            "category_severity": None,
+            "category_type": None
         }  # Add prompt_id in response
         if res['failureReason'] == 2:
             response['status'] = 'ERROR'
@@ -94,7 +96,7 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             category = res['testCase']['metadata']['pluginId']
             response['category'] = category
             response['category_type'] = all_plugins_info.get(category, {}).get('type', None)
-            if not res['success']:
+            if response['status'] != 'PASSED':
                 response['category_severity'] = all_plugins_info.get(category, {}).get('severity', None)
         response_records.append(response)
     # Insert the prompt and response records
