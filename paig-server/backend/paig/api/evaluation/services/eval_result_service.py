@@ -75,3 +75,6 @@ class EvaluationResultService:
 
     async def get_result_by_category(self, uuid):
         return await self.evaluation_response_repository.get_result_by_category(uuid)
+
+    async def get_all_categories_from_result(self, uuid):
+        return await self.evaluation_response_repository.get_all_categories_from_result(uuid)

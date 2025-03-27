@@ -15,14 +15,12 @@ import VEvaluationReportDetails from 'components/audits/evaluation/v_evaluation_
 export class CEvaluationReportDetails extends Component {
   @observable _vState = {
     reportData: null,
+    reportCategories: null,
     loading: true,
     searchFilterValue: []
   }
   constructor(props) {
     super(props);
-
-    // Donut chart data
-    this.cEvaluationOverview = f.initCollection();
 
     // Table data
     this.cEvaluationDetailed = f.initCollection();
@@ -39,70 +37,29 @@ export class CEvaluationReportDetails extends Component {
   fetchAllApi = () => {
     if (this.props.parent_vState && this.props.parent_vState.eval_id) {
       // Get report details
-      this.getReportOverview(this.props.parent_vState.eval_id);
       // Get table data
       this.getReportDetails(this.props.parent_vState.eval_id);
+      this.getAllCategory(this.props.parent_vState.eval_id);
     } else {
       this._vState.reportData = null;
       this._vState.loading = false;
     }
   };
 
-  getReportOverview = (id) => {
-    this._vState.loading = true;
-    this.props.evaluationStore.fetchReportCumulative(id)
-      .then((response) => {
-        this._vState.reportData = response;
-        this.formatReportData(response);
-        this._vState.loading = false;
-      }, f.handleError(null, () => {
-        this._vState.loading = false;
-        this._vState.reportData = null;
-      }));
+  getAllCategory = (id) => {
+    this.props.evaluationStore
+      .fetchReportAllCategory(id)
+       .then((response) => {
+            this._vState.reportCategories = response;
+            this._vState.loading = false;
+        }, f.handleError(null, () => {
+            this._vState.loading = false;
+            this._vState.reportCategories = null;
+        }));
   }
 
-  formatReportData = (reportData) => {
-    const apps = reportData.result;
-
-    // Categories for series
-    const passRateSeries = {
-      name: "Pass rate (%)",
-      data: [],
-      color: "#00CC77",
-    };
-
-    const failRateSeries = {
-      name: "Fail rate (%)",
-      data: [],
-      color: "#ff4d01",
-    };
-
-    const errorRateSeries = {
-      name: "Error rate (%)",
-      data: [],
-      color: "#FFC107",
-    };
-
-    const categories = [];
-  
-    apps.forEach((app) => {
-      categories.push(app.application_name); 
-      const total = app.passed + app.failed + app.error || 0;
-      passRateSeries.data.push(((app.passed / total || 0) * 100));
-      failRateSeries.data.push(((app.failed / total || 0) * 100));
-      errorRateSeries.data.push(((app.error / total || 0) * 100));
-    });
-  
-    const chartData = {
-      categories,
-      series: [passRateSeries, failRateSeries, errorRateSeries]
-    };
-  
-    f.resetCollection(this.cEvaluationOverview, [chartData]);
-  };
 
   getReportDetails = (id) => {
-    f.beforeCollectionFetch(this.cEvaluationDetailed);
     this.props.evaluationStore.fetchReportDetailed(id, {
       params: this.cEvaluationDetailed.params
     })
@@ -196,12 +153,12 @@ export class CEvaluationReportDetails extends Component {
   };
 
   render() {
-    const {_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange} = this;
+    const {_vState, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange} = this;
     return (
         <VEvaluationReportDetails 
           _vState={_vState}
-          cEvaluationOverview={cEvaluationOverview} 
           data={cEvaluationDetailed}
+          reportCategories={_vState.reportCategories}
           handlePageChange={handlePageChange}
           handleSearchByField={handleSearchByField}
           handleToggleChange={handleToggleChange}
