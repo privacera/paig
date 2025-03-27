@@ -11,9 +11,9 @@ def get_uuid() -> str:
 def normalize_path(path: str) -> str:
     """Convert file paths to be OS-compatible by correcting slashes."""
     if path:
-        #print(f"Before normalize: {path}")  # Print before normalization
-        normalized_path = os.path.normpath(path).replace("\\", "/")  # Convert to YAML-friendly format
-        #print(f"After normalize: {normalized_path}")  # Print after normalization
+
+      normalized_path = os.path.normpath(path).replace("\\", "/")  # Convert to YAML-friendly format
+        
         return normalized_path
     return path
 
