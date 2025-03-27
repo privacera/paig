@@ -30,7 +30,7 @@ describe("Test User Management page for users tab", () => {
     after(() => {
         cy.clearSession();
     });
-
+    const uniqueGroupName = generateUniqueGroupName();
     const STATUS = {
         disabled: {label: 'Disable', value: 0, booleanValue: false, name:'Disabled'},
         enabled: {label: 'Enable', value: 1, booleanValue: true, name:'Enabled'}
@@ -39,9 +39,61 @@ describe("Test User Management page for users tab", () => {
     const role = {user: 'USER', owner: 'OWNER'};
     const status = {enabled: 'enabled', disabled: 'disabled'};
 
+    function generateUniqueGroupName() {
+        const prefix = "GroupName";
+        const timestamp = Date.now();
+        return `${prefix}_${timestamp}`;
+    }
+
     function generateUniqueName(prefixName) {
         const prefix = prefixName || "TestSearch";
         return `${prefix}_${uniqueSuffix}`;
+    }
+
+    function createNewGroup(name, description){
+        cy.get('[data-test="add-btn"]').contains('Add Group').click({ force: true });
+        cy.get('[data-testid="custom-dialog"]').should('be.visible')
+        cy.get('[data-testid="name"] [data-testid="input-field"]').type(name)
+        cy.get('[data-testid="description"] [data-testid="input-field"]').type(description)
+        cy.get('[data-test="modal-ok-btn"]').contains('Save').click()
+    }
+
+    function verifyUserManagementGroupsTable(content) {
+        cy.get('[data-testid="thead"] th').eq(0).should('contain.text', 'Group Name');
+        cy.get('[data-testid="thead"] th').eq(1).should('contain.text', 'Description');
+        cy.get('[data-testid="thead"] th').eq(2).should('contain.text', 'Users');
+        cy.get('[data-testid="thead"] th').eq(3).should('contain.text', 'Created');
+        cy.get('[data-testid="thead"] th').eq(4).should('contain.text', 'Actions');
+
+        // Select a random index from the content array
+        const randomIndex = Math.floor(Math.random() * content.length);
+        const item = content[randomIndex];
+
+        //verify table body
+        cy.get('[data-testid="table-row"]').eq(randomIndex).within(() => {
+            cy.get('td').eq(0).should('contain.text', item.name);
+            cy.get('td').eq(1).should('contain.text', item.description);
+            cy.get('td').eq(2).then(($cell) => {
+                const cellText = $cell.text().trim();
+                expect(cellText).to.match(/^\d+$/);
+            });
+            cy.get('td').eq(3).invoke('text').should('match', /\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/);
+            cy.get('[data-test="edit"]').should('exist');
+            cy.get('[data-test="delete"]').should('exist');
+        });
+    }
+
+    function deleteGroup(groupName){
+        cy.contains('[data-testid="table-row"]', groupName).within(() => {
+            cy.get('[data-test="delete"]').click();
+        });
+        cy.get('[data-testid="custom-dialog"]').should('be.visible');
+        cy.get('[data-testid="confirm-dialog-title"]').should('contain.text', 'Delete Group');
+        cy.get('[data-testid="dialog-content"]').should('contain.text', `Are you sure you want to delete group: ${groupName}`);
+        cy.get('[data-test="confirm-yes-btn"]').click();
+        cy.contains('#notistack-snackbar', 'Group Deleted').should('be.visible');
+        cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
+        cy.get('#notistack-snackbar').should('not.exist');
     }
 
     function verifyUserManagementTable (content, loggedInUser){
@@ -78,7 +130,7 @@ describe("Test User Management page for users tab", () => {
 
             if (item.email) {
                 cy.get('td').eq(4).should('contain.text', item.email);
-            }  
+            }
 
             cy.get('td').eq(5).should('contain.text', item.roles[0]);
 
@@ -126,7 +178,7 @@ describe("Test User Management page for users tab", () => {
     function validateRequiredFields(firstName, lastName, email, username, role, status) {
         cy.get('[data-test="add-btn"]').contains('Add User').click();
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
-    
+
         // Ensure that the dialog title is 'Create User'
         cy.get('[data-testid="customized-dialog-title"]').contains('Create User');
 
@@ -150,7 +202,7 @@ describe("Test User Management page for users tab", () => {
 
         // Click the 'Close' button to cancel adding user
         cy.get('[data-test="modal-cancel-btn"]').contains('Close').click();
-    
+
         // Ensure that the custom dialog for adding user is no longer visible
         cy.get('[data-testid="custom-dialog"]').should('not.exist');
     }
@@ -216,21 +268,16 @@ describe("Test User Management page for users tab", () => {
         });
 
         cy.wait(3000);
-        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').then($checkboxes => {
-            if ($checkboxes.length) {
-                let selected = false;
-                $checkboxes.each((index, $checkbox) => {
-                    if (Math.random() > 0.5) {
-                        cy.wrap($checkbox).click();
-                        selected = true;
-                    }
-                });
-                if (!selected) {
-                    cy.wrap($checkboxes[0]).click();
-                }
-            } else {
-                cy.log('No checkboxes available to select.');
-            }
+        cy.get('[data-testid="input-search-box"]').clear().type(`${uniqueGroupName}{enter}`);
+        // Wait for filtering to take effect (adjust wait time if needed)
+        cy.wait(500);
+
+        // Now find and check all checkboxes from the filtered results
+        cy.get('[data-testid="tbody-with-data"] input[type="checkbox"]').then(($checkboxes) => {
+            // Select all checkboxes in the visible (filtered) results
+            cy.wrap($checkboxes).each(($checkbox) => {
+                cy.wrap($checkbox).click().should('be.checked');
+            });
         });
 
         cy.get('[data-test="modal-ok-btn"]').contains('Proceed').click();
@@ -286,12 +333,12 @@ describe("Test User Management page for users tab", () => {
                     if (item.firstName === duplicateFirstname) {
                         // Get the username from the item
                         const username = item.username;
-    
+
                         // Click the delete button in the corresponding row
                         cy.contains(`[data-testid="tbody-with-data"] tr`, item.firstName).within(() => {
                             cy.get('[data-test="delete"]').click();
                         });
-    
+
                         // Confirm deletion in the dialog
                         cy.get('[data-testid="custom-dialog"]').should('be.visible');
                         cy.get('[data-testid="confirm-dialog-title"]').should('contain.text', 'Delete User');
@@ -299,7 +346,7 @@ describe("Test User Management page for users tab", () => {
                         cy.get('[data-test="confirm-yes-btn"]').click();
                         cy.get('#notistack-snackbar').should('contain.text', 'User Deleted').debug();
                         cy.get('[data-testid="snackbar-close-btn"]').click();
-    
+
                         // Wait for the user to be deleted
                         cy.get(`[data-testid="tbody-with-data"]`).should('not.have.text', username);
                     }
@@ -307,6 +354,33 @@ describe("Test User Management page for users tab", () => {
             }
         });
     }
+    // This should always run fist to create the group
+    it("Create group if not exist", () => {
+        cy.get('[data-testid="groups-tab"]').click();
+        cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
+        cy.get('[data-testid="header-refresh-btn"]').click();
+        cy.wait('@getGroups').then((interception) => {
+                cy.log("uniqueGroupName", uniqueGroupName);
+                const group1 = interception.response.body.content.find(item => item.name === uniqueGroupName);
+
+                // If the group doesn't exist, create it
+                if (!group1) {
+                    cy.log("Creating Group:", uniqueGroupName);
+                    createNewGroup(uniqueGroupName, "This is a test group1 description.");
+                    cy.get('[data-testid="custom-dialog"]').should('not.exist');
+                }
+
+
+                cy.wait(3000);
+                cy.get('[data-testid="header-refresh-btn"]').click();
+                // Proceed with verifying the groups management listing
+                cy.wait('@getGroups').then((interception) => {
+                    const { content } = interception.response.body;
+                    verifyUserManagementGroupsTable(content);
+                });
+       });
+    });
+
 
     it("should verify user management listing", () => {
         let loggedInUser = null;
@@ -656,10 +730,11 @@ describe("Test User Management page for users tab", () => {
             });
 
             // Count the number of group chips displayed in the UI
-            cy.get('[data-testid="tbody-with-data"]').its('length').then((chipCount) => {
-                // Assert that the number of chips matches the number of groups associated
-                expect(chipCount).to.eq(groupsAssociated);
+            cy.get('[data-testid="tag-chip"]').should('exist').then(($chips) => {
+                const chipCount = $chips.length;
+                expect(chipCount).to.equal(groupsAssociated);
             });
+
             cy.get('[data-test="modal-cancel-btn"]').contains('Close').click();
         });
 
@@ -897,5 +972,29 @@ describe("Test User Management page for users tab", () => {
          });
         });
     });
-    
+    // This should always run at last to delete the group
+    it('Delete created group', () => {
+        cy.get('[data-testid="groups-tab"]').click();
+        cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
+        cy.get('[data-testid="header-refresh-btn"]').click();
+        cy.wait('@getGroups').then((interception) => {
+        cy.log("Group1", uniqueGroupName);
+        const group1 = interception.response.body.content.find(item => item.name === uniqueGroupName);
+
+        if (group1) {
+            deleteGroup(uniqueGroupName);
+        }
+
+         //deleted group should not be in the table
+        cy.get('body').then(($body) => {
+            if ($body.find(`[data-testid="tbody-with-data"]`).length > 0) {
+                // Element exists, proceed with assertion
+                cy.get(`[data-testid="tbody-with-data"]`)
+                    .should('exist') // Ensure the element exists
+                    .and('not.have.text', uniqueGroupName); // Check it does not contain the name
+            }
+        });
+    });
+    });
+
 });

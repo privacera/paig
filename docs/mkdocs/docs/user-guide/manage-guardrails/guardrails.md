@@ -307,14 +307,11 @@ blocks the request and logs the attempt.
 While PAIG Guardrails enhance the security and compliance of generative AI applications, it's essential to be aware of
 certain limitations:
 
-- **Language Support:** Guardrails currently support natural language processing in English, French, and Spanish.
+- **Language Support:** Guardrails currently support natural language processing in English.
 They may be ineffective with inputs or outputs in other languages.
 
 - **Model Compatibility:** Guardrails are primarily designed for text-based foundation models. Their effectiveness with
 non-text-based models or certain specialized models may be limited.
-
-- **Single Guardrail Application:** At present, only one guardrail can be applied per AI Application.
-This limitation may affect applications requiring multiple simultaneous guardrails.
 
 Understanding these limitations is crucial for effectively integrating PAIG Guardrails with AWS Bedrock, ensuring that
 applications operate within the defined parameters and deliver secure, reliable user experiences. 

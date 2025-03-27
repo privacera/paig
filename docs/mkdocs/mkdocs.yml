@@ -273,7 +273,10 @@ nav:
             - Application Configuration: user-guide/security-evaluation/application-configuration.md
             - Create Security Evaluation: user-guide/security-evaluation/create-security-evaluation.md
             - Analyze Security Evaluation: user-guide/security-evaluation/analyze-security-evaluation.md
-  - FAQ:
-      - faq/index.md
+  - Resources:
+      - resources/index.md
+      - FAQ: resources/faq/index.md
+      - Release Notes: resources/releases/index.md
+
 
 

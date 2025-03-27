@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   build_and_test:
+    if: github.event.repository.fork == false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4  # Ensure the repo is checked out
