@@ -1,4 +1,6 @@
 import logging
+import re
+
 from langchain.chains import RetrievalQA
 from langchain.chains import ConversationalRetrievalChain
 from langchain.memory import ConversationBufferWindowMemory
@@ -29,6 +31,7 @@ class LangChainServiceIntf:
         self.ask_prompt_suffix = self.config.get("ask_prompt_suffix")
         self.client_error_msg: str = self.config.get("client_error_msg")
         self.shield_access_denied_msg: str = self.config.get("shield_access_denied_msg")
+        self.show_shield_access_control_message: bool = self.config.get("show_shield_access_control_message", "true") in ["true", "True", True]
         self.disable_conversation_chain = ai_application_conf[self.ai_application_name].get(
             "disable_conversation_chain", False)
         self.response_if_no_docs_found = ai_application_conf.get("response_if_no_docs_found", None)
@@ -130,8 +133,14 @@ class LangChainServiceIntf:
 
         except paig_client.exception.AccessControlException as e:
             logger.exception(f"Access Denied, message: {e}")
+            if self.show_shield_access_control_message:
+                return LangChainServiceIntf.remove_error_code(str(e)), None
             return self.shield_access_denied_msg, None
         except Exception as ex:
             logging.exception(
                 f"Exception occurred when asking auth_service to execute_prompt, question= {prompt} with error :: {ex}")
             return self.client_error_msg, None
+
+    @staticmethod
+    def remove_error_code(error_message):
+        return re.sub(r"ERROR:\s*PAIG-\d{6}:\s*", "", error_message)

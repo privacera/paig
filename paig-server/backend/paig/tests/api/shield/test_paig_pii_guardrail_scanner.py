@@ -60,7 +60,7 @@ class TestPAIGPIIGuardrailScanner:
         # Assert
         assert isinstance(result, ScannerResult)
         assert result.get_traits() == []
-        assert result.get("actions") == ["REDACT"]
+        assert result.get("actions") == ["ANONYMIZED"]
         assert result.get("masked_traits") == redact_policies
 
     # Handle case when pii_traits is None or empty

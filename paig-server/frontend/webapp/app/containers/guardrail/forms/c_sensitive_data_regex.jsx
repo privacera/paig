@@ -33,6 +33,7 @@ class CSensitiveDataRegex extends Component {
     handleAdd = () => {
         this.form.clearForm();
         this.form.model = null;
+        this.form.index = null;
         this.regexModal.show({
             title: 'Add Regex',
             btnOkText: 'Add'
@@ -83,7 +84,7 @@ class CSensitiveDataRegex extends Component {
 
         f.resetCollection(this.cRegex, models);
 
-        this.regexModal.hide();
+        this.regexModal?.hide?.();
 
         this.props.onChange?.(models);
     }
@@ -133,7 +134,7 @@ class CSensitiveDataRegex extends Component {
                         permission={this.permission}
                         onClick={this.handleAdd}
                         label="Add Regex"
-                        data-test="add-regex"
+                        data-testid="add-regex"
                     />
                 </Grid>
                 <VSensitiveDataRegex

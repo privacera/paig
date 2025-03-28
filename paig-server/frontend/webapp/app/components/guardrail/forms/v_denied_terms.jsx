@@ -56,6 +56,9 @@ class VDeniedTerms extends Component {
                 noDataText="No terms found"
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
+                tableRowAttr={{
+                    'data-testid': 'denied-terms-table'
+                }}
             />
         );
     }

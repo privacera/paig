@@ -1,6 +1,10 @@
 # paig-securechat Changelog
 All changes to `paig-securechat` will be documented in this file.
 
+## [v0.0.3] - 2025-03-19
+### Changed
+- Updated the `PAIG_API_KEY` environment variable to `PAIG_APP_API_KEY`.
+
 ## [v0.0.2] - 2025-02-20 
 ### Added
 - Added supports for bedrock claude models.

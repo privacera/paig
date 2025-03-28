@@ -1,4 +1,5 @@
 import os
+from api.shield.enum.ShieldEnums import Guardrail
 from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
 
 
@@ -141,3 +142,56 @@ class TestAWSBedrockGuardrailScanner:
         expected_actions = {'BLOCK_ACCESS', 'FLAG_REVIEW', 'LOG_ONLY'}
         assert tag_set == expected_tags
         assert action_set == expected_actions
+
+    def test_scan_anonymization_detected_with_sensitive_info(self, mocker):
+        mock_bedrock_client = mocker.patch('boto3.client')
+        mock_response = {
+            'action': 'GUARDRAIL_INTERVENED',
+            'outputs': [{'text': 'Intervened text'}],
+            'assessments': [
+                {
+                    'sensitiveInformationPolicy': {
+                        'regexes': [
+                            {
+                                'match': 'John',
+                                'name': 'Name Detection',
+                                'action': 'ANONYMIZED'
+                            }
+                        ]
+                    }
+                },
+                {
+                    'anotherPolicy': {
+                        'data': [
+                            {
+                                'type': 'DENY',
+                                'action': 'ANONYMIZED',
+                                'name': 'Policy Name'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        mock_bedrock_client.return_value.apply_guardrail.return_value = mock_response
+
+        scanner = AWSBedrockGuardrailScanner(
+            guardrail_id='guardrail_id',
+            guardrail_version='guardrail_version',
+            region='us-west-2'
+        )
+        message = "Hello John"
+        result = scanner.scan(message)
+
+        assert Guardrail.ANONYMIZED.value in result.actions
+        assert 'POLICY_NAME' in result.traits
+        assert 'NAME_DETECTION' in result.traits
+        assert result.masked_traits == {
+            'POLICY_NAME': '<<POLICY_NAME>>',
+            'NAME_DETECTION': '<<NAME_DETECTION>>'
+        }
+        assert len(result.analyzer_result) == 1
+        analyzer_result = result.analyzer_result[0]
+        assert analyzer_result.start == 6
+        assert analyzer_result.end == 10
+        assert analyzer_result.entity_type == 'NAME_DETECTION'

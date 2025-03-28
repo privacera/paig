@@ -42,12 +42,11 @@ describe("Test User Management page for groups tab", () => {
         cy.get('[data-testid="thead"] th').eq(3).should('contain.text', 'Created');
         cy.get('[data-testid="thead"] th').eq(4).should('contain.text', 'Actions');
         
-        // Select a random index from the content array
-        const randomIndex = Math.floor(Math.random() * content.length);
-        const item = content[randomIndex];
+        // Select a first index from the content array
+        const item = content[0];
         
         //verify table body
-        cy.get('[data-testid="table-row"]').eq(randomIndex).within(() => {
+        cy.get('[data-testid="table-row"]').eq(0).within(() => {
             cy.get('td').eq(0).should('contain.text', item.name);
             cy.get('td').eq(1).should('contain.text', item.description);
             cy.get('td').eq(2).then(($cell) => {

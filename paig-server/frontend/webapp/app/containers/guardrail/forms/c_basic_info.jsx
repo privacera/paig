@@ -146,7 +146,7 @@ class CBasicInfo extends Component {
                     {
                         error.basicInfo?.guardrailConnections &&
                         <Grid item xs={12}>
-                            <Alert severity="error">
+                            <Alert severity="error" data-testid="connection-alert">
                                 {error.basicInfo.guardrailConnections}
                             </Alert>
                         </Grid>

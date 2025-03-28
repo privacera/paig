@@ -90,14 +90,16 @@ class TestHttpGuardrailServiceClient:
         mocker.patch('api.shield.utils.config_utils.get_property_value', side_effect=lambda
             key: 'http://paig-server/guardrail' if key == 'guardrail_service_get_guardrail_endpoint' else None)
 
+        data = {"id":11,"status":1,"createTime":"2025-02-18T09:40:20.000000","updateTime":"2025-03-12T02:59:48.000000","name":"test-gr","description":"testing gr feature cloud","version":2,"guardrailProvider":"AWS","guardrailConnectionName":"default","guardrailConfigs":[{"configType":"PROMPT_SAFETY","configData":{"configs":[{"category":"PROMPT_ATTACK","filterStrengthPrompt":"HIGH"}]},"responseMessage":"Sorry Prompt attack detected"}],"guardrailProviderResponse":{"AWS":{"response":{"guardrailId":"kctqbzvmrnyq","guardrailArn":"arn:aws:bedrock:us-east-1:404161567776:guardrail/kctqbzvmrnyq","version":"DRAFT"}}},"guardrailConnectionDetails":{"encryption_key_id":1}}
+        expected_result = "{'id': 11, 'status': 1, 'create_time': '2025-02-18T09:40:20.000000', 'update_time': '2025-03-12T02:59:48.000000', 'name': 'test-gr', 'description': 'testing gr feature cloud', 'version': 2, 'guardrail_provider': 'AWS', 'guardrail_connection_name': 'default', 'guardrail_configs': [{'config_type': 'PROMPT_SAFETY', 'config_data': {'configs': [{'category': 'PROMPT_ATTACK', 'filterStrengthPrompt': 'HIGH'}]}, 'response_message': 'Sorry Prompt attack detected'}], 'guardrail_provider_response': {'AWS': {'response': {'guardrailId': 'kctqbzvmrnyq', 'guardrailArn': 'arn:aws:bedrock:us-east-1:404161567776:guardrail/kctqbzvmrnyq', 'version': 'DRAFT'}}}, 'guardrail_connection_details': {'encryption_key_id': 1}}"
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.json.return_value = {"guardrail": {"key": "value"}}
+        mock_response.json.return_value = data
         mocker.patch.object(HttpGuardrailServiceClient, 'get', return_value=mock_response)
 
         client = HttpGuardrailServiceClient()
-        result = await client.get_guardrail_info_by_id('tenant123', 1)
-        assert result == {"guardrail": {"key": "value"}}
+        result = await client.get_guardrail_info_by_id('tenant123', 11)
+        assert result.__str__() == expected_result
 
 
     @pytest.mark.asyncio

@@ -77,7 +77,13 @@ class AWSBedrockGuardrailScanner(Scanner):
 
             logger.info(f"AWSBedrockGuardrailScanner: Action required. Tags: {tag_set}, Actions: {action_set}")
             logger.debug(f"AWSBedrockGuardrailScanner: Action required. Output: {output_text}")
-            return ScannerResult(traits=list(tag_set), actions=list(action_set), output_text= output_text, analyzer_result=[analyzer_result])
+            scanner_result = ScannerResult(traits=list(tag_set), actions=list(action_set), output_text= output_text, analyzer_result=[analyzer_result])
+
+            if Guardrail.ANONYMIZED.value in action_set:
+                logger.debug("AWSBedrockGuardrailScanner: Anonymization detected in the message.")
+                self._extract_and_process_anonymization_info(message, tag_set, scanner_result, response)
+
+            return scanner_result
 
         logger.info("AWSBedrockGuardrailScanner: No action required for the message.")
         return ScannerResult(traits=[])
@@ -122,3 +128,30 @@ class AWSBedrockGuardrailScanner(Scanner):
                         tag_set.add(tag_data)
                         action_set.add(value.get('action'))
         return tag_set, action_set
+
+    def _extract_and_process_anonymization_info(self, message: str, tag_set: set, scanner_result: ScannerResult, bedrock_response: dict ) -> None:
+        """
+        Process the anonymization info.
+        """
+        # add the masked traits to the scanner result
+        masked_traits = {}
+        for trait in tag_set:
+            masked_traits.update({trait: f'<<{trait}>>'})
+        scanner_result.masked_traits = masked_traits
+
+        # extract the anonymized message
+        analyzer_results = []
+        assessments = bedrock_response.get("assessments", [])
+        for assessment in assessments:
+            if "sensitiveInformationPolicy" in assessment:
+                for detection in assessment["sensitiveInformationPolicy"].get("regexes", []):
+                    detected_word = detection["match"]  # Original word
+                    start_index = message.find(detected_word)  # Find its position
+                    if start_index != -1:
+                        end_index = start_index + len(detected_word)
+                        analyzer_result = AnalyzerResult(start=start_index, end=end_index, entity_type=detection["name"].replace(" ", "_").upper(), score=1.0,
+                                                         model_name='', scanner_name=self.get_property('name'), analysis_explanation=None,
+                                                         recognition_metadata=bedrock_response)
+                        analyzer_results.append(analyzer_result)
+
+        scanner_result.analyzer_result = analyzer_results

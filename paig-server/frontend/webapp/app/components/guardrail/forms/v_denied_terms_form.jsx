@@ -12,7 +12,7 @@ const VDeniedTermsForm = ({form}) => {
                 label="Term"
                 placeholder="Enter a term name"
                 fieldObj={term}
-                inputProps={{'data-testid': 'term'}}
+                data-testid="term"
             />
             <FormGroupSelect2
                 required={true}
@@ -22,7 +22,7 @@ const VDeniedTermsForm = ({form}) => {
                 splitValueDelimiter="##|##"
                 allowCreate={true}
                 multiple={true}
-                inputProps={{'data-testid': 'keywords'}}
+                data-testid="phrases-and-keywords"
             />
         </FormHorizontal>
     )
