@@ -17,3 +17,7 @@ title: PAIG Server 0.0.3
 - **Fixes**:  
     - Fixed broken notebook links in documentation.  
     - Resolved `paig-server` Python package installation issue.  
+
+<div class="grid cards" markdown>
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+</div>
