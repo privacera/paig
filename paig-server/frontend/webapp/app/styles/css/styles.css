@@ -972,3 +972,20 @@ span.diff-danger>span {
 .nav-rotated-icon {
   transform: rotate(45deg);
 }
+
+.eval-metrics-container{
+  flex-grow: 1;
+  flex-direction: column;
+  display: flex
+}
+
+.eval-metrics-container .eval-metrics-box{
+  display: flex;
+  flex-grow: 1;
+}
+
+.eval-metrics-container .eval-metrics-box .eval-metrics {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
