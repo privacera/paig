@@ -3,7 +3,6 @@ import { observable } from 'mobx';
 import { observer, inject } from 'mobx-react';
 
 import { Tabs, Tab, Grid, Box } from '@material-ui/core';
-import GetAppIcon from '@material-ui/icons/GetApp';
 import DeleteIcon from '@material-ui/icons/Delete';
 import HelpIcon from '@material-ui/icons/Help';
 import FeedbackIcon from '@material-ui/icons/Feedback';
@@ -13,10 +12,11 @@ import UiState from 'data/ui_state';
 import { UI_CONSTANTS, FEATURE_PERMISSIONS } from 'utils/globals';
 import BaseContainer from 'containers/base_container';
 import CAIApplicationDetail from 'containers/applications/ai_applications/c_ai_application_detail';
+import CAIApplicationApiKeys from 'containers/applications/ai_applications/c_ai_application_api_keys';
 import CAIPermissions from 'containers/policies/ai_policies/c_ai_permissions';
 import {findActiveGuideByName, clearGuideTimeout, PENDO_GUIDE_NAME} from 'components/pendo/pendo_initializer';
 import { TabPanel } from 'common-ui/components/generic_components';
-import { AddButtonWithPermission, AddButton, CanDelete, CustomAnchorBtn } from 'common-ui/components/action_buttons';
+import { AddButton, CanDelete, CustomAnchorBtn } from 'common-ui/components/action_buttons';
 import { permissionCheckerUtil } from 'common-ui/utils/permission_checker_util';
 
 @inject('aiApplicationStore')
@@ -51,6 +51,13 @@ class CAIApplicationMain extends Component {
         index: 1,
         ref: null,
         trackId: 'application-permissions-tab'
+    }, {
+        title: "Api Keys",
+        view: CAIApplicationApiKeys,
+        tab: `${UI_CONSTANTS.AI_APPLICATIONS}.${UI_CONSTANTS.AI_APPLICATIONS_API_KEYS}`,
+        index: 2,
+        ref: null,
+        trackId: 'api-keys-tab'
     }]
 
     constructor(props) {
@@ -128,11 +135,6 @@ class CAIApplicationMain extends Component {
     handleBackButton = () => {
         this.handleRedirect();
     }
-
-    handleDownloadAppConfig = () => {
-        let url = this.props.aiApplicationStore.getAIApplicationConfigUrl(this._vState.application.id)
-        window.open(url, '_blank');
-    }
     
     handlePostDelete = () => {
         this.handleRedirect();
@@ -158,9 +160,30 @@ class CAIApplicationMain extends Component {
 
         if (state.views.length) {
             state.views.forEach((viewObj) => {
+                if (viewObj.title === "Api Keys" && _vState.application?.default) {
+                    return;
+                }
                 tabs.push(
                     <Tab
-                        label={viewObj.title}
+                        label={
+                            viewObj.title === "Permissions" && this.tabsState.defaultState === 1 && this.state.feedbackGuide ? (
+                                <Fragment>
+                                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                                        {viewObj.title}
+                                        <CustomAnchorBtn
+                                            size="small"
+                                            tooltipLabel="Policy Page Feedback"
+                                            data-track-id="policy-page-feedback"
+                                            icon={<FeedbackIcon />}
+                                            onClick={() => {
+                                                pendo.showGuideById(this.state.feedbackGuide.id);
+                                            }}
+                                            style={{ marginLeft: '8px' }}
+                                        />
+                                    </span>
+                                </Fragment>
+                            ) : viewObj.title
+                        }
                         key={viewObj.index}
                         data-track-id={viewObj.trackId}
                         ref={ref => viewObj.ref = ref}
@@ -215,21 +238,6 @@ class CAIApplicationMain extends Component {
                                             }}
                                         />
                                     }
-                                    <AddButtonWithPermission
-                                        size="small"
-                                        variant="outlined"
-                                        className=""
-                                        addCol={false}
-                                        permission={this.permission}
-                                        label={
-                                            <Fragment>
-                                                <GetAppIcon fontSize="small" className='m-r-xs'/>
-                                                    DOWNLOAD APP CONFIG
-                                            </Fragment>
-                                        }
-                                        data-track-id="download-app-config"
-                                        onClick={this.handleDownloadAppConfig}
-                                    />
                                     <CanDelete permission={this.permission}>
                                         <AddButton
                                             size="small"
