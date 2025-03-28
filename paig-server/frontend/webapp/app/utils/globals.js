@@ -313,6 +313,13 @@ const EVAL_REPORT_CATEGORIES = {
     RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' }
 }
 
+const SEVERITY_MAP = {
+    CRITICAL: {LABEL: 'Severe Failure', COLOR: '#E101014D', DONUTCOLOR: 'E10101'},
+    HIGH: {LABEL: 'High Concern', COLOR: '#FFCAB3', DONUTCOLOR: 'FF6B35'},
+    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC233'},
+    LOW: {LABEL: 'Low Concern', COLOR: '#B2F0D6', DONUTCOLOR: '2CA02C'}
+}
+
 export {
     UI_CONSTANTS,
     PERMISSIONS,
@@ -342,5 +349,6 @@ export {
     EVAL_REPORT_CATEGORIES,
     GUARDRAIL_PROVIDER,
     GUARDRAIL_CONFIG_TYPE,
-    AWS_PROVIDER_CONNECTION_CONFIG_TYPE
+    AWS_PROVIDER_CONNECTION_CONFIG_TYPE,
+    SEVERITY_MAP
 }
