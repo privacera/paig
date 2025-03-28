@@ -160,18 +160,18 @@ class VEvaluationReportOverview extends Component {
           </Grid>
         </Grid>
         <Grid container spacing={3}>  
-          {reportStats.map((stat, index) => (
+          {/* {reportStats.map((stat, index) => (
             <Grid item md={6} sm={12} xs={12} key={index}>
               <PaperCard boxProps={{ mb: 2 }}>
-                {/* <Typography variant="h6" color="textPrimary">
+                <Typography variant="h6" color="textPrimary">
                   {stat.name}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   {stat.value || 0}
-                </Typography> */}
+                </Typography>
               </PaperCard>
             </Grid>
-          ))}
+          ))} */}
         </Grid>
       </Fragment>
     );
