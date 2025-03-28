@@ -10,3 +10,7 @@ title: PAIG SecureChat 0.0.2
     - Implemented PAIG_API_KEY support for secure API access.  
 - **Improvements & Updates**:
     - Langchain, OpenAI and Boto3 dependencies upgraded to ensure better performance and compatibility.
+
+<div class="grid cards" markdown>
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-securechat)
+</div>

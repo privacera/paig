@@ -10,3 +10,7 @@ title: PAIG Server 0.0.2
 - **Fixes**:  
     - Addressed various warnings for a cleaner runtime.  
     - Updated dependencies to improve stability and security.  
+
+<div class="grid cards" markdown>
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+</div>
