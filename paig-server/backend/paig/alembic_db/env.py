@@ -34,6 +34,7 @@ from api.encryption.database.db_models import encryption_master_key_model, encry
 from api.evaluation.database.db_models import eval_model, eval_targets, eval_config
 from api.guardrails.database.db_models import guardrail_model, gr_connection_model
 from api.guardrails.database.db_models import response_template_model
+from api.apikey.database.db_models import paig_api_key_model, paig_level1_encryption_key_model, paig_level2_encryption_key_model
 from core.db_session.session import Base
 target_metadata = Base.metadata
 
