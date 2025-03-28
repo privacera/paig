@@ -6,6 +6,7 @@ from unittest.mock import patch
 from core.constants import BASE_ROUTE
 from routers.user import user
 import pandas as pd
+from core import constants
 
 @pytest.mark.asyncio
 async def test_user_login(client: AsyncClient):
@@ -58,6 +59,7 @@ class TestBasicAuth:
 
         user.basic_auth_enabled = "true"
         user.user_secrets_df = pd.DataFrame(user_secrets_data)
+        constants.USER_SECRETS_DF = user.user_secrets_df
 
         user_data = {
             "user_name": "test_user1",

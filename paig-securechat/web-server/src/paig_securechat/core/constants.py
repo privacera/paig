@@ -5,4 +5,4 @@ ROOT_DIR: str = None
 BASE_ROUTE = "/securechat/api/v1"
 SINGLE_USER_MODE: bool = False
 DEFAULT_USER_NAME = "PAIG_DEMO_USER"
-
+USER_SECRETS_DF = None
