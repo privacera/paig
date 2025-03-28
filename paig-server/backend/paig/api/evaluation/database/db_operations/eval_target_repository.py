@@ -40,6 +40,7 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             AIApplicationModel.description.label("ai_application_desc"),
             EvaluationTargetModel.url.label("eval_target_model_url"),
             EvaluationTargetModel.name.label("eval_target_name"),
+            func.coalesce(EvaluationTargetModel.create_time, AIApplicationModel.create_time).label("create_time"),
         ]
 
         # Query 1: Get all AIApplicationModel entries (Left Join)
@@ -60,6 +61,7 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
                 combined_query.c.ai_application_desc,
                 combined_query.c.eval_target_model_url,
                 combined_query.c.eval_target_name,
+                combined_query.c.create_time
             )
             .distinct(combined_query.c.eval_target_model_id)
             # Remove duplicates
@@ -94,7 +96,14 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             query = query.filter(and_(*all_filters))
         total_count_query = select(func.count()).select_from(query.subquery())
         total_count = (await session.execute(total_count_query)).scalar()
-
+        if sort:
+            for sort_options in sort:
+                sort_option = sort_options.split(",")
+                if len(sort_option) == 2:
+                    if sort_option[1].lower() == 'asc':
+                        query = query.order_by(combined_query.c[sort_option[0]].asc())
+                    elif sort_option[1].lower() == 'desc':
+                        query = query.order_by(combined_query.c[sort_option[0]].desc())
         query = query.limit(size).offset(skip)
         results = await session.execute(query)
         return results.all(), total_count
