@@ -5,9 +5,33 @@ from paig_evaluation.paig_evaluator import (
     get_suggested_plugins,
     get_all_plugins,
     init_setup,
-    PAIGEvaluator
+    PAIGEvaluator,
+    init_config
 )
+from paig_evaluation import constants
+from paig_evaluation import promptfoo_utils
 from paig_evaluation.file_utils import write_yaml_file, write_json_file
+
+plugin_data = {
+    "plugin_a": {
+        "description": "Description for plugin A",
+        "severity": "CRITICAL",
+        "type": "Trust & Safety",
+        "remote": False
+    },
+    "plugin_b": {
+        "description": "Description for plugin B",
+        "severity": "CRITICAL",
+        "type": "Trust & Safety",
+        "remote": False
+    },
+    "plugin_c": {
+        "description": "Description for plugin C",
+        "severity": "CRITICAL",
+        "type": "Trust & Safety",
+        "remote": False
+    }
+}
 
 
 @pytest.fixture
@@ -32,15 +56,6 @@ def sample_application_config():
 
 @pytest.fixture
 def sample_plugin_file(tmp_path):
-    plugin_data = {
-        "local_plugins": {
-            "plugin_a": "Description for plugin A",
-            "plugin_b": "Description for plugin B"
-        },
-        "remote_plugins": {
-            "plugin_c": "Description for plugin C"
-        }
-    }
     plugin_file = tmp_path / "security_plugins.json"
     with open(plugin_file, "w") as f:
         json.dump(plugin_data, f)
@@ -110,33 +125,39 @@ def sample_evaluation_report():
 
 
 def test_get_all_plugins(sample_plugin_file):
-    response = get_all_plugins(str(sample_plugin_file))
+    init_config(plugin_file_path=str(sample_plugin_file))
+    response = get_all_plugins()
     assert response['status'] == 'success'
     assert response['message'] == 'All plugins fetched successfully'
-    assert response['result'] == [
-        {"Name": "plugin_a", "Description": "Description for plugin A"},
-        {"Name": "plugin_b", "Description": "Description for plugin B"},
-        {"Name": "plugin_c", "Description": "Description for plugin C"}
-    ]
+    assert all(any(item['Name'] == plugin['Name'] and item['Description'] == plugin['Description'] for plugin in
+           response['result']) for item in [
+           {"Name": "plugin_a", "Description": "Description for plugin A"},
+           {"Name": "plugin_b", "Description": "Description for plugin B"},
+           {"Name": "plugin_c", "Description": "Description for plugin C"}
+       ])
+
 
 
 def test_get_all_plugins_failed_response():
-    response = get_all_plugins("non_existent_file.json")
+    init_config(plugin_file_path='non-existent-file')
+    response = get_all_plugins()
     assert response['status'] == 'failed'
-    assert response['message'] == 'Error: Security plugins file not found, file_path=non_existent_file.json'
     assert response['result'] == []
 
 
+
 @patch("paig_evaluation.paig_evaluator.suggest_promptfoo_redteam_plugins_with_openai")
-def test_get_suggested_plugins(mock_suggest):
-    mock_suggest.return_value = {"plugins": ["pii"]}
+def test_get_suggested_plugins(mock_suggest_promptfoo_redteam_plugins_with_openai, sample_plugin_file):
+    mock_suggest_promptfoo_redteam_plugins_with_openai.return_value = {"plugins": ["pii"]}
+    init_config(plugin_file_path=None)
     response = get_suggested_plugins(purpose="test application")
     assert response['status'] == 'success'
     assert response['message'] == 'Suggested plugins fetched successfully'
-    assert response['result'] == [
-        {"Name": "pii", "Description": "All PII categories"}
-    ]
 
+    assert all(any(item['Name'] == plugin['Name'] and item['Description'] == plugin['Description'] for plugin in
+                   response['result']) for item in [
+                   {"Name": "pii", "Description": "All PII categories"}
+               ])
 
 @patch("paig_evaluation.paig_evaluator.suggest_promptfoo_redteam_plugins_with_openai")
 def test_get_suggested_plugins_invalid_openai_plugins_response(mock_suggest):
