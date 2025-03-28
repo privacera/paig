@@ -3,8 +3,8 @@ import pytest
 import json
 from unittest.mock import patch
 from paig_evaluation.promptfoo_utils import (
-    get_suggested_plugins_with_description,
-    get_all_security_plugins_with_description,
+    get_suggested_plugins_with_info,
+    get_all_security_plugins_with_info,
     read_and_get_security_plugins,
     get_response_object
 )
@@ -27,14 +27,14 @@ def sample_plugin_file(tmp_path):
     return plugin_file
 
 
-def test_get_suggested_plugins_with_description(sample_plugin_file):
+def test_get_suggested_plugins_with_info(sample_plugin_file):
     plugins = ["plugin_a", "plugin_d", "plugin_b"]
     with patch("paig_evaluation.promptfoo_utils.read_and_get_security_plugins") as mock_read:
         mock_read.return_value = {
             "plugin_a": "Description for plugin A",
             "plugin_b": "Description for plugin B"
         }
-        result = get_suggested_plugins_with_description(plugins)
+        result = get_suggested_plugins_with_info(plugins)
 
     expected_result = [
         {"Name": "plugin_a", "Description": "Description for plugin A"},
@@ -43,8 +43,8 @@ def test_get_suggested_plugins_with_description(sample_plugin_file):
     assert result == expected_result
 
 
-def test_get_all_security_plugins_with_description(sample_plugin_file):
-    result = get_all_security_plugins_with_description(str(sample_plugin_file))
+def test_get_all_security_plugins_with_info(sample_plugin_file):
+    result = get_all_security_plugins_with_info(str(sample_plugin_file))
 
     expected_result = [
         {"Name": "plugin_a", "Description": "Description for plugin A"},
@@ -54,8 +54,8 @@ def test_get_all_security_plugins_with_description(sample_plugin_file):
     assert result == expected_result
 
 
-def test_get_all_security_plugins_with_description_no_file_path():
-    result = get_all_security_plugins_with_description("non_existent_file.json")
+def test_get_all_security_plugins_with_info_no_file_path():
+    result = get_all_security_plugins_with_info("non_existent_file.json")
     assert result == "Error: Security plugins file not found, file_path=non_existent_file.json"
 
 
