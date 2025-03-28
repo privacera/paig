@@ -39,7 +39,7 @@ const SIDEBAR_MENU = [{
         to: "/eval_configs",
         name: "Security Evaluation",
         isChild: true,
-        sidebar: UI_CONSTANTS.EVALUATION_CONFIG,
+        sidebar: UI_CONSTANTS.EVALUATION_SECURITY,
         childrenRoutes: ["/eval_configs/"]
     }, {
         to: "/eval_reports",

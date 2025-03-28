@@ -1271,6 +1271,9 @@ input.dashboard-datepicker {
 .card-border-top-primary {
     border-top: 3px solid #498EE6;
 }
+.card-border-top-success {
+    border-top: 3px solid #81c784;
+}
 
 
 .premade-reportcards .ibox h3 {

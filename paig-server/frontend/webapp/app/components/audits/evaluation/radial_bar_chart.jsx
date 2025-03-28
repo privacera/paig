@@ -9,7 +9,8 @@ const RadialBarChart = ({ chartData, title }) => {
       inverted: true,
       polar: true,
       height: "250px",
-      plotBorderWidth: null
+      width: 400,
+      spacingRight: 10
     },
     title: {
       text: title

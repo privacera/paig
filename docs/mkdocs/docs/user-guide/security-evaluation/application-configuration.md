@@ -24,8 +24,10 @@ To configure a GenAI application for security evaluation in PAIG, follow these s
         - **Endpoint URL**: Enter request URL of your GenAI application using which prompts will be sent for evaluation.
            e.g.  `http://127.0.0.1:3535/securechat/api/v1/conversations/prompt`
         - **Method**: Select HTTP method of your request endpoint url from the available options.
+        - **Authentication Type**: Select the authentication type from the available options.If you select `Basic Auth` or `Bearer Token`, you need to provide the username and password or token.
+        - **Username**: Enter username for basic authentication. If other authentication type is selected, this field will be used to store for mapping purpose.
         - **Headers**: Add headers to the request. Click on the `Add Header` button to add headers.
-           e.g. `Authorization: Bearer <token>`
+           e.g. `"Content-Type": "application/json"`
         - **Request Body**: Add request body to the request. Request body should be in JSON format.Prompts wil be injected on the fly by PAIG evaluation.
            e.g. `{"ai_application_name": "sales_model", "prompt": "{{prompt}}"}`
         - **Transform Response**: Enter valid JSONPath expression to extract the response from the GenAI application response.

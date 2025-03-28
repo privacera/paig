@@ -19,5 +19,6 @@ class EvaluationTargetModel(CommonBase):
     config = Column(JSON, nullable=False)
     name = Column(String(255), default='')
     url = Column(Text(), default='')
+    target_user = Column(String(255), default='NA')
 
     ai_app = relationship("AIApplicationModel", back_populates="host")

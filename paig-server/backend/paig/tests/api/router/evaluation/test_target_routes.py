@@ -34,7 +34,8 @@ class TestTargetRouters:
             "method": "POST",
             "transformResponse": "string",
             "name": "string",
-            "ai_application_id": 0
+            "ai_application_id": 0,
+            "username": "test"
         }
         # Create application
         post_response = await client.post(f"/{evaluation_services_base_route}/target/application", json=post_data)
@@ -66,7 +67,8 @@ class TestTargetRouters:
             "headers": {},
             "method": "POST",
             "transformResponse": "updated_string",
-            "name": "updated_string"
+            "name": "updated_string",
+            "username": "updated_user"
         }
         put_response = await client.put(f"/{evaluation_services_base_route}/target/application/{app_id}",
                                         json=update_data)
@@ -74,6 +76,7 @@ class TestTargetRouters:
         updated_app = put_response.json()
         assert updated_app["url"] == "http://localhost1:8080"
         assert updated_app["name"] == "updated_string"
+        assert updated_app["username"] == "updated_user"
 
         # Delete application
         delete_response = await client.delete(f"/{evaluation_services_base_route}/target/application/{app_id}")
