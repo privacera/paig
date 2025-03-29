@@ -1,0 +1,5 @@
+Field, Mandatory, Description, Example
+Connection Name, Yes, Name of your Guardrail Connection. Keep it short and simple, InformationGuardConnection
+Connection Description, No, Describe your Guardrail Connection in a few words, This is to connect an AWS account for managing guardrails to safeguard for the internal ChatBot of the company
+Connection Type, Yes,"The connection type for AWS to choose from -<br/>**IAM Role**: Assumes an IAM role to generate temporary credentials for the AWS client.<br/>**Access Key & Secret Key**: Directly authenticates the AWS client using static credentials for guardrail creation.<br/>**Instance Role**: Used in Kubernetes (K8S) deployments, leveraging the service account linked to the K8S pod for authentication.", Access Key & Secret Key
+Region, Yes,Here you can add the AWS region where you want your guardrails created and managed,us-east-1
