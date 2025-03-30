@@ -44,7 +44,19 @@ const off_topic_filter_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-              return (field.value || '').trim().length > 0;
+                let length = (field.value || '').trim().length;
+
+                if (!length) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (length > 100) {
+                    field._originalErrorMessage = 'Max 100 characters allowed!';
+                    return false;
+                } else if (!/^[A-Z0-9_ \-!?\.]+$/i.test(field.value)) {
+                   field._originalErrorMessage = 'Only alphanumeric characters, spaces, underscores, hyphens, exclamation points, question marks, and periods are allowed!';
+                   return false;
+                }
+                return true;
             }
         }
     },
@@ -52,11 +64,30 @@ const off_topic_filter_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-                return (field.value || '').trim().length > 0;
+                let length = (field.value || '').trim().length;
+
+                if (!length) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (length > 200) {
+                    field._originalErrorMessage = 'Max 200 characters allowed!';
+                    return false;
+                }
+
+                return true;
             }
         }
     },
-    samplePhrases: {},
+    samplePhrases: {
+        validators: {
+            errorMessage: 'Max 100 characters allowed!',
+            fn: (field) => {
+                let length = (field.value || '').trim().length;
+
+                return !(length && length > 100);
+            }
+        }
+    },
     action: {
         defaultValue: PROMPT_REPLY_ACTION_TYPE.DENY.VALUE
     }

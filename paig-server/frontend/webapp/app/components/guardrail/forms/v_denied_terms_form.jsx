@@ -33,7 +33,17 @@ const denied_terms_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-              return (field.value || '').trim().length > 0;
+                let length = (field.value || '').trim().length;
+
+                if (!length) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (length > 100) {
+                    field._originalErrorMessage = 'Max 100 characters allowed!';
+                    return false;
+                }
+
+                return true;
             }
         }
     },
@@ -41,7 +51,18 @@ const denied_terms_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-              return (field.value || '').trim().length > 0;
+                let values = (field.value || '').split(',').map(v => v.trim());
+                let invalidValue = values.find(v => v.length > 100);
+
+                if (!values.length || values.some(v => !v.length)) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (invalidValue) {
+                    field._originalErrorMessage = 'Each value must be 100 characters or less!';
+                    return false;
+                }
+
+                return true;
             }
         }
     }

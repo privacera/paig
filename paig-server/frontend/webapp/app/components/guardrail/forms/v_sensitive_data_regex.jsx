@@ -29,9 +29,15 @@ class VSensitiveDataRegex extends Component {
         const {permission, handleEdit, handleRemove, handleActionChange} = this.props;
 
         const rows = [
-            <TableCell key="regex" data-testid="regex">{model.name}</TableCell>,
-            <TableCell key="pattern" data-testid="pattern">{model.pattern}</TableCell>,
-            <TableCell key="description" data-testid="description">{model.description}</TableCell>
+            <TableCell key="regex" data-testid="regex">
+                <span className="ellipsis" style={{maxWidth: '120px'}}>{model.name}</span>
+            </TableCell>,
+            <TableCell key="pattern" data-testid="pattern">
+                <span className="ellipsis" style={{maxWidth: '120px'}}>{model.pattern}</span>
+            </TableCell>,
+            <TableCell key="description" data-testid="description">
+                <span className="ellipsis" style={{maxWidth: '120px'}}>{model.description}</span>
+            </TableCell>
         ];
 
         if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {

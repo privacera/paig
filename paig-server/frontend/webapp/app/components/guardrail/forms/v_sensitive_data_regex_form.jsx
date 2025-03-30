@@ -51,16 +51,43 @@ const sensitive_data_regex_form_def = {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-              return (field.value || '').trim().length > 0;
+                let length = (field.value || '').trim().length;
+
+                if (!length) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (length > 100) {
+                    field._originalErrorMessage = 'Max 100 characters allowed!';
+                    return false;
+                }
+
+                return true;
             }
         }
     },
-    description: {},
+    description: {
+        validators: {
+            errorMessage: 'Max 1000 characters allowed!',
+            fn: (field) => {
+                let length = (field.value || '').trim().length;
+
+                return !(length && length > 1000);
+            }
+        }
+    },
     pattern: {
         validators: {
             errorMessage: 'Required!',
             fn: (field) => {
-              return (field.value || '').trim().length > 0;
+                let length = (field.value || '').trim().length;
+
+                if (!length) {
+                    field._originalErrorMessage = 'Required!';
+                    return false;
+                } else if (length > 500) {
+                    field._originalErrorMessage = 'Max 500 characters allowed!';
+                    return false;
+                }
             }
         }
     },

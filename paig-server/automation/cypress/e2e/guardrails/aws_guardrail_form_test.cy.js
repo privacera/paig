@@ -98,10 +98,29 @@ describe('Guardrail Form PAIG provider', () => {
 
                 cy.get('input').type('Test Guardrail Name');
                 cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('input').type('!@#$%^&*()')
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Name should contain only alphanumeric characters, space, underscores and hyphens.');
+
+                cy.get('input').clear().type('Test Guardrail Name_-');
+                cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('input').clear().type('Test Guardrail Name Test Guardrail Name Test Guardr');
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 50 characters allowed!');
+
+                cy.get('input').type('{backspace}');
+                cy.get('[class*="-error"]').should('not.exist');
             });
 
             cy.get('[data-testid="description"]').within(() => {
                 cy.get('textarea').should('be.visible').and('have.value', '');
+                cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('[data-testid="input-field"]').type('This is a test description that is exactly 201 characters long. It is used to test the input field for the guardrail form. The description should be long enough to ensure that the input field can handl');
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 200 characters allowed!');
+
+                // remove 1 character
+                cy.get('[data-testid="input-field"]').type('{backspace}');
                 cy.get('[class*="-error"]').should('not.exist');
             })
         });
@@ -306,6 +325,32 @@ describe('Guardrail Form PAIG provider', () => {
 
         // Check for custom dialog
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
+
+        //checking validation
+        cy.get('[data-testid="custom-dialog"]').within(() => {
+            cy.get('[data-testid="name"]').type('a'.repeat(101));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 100 characters allowed!');
+
+            cy.get('[data-testid="name"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            cy.get('[data-testid="pattern"]').type('a').clear();
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Required!');
+            cy.get('[data-testid="pattern"]').type('a'.repeat(501));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 500 characters allowed!');
+            cy.get('[data-testid="pattern"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            cy.get('[data-testid="description"]').type('a'.repeat(1001));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 1000 characters allowed!');
+            cy.get('[data-testid="description"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            //clear all fields
+            cy.get('[data-testid="name"]').clear();
+            cy.get('[data-testid="pattern"]').clear();
+            cy.get('[data-testid="description"]').clear();
+        });
 
         cy.get('[data-testid="custom-dialog"]').within(() => {
             // Check for title

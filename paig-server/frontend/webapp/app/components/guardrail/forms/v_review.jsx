@@ -72,10 +72,10 @@ const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
             <CardContent className={classes.cardContent}>
                 <Grid container spacing={3}>
                     {
-                        (error.basicInfo?.name) &&
+                        (error.basicInfo?.name || error.basicInfo?.description) &&
                         <Grid item xs={12}>
                             <Alert severity="error" data-testid="guardrail-basic-alert">
-                                {error.basicInfo.name}
+                                {error.basicInfo.name || error.basicInfo.description}
                             </Alert>
                         </Grid>
                     }

@@ -38,7 +38,7 @@ class CGuardrailForm extends Component {
         this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.GUARDRAILS.PROPERTY);
     }
     componentDidMount() {
-        let id = this.props.match.params.id;
+        let id = this.props.match.params.id || this.props.match.params.newId;
         if (id) {
             this.fetchGuardrail(id);
         }
@@ -62,12 +62,14 @@ class CGuardrailForm extends Component {
             this._vState.providerName = this.formUtil.getProvider();
         });
 
-        setTimeout(() => {
-            let index = this.stepper?.findIndex(step => step.step === 'test_guardrail')
-            if (index !== -1) {
-                this._vState.activeStep = index;
-            }
-        }, 1000);
+        if (this.props.match.params.newId) {
+            setTimeout(() => {
+                let index = this.stepper?.findIndex(step => step.step === 'test_guardrail')
+                if (index !== -1) {
+                    this._vState.activeStep = index;
+                }
+            }, 1000);
+        }
     }
     handleBack = () => {
         this.scrollIntoView();
@@ -181,10 +183,12 @@ class CGuardrailForm extends Component {
             this._vState.saving = true;
             if (data.id) {
                 let apps = this.formUtil.getApps();
-                await this.props.aiApplicationStore.associateGuardrailToApplication({
-                    guardrail: data.name,
-                    applications: apps
-                });
+                if (apps) {
+                    await this.props.aiApplicationStore.associateGuardrailToApplication({
+                        guardrail: data.name,
+                        applications: apps
+                    });
+                }
 
                 let model = await this.props.guardrailStore.updateGuardrail(data.id, data);
                 f.notifySuccess(`Guardrail ${data.name} updated successfully`);
@@ -193,7 +197,7 @@ class CGuardrailForm extends Component {
                 let model = await this.props.guardrailStore.createGuardrail(data);
                 f.notifySuccess(`Guardrail ${data.name} created successfully`);
                 this.setGuardrail(model);
-                this.props.history.replace(`/guardrails/edit/${model.id}`);
+                this.props.history.replace(`/guardrails/create/${model.id}`);
             }
 
             if (this.isLastStep()) {
