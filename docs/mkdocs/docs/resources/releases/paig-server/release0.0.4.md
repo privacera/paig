@@ -7,3 +7,7 @@ title: PAIG Server 0.0.4
     - Improved API error handling to provide better responses for invalid API endpoints.
 - **Fixes**:  
     - Fixed application count in the Sensitive Data Access dashboard graph.
+
+<div class="grid cards" markdown>
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+</div>
