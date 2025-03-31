@@ -8,6 +8,7 @@ import {EVAL_REPORT_CATEGORIES} from 'utils/globals';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import {CustomButtonGroup} from 'common-ui/components/filters';
 import {FormGroupSelect2} from 'common-ui/components/form_fields';
+import {SEVERITY_MAP} from 'utils/globals';
 
 const PaperCard = (props) => {
   const { children, boxProps={}, paperProps={} } = props;
@@ -59,6 +60,7 @@ class VEvaluationReportDetails extends Component {
         <TableCell key={`response-${appName}-${index}`}>
           {appResponse ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
               <Typography
                 style={{
                   padding: '4px 8px',
@@ -73,6 +75,19 @@ class VEvaluationReportDetails extends Component {
               >
                 {appResponse.status || '--'}
               </Typography>
+              {(appResponse.status === 'FAILED' || appResponse.status === 'ERROR') && <span><Typography
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: SEVERITY_MAP[appResponse.category_severity].COLOR,
+                  fontSize: '12px',
+                  fontWeight: 500
+                }}
+              >
+                {SEVERITY_MAP[appResponse.category_severity].LABEL || '--'}
+              </Typography></span>
+            }
+            </div>
               {appResponse.response || '--'}
               {(appResponse.status === 'FAILED' || appResponse.status === 'ERROR') && appResponse.failure_reason && (
                 <Box

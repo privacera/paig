@@ -138,6 +138,10 @@ export class CEvaluationReportOverview extends Component {
     this.fetchAllApi();
   }
 
+  handleTabSelect = (key, filter) => {
+    this.props.parent_vState.searchFilterValue  = filter;
+    this.props.callbacks.handleTabSelect(key);
+  }
 
   renderTitle = () => {
     const { reportData } = this._vState;
@@ -149,7 +153,7 @@ export class CEvaluationReportOverview extends Component {
   };
 
   render() {
-    const {_vState, parent_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField} = this;
+    const {_vState, parent_vState, cEvaluationOverview, cEvaluationDetailed, handleBackButton, handlePageChange, handleSearchByField, handleTabSelect} = this;
     return (
         <VEvaluationReportOverview 
           _vState={_vState}
@@ -158,6 +162,7 @@ export class CEvaluationReportOverview extends Component {
           data={cEvaluationDetailed}
           handlePageChange={handlePageChange}
           handleSearchByField={handleSearchByField}
+          handleTabSelect={handleTabSelect}
         />
     );
   }

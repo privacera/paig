@@ -104,11 +104,10 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
                     }}
                   >
                     <CardContent style={{ position: "relative", flex: 1 }} className={classes.customCardContent}>
-                      <Typography
-                        variant="subtitle1"
-                        style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-                        className="m-b-sm"
-                      >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                        <Typography
+                          variant="subtitle1"
+                        >
                         <FormControlLabel
                           control={
                             <Checkbox
@@ -117,23 +116,21 @@ const VEvaluationPurposeForm = observer(({ _vState, data, form }) => {
                                 color="primary"
                               />
                           }
-                          label={template.title}
+                          label={<Typography variant="button" style={{color: "black"}}>{template.title}</Typography>}
                         />
-                        <CallMadeIcon className="m-l-xs" fontSize="small" color="primary" />
+                      </Typography>
+                      {!template.chip && <CallMadeIcon className="m-l-xs" fontSize="small" color="primary" />}
                         {template.chip && (
                           <Chip
                             label={template.chip}
                             style={{
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
                               bgcolor: "#EAF2FF",
                               color: "#000",
                               borderRadius: "16px"
                             }}
                           />
                         )}
-                      </Typography>
+                      </div>
                       <Typography variant="body2" style={{ overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
                         {template.description}
                       </Typography>

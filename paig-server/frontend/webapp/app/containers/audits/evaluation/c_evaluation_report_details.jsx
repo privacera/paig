@@ -31,6 +31,10 @@ export class CEvaluationReportDetails extends Component {
   }
 
   componentDidMount() {
+    if (this.props.parent_vState && this.props.parent_vState.searchFilterValue) {
+      this.handleSearchByField(this.props.parent_vState.searchFilterValue);
+      this.props.parent_vState.searchFilterValue = [];
+    }
     this.fetchAllApi();
   }
 

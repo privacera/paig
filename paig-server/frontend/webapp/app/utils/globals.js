@@ -310,13 +310,15 @@ const AWS_PROVIDER_CONNECTION_CONFIG_TYPE = {
 const EVAL_REPORT_CATEGORIES = {
     TYPE: { multi: false, category: "Type", type: "text", key: 'category_type' },
     PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
-    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' }
+    RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
+    SEVERITY: { multi: false, category: "Severity", type: "text", key: 'category_severity' },
 }
 
+
 const SEVERITY_MAP = {
-    CRITICAL: {LABEL: 'Severe Failure', COLOR: '#E101014D', DONUTCOLOR: 'E10101'},
-    HIGH: {LABEL: 'High Concern', COLOR: '#FFCAB3', DONUTCOLOR: 'E10101'},
-    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC400'},
+    CRITICAL: {LABEL: 'Severe Failure', COLOR: '#ee8b8b', DONUTCOLOR: 'E10101'},
+    HIGH: {LABEL: 'High Concern', COLOR: '#E101014D', DONUTCOLOR: 'FF6B35'},
+    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC233'},
     LOW: {LABEL: 'Low Concern', COLOR: '#B2F0D6', DONUTCOLOR: '2CA02C'}
 }
 

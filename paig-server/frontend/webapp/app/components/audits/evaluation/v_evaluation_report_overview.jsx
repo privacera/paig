@@ -108,7 +108,7 @@ const getCategories = (appsData) => {
 class VEvaluationReportOverview extends Component {
 
   render() {
-    const { _vState, parent_vState, cEvaluationOverview, data, handlePageChange, handleSearchByField } = this.props;
+    const { _vState, parent_vState, cEvaluationOverview, data, handlePageChange, handleSearchByField, handleTabSelect } = this.props;
     const evaluationDataList = f.models(cEvaluationOverview) || [];
     return (
       <Fragment>
@@ -162,8 +162,10 @@ class VEvaluationReportOverview extends Component {
                           justifyContent="space-between"
                           alignItems="center"
                           mb={1}
+                          className="pointer"
+                          onClick={() => handleTabSelect(1, [{category: 'Severity', operator: 'is', value: severityKey}])}
                         >
-                          <Typography variant="body1" color="textPrimary" className="graph-title">
+                          <Typography variant="body1" color="textPrimary" className="graph-title" >
                             0
                           </Typography>
                         </Box>
@@ -177,13 +179,15 @@ class VEvaluationReportOverview extends Component {
                               justifyContent="space-between"
                               alignItems="center"
                               mb={1}
+                              className="pointer"
+                              onClick={() => handleTabSelect(1, [{category: 'Severity', operator: 'is', value: severityKey}])}
                             >
                               {array.length > 1 && (
                                 <Typography variant="subtitle1" color="textSecondary">
                                   {applicationName}
                                 </Typography>
                               )}
-                              <Typography variant="body1" color="textPrimary" className="graph-title">
+                              <Typography variant="body1" color="textPrimary" className="graph-title" >
                                 {severities?.[severityKey] || 0}
                               </Typography>
                             </Box>

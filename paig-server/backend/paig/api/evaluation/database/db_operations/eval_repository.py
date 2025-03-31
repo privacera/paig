@@ -140,12 +140,12 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
         if prompt_filter is not None:
             search_filters.append(prompt_filter)
 
-        # Filters on EvaluationResultResponseModel (inside responses relationship)
         response_filters = {
             'response': EvaluationResultResponseModel.response,
             'category': EvaluationResultResponseModel.category,
             'status': EvaluationResultResponseModel.status,
-            'category_type': EvaluationResultResponseModel.category_type  # Fixed: was mistakenly filtering on `status`
+            'category_type': EvaluationResultResponseModel.category_type,
+            "category_severity": EvaluationResultResponseModel.category_severity
         }
 
         for key, model_attr in response_filters.items():

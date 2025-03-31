@@ -51,6 +51,20 @@ const VEvaluationCategories = observer(({ form, selectedCategories, showSuggeste
     categories.value = updatedCategories;
   };
 
+  const handleSelectAll = () => {
+    if (selectedCategories.length === filteredCategories.length) {
+      setSelectedCategories([]);
+      categories.value = [];
+    } else {
+      const allCategoryNames = filteredCategories.map((category) => category.Name);
+      setSelectedCategories(allCategoryNames);
+      categories.value = allCategoryNames;
+    }
+  };
+
+  const allCategoriesSelected = selectedCategories.length === filteredCategories.length;
+  const someCategoriesSelected = selectedCategories.length > 0 && selectedCategories.length < filteredCategories.length;
+  
   return (
     <Box component={Paper} elevation={0} p="15px">
       <Typography variant="h6" data-testid="header">
@@ -68,7 +82,7 @@ const VEvaluationCategories = observer(({ form, selectedCategories, showSuggeste
             onChange={handleToggle} 
           />
         }
-        label={<Typography variant="subtitle1">Suggested filters</Typography>}
+        label={<Typography variant="body1">Suggested filters</Typography>}
         className="m-t-md m-b-md"
       />
       {_vState.errorMsg && (
@@ -95,10 +109,19 @@ const VEvaluationCategories = observer(({ form, selectedCategories, showSuggeste
           </Grid>      
         ) : (
           <FormControl component="fieldset" fullWidth>
-            <Typography variant="h7" className="m-b-sm">
-              {showSuggested ? "Suggested Categories" : "All Categories"}
-            </Typography>
-
+              <FormControlLabel
+                  key={'Selet All'}
+                  control={
+                    <Checkbox
+                      checked={allCategoriesSelected}
+                      indeterminate={someCategoriesSelected}
+                      onChange={handleSelectAll}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography variant="body1"  style={{color: "black", font: "500"}}>{showSuggested ? "Suggested Categories" : "All Categories"
+                    }</Typography>}
+                /> 
             <FormGroup className={classes.checkboxGrid}>
               {filteredCategories.map((category) => (
                 <FormControlLabel
