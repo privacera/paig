@@ -8,6 +8,7 @@ import RadialBarChart from "components/audits/evaluation/radial_bar_chart";
 import {Loader, getSkeleton} from "common-ui/components/generic_components";
 import EventIcon from '@material-ui/icons/Event';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
+import AssignmentIcon from '@material-ui/icons/Assignment';
 import ContactsIcon from '@material-ui/icons/Contacts';
 import {Utils} from 'common-ui/utils/utils';
 import {SEVERITY_MAP, CATEGORY_DESCRIPTIONS} from 'utils/globals';
@@ -35,11 +36,36 @@ const getRunAs = (model) => {
   return model?.target_users ? model.target_users.split(',').join(', ') : '--'
 }
 
+const getScore = (model) => {
+  let total = model.passed + model.failed + model.error;
+  const percentage = total ? ((model.passed / total) * 100).toFixed(2) + "%" : "0%";
+
+  return (
+    <span>
+      {percentage}  ({model.passed}/{total})
+    </span>
+  )
+}
+
 const VEvalReportBasicInfo = ({model}) => {
   return (
     <PaperCard boxProps={{mb: 2}} paperProps={{'data-track-id': 'basic-report-info'}}>
       <Grid container spacing={3}>
-        <Grid item md={4} sm={6} xs={12} className="border-right" alignItems="center">
+        {model?.result?.map((result, index) => (
+          <Grid item xs className="border-right" alignItems="center">
+          <Box justifyContent='center'>
+          <Typography  variant="subtitle2" className="m-b-xs" >
+            {result.application_name || 'Application Score'}
+          </Typography>
+          <Typography>
+          <AssignmentIcon color="action" className="m-r-xs"/>
+          {getScore(result) || '--'}
+          </Typography>
+          </Box>
+          </Grid>
+        ))}  
+
+        <Grid item xs className="border-right" alignItems="center">
           <Box justifyContent='center'>
           <Typography  variant="subtitle2" className="m-b-xs" >
             Created
@@ -50,7 +76,7 @@ const VEvalReportBasicInfo = ({model}) => {
           </Typography>
           </Box>
         </Grid>
-        <Grid item md={4} sm={6} xs={12} className="border-right" alignItems="center">
+        <Grid item xs className="border-right" alignItems="center">
           <div>
           <Typography variant="subtitle2" className="m-b-xs">
             Run By
@@ -61,7 +87,7 @@ const VEvalReportBasicInfo = ({model}) => {
           </Typography>
           </div>
         </Grid>
-        <Grid item md={4} sm={6} xs={12}>
+        <Grid item xs >
           <Typography variant="subtitle2" className="m-b-xs">
             Run As
           </Typography>
@@ -114,9 +140,9 @@ class VEvaluationReportOverview extends Component {
       <Fragment>
         <VEvalReportBasicInfo model={_vState.reportData}/>
 
-        <Grid container spacing={2}>
+        <Grid container spacing={2} className="m-b-sm"> 
           {/* Overall Score chart */}
-          <Grid item lg={5} md={6} sm={12} xs={12} className="m-b-sm">
+          <Grid item lg={5} md={6} sm={12} xs={12} >
             <PaperCard>
               <Loader
                 promiseData={cEvaluationOverview}
@@ -205,7 +231,7 @@ class VEvaluationReportOverview extends Component {
           </Grid>
         </Grid>
 
-        <Grid container spacing={2}>  
+        <Grid container spacing={2} className="stretch-eval-card">  
           {/* Severity Donut chart and Category table */}
           {Object.entries(_vState.reportStats || {}).map(([category, appsData]) => (
             <Grid item
@@ -213,7 +239,7 @@ class VEvaluationReportOverview extends Component {
               sm={Object.keys(appsData || {}).length === 1 ? 6 : 12}
               key={category}
             >
-              <PaperCard boxProps={{ mb: 2 }}>
+              <PaperCard boxProps={{ mb: 2 }} style={{ height: '100%' }}>
                 <Typography variant="h6" gutterBottom>
                   {category === "null" || !category ? "Custom" : category}
                 </Typography>

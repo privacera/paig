@@ -1050,3 +1050,8 @@ span.diff-danger>span {
   padding: 8px;
   text-align: right;
 }
+
+.stretch-eval-card > div > div {
+  display: flex;
+  height: 100%;
+}
