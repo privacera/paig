@@ -315,10 +315,18 @@ const EVAL_REPORT_CATEGORIES = {
 
 const SEVERITY_MAP = {
     CRITICAL: {LABEL: 'Severe Failure', COLOR: '#E101014D', DONUTCOLOR: 'E10101'},
-    HIGH: {LABEL: 'High Concern', COLOR: '#FFCAB3', DONUTCOLOR: 'FF6B35'},
-    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC233'},
+    HIGH: {LABEL: 'High Concern', COLOR: '#FFCAB3', DONUTCOLOR: 'E10101'},
+    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC400'},
     LOW: {LABEL: 'Low Concern', COLOR: '#B2F0D6', DONUTCOLOR: '2CA02C'}
 }
+
+const CATEGORY_DESCRIPTIONS = {
+    "Brand": "Tests focused on brand protection, including competitor mentions, misinformation, hallucinations, and model behavior that could impact brand reputation.",
+    "Compliance & Legal": "Tests for LLM behavior that may encourage illegal activity, breach contractual commitments, or violate intellectual property rights.",
+    "Security & Access Control": "Technical security risk tests mapped to OWASP Top 10 for LLMs, APIs, and web applications, covering SQL injection, SSRF, broken access control, and cross-session leaks.",
+    "Trust & Safety": "Tests that attempt to produce illicit, graphic, or inappropriate responses from the LLM.",
+    "Custom": "Configurable tests for specific policies or generating custom probes for your use case."
+};
 
 export {
     UI_CONSTANTS,
@@ -350,5 +358,6 @@ export {
     GUARDRAIL_PROVIDER,
     GUARDRAIL_CONFIG_TYPE,
     AWS_PROVIDER_CONNECTION_CONFIG_TYPE,
-    SEVERITY_MAP
+    SEVERITY_MAP,
+    CATEGORY_DESCRIPTIONS
 }

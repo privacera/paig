@@ -29,6 +29,7 @@ class EvalDonutChart extends Component {
           { name: "Failures", y: total - passes, color: "#B0B0B0" }
         ]
       : [];
+    const percentage = total > 0 ? Math.round((passes / total) * 100) : 0;
     // Highcharts options
     let options = {
       chart: {
@@ -36,7 +37,44 @@ class EvalDonutChart extends Component {
         plotBackgroundColor: null,
         plotBorderWidth: null,
         plotShadow: false,
-        height: "150px"
+        height: "150px",
+        width: 300,
+        custom: {},
+        events: {
+          render() {
+            const chart = this,
+              series = chart.series[0];
+            let customLabel = chart.options.chart.custom.label;
+
+            if (!customLabel) {
+              customLabel = chart.options.chart.custom.label = chart.renderer
+                .label(
+                  `<strong>${percentage}%</strong>`, // Dynamic percentage text
+                  0,
+                  0
+                )
+                .css({
+                  color: "#000",
+                  textAnchor: "middle",
+                  fontWeight: "bold"
+                })
+                .add();
+            }
+
+            const x = series.center[0] + chart.plotLeft,
+              y = series.center[1] + chart.plotTop - customLabel.attr("height") / 2;
+
+            customLabel.attr({
+              x,
+              y
+            });
+
+            // Dynamically adjust font size based on chart diameter
+            customLabel.css({
+              fontSize: `${series.center[2] / 10}px`
+            });
+          }
+        }
       },
       title: {
         text: null
@@ -50,11 +88,16 @@ class EvalDonutChart extends Component {
       },
       plotOptions: {
         pie: {
-          allowPointSelect: true,
+          allowPointSelect: false,
           cursor: "pointer",
           dataLabels: {
             enabled: false,
             distance: 30
+          },
+          states: {
+            hover: {
+              enabled: false
+            }
           }
         }
       },
@@ -63,31 +106,15 @@ class EvalDonutChart extends Component {
           name: appName || "Results",
           colorByPoint: true,
           data: chartData,
-          size: "120%"
+          size: "120%",
+          innerSize: "60%",
+          center: ["50%", "50%"]
         }
       ],
       credits: {
         enabled: false
       }
     };
-
-    // Add inner donut text if passes and total are available
-    if (total > 0) {
-      options.series[0].innerSize = "60%";
-      const percentage = Math.round((passes / total) * 100);
-      options.subtitle = {
-        useHTML: false,
-        text: `<strong>${percentage}%</strong>`,
-        floating: true,
-        verticalAlign: "middle",
-        style: {
-          fontSize: "18px"
-        },
-        y: 15
-      };
-    } else {
-      options.series[0].data = [];
-    }
 
     // Merge additional chart options
     Object.assign(options, chartOptions);

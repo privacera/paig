@@ -973,10 +973,10 @@ span.diff-danger>span {
   transform: rotate(45deg);
 }
 
-.eval-metrics-container{
+.eval-metrics-container {
   flex-grow: 1;
   flex-direction: column;
-  display: flex
+  display: flex;
 }
 
 .eval-metrics-container .eval-metrics-box{
@@ -988,4 +988,50 @@ span.diff-danger>span {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  height: 220px;
+  display: block;
+  table-layout: fixed;
+}
+
+.results-table-header {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.category-column {
+  padding: 8px;
+  width: 150px; /* Adjust if needed */
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
+}
+
+.table-header-cell {
+  padding: 8px;
+  text-align: right;
+}
+
+.results-table-body {
+  display: block;
+  max-height: 180px;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.results-table-body tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table-body-cell {
+  padding: 8px;
+  text-align: right;
 }

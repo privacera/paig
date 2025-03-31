@@ -10,7 +10,7 @@ import EventIcon from '@material-ui/icons/Event';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import ContactsIcon from '@material-ui/icons/Contacts';
 import {Utils} from 'common-ui/utils/utils';
-import {SEVERITY_MAP} from 'utils/globals';
+import {SEVERITY_MAP, CATEGORY_DESCRIPTIONS} from 'utils/globals';
 import {DATE_TIME_FORMATS} from 'common-ui/utils/globals';
 import EvalDonutChart from "components/audits/evaluation/eval_donut_chart";
 
@@ -75,7 +75,7 @@ const VEvalReportBasicInfo = ({model}) => {
   )
 }
 
-const getTopCategories = (appsData) => {
+const getCategories = (appsData) => {
   if (!appsData) return [];
   
   // Get all unique categories across all apps
@@ -96,14 +96,12 @@ const getTopCategories = (appsData) => {
     
     return {
       name: category,
-      diffScore: avgRatio // Store the ratio as diffScore
+      diffScore: avgRatio
     };
   });
   
-  // Sort by diffScore in ascending order and take top 5
   return categoriesWithRatio
-    .sort((a, b) => a.diffScore - b.diffScore) // Use diffScore for sorting
-    .slice(0, 5);
+    .sort((a, b) => a.diffScore - b.diffScore);
 }
 
 @observer
@@ -115,9 +113,10 @@ class VEvaluationReportOverview extends Component {
     return (
       <Fragment>
         <VEvalReportBasicInfo model={_vState.reportData}/>
-        <Grid container spacing={3}>
+
+        <Grid container spacing={2}>
           {/* Overall Score chart */}
-          <Grid item md={4} sm={5} xs={12}>
+          <Grid item lg={5} md={6} sm={12} xs={12} className="m-b-sm">
             <PaperCard>
               <Loader
                 promiseData={cEvaluationOverview}
@@ -143,7 +142,7 @@ class VEvaluationReportOverview extends Component {
             </PaperCard>
           </Grid>
           {/* Severity Metrics */}
-          <Grid item md={8} sm={12} className="eval-metrics-container">
+          <Grid item lg={7} md={6} sm={12} xs={12} className="eval-metrics-container">
             <Grid container spacing={3} className="eval-metrics-box">
               {Object.entries(SEVERITY_MAP).map(([severityKey, data], index) => (
                 <Grid item md={6} sm={12} key={index} className="eval-metrics">
@@ -155,28 +154,45 @@ class VEvaluationReportOverview extends Component {
                       </Typography>
                     </Box>
                     {/* Content area */}
-                    <Box display="flex" p={2} style={{gap:'10px'}}>
-                      {Object.entries(_vState?.reportSeverity || {}).map(([applicationName, severities], idx, array) => (
-                        <>
-                          <Box
-                            key={applicationName}
-                            flex={1}
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={1}
-                          >
-                          <Typography variant="subtitle1" color="textSecondary">
-                              {applicationName}
-                            </Typography>
-                            <Typography variant="body1" color="textPrimary" className="graph-title">
-                              {severities?.[severityKey] || 0}
-                            </Typography>
-                          </Box>
-                          {idx < array.length - 1 && (
-                            <Divider orientation="vertical" flexItem />
-                          )}
-                        </>
-                      ))}
+                    <Box display="flex" p={2} style={{ gap: '10px' }}>
+                      {Object.keys(_vState?.reportSeverity || {}).length === 0 ? (
+                        // If reportSeverity is empty, show a single box with 0
+                        <Box
+                          flex={1}
+                          justifyContent="space-between"
+                          alignItems="center"
+                          mb={1}
+                        >
+                          <Typography variant="body1" color="textPrimary" className="graph-title">
+                            0
+                          </Typography>
+                        </Box>
+                      ) : (
+                        // If reportSeverity is not empty, map over its entries
+                        Object.entries(_vState?.reportSeverity || {}).map(([applicationName, severities], idx, array) => (
+                          <>
+                            <Box
+                              key={applicationName}
+                              flex={1}
+                              justifyContent="space-between"
+                              alignItems="center"
+                              mb={1}
+                            >
+                              {array.length > 1 && (
+                                <Typography variant="subtitle1" color="textSecondary">
+                                  {applicationName}
+                                </Typography>
+                              )}
+                              <Typography variant="body1" color="textPrimary" className="graph-title">
+                                {severities?.[severityKey] || 0}
+                              </Typography>
+                            </Box>
+                            {idx < array.length - 1 && (
+                              <Divider orientation="vertical" flexItem />
+                            )}
+                          </>
+                        ))
+                      )}
                     </Box>
                   </Paper>
                 </Grid>
@@ -184,21 +200,29 @@ class VEvaluationReportOverview extends Component {
             </Grid>
           </Grid>
         </Grid>
-        <Grid container spacing={3}>  
+
+        <Grid container spacing={2}>  
           {/* Severity Donut chart and Category table */}
           {Object.entries(_vState.reportStats || {}).map(([category, appsData]) => (
-            <Grid item xs={12} key={category}>
+            <Grid item
+              xs={12}
+              sm={Object.keys(appsData || {}).length === 1 ? 6 : 12}
+              key={category}
+            >
               <PaperCard boxProps={{ mb: 2 }}>
                 <Typography variant="h6" gutterBottom>
-                  {category}
+                  {category ? category : "Custom"}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+                  {CATEGORY_DESCRIPTIONS[category] || CATEGORY_DESCRIPTIONS["Custom"]}
                 </Typography>
                 <Grid container spacing={3}>
-                  <Grid item xs={6}>     
+                  <Grid item lg={6} md={6} sm={12} xs={12} >     
                     <Box display="flex" flexWrap="wrap">
-                      {Object.entries(appsData || {}).map(([appName, appData]) => (
+                      {Object.entries(appsData || {}).map(([appName, appData], index, array) => (
                         <Box key={appName} flex="1 0 200px" p={2}>
                           <Typography variant="subtitle1" color="textSecondary">
-                            {appName}
+                            {array.length === 1 ? "Overall Pass Rate" : appName}
                           </Typography>
                           {appData.severity && SEVERITY_MAP[appData.severity] && (
                             <Chip
@@ -220,52 +244,50 @@ class VEvaluationReportOverview extends Component {
                       ))}
                     </Box>
                   </Grid>
-                  <Divider orientation="vertical" flexItem />
-                  <Grid item xs={5}>
+                  {/* <Divider orientation="vertical" flexItem /> */}
+                  <Grid item lg={6} md={6} sm={12} xs={12}>
                     <Typography variant="subtitle1" color="textSecondary">
-                      Highest differences (Top 5)
+                      Results overview
                     </Typography>
-                    <Box component="table" width="100%" style={{ borderCollapse: 'collapse' }}>
-                      <thead>
+                    <Box component="table" className="results-table">
+                      {/* Table Header */}
+                      <thead className="results-table-header">
                         <tr>
-                          <Typography component="th" variant="body2" align="left" style={{ padding: '8px' }}>
+                          <Typography component="th" className="category-column">
                             Category
                           </Typography>
-                          {Object.keys(appsData || {}).map(appName => (
-                            <Typography 
-                              key={appName} 
-                              component="th" 
-                              variant="body2" 
-                              align="right" 
-                              style={{ padding: '8px' }}
-                            >
-                              {appName}
+                          {Object.keys(appsData || {}).length === 1 ? (
+                            <Typography component="th" className="table-header-cell">
+                              Ratio
                             </Typography>
-                          ))}
+                          ) : (
+                            Object.keys(appsData || {}).map(appName => (
+                              <Typography key={appName} component="th" className="table-header-cell">
+                                {appName}
+                              </Typography>
+                            ))
+                          )}
                         </tr>
                       </thead>
-                      <tbody>
-                        {getTopCategories(appsData).map((categoryItem) => (
+                      {/* Scrollable Table Body */}
+                      <Box component="tbody" className="results-table-body">
+                        {getCategories(appsData).map((categoryItem) => (
                           <tr key={categoryItem.name}>
-                            <Chip
-                              className="table-container-chips m-r-xs m-b-xs"
-                              size="small"
-                              label={categoryItem.name}
-                            />
+                            <td className="category-column">
+                              <Chip
+                                className="table-container-chips m-r-xs m-b-xs"
+                                size="small"
+                                label={categoryItem.name}
+                              />
+                            </td>
                             {Object.values(appsData || {}).map((appData, idx) => (
-                              <Typography 
-                                key={idx} 
-                                component="td" 
-                                variant="body2" 
-                                align="right"
-                                style={{ padding: '8px' }}
-                              >
+                              <Typography key={idx} component="td" className="table-body-cell">
                                 {appData.categories?.[categoryItem.name]?.pass || 0} / {appData.categories?.[categoryItem.name]?.total || 0}
                               </Typography>
                             ))}
                           </tr>
                         ))}
-                      </tbody>
+                      </Box>
                     </Box>
                   </Grid>
                 </Grid>
@@ -273,6 +295,7 @@ class VEvaluationReportOverview extends Component {
             </Grid>
           ))}
         </Grid>
+        
       </Fragment>
     );
   };
