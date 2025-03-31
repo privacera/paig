@@ -16,7 +16,8 @@ const RadialBarChart = ({ chartData, title }) => {
       text: title
     },
     tooltip: {
-      outside: true
+      outside: true,
+      pointFormat: "{series.name}: <b>{point.percentage:.0f}%</b><br/>"
     },
     pane: {
       size: "85%",

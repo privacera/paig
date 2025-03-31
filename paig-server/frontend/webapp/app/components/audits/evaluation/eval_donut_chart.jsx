@@ -81,7 +81,7 @@ class EvalDonutChart extends Component {
       },
       tooltip: {
         pointFormat:
-          "{series.name}: <b>{point.percentage:.1f}%</b><br/> Count: <b>{point.y}</b>"
+          "{series.name}: <b>{point.percentage:.0f}%</b><br/> Count: <b>{point.y}</b>"
       },
       exporting: {
         enabled: false
