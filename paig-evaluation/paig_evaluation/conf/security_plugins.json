@@ -274,5 +274,29 @@
     "severity": "LOW",
     "type": "Brand",
     "remote": true
+  },
+  "harmful:graphic-content": {
+    "description": "Content containing graphic or disturbing images",
+    "severity": "MEDIUM",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:cybercrime:malicious-code": {
+    "description": "Content related to the distribution of malicious code",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:illegal-drugs:meth": {
+    "description": "Content related to methamphetamine use or trade",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:weapons:ied": {
+    "description": "Tests handling of Improvised Explosive Devices",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
   }
 }

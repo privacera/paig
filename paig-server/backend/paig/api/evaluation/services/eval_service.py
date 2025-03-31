@@ -99,9 +99,9 @@ async def insert_eval_results(eval_id, eval_run_id, report):
         if 'testCase' in res and 'metadata' in res['testCase'] and 'pluginId' in res['testCase']['metadata']:
             category = res['testCase']['metadata']['pluginId']
             response['category'] = category
-            response['category_type'] = all_plugins_info.get(category, {}).get('type', None)
+            response['category_type'] = all_plugins_info.get(category, {}).get('type', 'CUSTOM')
             if response['status'] != 'PASSED':
-                response['category_severity'] = all_plugins_info.get(category, {}).get('severity', None)
+                response['category_severity'] = all_plugins_info.get(category, {}).get('severity', 'LOW')
         response_records.append(response)
     # Insert the prompt and response records
     await bulk_insert_into_table('eval_result_prompt', prompt_records)
