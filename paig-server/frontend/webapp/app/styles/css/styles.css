@@ -990,6 +990,21 @@ span.diff-danger>span {
   flex-grow: 1;
 }
 
+.eval-metrics-container .eval-metrics-box .eval-metrics > div {
+  flex-grow: 1;
+}
+
+.stretch-box {
+  display: flex;
+  flex-grow: 1;
+}
+
+.stretch-box .stretch-cards {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .results-table {
   width: 100%;
   border-collapse: collapse;
