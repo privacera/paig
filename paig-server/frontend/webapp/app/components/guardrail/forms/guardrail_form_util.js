@@ -34,7 +34,7 @@ class GuardrailFormUtil {
 	    this.apps = apps;
 	}
 	getApps() {
-	    return this.apps || [];
+	    return this.apps;
 	}
 
 	getSaveFormData () {
