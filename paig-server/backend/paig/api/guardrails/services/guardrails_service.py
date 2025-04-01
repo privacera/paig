@@ -31,8 +31,25 @@ from core.utils import validate_id, validate_string_data, validate_boolean, Sing
 
 config = load_config_file()
 
-error_topic_example_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.example"
-error_topic_definition_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.definition"
+FIELD_VALIDATIONS = {
+    'name': {
+        'regex': r'^[a-zA-Z0-9_-]+$',
+        'error_message': "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"
+    },
+    'topic_name': {
+        'regex': r'^[a-zA-Z0-9\s_\-!?\.]+$',
+        'error_message': "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, "
+                            "exclamation point (!), question mark (?), and period (.)"
+    },
+    'topic_example': {
+        'regex': r'topicPolicyConfig\.topicsConfig\.\d+\.member\.example',
+        'error_message': "The guardrail Off-topic sample phrases must be less than or equal to 100 characters."
+    },
+    'topic_definition': {
+        'regex': r'topicPolicyConfig\.topicsConfig\.\d+\.member\.definition',
+        'error_message': "The guardrail Off-topic definition must be less than or equal to 200 characters."
+    }
+}
 
 
 class GuardrailRequestValidator:
@@ -128,8 +145,8 @@ class GuardrailRequestValidator:
             name (str): The name of the Guardrail.
         """
         validate_string_data(name, "Guardrail name", required=True, max_length=50)
-        if not re.match(r'^[a-zA-Z0-9_-]+$', name):
-            raise BadRequestException("Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)")
+        if not re.match(FIELD_VALIDATIONS['name']['regex'], name):
+            raise BadRequestException(FIELD_VALIDATIONS['name']['error_message'])
 
     def validate_description(self, description: str):
         """
@@ -193,7 +210,7 @@ class GuardrailRequestValidator:
             if gr_config.config_type == GuardrailConfigType.SENSITIVE_DATA:
                 self.validate_sensitive_data_config(gr_config)
             gr_config_types.append(gr_config.config_type)
-    
+
     def validate_topic_policy_config(self, gr_config):
         """
         Validate the topic policy configuration.
@@ -208,17 +225,14 @@ class GuardrailRequestValidator:
             # Validate topic name
             topic_name = topic_config.get('topic', '')
             validate_string_data(topic_name, f"Topic name for topic {index}", required=True, max_length=100)
-            
-            if not re.match(r'^[a-zA-Z0-9\s_\-!?\.]+$', topic_name):
-                raise BadRequestException(
-                    "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, "
-                    "exclamation point (!), question mark (?), and period (.)"
-                )
+
+            if not re.match(FIELD_VALIDATIONS['topic_name']['regex'], topic_name):
+                raise BadRequestException(FIELD_VALIDATIONS['topic_name']['error_message'])
 
             # Validate definition length
-            validate_string_data(topic_config.get('definition', ''), f"Topic definition for topic {index}", 
-                               required=False, max_length=200)
-            
+            validate_string_data(topic_config.get('definition', ''), f"Topic definition for topic {index}",
+                            required=True, max_length=200)
+
             # Validate sample phrases (optional)
             sample_phrases = topic_config.get('samplePhrases', [])
             if sample_phrases:
@@ -231,7 +245,7 @@ class GuardrailRequestValidator:
                 for phrase_idx, phrase in enumerate(sample_phrases, 1):
                     validate_string_data(
                         phrase,
-                        f"Sample phrase {phrase_idx} for topic {index}", 
+                        f"Sample phrase {phrase_idx} for topic {index}",
                         required=True,
                         max_length=100
                     )
@@ -246,27 +260,27 @@ class GuardrailRequestValidator:
         keywords_set = set()
         denied_terms_count = 0
         term_index = 0
-        
+
         for denied_term_config in gr_config.config_data.get('configs', []):
             keywords = denied_term_config.get('keywords', [])
             if keywords:
                 term_index += 1
                 denied_terms_count += len(keywords)
-                
+
                 if denied_terms_count > 10000:
                     raise BadRequestException("Maximum 10000 phrases or keywords are allowed in Denied terms")
-                    
+
                 for keyword in keywords:
                     validate_string_data(
-                        keyword, 
-                        f"Phrase or Keyword '{keyword}' from Denied term {term_index}", 
-                        required=True, 
+                        keyword,
+                        f"Phrase or Keyword '{keyword}' from Denied term {term_index}",
+                        required=True,
                         max_length=100
                     )
-                    
+
                     if keyword in keywords_set:
                         raise BadRequestException(f"Repeated keyword '{keyword}' found in Denied term {term_index}. Please remove the duplicate keyword.")
-                        
+
                     keywords_set.add(keyword)
 
     def validate_sensitive_data_config(self, gr_config):
@@ -803,17 +817,18 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
             if response['response']['details']['errorType'] == 'ValidationException':
                 if response['response']['details']['details'].endswith('Member must have length less than or equal to 200') \
-                    and re.search(error_topic_definition_pattern, response['response']['details']['details']):
+                        and re.search(FIELD_VALIDATIONS['topic_definition']['regex'],
+                                      response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: The guardrail Off-topic definition must be less than or equal to 200 characters.",
+                        f"Failed to {operation} guardrail: {FIELD_VALIDATIONS['topic_definition']['error_message']}",
                         response['response']['details'])
-                
+
                 if "Member must have length less than or equal to 100" in response['response']['details']['details'] \
-                    and re.search(error_topic_example_pattern, response['response']['details']['details']):
+                        and re.search(FIELD_VALIDATIONS['topic_example']['regex'], response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: The guardrail Off-topic sample phrases must be less than or equal to 100 characters.",
+                        f"Failed to {operation} guardrail: {FIELD_VALIDATIONS['topic_example']['error_message']}",
                         response['response']['details'])
-                
+
                 raise BadRequestException(
                     f"Failed to {operation} guardrail: {self.extract_details(response['response']['details']['details'])}",
                     response['response']['details'])
