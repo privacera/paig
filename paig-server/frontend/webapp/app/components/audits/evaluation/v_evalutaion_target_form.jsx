@@ -198,7 +198,7 @@ const VEvalTargetForm = ({form}) => {
                     placeholder="Enter username"
                     fieldObj={username}
                     onChange={(value) =>handleUsernameChange(value)}
-                    inputProps={{ 'data-testid': 'name-input' }}
+                    inputProps={{ 'data-testid': 'name-input-username' }}
                 />
                 {authType === 'basicauth' && (<Grid item xs={12}><FormGroupInput
                         inputColAttr={{ xs: 12, sm: 6 }}
