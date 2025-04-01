@@ -1,6 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, JSON, Text
-from core.utils import current_utc_time
-from core.db_session import Base
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Text
 from sqlalchemy.orm import relationship
 from api.evaluation.database.db_models.base_model import CommonBase
 

@@ -1,5 +1,4 @@
 import json
-import traceback
 
 from api.evaluation.services.eval_config_service import EvaluationConfigService
 from api.evaluation.services.eval_result_service import EvaluationResultService

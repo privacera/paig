@@ -1,8 +1,5 @@
-from typing import List, Optional
-from fastapi import APIRouter, Request, Response, Depends, Query, HTTPException
-from api.evaluation.api_schemas.eval_schema import IncludeQueryParams, \
-    include_query_params, exclude_query_params, QueryParamsBase, GetCategories, SaveAndRunRequest, RunRequest, \
-    ResultsIncludeQueryParams, ResultsQueryParamsBase, results_include_query_params, results_exclude_query_params
+from fastapi import APIRouter, Depends, HTTPException
+from api.evaluation.api_schemas.eval_schema import GetCategories, SaveAndRunRequest, RunRequest
 from core.utils import SingletonDepends
 from core.security.authentication import get_auth_user
 from api.evaluation.controllers.eval_controllers import EvaluationController

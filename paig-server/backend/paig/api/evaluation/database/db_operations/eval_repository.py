@@ -1,6 +1,4 @@
-from dns.e164 import query
 from sqlalchemy import and_, func, case
-from sympy import prime
 
 from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationModel
@@ -8,7 +6,7 @@ from api.evaluation.database.db_models.eval_model import EvaluationResultPrompts
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
