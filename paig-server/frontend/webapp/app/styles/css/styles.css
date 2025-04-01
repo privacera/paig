@@ -1054,3 +1054,11 @@ span.diff-danger>span {
   display: flex;
   height: 100%;
 }
+
+.eval-chips{
+  max-width: 100%;
+}
+
+.min-height-50 {
+  min-height: 50px;
+}

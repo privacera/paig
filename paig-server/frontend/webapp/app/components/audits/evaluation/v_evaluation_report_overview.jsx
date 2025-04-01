@@ -243,14 +243,14 @@ class VEvaluationReportOverview extends Component {
                 <Typography variant="h6" gutterBottom>
                   {category === "null" || !category ? "Custom" : category}
                 </Typography>
-                <Typography variant="body2" color="textSecondary" gutterBottom>
+                <Typography variant="body2" color="textSecondary" gutterBottom className="min-height-50">
                   {CATEGORY_DESCRIPTIONS[category] || CATEGORY_DESCRIPTIONS["Custom"]}
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item lg={6} md={6} sm={12} xs={12} >     
                     <Box display="flex" flexWrap="wrap">
                       {Object.entries(appsData || {}).map(([appName, appData], index, array) => (
-                        <Box key={appName} flex="1 0 200px" p={2}>
+                        <Box key={appName} flex="1 0 200px">
                           <Typography variant="subtitle1" color="textSecondary">
                             {array.length === 1 ? "Overall Pass Rate" : appName}
                           </Typography>
@@ -264,7 +264,7 @@ class VEvaluationReportOverview extends Component {
                               }}
                             />
                           ) : (
-                            <Box className="m-b-md"/>
+                            <Box style={{ height: '24px' }}/>
                           )}
                           {/* Donut chart for each app */}
                           <EvalDonutChart
@@ -306,7 +306,7 @@ class VEvaluationReportOverview extends Component {
                           <tr key={categoryItem.name}>
                             <td>
                               <Chip
-                                className="table-container-chips m-r-xs m-b-xs"
+                                className="eval-chips m-r-xs m-b-xs"
                                 size="small"
                                 label={categoryItem.name}
                               />
