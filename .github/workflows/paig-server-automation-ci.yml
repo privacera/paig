@@ -34,7 +34,24 @@ jobs:
         python3 -m pip install virtualenv
         virtualenv -p python3 venv
         . venv/bin/activate
-        pip install twine build pytest pytest-cov
+        pip install build
+
+    - name: Install Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: https://registry.npmjs.org/
+
+    - name: Install Node.js dependencies and build UI
+      run: |
+        cd paig-server/scripts
+        sh build_ui.sh
+
+    - name: Build the wheel
+      run: |
+        . venv/bin/activate
+        cd paig-server
+        python3 -m build -w
 
     - name: Build and Install paig-common wheel
       run: |
@@ -60,32 +77,9 @@ jobs:
         pip install dist/*.whl
         cd ..
 
-    - name: Install PAIG-Server dependencies
-      run: |
-        . venv/bin/activate
-        pip install -r paig-server/backend/requirements.txt
-
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        registry-url: https://registry.npmjs.org/
-
-    - name: Install Node.js dependencies and build UI
-      run: |
-        cd paig-server/scripts
-        sh build_ui.sh
-
-    - name: Build the wheel
-      run: |
-        . venv/bin/activate
-        cd paig-server
-        python3 -m build -w
-
     - name: Install created package
       run: |
-        rm -rf venv
-        virtualenv -p python3 venv && . venv/bin/activate
+        . venv/bin/activate
         cd paig-server
         pip install dist/*.whl
 
