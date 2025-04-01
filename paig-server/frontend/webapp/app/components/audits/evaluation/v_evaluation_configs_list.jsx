@@ -41,10 +41,8 @@ class VEvaluationConfigTable extends Component{
     this.props.handleRun(model, asUser);
   }
 
-
-
   getRowData = (model) => {
-    const {handleDelete, handleRun, handleEdit, permission} = this.props;
+    const {handleDelete, handleEdit, permission} = this.props;
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
       <TableCell key="2">{model.application_names || "--"}</TableCell>,
@@ -55,27 +53,27 @@ class VEvaluationConfigTable extends Component{
       <TableCell key="7">{model.eval_run_count}</TableCell>,
       <TableCell key="9" column="actions">
         <PopperMenu 
-              buttonType="IconButton"
-              label={ <CustomAnchorBtn
-                tooltipLabel="Run"
-                color="primary"
-                icon={<PlayCircleOutlineIcon fontSize="small" />}
-              />}  
-              buttonProps={{size: 'small'}}
-              menuOptions={[
-                { 
-                  label: 'Run',
-                  onClick: () => this.handleContextMenuSelection(model, false),
-                  dataid: 'I'
-                },
-                {
-                  label: 'Run as user',
-                  onClick: () => this.handleContextMenuSelection(model, true),
-                  dataid: 'E',
-                  disabled: !model.application_names || model.application_names.includes(',')
-                }
-              ]}
-          />
+          buttonType="IconButton"
+          label={ <CustomAnchorBtn
+            tooltipLabel="Run"
+            color="primary"
+            icon={<PlayCircleOutlineIcon fontSize="small" />}
+          />}  
+          buttonProps={{size: 'small'}}
+          menuOptions={[
+            { 
+              label: 'Run',
+              onClick: () => this.handleContextMenuSelection(model, false),
+              dataid: 'I'
+            },
+            {
+              label: 'Run as user',
+              onClick: () => this.handleContextMenuSelection(model, true),
+              dataid: 'E',
+              disabled: !model.application_names || model.application_names.includes(',')
+            }
+          ]}
+        />
         <ActionButtonsWithPermission
           permission={permission}
           hideEdit={true}

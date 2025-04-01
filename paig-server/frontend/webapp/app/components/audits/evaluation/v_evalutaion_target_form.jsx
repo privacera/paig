@@ -28,11 +28,10 @@ const VEvalTargetForm = ({form}) => {
     } = form.fields;
 
     // Initialize headers list from form field or default to empty array
-    // const initialHeaders = headers.value && headers.value.length > 0 ? headers.value.sort((a, b) => (a.key === 'Authorization' ? -1 : b.key === 'Authorization' ? 1 : 0))  : [{ key: '', value: '' }];
     const authHeader = headers.value?.find(h => h.key?.toLowerCase() === 'authorization');
     const initialHeaders = headers.value?.filter(h => h.key?.toLowerCase() !== 'authorization') || [];
     if (authHeader) {
-        initialHeaders.unshift(authHeader); // Ensure Authorization is at index 0
+        initialHeaders.unshift(authHeader);
     }
     let initialAuthType = 'noauth';
     let initialToken = '';

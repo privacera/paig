@@ -1,5 +1,6 @@
-import React, {Component, Fragment, useEffect} from "react";
+import React, {Component, Fragment} from "react";
 import {observer} from "mobx-react";
+
 import {Box, Grid, Paper, Typography, TableCell} from "@material-ui/core";
 
 import f from 'common-ui/utils/f';
@@ -27,7 +28,7 @@ class VEvaluationReportDetails extends Component {
     super(props);
     this.state = { 
       selectedValue: 'Show All', 
-      selectedCategory: null, // Default selected
+      selectedCategory: null,
     };
   }
 
