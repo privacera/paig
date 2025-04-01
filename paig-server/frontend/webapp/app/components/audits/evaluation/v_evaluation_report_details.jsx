@@ -79,12 +79,12 @@ class VEvaluationReportDetails extends Component {
                 style={{
                   padding: '4px 8px',
                   borderRadius: '4px',
-                  backgroundColor: SEVERITY_MAP[appResponse.category_severity].COLOR,
+                  backgroundColor: SEVERITY_MAP?.[appResponse.category_severity]?.COLOR || SEVERITY_MAP?.HIGH?.COLOR,
                   fontSize: '12px',
                   fontWeight: 500
                 }}
               >
-                {SEVERITY_MAP[appResponse.category_severity].LABEL || '--'}
+                {SEVERITY_MAP?.[appResponse.category_severity]?.LABEL || SEVERITY_MAP?.HIGH?.LABEL}
               </Typography></span>
             }
             </div>

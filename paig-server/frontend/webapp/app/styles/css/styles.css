@@ -1021,7 +1021,6 @@ span.diff-danger>span {
 
 .category-column {
   padding: 8px;
-  width: 150px; /* Adjust if needed */
   position: sticky;
   left: 0;
   background: white;

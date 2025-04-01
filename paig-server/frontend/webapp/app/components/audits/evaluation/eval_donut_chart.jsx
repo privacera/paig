@@ -38,7 +38,7 @@ class EvalDonutChart extends Component {
         plotBorderWidth: null,
         plotShadow: false,
         height: "150px",
-        width: 300,
+        width: null,
         custom: {},
         events: {
           render() {

@@ -254,7 +254,7 @@ class VEvaluationReportOverview extends Component {
                           <Typography variant="subtitle1" color="textSecondary">
                             {array.length === 1 ? "Overall Pass Rate" : appName}
                           </Typography>
-                          {appData.severity && SEVERITY_MAP[appData.severity] && (
+                          {appData.severity && SEVERITY_MAP[appData.severity] ? (
                             <Chip
                               className="table-container-chips m-r-xs m-b-xs"
                               size="small"
@@ -263,12 +263,13 @@ class VEvaluationReportOverview extends Component {
                                 backgroundColor: SEVERITY_MAP[appData.severity].COLOR
                               }}
                             />
+                          ) : (
+                            <Box className="m-b-md"/>
                           )}
                           {/* Donut chart for each app */}
                           <EvalDonutChart
                             appName={appName}
                             data={appData}
-                            boxProps={{ mt: 2 }}
                           />
                         </Box>
                       ))}
@@ -303,7 +304,7 @@ class VEvaluationReportOverview extends Component {
                       <Box component="tbody" className="results-table-body">
                         {getCategories(appsData).map((categoryItem) => (
                           <tr key={categoryItem.name}>
-                            <td className="category-column">
+                            <td>
                               <Chip
                                 className="table-container-chips m-r-xs m-b-xs"
                                 size="small"
