@@ -223,14 +223,14 @@ class GuardrailRequestValidator:
         """
         for index, topic_config in enumerate(gr_config.config_data.get('configs', []), 1):
             # Validate topic name
-            topic_name = topic_config.get('topic', '')
+            topic_name = topic_config.get('topic', None)
             validate_string_data(topic_name, f"Topic name for topic {index}", required=True, max_length=100)
 
             if not re.match(FIELD_VALIDATIONS['topic_name']['regex'], topic_name):
                 raise BadRequestException(FIELD_VALIDATIONS['topic_name']['error_message'])
 
             # Validate definition length
-            validate_string_data(topic_config.get('definition', ''), f"Topic definition for topic {index}",
+            validate_string_data(topic_config.get('definition', None), f"Topic definition for topic {index}",
                             required=True, max_length=200)
 
             # Validate sample phrases (optional)
@@ -295,9 +295,9 @@ class GuardrailRequestValidator:
             # Validate regex
             if 'type' in sensitive_data_config and sensitive_data_config['type'].upper() == "REGEX":
                 regex_index += 1
-                validate_string_data(sensitive_data_config['name'], f"Name from Regex {regex_index}", required=True, max_length=100)
-                validate_string_data(sensitive_data_config['description'], f"Description from Regex {regex_index}", required=False, max_length=1000)
-                validate_string_data(sensitive_data_config['pattern'], f"Regex pattern from Regex {regex_index}", required=True, max_length=500)
+                validate_string_data(sensitive_data_config.get('name', None), f"Name from Regex {regex_index}", required=True, max_length=100)
+                validate_string_data(sensitive_data_config.get('description', None), f"Description from Regex {regex_index}", required=False, max_length=1000)
+                validate_string_data(sensitive_data_config.get('pattern', None), f"Regex pattern from Regex {regex_index}", required=True, max_length=500)
 
     def validate_guardrail_provider_connection(self, request):
         """

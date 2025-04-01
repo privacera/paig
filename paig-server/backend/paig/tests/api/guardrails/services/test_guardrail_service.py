@@ -890,7 +890,7 @@ async def test_validate_name_invalid_cases(guardrail_request_validator):
     # Test invalid names
     invalid_cases = [
         ("", "Guardrail name must be provided"),  # Empty string
-        ("a" * 51, "Guardrail name must be less than or equal to 50 characters"),  # Too long
+        ("a" * 51, "Guardrail name length exceeds maximum allowed length of 50"),  # Too long
         ("invalid name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Space
         ("invalid@name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char
         ("invalid/name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char
@@ -924,7 +924,7 @@ async def test_validate_description_valid_cases(guardrail_request_validator):
 async def test_validate_description_invalid_cases(guardrail_request_validator):
     # Test invalid descriptions
     invalid_cases = [
-        ("a" * 201, "Guardrail description must be less than or equal to 200 characters"),  # Too long
+        ("a" * 201, "Guardrail description length exceeds maximum allowed length of 200"),  # Too long
     ]
 
     for description, expected_error in invalid_cases:
@@ -1001,7 +1001,7 @@ async def test_validate_topic_name_regex_invalid_cases(guardrail_request_validat
     # Test invalid topic names
     invalid_cases = [
         ("", "Topic name for topic 1 must be provided"),  # Empty string
-        ("a" * 101, "Topic name for topic 1 must be less than or equal to 100 characters"),  # Too long
+        ("a" * 101, "Topic name for topic 1 length exceeds maximum allowed length of 100"),  # Too long
         ("invalid@topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
         ("invalid/topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
         ("invalid#topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
@@ -1045,7 +1045,7 @@ async def test_validate_topic_definition_invalid_cases(guardrail_request_validat
     # Test invalid topic definitions
     invalid_cases = [
         ("", "Topic definition for topic 1 must be provided"),  # Empty string
-        ("a" * 201, "Topic definition for topic 1 must be less than or equal to 200 characters"),  # Too long
+        ("a" * 201, "Topic definition for topic 1 length exceeds maximum allowed length of 200"),  # Too long
         (None, "Topic definition for topic 1 must be provided"),  # None value
     ]
 
@@ -1085,7 +1085,7 @@ async def test_validate_sample_phrases_invalid_cases(guardrail_request_validator
     # Test invalid sample phrases
     invalid_cases = [
         ("", "Sample phrase 1 for topic 1 must be provided"),  # Empty string
-        ("a" * 101, "Sample phrase 1 for topic 1 must be less than or equal to 100 characters"),  # Too long
+        ("a" * 101, "Sample phrase 1 for topic 1 length exceeds maximum allowed length of 100"),  # Too long
         (None, "Sample phrase 1 for topic 1 must be provided"),  # None value
     ]
 
@@ -1208,13 +1208,12 @@ async def test_validate_denied_terms_multiple_configs_total_limit(guardrail_requ
     guardrail_view = GuardrailView(**guardrail_view_json)
 
     # Create multiple configs with keywords that sum to more than 10000
-    configs = []
+    config = copy.deepcopy(guardrail_config_json2)
+    del config['configData']['configs'][1]  # Remove the default config
     for i in range(5):  # 5 configs with 2001 keywords each = 10005 total
-        config = copy.deepcopy(guardrail_config_json2)
-        config['configData']['configs'][1]['keywords'] = [f"keyword_{i}_{j}" for j in range(2001)]
-        configs.append(GRConfigView(**config))
+        config['configData']['configs'].append({'keywords': [f"keyword_{i}_{j}" for j in range(2001)]})
 
-    guardrail_view.guardrail_configs = configs
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
 
     with pytest.raises(BadRequestException) as exc_info:
         guardrail_request_validator.validate_configs(guardrail_view)
@@ -1242,13 +1241,12 @@ async def test_validate_denied_terms_multiple_configs_under_limit(guardrail_requ
     guardrail_view = GuardrailView(**guardrail_view_json)
 
     # Create multiple configs with keywords that sum to less than 10000
-    configs = []
+    config = copy.deepcopy(guardrail_config_json2)
+    del config['configData']['configs'][1]  # Remove the default config
     for i in range(5):  # 5 configs with 1000 keywords each = 5000 total
-        config = copy.deepcopy(guardrail_config_json2)
-        config['configData']['configs'][1]['keywords'] = [f"keyword_{i}_{j}" for j in range(1000)]
-        configs.append(GRConfigView(**config))
+        config['configData']['configs'].append({'keywords': [f"keyword_{i}_{j}" for j in range(1000)]})
 
-    guardrail_view.guardrail_configs = configs
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
 
     # Should not raise any exception
     guardrail_request_validator.validate_configs(guardrail_view)
@@ -1268,7 +1266,7 @@ async def test_validate_denied_terms_keyword_length(guardrail_request_validator)
     with pytest.raises(BadRequestException) as exc_info:
         guardrail_request_validator.validate_configs(guardrail_view)
     assert "Phrase or Keyword" in str(exc_info.value)
-    assert "must be less than or equal to 100 characters" in str(exc_info.value)
+    assert "from Denied term 1 length exceeds maximum allowed length of 100" in str(exc_info.value)
 
 
 @pytest.mark.asyncio
@@ -1304,6 +1302,7 @@ async def test_validate_configs_valid_sensitive_data(guardrail_request_validator
     guardrail_view = GuardrailView(**guardrail_view_json)
     sensitive_data_config = {
         "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
         "configData": {
             "configs": [
                 {
@@ -1327,6 +1326,7 @@ async def test_validate_configs_invalid_sensitive_data(guardrail_request_validat
     guardrail_view = GuardrailView(**guardrail_view_json)
     invalid_config = {
         "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
         "configData": {
             "configs": [
                 {
@@ -1359,6 +1359,7 @@ async def test_validate_sensitive_data_regex_name_valid_cases(guardrail_request_
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1381,7 +1382,7 @@ async def test_validate_sensitive_data_regex_name_invalid_cases(guardrail_reques
     # Test invalid regex names
     invalid_cases = [
         ("", "Name from Regex 1 must be provided"),  # Empty string
-        ("a" * 101, "Name from Regex 1 must be less than or equal to 100 characters"),  # Too long
+        ("a" * 101, "Name from Regex 1 length exceeds maximum allowed length of 100"),  # Too long
         (None, "Name from Regex 1 must be provided"),  # None value
     ]
 
@@ -1389,6 +1390,7 @@ async def test_validate_sensitive_data_regex_name_invalid_cases(guardrail_reques
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1423,6 +1425,7 @@ async def test_validate_sensitive_data_regex_description_valid_cases(guardrail_r
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1444,13 +1447,14 @@ async def test_validate_sensitive_data_regex_description_valid_cases(guardrail_r
 async def test_validate_sensitive_data_regex_description_invalid_cases(guardrail_request_validator):
     # Test invalid regex descriptions
     invalid_cases = [
-        ("a" * 1001, "Description from Regex 1 must be less than or equal to 1000 characters"),  # Too long
+        ("a" * 1001, "Description from Regex 1 length exceeds maximum allowed length of 1000"),  # Too long
     ]
 
     for description, expected_error in invalid_cases:
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1485,6 +1489,7 @@ async def test_validate_sensitive_data_regex_pattern_valid_cases(guardrail_reque
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1507,7 +1512,7 @@ async def test_validate_sensitive_data_regex_pattern_invalid_cases(guardrail_req
     # Test invalid regex patterns
     invalid_cases = [
         ("", "Regex pattern from Regex 1 must be provided"),  # Empty string
-        ("a" * 501, "Regex pattern from Regex 1 must be less than or equal to 500 characters"),  # Too long
+        ("a" * 501, "Regex pattern from Regex 1 length exceeds maximum allowed length of 500"),  # Too long
         (None, "Regex pattern from Regex 1 must be provided"),  # None value
     ]
 
@@ -1515,6 +1520,7 @@ async def test_validate_sensitive_data_regex_pattern_invalid_cases(guardrail_req
         guardrail_view = GuardrailView(**guardrail_view_json)
         config = {
             "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
             "configData": {
                 "configs": [
                     {
@@ -1539,6 +1545,7 @@ async def test_validate_sensitive_data_regex_multiple_configs(guardrail_request_
     guardrail_view = GuardrailView(**guardrail_view_json)
     config = {
         "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
         "configData": {
             "configs": [
                 {
