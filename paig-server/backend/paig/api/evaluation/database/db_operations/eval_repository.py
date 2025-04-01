@@ -1,5 +1,7 @@
 from dns.e164 import query
 from sqlalchemy import and_, func, case
+from sympy import prime
+
 from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationModel
 from api.evaluation.database.db_models.eval_model import EvaluationResultPromptsModel, EvaluationResultResponseModel
@@ -94,7 +96,13 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
                 query = self.order_by(query, sort_column_name, sort_type)
         query = query.limit(size).offset(skip)
         results = (await session.execute(query)).scalars().all()
-        count = (await self.get_count_with_filter(include_filters.model_dump()))
+        filters = include_filters.model_dump()
+        if'create_time_to' in filters and max_value:
+            filters['create_time_to'] = max_value
+        if 'create_time_from' in filters and min_value:
+            filters['create_time_from'] = min_value
+        count = (await self.get_count_with_filter(filters))
+
         return results, count
 
 
