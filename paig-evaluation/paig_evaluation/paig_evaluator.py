@@ -72,10 +72,9 @@ def get_all_plugins() -> Dict:
         return response
 
 
-def init_config(plugin_file_path: str = None, email: str = None) -> Dict:
+def init_config(plugin_file_path: str = None, email: str = 'promptfoo@paig.ai') -> Dict:
     constants.PLUGIN_FILE_PATH = plugin_file_path
-    if email:
-        ensure_promptfoo_config('promptfoo@paig.ai')
+    ensure_promptfoo_config(email)
 
 def init_setup() -> Dict:
     """
