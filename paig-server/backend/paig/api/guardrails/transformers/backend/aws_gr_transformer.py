@@ -127,10 +127,8 @@ class AWSGuardrailTransformer(GuardrailTransformerBase):
             for config in denied_terms_config.config_data['configs']:
                 if 'type' in config and config['type'].upper() == "PROFANITY" and config['value'] is True:
                     profanity_config.append({"type": "PROFANITY"})
-                if 'term' in config:
-                    word_policy_config.append({"text": config['term']})
-                    for term in config['keywords']:
-                        word_policy_config.append({"text": term})
+                if 'keywords' in config:
+                    word_policy_config.extend({"text": keyword} for keyword in config['keywords'])
             if not word_policy_config and not profanity_config:
                 return None
             if word_policy_config:

@@ -75,3 +75,17 @@ def get_version():
                 version = line.split('=')[1].strip().strip("'\"")
                 return version
     raise ValueError("Version not found")
+
+
+def load_config_json(json_file_path: str):
+    """
+    Load validation configuration from JSON file.
+    
+    Args:
+        json_file_path (str): The path to the JSON file to load.
+    
+    Returns:
+        dict: The loaded validation configuration.
+    """
+    with open(format_to_root_path(json_file_path), 'r') as f:
+        return json.load(f)

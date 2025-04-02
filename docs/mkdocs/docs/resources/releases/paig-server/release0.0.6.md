@@ -8,3 +8,7 @@ title: PAIG Server 0.0.6
         - Improved support for MySQL to enhance database stability.  
 - **Improvements & Updates**:  
     - The `User Invited` column now displays `'NA'` when the invite status is unavailable.
+
+<div class="grid cards" markdown>
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+</div>
