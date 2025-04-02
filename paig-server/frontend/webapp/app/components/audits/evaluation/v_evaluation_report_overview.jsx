@@ -59,7 +59,7 @@ const VEvalReportBasicInfo = ({model}) => {
             alignItems="center"
           >
             <Box justifyContent='center'>
-              <Typography variant="subtitle2" className="m-b-xs ellipsize">
+              <Typography variant="subtitle2" className="m-b-xs ellipsize" title={result.application_name || 'Application Score'}>
                 {result.application_name || 'Application Score'}
               </Typography>
               <Typography>
@@ -258,7 +258,7 @@ class VEvaluationReportOverview extends Component {
                 
                         <Grid item lg={Object.keys(appsData || {}).length === 1 ? 12 : 6} md={Object.keys(appsData || {}).length === 1 ? 12 : 6} sm={12} xs={12} >
                         <Box key={appName} flex="1 0 200px">
-                          <Typography variant="subtitle1" color="textSecondary">
+                          <Typography variant="subtitle1" color="textSecondary" className="ellipsize" title={array.length === 1 ? "Overall Pass Rate" : appName} >
                             {array.length === 1 ? "Overall Pass Rate" : appName}
                           </Typography>
                           {appData.severity && SEVERITY_MAP[appData.severity] ? (
@@ -288,20 +288,21 @@ class VEvaluationReportOverview extends Component {
                     <Typography variant="subtitle1" color="textSecondary">
                       Results overview
                     </Typography>
-                    <Box component="table" className="results-table">
+                    <div className="results-table">
+                    <Box component="table">
                       {/* Table Header */}
                       <thead className="results-table-header">
                         <tr>
-                          <Typography component="th" className="category-column">
+                          <Typography component="th">
                             Category
                           </Typography>
                           {Object.keys(appsData || {}).length === 1 ? (
-                            <Typography component="th" className="table-header-cell">
+                            <Typography component="th" className="table-header-cell" width="65px">
                               Ratio
                             </Typography>
                           ) : (
                             Object.keys(appsData || {}).map(appName => (
-                              <Typography key={appName} component="th" className="table-header-cell">
+                              <Typography key={appName} component="th" width="150" title={appName} className="ellipsize table-header-cell">
                                 {appName}
                               </Typography>
                             ))
@@ -329,6 +330,7 @@ class VEvaluationReportOverview extends Component {
                         ))}
                       </Box>
                     </Box>
+                    </div>
                   </Grid>
                 </Grid>
               </PaperCard>
