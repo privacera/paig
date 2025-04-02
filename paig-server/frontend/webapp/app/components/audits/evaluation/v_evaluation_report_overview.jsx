@@ -52,48 +52,53 @@ const VEvalReportBasicInfo = ({model}) => {
     <PaperCard boxProps={{mb: 2}} paperProps={{'data-track-id': 'basic-report-info'}}>
       <Grid container spacing={3}>
         {model?.result?.map((result, index) => (
-          <Grid item xs className="border-right" alignItems="center">
-          <Box justifyContent='center'>
-          <Typography  variant="subtitle2" className="m-b-xs" >
-            {result.application_name || 'Application Score'}
-          </Typography>
-          <Typography>
-          <AssignmentIcon color="action" className="m-r-xs"/>
-          {getScore(result) || '--'}
-          </Typography>
-          </Box>
+          <Grid 
+            item 
+            xs={3}
+            className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`} 
+            alignItems="center"
+          >
+            <Box justifyContent='center'>
+              <Typography variant="subtitle2" className="m-b-xs ellipsize">
+                {result.application_name || 'Application Score'}
+              </Typography>
+              <Typography>
+                <AssignmentIcon color="action" className="m-r-xs"/>
+                {getScore(result) || '--'}
+              </Typography>
+            </Box>
           </Grid>
         ))}  
 
-        <Grid item xs className="border-right" alignItems="center">
+        <Grid item xs={3} className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`}  alignItems="center">
           <Box justifyContent='center'>
-          <Typography  variant="subtitle2" className="m-b-xs" >
-            Created
-          </Typography>
-          <Typography>
-          <EventIcon color="action" className="m-r-xs"/>
-          <span>{getCreateTime(model)}</span>
-          </Typography>
+            <Typography variant="subtitle2" className="m-b-xs">
+              Created
+            </Typography>
+            <Typography>
+              <EventIcon color="action" className="m-r-xs"/>
+              <span>{getCreateTime(model)}</span>
+            </Typography>
           </Box>
         </Grid>
-        <Grid item xs className="border-right" alignItems="center">
+        <Grid item xs={3} className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`}  alignItems="center">
           <div>
-          <Typography variant="subtitle2" className="m-b-xs">
-            Run By
-          </Typography>
-          <Typography>
-          <AccountCircleIcon color="action" className="m-r-xs"/>
-          <span>{model?.owner || '--'}</span>
-          </Typography>
+            <Typography variant="subtitle2" className="m-b-xs">
+              Run By
+            </Typography>
+            <Typography>
+              <AccountCircleIcon color="action" className="m-r-xs"/>
+              <span>{model?.owner || '--'}</span>
+            </Typography>
           </div>
         </Grid>
-        <Grid item xs >
-          <Typography variant="subtitle2" className="m-b-xs">
+        <Grid item xs={3} className={` ${model?.result?.length > 1 ? 'col-5-grid' : ''}`} >
+          <Typography variant="subtitle2" className={`m-b-xs`} >
             Run As
           </Typography>
           <Typography>
-          <ContactsIcon color="action" className="m-r-xs"/>
-          <span>{getRunAs(model)}</span>
+            <ContactsIcon color="action" className="m-r-xs"/>
+            <span>{getRunAs(model)}</span>
           </Typography>
         </Grid>
       </Grid>

@@ -1062,3 +1062,7 @@ span.diff-danger>span {
 .min-height-50 {
   min-height: 50px;
 }
+
+.col-5-grid {
+  max-width: 20% !important;
+}
