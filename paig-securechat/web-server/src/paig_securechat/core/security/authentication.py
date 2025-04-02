@@ -12,7 +12,7 @@ from core import constants, config
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
-BASIC_AUTH_HEADER_ENABLED = conf.get("security", {}).get("basic_auth", {}).get("enable_header_auth", False)
+BASIC_AUTH_HEADER_ENABLED = conf.get("security", {}).get("basic_auth", {}).get("enable_header_auth", "false").lower() == "true"
 
 async def get_auth_user(
     request: Request,
