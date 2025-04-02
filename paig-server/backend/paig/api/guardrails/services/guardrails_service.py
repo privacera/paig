@@ -8,7 +8,7 @@ from api.audit.api_schemas.admin_audit_schema import BaseAdminAuditView
 from api.audit.controllers.data_store_controller import get_service_instance
 from api.governance.api_schemas.ai_app import GuardrailApplicationsAssociation
 from api.governance.services.ai_app_service import AIAppService
-from api.guardrails import model_to_dict, dict_to_model
+from api.guardrails import GuardrailConfigType, model_to_dict, dict_to_model
 from api.guardrails.api_schemas.gr_connection import GRConnectionFilter, GRConnectionView
 from api.guardrails.api_schemas.guardrail import GuardrailView, GuardrailFilter, \
     GRVersionHistoryFilter, GRVersionHistoryView
@@ -19,7 +19,7 @@ from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRe
     UpdateGuardrailRequest
 from api.guardrails.services.gr_connections_service import GRConnectionService
 from api.guardrails.transformers.guardrail_transformer import GuardrailTransformer
-from core.config import load_config_file
+from core.config import load_config_file, load_config_json
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable, create_pageable_response
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
@@ -29,10 +29,13 @@ from core.middlewares.request_session_context_middleware import get_user
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends, \
     generate_unique_identifier_key, normalize_datetime, current_utc_time_epoch
 
+SAMPLE_PHRASES_MAX_COUNT = 5
+DENIED_TERMS_MAX_COUNT = 10000
+
 config = load_config_file()
 
-error_topic_example_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.example"
-error_topic_definition_pattern = r"topicPolicyConfig\.topicsConfig\.\d+\.member\.definition"
+# Load validations from the current module's conf directory
+validations_config = load_config_json("api/guardrails/conf/validations.json")
 
 
 class GuardrailRequestValidator:
@@ -127,7 +130,9 @@ class GuardrailRequestValidator:
         Args:
             name (str): The name of the Guardrail.
         """
-        validate_string_data(name, "Guardrail name")
+        validate_string_data(name, "Guardrail name", required=True, max_length=50)
+        if not re.match(validations_config['name']['regex'], name):
+            raise BadRequestException(validations_config['name']['error_message'])
 
     def validate_description(self, description: str):
         """
@@ -136,7 +141,7 @@ class GuardrailRequestValidator:
         Args:
             description (str): The description of the Guardrail.
         """
-        validate_string_data(description, "Guardrail description", required=False, max_length=4000)
+        validate_string_data(description, "Guardrail description", required=False, max_length=200)
 
     async def validate_guardrail_name_availability(self, name: str):
         """
@@ -184,7 +189,101 @@ class GuardrailRequestValidator:
             if gr_config.config_type in gr_config_types:
                 raise BadRequestException(
                     f"Multiple Guardrail configurations of same type {[gr_config.config_type.value]} not allowed")
+            if gr_config.config_type == GuardrailConfigType.OFF_TOPIC:
+                self.validate_topic_policy_config(gr_config)
+            if gr_config.config_type == GuardrailConfigType.DENIED_TERMS:
+                self.validate_denied_terms_config(gr_config)
+            if gr_config.config_type == GuardrailConfigType.SENSITIVE_DATA:
+                self.validate_sensitive_data_config(gr_config)
             gr_config_types.append(gr_config.config_type)
+
+    def validate_topic_policy_config(self, gr_config):
+        """
+        Validate the topic policy configuration.
+        
+        Args:
+            gr_config: The guardrail configuration containing topic policy settings
+            
+        Raises:
+            BadRequestException: If validation fails for topic name, definition or sample phrases
+        """
+        for index, topic_config in enumerate(gr_config.config_data.get('configs', []), 1):
+            # Validate topic name
+            topic_name = topic_config.get('topic', None)
+            validate_string_data(topic_name, f"Topic name for topic {index}", required=True, max_length=100)
+
+            if not re.match(validations_config['topic_name']['regex'], topic_name):
+                raise BadRequestException(validations_config['topic_name']['error_message'])
+
+            # Validate definition length
+            validate_string_data(topic_config.get('definition', None), f"Topic definition for topic {index}",
+                            required=True, max_length=200)
+
+            # Validate sample phrases (optional)
+            sample_phrases = topic_config.get('samplePhrases', [])
+            if sample_phrases:
+                if len(sample_phrases) > SAMPLE_PHRASES_MAX_COUNT:
+                    raise BadRequestException(
+                        f"Maximum {SAMPLE_PHRASES_MAX_COUNT} sample phrases are allowed per topic. "
+                        f"Topic {index} has {len(sample_phrases)} sample phrases"
+                    )
+
+                for phrase_idx, phrase in enumerate(sample_phrases, 1):
+                    validate_string_data(
+                        phrase,
+                        f"Sample phrase {phrase_idx} for topic {index}",
+                        required=True,
+                        max_length=100
+                    )
+
+    def validate_denied_terms_config(self, gr_config):
+        """
+        Validate the denied terms configuration.
+        
+        Args:
+            gr_config: The guardrail configuration containing denied terms settings
+        """
+        keywords_set = set()
+        denied_terms_count = 0
+        term_index = 0
+
+        for denied_term_config in gr_config.config_data.get('configs', []):
+            keywords = denied_term_config.get('keywords', [])
+            if keywords:
+                term_index += 1
+                denied_terms_count += len(keywords)
+
+                if denied_terms_count > DENIED_TERMS_MAX_COUNT:
+                    raise BadRequestException(f"Maximum {DENIED_TERMS_MAX_COUNT} phrases or keywords are allowed in Denied terms")
+
+                for keyword in keywords:
+                    validate_string_data(
+                        keyword,
+                        f"Phrase or Keyword '{keyword}' from Denied term {term_index}",
+                        required=True,
+                        max_length=100
+                    )
+
+                    if keyword in keywords_set:
+                        raise BadRequestException(f"Repeated keyword '{keyword}' found in Denied term {term_index}. Please remove the duplicate keyword.")
+
+                    keywords_set.add(keyword)
+
+    def validate_sensitive_data_config(self, gr_config):
+        """
+        Validate the sensitive data configuration.
+        
+        Args:
+            gr_config: The guardrail configuration containing sensitive data settings
+        """
+        regex_index = 0
+        for sensitive_data_config in gr_config.config_data.get('configs', []):
+            # Validate regex
+            if 'type' in sensitive_data_config and sensitive_data_config['type'].upper() == "REGEX":
+                regex_index += 1
+                validate_string_data(sensitive_data_config.get('name', None), f"Name from Regex {regex_index}", required=True, max_length=100)
+                validate_string_data(sensitive_data_config.get('description', None), f"Description from Regex {regex_index}", required=False, max_length=1000)
+                validate_string_data(sensitive_data_config.get('pattern', None), f"Regex pattern from Regex {regex_index}", required=True, max_length=500)
 
     def validate_guardrail_provider_connection(self, request):
         """
@@ -704,17 +803,18 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
             if response['response']['details']['errorType'] == 'ValidationException':
                 if response['response']['details']['details'].endswith('Member must have length less than or equal to 200') \
-                    and re.search(error_topic_definition_pattern, response['response']['details']['details']):
+                        and re.search(validations_config['topic_definition']['regex'],
+                                      response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: The guardrail Off-topic definition must be less than or equal to 200 characters.",
+                        f"Failed to {operation} guardrail: {validations_config['topic_definition']['error_message']}",
                         response['response']['details'])
-                
+
                 if "Member must have length less than or equal to 100" in response['response']['details']['details'] \
-                    and re.search(error_topic_example_pattern, response['response']['details']['details']):
+                        and re.search(validations_config['topic_example']['regex'], response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: The guardrail Off-topic sample phrases must be less than or equal to 100 characters.",
+                        f"Failed to {operation} guardrail: {validations_config['topic_example']['error_message']}",
                         response['response']['details'])
-                
+
                 raise BadRequestException(
                     f"Failed to {operation} guardrail: {self.extract_details(response['response']['details']['details'])}",
                     response['response']['details'])
