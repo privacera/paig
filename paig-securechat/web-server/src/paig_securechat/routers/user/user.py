@@ -24,7 +24,8 @@ okta_conf = security_conf.get("okta", dict())
 okta_enabled = okta_conf.get("enabled", "false") == "true"
 basic_auth_config = security_conf.get("basic_auth", dict())
 basic_auth_enabled = basic_auth_config.get("enabled", "false") == "true"
-basic_auth_header_enabled = basic_auth_config.get("enable_header_auth", "false")
+basic_auth_header_enabled = basic_auth_config.get("enable_header_auth", "false").lower() == "true"
+
 
 user_secrets_df = pd.DataFrame()
 
