@@ -29,6 +29,9 @@ from core.middlewares.request_session_context_middleware import get_user
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends, \
     generate_unique_identifier_key, normalize_datetime, current_utc_time_epoch
 
+SAMPLE_PHRASES_MAX_COUNT = 5
+DENIED_TERMS_MAX_COUNT = 10000
+
 config = load_config_file()
 
 # Load validations from the current module's conf directory
@@ -219,9 +222,9 @@ class GuardrailRequestValidator:
             # Validate sample phrases (optional)
             sample_phrases = topic_config.get('samplePhrases', [])
             if sample_phrases:
-                if len(sample_phrases) > 5:
+                if len(sample_phrases) > SAMPLE_PHRASES_MAX_COUNT:
                     raise BadRequestException(
-                        "Maximum 5 sample phrases are allowed per topic. "
+                        f"Maximum {SAMPLE_PHRASES_MAX_COUNT} sample phrases are allowed per topic. "
                         f"Topic {index} has {len(sample_phrases)} sample phrases"
                     )
 
@@ -250,8 +253,8 @@ class GuardrailRequestValidator:
                 term_index += 1
                 denied_terms_count += len(keywords)
 
-                if denied_terms_count > 10000:
-                    raise BadRequestException("Maximum 10000 phrases or keywords are allowed in Denied terms")
+                if denied_terms_count > DENIED_TERMS_MAX_COUNT:
+                    raise BadRequestException(f"Maximum {DENIED_TERMS_MAX_COUNT} phrases or keywords are allowed in Denied terms")
 
                 for keyword in keywords:
                     validate_string_data(
