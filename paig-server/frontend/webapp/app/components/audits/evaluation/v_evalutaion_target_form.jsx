@@ -132,7 +132,7 @@ const VEvalTargetForm = ({form}) => {
         <FormHorizontal>
             <Grid container spacing={3}>
                 <FormGroupInput
-                    inputColAttr={{ xs: 12, sm: 6 }}
+                    inputColAttr={{ xs: 12, sm: 7 }}
                     disabled={ai_application_id.value}
                     required={true}
                     label={id ? "Name" : "Name (Auto Generated, Editable)"}
@@ -144,7 +144,7 @@ const VEvalTargetForm = ({form}) => {
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
                 </Grid>
                 <FormGroupInput
-                    inputColAttr={{ xs: 12, sm: 4 }}
+                    inputColAttr={{ xs: 12, sm: 7 }}
                     label="Connection type"
                     placeholder="HTTP/HTTPS-Endpoint"
                     fieldObj={connectionType}
@@ -163,7 +163,7 @@ const VEvalTargetForm = ({form}) => {
                     <Typography variant="h7" gutterBottom>Endpoint Configuration</Typography>
                 </Grid>
                 <FormGroupSelect2
-                    inputColAttr={{ xs: 12, sm: 4 }}
+                    inputColAttr={{ xs: 12, sm: 7 }}
                     required={true}
                     label={"Method"}
                     showLabel={true}
@@ -175,9 +175,8 @@ const VEvalTargetForm = ({form}) => {
                     onChange={handleMethodChange}
                     data-testid="method"
                 />
-                <Grid item xs={12}>
                 <FormGroupSelect2
-                    inputColAttr={{ xs: 12, sm: 4 }}
+                    inputColAttr={{ xs: 12, sm: 7 }}
                     label="Authorization Type"
                     data={[
                         { label: 'No Auth', value: 'noauth' },
@@ -190,9 +189,8 @@ const VEvalTargetForm = ({form}) => {
                     multiple={false}
                     disableClearable={true}
                 />
-                </Grid>
                 <FormGroupInput
-                    inputColAttr={{ xs: 12, sm: 6 }}
+                    inputColAttr={{ xs: 12, sm: 7 }}
                     required={true}
                     label="Username - user as target user for AI Application"
                     placeholder="Enter username"
@@ -200,24 +198,24 @@ const VEvalTargetForm = ({form}) => {
                     onChange={(value) =>handleUsernameChange(value)}
                     inputProps={{ 'data-testid': 'name-input-username' }}
                 />
-                {authType === 'basicauth' && (<Grid item xs={12}><FormGroupInput
-                        inputColAttr={{ xs: 12, sm: 6 }}
+                {authType === 'basicauth' && (<FormGroupInput
+                        inputColAttr={{ xs: 12, sm: 7 }}
                         label={'Password'}
                         type={'password'}
                         value={password}
                         placeholder="password"
                         inputProps={{ 'data-testid': 'userpassword-input' }}
                         onChange={(e) => setPassword(e.target.value)}
-                      /></Grid>)}
-                {authType === 'bearertoken' && (<Grid item xs={12}><FormGroupInput
-                        inputColAttr={{ xs: 12, sm: 6 }}
+                      />)}
+                {authType === 'bearertoken' && (<FormGroupInput
+                        inputColAttr={{ xs: 12, sm: 7 }}
                         required={true}
                         label={"Bearer Token"}
                         value={token}
                         placeholder="Bearer <token>"
                         inputProps={{ 'data-testid': 'token-input' }}
                         onChange={(e) => setToken(e.target.value)}
-                        /></Grid>
+                        />
                  )}
                 {/* Headers Section */}
                 <Grid item xs={12}>

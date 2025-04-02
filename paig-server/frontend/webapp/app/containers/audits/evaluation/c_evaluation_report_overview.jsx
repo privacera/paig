@@ -140,7 +140,7 @@ export class CEvaluationReportOverview extends Component {
 
   handleTabSelect = (key, filter) => {
     this.props.parent_vState.searchFilterValue  = filter;
-    this.props.callbacks.handleTabSelect(key);
+    this.props.handleTabSelect(key);
   }
 
   renderTitle = () => {

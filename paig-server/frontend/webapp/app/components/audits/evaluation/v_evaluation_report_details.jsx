@@ -155,22 +155,20 @@ class VEvaluationReportDetails extends Component {
             </Grid>
             <Grid item xs={6} sm={6} md={6} lg={6}>
               <Grid container spacing={3} justify="flex-end">
-                <Grid item xs={3} sm={5} md={5} lg={5}>
-                    <FormGroupSelect2
-                        // inputColAttr={{ xs: 12, sm: 4 }}
-                        required={false}
-                        showLabel={false}
-                        value={selectedCategory}
-                        data={reportCategories?.category?.map(category => ({ name: category }))}
-                        labelKey={'name'}
-                        valueKey={'name'}
-                        onChange={(newValue) => this.handleCategorySelection(newValue)}
-                        data-testid="category-filter"
-                        multiple={false}
-                        disableClearable={false}
-                        placeholder={'Filter Category'}
-                    />
-                </Grid>
+                  <FormGroupSelect2
+                      inputColAttr={{ xs: 6, sm: 6, md: 5, lg: 5 }}
+                      required={false}
+                      showLabel={false}
+                      value={selectedCategory}
+                      data={reportCategories?.category?.map(category => ({ name: category }))}
+                      labelKey={'name'}
+                      valueKey={'name'}
+                      onChange={(newValue) => this.handleCategorySelection(newValue)}
+                      data-testid="category-filter"
+                      multiple={false}
+                      disableClearable={false}
+                      placeholder={'Filter Category'}
+                  />
                 <Grid item>
                       <CustomButtonGroup buttonList={['Show All', 'Passed', 'Failed']} value={this.state.selectedValue}  onClick={handleToggleChange} size='small'/>
                 </Grid>

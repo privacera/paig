@@ -73,7 +73,6 @@ class CEvaluationConfigMain extends Component {
 	
 	render() {
 		const {state, tabsState, handleTabSelect, handleRefresh} = this;
-		const callbacks = { handleTabSelect };
 		const tabs = [];
 		const tabsPanel = [];
 		
@@ -90,7 +89,7 @@ class CEvaluationConfigMain extends Component {
 			  )
 			  tabsPanel.push(
 				<TabPanel key={viewObj.index} value={tabsState.defaultState} index={viewObj.index} p={0} mt={"10px"} renderAll={false}>
-				  <viewObj.view ref={ ref => this[`${viewObj.title}Ref`] = ref} callbacks={callbacks} tabsState={tabsState} history={this.props.history}/>
+				  <viewObj.view ref={ ref => this[`${viewObj.title}Ref`] = ref}  tabsState={tabsState} history={this.props.history}/>
 				</TabPanel>
 			  )
 			})

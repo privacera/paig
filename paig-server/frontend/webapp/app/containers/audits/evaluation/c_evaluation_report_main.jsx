@@ -163,7 +163,6 @@ class CEvaluationReportMain extends Component {
 		  this.runReportModalRef.current.hide();
 		  f.notifySuccess('Report evaluation submitted');
 		  this.handleRedirect();
-		  this._vState.saving = false;
 		} catch(e) {
 		  this._vState.saving = false;
 		  f.handleError()(e);
@@ -172,8 +171,7 @@ class CEvaluationReportMain extends Component {
 	
 	
 	render() {
-		const {state, tabsState, handleTabSelect, handleRefresh, handleBackButton, _vState} = this;
-		const callbacks = { handleTabSelect };
+		const {state, tabsState, handleTabSelect, handleBackButton, _vState} = this;
 		const tabs = [];
 		const tabsPanel = [];
 		if (state.views.length) {
@@ -189,7 +187,7 @@ class CEvaluationReportMain extends Component {
 			  )
 			  tabsPanel.push(
 				<TabPanel key={viewObj.index} value={tabsState.defaultState} index={viewObj.index} p={0} mt={"10px"} renderAll={false}>
-				  <viewObj.view ref={ ref => this[`${viewObj.title}Ref`] = ref} callbacks={callbacks} tabsState={tabsState} history={this.props.history}
+				  <viewObj.view ref={ ref => this[`${viewObj.title}Ref`] = ref} handleTabSelect={handleTabSelect} tabsState={tabsState} history={this.props.history}
 					parent_vState={_vState}/>
 				</TabPanel>
 			  )

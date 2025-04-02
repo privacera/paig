@@ -63,13 +63,11 @@ class VEvaluationConfigTable extends Component{
           menuOptions={[
             { 
               label: 'Run',
-              onClick: () => this.handleContextMenuSelection(model, false),
-              dataid: 'I'
+              onClick: () => this.handleContextMenuSelection(model, false)
             },
             {
               label: 'Run as user',
               onClick: () => this.handleContextMenuSelection(model, true),
-              dataid: 'E',
               disabled: !model.application_names || model.application_names.includes(',')
             }
           ]}
