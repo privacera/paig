@@ -1,15 +1,14 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
-## [v0.0.7] - 2025-03-27
+## [v0.0.7] - 2025-04-02
 ### Added
-- Sensitive Data Filter with REDACT Regex in Guardrails
-- New encryption key type for guardrails
+- Enhanced Guardrail Functionality
+    - Independent guardrail creation and application association capabilities
+    - AWS Bedrock Guardrails integration with full UI support
+    - Improved guardrail management interface with streamlined workflows
+- Added comprehensive Cypress test suite for guardrail features
 
-### Changed
-- Optimized validation errors for guardrails
-- Fixed guardrails UI to Allow updating offtopic, denied terms and regex
- 
 ## [v0.0.6] - 2025-03-17
 ### Added
 - Paig lens support added. PAIG UI navigation bar updated.
