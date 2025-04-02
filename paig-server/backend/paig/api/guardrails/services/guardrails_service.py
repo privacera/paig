@@ -19,7 +19,7 @@ from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRe
     UpdateGuardrailRequest
 from api.guardrails.services.gr_connections_service import GRConnectionService
 from api.guardrails.transformers.guardrail_transformer import GuardrailTransformer
-from core.config import load_config_file
+from core.config import load_config_file, load_validation_config
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable, create_pageable_response
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
@@ -31,25 +31,8 @@ from core.utils import validate_id, validate_string_data, validate_boolean, Sing
 
 config = load_config_file()
 
-FIELD_VALIDATIONS = {
-    'name': {
-        'regex': r'^[a-zA-Z0-9_-]+$',
-        'error_message': "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"
-    },
-    'topic_name': {
-        'regex': r'^[a-zA-Z0-9\s_\-!?\.]+$',
-        'error_message': "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, "
-                            "exclamation point (!), question mark (?), and period (.)"
-    },
-    'topic_example': {
-        'regex': r'topicPolicyConfig\.topicsConfig\.\d+\.member\.example',
-        'error_message': "The guardrail Off-topic sample phrases must be less than or equal to 100 characters."
-    },
-    'topic_definition': {
-        'regex': r'topicPolicyConfig\.topicsConfig\.\d+\.member\.definition',
-        'error_message': "The guardrail Off-topic definition must be less than or equal to 200 characters."
-    }
-}
+# Load validations from the current module's conf directory
+validations_config = load_validation_config()
 
 
 class GuardrailRequestValidator:
@@ -145,8 +128,8 @@ class GuardrailRequestValidator:
             name (str): The name of the Guardrail.
         """
         validate_string_data(name, "Guardrail name", required=True, max_length=50)
-        if not re.match(FIELD_VALIDATIONS['name']['regex'], name):
-            raise BadRequestException(FIELD_VALIDATIONS['name']['error_message'])
+        if not re.match(validations_config['name']['regex'], name):
+            raise BadRequestException(validations_config['name']['error_message'])
 
     def validate_description(self, description: str):
         """
@@ -226,8 +209,8 @@ class GuardrailRequestValidator:
             topic_name = topic_config.get('topic', None)
             validate_string_data(topic_name, f"Topic name for topic {index}", required=True, max_length=100)
 
-            if not re.match(FIELD_VALIDATIONS['topic_name']['regex'], topic_name):
-                raise BadRequestException(FIELD_VALIDATIONS['topic_name']['error_message'])
+            if not re.match(validations_config['topic_name']['regex'], topic_name):
+                raise BadRequestException(validations_config['topic_name']['error_message'])
 
             # Validate definition length
             validate_string_data(topic_config.get('definition', None), f"Topic definition for topic {index}",
@@ -817,16 +800,16 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
             if response['response']['details']['errorType'] == 'ValidationException':
                 if response['response']['details']['details'].endswith('Member must have length less than or equal to 200') \
-                        and re.search(FIELD_VALIDATIONS['topic_definition']['regex'],
+                        and re.search(validations_config['topic_definition']['regex'],
                                       response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: {FIELD_VALIDATIONS['topic_definition']['error_message']}",
+                        f"Failed to {operation} guardrail: {validations_config['topic_definition']['error_message']}",
                         response['response']['details'])
 
                 if "Member must have length less than or equal to 100" in response['response']['details']['details'] \
-                        and re.search(FIELD_VALIDATIONS['topic_example']['regex'], response['response']['details']['details']):
+                        and re.search(validations_config['topic_example']['regex'], response['response']['details']['details']):
                     raise BadRequestException(
-                        f"Failed to {operation} guardrail: {FIELD_VALIDATIONS['topic_example']['error_message']}",
+                        f"Failed to {operation} guardrail: {validations_config['topic_example']['error_message']}",
                         response['response']['details'])
 
                 raise BadRequestException(
