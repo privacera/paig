@@ -867,3 +867,703 @@ async def test_delete_guardrail_when_guardrail_provider_does_not_have_resource(
         assert mock_get_record_by_id.called
         assert mock_guardrail_provider_manager.called
         assert mock_gr_connection_get_all.called
+
+
+@pytest.mark.asyncio
+async def test_validate_name_valid_cases(guardrail_request_validator):
+    # Test valid names
+    valid_names = [
+        "valid_name",
+        "valid-name",
+        "valid_name_123",
+        "valid-name-123",
+        "a" * 50  # Max length
+    ]
+
+    for name in valid_names:
+        # Should not raise any exception
+        guardrail_request_validator.validate_name(name)
+
+
+@pytest.mark.asyncio
+async def test_validate_name_invalid_cases(guardrail_request_validator):
+    # Test invalid names
+    invalid_cases = [
+        ("", "Guardrail name must be provided"),  # Empty string
+        ("a" * 51, "Guardrail name length exceeds maximum allowed length of 50"),  # Too long
+        ("invalid name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Space
+        ("invalid@name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char
+        ("invalid/name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char
+        (None, "Guardrail name must be provided"),  # None value
+    ]
+
+    for name, expected_error in invalid_cases:
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_name(name)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_description_valid_cases(guardrail_request_validator):
+    # Test valid descriptions
+    valid_descriptions = [
+        None,  # Optional field
+        "",  # Empty string is allowed
+        "Valid description",
+        "Valid description with numbers 123",
+        "Valid description with special chars !@#$%^&*()",
+        "a" * 200  # Max length
+    ]
+
+    for description in valid_descriptions:
+        # Should not raise any exception
+        guardrail_request_validator.validate_description(description)
+
+
+@pytest.mark.asyncio
+async def test_validate_description_invalid_cases(guardrail_request_validator):
+    # Test invalid descriptions
+    invalid_cases = [
+        ("a" * 201, "Guardrail description length exceeds maximum allowed length of 200"),  # Too long
+    ]
+
+    for description, expected_error in invalid_cases:
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_description(description)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_empty_configs(guardrail_request_validator):
+    # Test when no configs are provided
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    guardrail_view.guardrail_configs = []
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert str(exc_info.value) == "Guardrail Configurations must be provided"
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_duplicate_config_types(guardrail_request_validator):
+    # Test when duplicate config types are provided
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    duplicate_config = GRConfigView(**guardrail_config_json)
+    guardrail_view.guardrail_configs = [gr_config_view, duplicate_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert str(exc_info.value) == "Multiple Guardrail configurations of same type ['CONTENT_MODERATION'] not allowed"
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_valid_off_topic(guardrail_request_validator):
+    # Test valid OFF_TOPIC config
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    off_topic_config = GRConfigView(**guardrail_config_json3)
+    guardrail_view.guardrail_configs = [off_topic_config]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_topic_name_regex_valid_cases(guardrail_request_validator):
+    # Test valid topic names
+    valid_topic_names = [
+        "valid_topic",
+        "valid-topic",
+        "valid topic",
+        "valid.topic",
+        "valid!topic",
+        "valid?topic",
+        "valid_topic_123",
+        "valid-topic-123",
+        "valid topic 123",
+        "valid.topic.123",
+        "valid!topic!123",
+        "valid?topic?123",
+        "a" * 100  # Max length
+    ]
+
+    for topic_name in valid_topic_names:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['topic'] = topic_name
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_topic_name_regex_invalid_cases(guardrail_request_validator):
+    # Test invalid topic names
+    invalid_cases = [
+        ("", "Topic name for topic 1 must be provided"),  # Empty string
+        ("a" * 101, "Topic name for topic 1 length exceeds maximum allowed length of 100"),  # Too long
+        ("invalid@topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
+        ("invalid/topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
+        ("invalid#topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
+        ("invalid$topic", "Topic name can only contain alphabets, numbers, underscore (_), hyphen (-), space, exclamation point (!), question mark (?), and period (.)"),  # Special char
+        (None, "Topic name for topic 1 must be provided"),  # None value
+    ]
+
+    for topic_name, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['topic'] = topic_name
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_topic_definition_valid_cases(guardrail_request_validator):
+    # Test valid topic definitions
+    valid_definitions = [
+        "Valid definition",
+        "Valid definition with numbers 123",
+        "Valid definition with special chars !@#$%^&*()",
+        "a" * 200  # Max length
+    ]
+
+    for definition in valid_definitions:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['definition'] = definition
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_topic_definition_invalid_cases(guardrail_request_validator):
+    # Test invalid topic definitions
+    invalid_cases = [
+        ("", "Topic definition for topic 1 must be provided"),  # Empty string
+        ("a" * 201, "Topic definition for topic 1 length exceeds maximum allowed length of 200"),  # Too long
+        (None, "Topic definition for topic 1 must be provided"),  # None value
+    ]
+
+    for definition, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['definition'] = definition
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_sample_phrases_valid_cases(guardrail_request_validator):
+    # Test valid sample phrases
+    valid_phrases = [
+        "Valid sample phrase",
+        "Valid phrase with numbers 123",
+        "Valid phrase with special chars !@#$%^&*()",
+        "a" * 100  # Max length
+    ]
+
+    for phrase in valid_phrases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['samplePhrases'] = [phrase]
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_sample_phrases_invalid_cases(guardrail_request_validator):
+    # Test invalid sample phrases
+    invalid_cases = [
+        ("", "Sample phrase 1 for topic 1 must be provided"),  # Empty string
+        ("a" * 101, "Sample phrase 1 for topic 1 length exceeds maximum allowed length of 100"),  # Too long
+        (None, "Sample phrase 1 for topic 1 must be provided"),  # None value
+    ]
+
+    for phrase, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = copy.deepcopy(guardrail_config_json3)
+        config['configData']['configs'][0]['samplePhrases'] = [phrase]
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_sample_phrases_multiple_phrases(guardrail_request_validator):
+    # Test multiple valid sample phrases
+    valid_phrases = [
+        "First valid phrase",
+        "Second valid phrase",
+        "Third valid phrase",
+        "Fourth valid phrase",
+        "Fifth valid phrase"
+    ]
+
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    config = copy.deepcopy(guardrail_config_json3)
+    config['configData']['configs'][0]['samplePhrases'] = valid_phrases
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_sample_phrases_too_many_phrases(guardrail_request_validator):
+    # Test when too many sample phrases are provided
+    too_many_phrases = [
+        "First phrase",
+        "Second phrase",
+        "Third phrase",
+        "Fourth phrase",
+        "Fifth phrase",
+        "Sixth phrase"  # This exceeds the limit of 5
+    ]
+
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    config = copy.deepcopy(guardrail_config_json3)
+    config['configData']['configs'][0]['samplePhrases'] = too_many_phrases
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Maximum 5 sample phrases are allowed per topic" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_sample_phrases_mixed_validity(guardrail_request_validator):
+    # Test when some phrases are valid and others are invalid
+    mixed_phrases = [
+        "Valid phrase",
+        "",  # Invalid empty string
+        "Another valid phrase"
+    ]
+
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    config = copy.deepcopy(guardrail_config_json3)
+    config['configData']['configs'][0]['samplePhrases'] = mixed_phrases
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Sample phrase 2 for topic 1 must be provided" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_valid_denied_terms(guardrail_request_validator):
+    # Test valid DENIED_TERMS config
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    denied_terms_config = GRConfigView(**guardrail_config_json2)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_invalid_denied_terms(guardrail_request_validator):
+    # Test invalid DENIED_TERMS config with duplicate keywords
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    invalid_config = copy.deepcopy(guardrail_config_json2)
+    invalid_config['configData']['configs'][1]['keywords'] = ['duplicate', 'duplicate']
+    denied_terms_config = GRConfigView(**invalid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Repeated keyword" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_max_limit(guardrail_request_validator):
+    # Test when total number of keywords exceeds 10000
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    invalid_config = copy.deepcopy(guardrail_config_json2)
+
+    # Create 10001 keywords (exceeding the limit)
+    invalid_config['configData']['configs'][1]['keywords'] = [f"keyword_{i}" for i in range(10001)]
+    denied_terms_config = GRConfigView(**invalid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Maximum 10000 phrases or keywords are allowed in Denied terms" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_multiple_configs_total_limit(guardrail_request_validator):
+    # Test when total keywords across multiple configs exceeds 10000
+    guardrail_view = GuardrailView(**guardrail_view_json)
+
+    # Create multiple configs with keywords that sum to more than 10000
+    config = copy.deepcopy(guardrail_config_json2)
+    del config['configData']['configs'][1]  # Remove the default config
+    for i in range(5):  # 5 configs with 2001 keywords each = 10005 total
+        config['configData']['configs'].append({'keywords': [f"keyword_{i}_{j}" for j in range(2001)]})
+
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Maximum 10000 phrases or keywords are allowed in Denied terms" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_exact_limit(guardrail_request_validator):
+    # Test when total number of keywords is exactly 10000
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    valid_config = copy.deepcopy(guardrail_config_json2)
+
+    # Create exactly 10000 keywords
+    valid_config['configData']['configs'][1]['keywords'] = [f"keyword_{i}" for i in range(10000)]
+    denied_terms_config = GRConfigView(**valid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_multiple_configs_under_limit(guardrail_request_validator):
+    # Test when total keywords across multiple configs is under 10000
+    guardrail_view = GuardrailView(**guardrail_view_json)
+
+    # Create multiple configs with keywords that sum to less than 10000
+    config = copy.deepcopy(guardrail_config_json2)
+    del config['configData']['configs'][1]  # Remove the default config
+    for i in range(5):  # 5 configs with 1000 keywords each = 5000 total
+        config['configData']['configs'].append({'keywords': [f"keyword_{i}_{j}" for j in range(1000)]})
+
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_keyword_length(guardrail_request_validator):
+    # Test when keyword length exceeds 100 characters
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    invalid_config = copy.deepcopy(guardrail_config_json2)
+
+    # Create a keyword that's 101 characters long
+    invalid_config['configData']['configs'][1]['keywords'] = ["a" * 101]
+    denied_terms_config = GRConfigView(**invalid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Phrase or Keyword" in str(exc_info.value)
+    assert "from Denied term 1 length exceeds maximum allowed length of 100" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_denied_terms_keyword_required(guardrail_request_validator):
+    # Test when keyword is empty or None
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    invalid_config = copy.deepcopy(guardrail_config_json2)
+
+    # Test empty string
+    invalid_config['configData']['configs'][1]['keywords'] = [""]
+    denied_terms_config = GRConfigView(**invalid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Phrase or Keyword" in str(exc_info.value)
+    assert "must be provided" in str(exc_info.value)
+
+    # Test None value
+    invalid_config['configData']['configs'][1]['keywords'] = [None]
+    denied_terms_config = GRConfigView(**invalid_config)
+    guardrail_view.guardrail_configs = [denied_terms_config]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Phrase or Keyword" in str(exc_info.value)
+    assert "must be provided" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_valid_sensitive_data(guardrail_request_validator):
+    # Test valid SENSITIVE_DATA config
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    sensitive_data_config = {
+        "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
+        "configData": {
+            "configs": [
+                {
+                    "type": "REGEX",
+                    "name": "test_regex",
+                    "description": "test description",
+                    "pattern": "test.*pattern"
+                }
+            ]
+        }
+    }
+    guardrail_view.guardrail_configs = [GRConfigView(**sensitive_data_config)]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_configs_invalid_sensitive_data(guardrail_request_validator):
+    # Test invalid SENSITIVE_DATA config with missing required fields
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    invalid_config = {
+        "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
+        "configData": {
+            "configs": [
+                {
+                    "type": "REGEX",
+                    "name": "test_regex"
+                    # Missing required fields: description and pattern
+                }
+            ]
+        }
+    }
+    guardrail_view.guardrail_configs = [GRConfigView(**invalid_config)]
+
+    with pytest.raises(BadRequestException) as exc_info:
+        guardrail_request_validator.validate_configs(guardrail_view)
+    assert "Regex pattern from Regex 1 must be provided" in str(exc_info.value)
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_name_valid_cases(guardrail_request_validator):
+    # Test valid regex names
+    valid_names = [
+        "valid_regex_name",
+        "valid-regex-name",
+        "valid_regex_name_123",
+        "valid-regex-name-123",
+        "a" * 100  # Max length
+    ]
+
+    for name in valid_names:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": name,
+                        "description": "test description",
+                        "pattern": "test.*pattern"
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_name_invalid_cases(guardrail_request_validator):
+    # Test invalid regex names
+    invalid_cases = [
+        ("", "Name from Regex 1 must be provided"),  # Empty string
+        ("a" * 101, "Name from Regex 1 length exceeds maximum allowed length of 100"),  # Too long
+        (None, "Name from Regex 1 must be provided"),  # None value
+    ]
+
+    for name, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": name,
+                        "description": "test description",
+                        "pattern": "test.*pattern"
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_description_valid_cases(guardrail_request_validator):
+    # Test valid regex descriptions
+    valid_descriptions = [
+        None,  # Optional field
+        "",  # Empty string is allowed
+        "Valid description",
+        "Valid description with numbers 123",
+        "Valid description with special chars !@#$%^&*()",
+        "a" * 1000  # Max length
+    ]
+
+    for description in valid_descriptions:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": "test_regex",
+                        "description": description,
+                        "pattern": "test.*pattern"
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_description_invalid_cases(guardrail_request_validator):
+    # Test invalid regex descriptions
+    invalid_cases = [
+        ("a" * 1001, "Description from Regex 1 length exceeds maximum allowed length of 1000"),  # Too long
+    ]
+
+    for description, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": "test_regex",
+                        "description": description,
+                        "pattern": "test.*pattern"
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_pattern_valid_cases(guardrail_request_validator):
+    # Test valid regex patterns
+    valid_patterns = [
+        "test.*pattern",
+        "[0-9]+",
+        "[a-zA-Z]+",
+        "\\d{3}-\\d{3}-\\d{4}",  # Phone number pattern
+        "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",  # Email pattern
+        "a" * 500  # Max length
+    ]
+
+    for pattern in valid_patterns:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": "test_regex",
+                        "description": "test description",
+                        "pattern": pattern
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        # Should not raise any exception
+        guardrail_request_validator.validate_configs(guardrail_view)
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_pattern_invalid_cases(guardrail_request_validator):
+    # Test invalid regex patterns
+    invalid_cases = [
+        ("", "Regex pattern from Regex 1 must be provided"),  # Empty string
+        ("a" * 501, "Regex pattern from Regex 1 length exceeds maximum allowed length of 500"),  # Too long
+        (None, "Regex pattern from Regex 1 must be provided"),  # None value
+    ]
+
+    for pattern, expected_error in invalid_cases:
+        guardrail_view = GuardrailView(**guardrail_view_json)
+        config = {
+            "configType": "SENSITIVE_DATA",
+            "responseMessage": "I couldn't respond to that message.",
+            "configData": {
+                "configs": [
+                    {
+                        "type": "REGEX",
+                        "name": "test_regex",
+                        "description": "test description",
+                        "pattern": pattern
+                    }
+                ]
+            }
+        }
+        guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+        with pytest.raises(BadRequestException) as exc_info:
+            guardrail_request_validator.validate_configs(guardrail_view)
+        assert str(exc_info.value) == expected_error
+
+
+@pytest.mark.asyncio
+async def test_validate_sensitive_data_regex_multiple_configs(guardrail_request_validator):
+    # Test multiple regex configs
+    guardrail_view = GuardrailView(**guardrail_view_json)
+    config = {
+        "configType": "SENSITIVE_DATA",
+        "responseMessage": "I couldn't respond to that message.",
+        "configData": {
+            "configs": [
+                {
+                    "type": "REGEX",
+                    "name": "first_regex",
+                    "description": "first description",
+                    "pattern": "first.*pattern"
+                },
+                {
+                    "type": "REGEX",
+                    "name": "second_regex",
+                    "description": "second description",
+                    "pattern": "second.*pattern"
+                }
+            ]
+        }
+    }
+    guardrail_view.guardrail_configs = [GRConfigView(**config)]
+
+    # Should not raise any exception
+    guardrail_request_validator.validate_configs(guardrail_view)
