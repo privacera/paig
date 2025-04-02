@@ -148,7 +148,7 @@ often with the goal of generating harmful content (commonly known as "**jailbrea
 instructions (known as prompt injection).
 
 This detection mechanism is only effective when input tagging is applied, as
-prompt attacks rely on these tags to be identified and blocked. This is also utilizes AWS bedrock guardrail capability
+prompt attacks rely on these tags to be identified and blocked. It also utilizes AWS Bedrock Guardrails capability
 for providing safeguarding against prompt attacks.
 
 
