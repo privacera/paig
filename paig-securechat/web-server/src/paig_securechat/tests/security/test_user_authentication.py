@@ -92,21 +92,18 @@ class TestGetAuthUser:
 
         valid_credentials = base64.b64encode(b"valid_user:valid_password").decode("utf-8")
 
-        
         request = Request(scope={
             "type": "http",  
             "headers": [(b"authorization", f"Basic {valid_credentials}".encode("utf-8"))]
         })
 
-        # Mock the DataFrame used by the function to validate credentials
         mock_df = pd.DataFrame({
             "Username": ["valid_user"],
             "Secrets": [generate_password_hash("valid_password")]
         })
         with patch('core.security.authentication.constants.USER_SECRETS_DF', mock_df):
-            with patch("core.security.authentication.__validate_basic_auth", new=AsyncMock(return_value={"user_name": "valid_user"})):
-                result = await get_auth_user(request, user_controller_mock)
-                assert result["user_name"] == "valid_user"
+            result = await get_auth_user(request, user_controller_mock)
+            assert result["user_name"] == "valid_user"
 
     @pytest.mark.asyncio
     async def test_get_auth_user_basic_auth_invalid_username(self):
@@ -114,8 +111,6 @@ class TestGetAuthUser:
         user_controller_mock.get_user_by_user_name.return_value = None
 
         invalid_credentials = base64.b64encode(b"invalid_user:valid_password").decode("utf-8")
-
-        # Add 'type' to the scope to make it a valid HTTP request
         request = Request(scope={
             "type": "http",  
             "headers": [(b"authorization", f"Basic {invalid_credentials}".encode("utf-8"))]
@@ -137,13 +132,11 @@ class TestGetAuthUser:
 
         invalid_credentials = base64.b64encode(b"valid_user:wrong_password").decode("utf-8")
 
-        
         request = Request(scope={
             "type": "http",  
             "headers": [(b"authorization", f"Basic {invalid_credentials}".encode("utf-8"))]
         })
 
-        # Mock the DataFrame used by the function to validate credentials
         mock_df = pd.DataFrame({
             "Username": ["valid_user"],
             "Secrets": [generate_password_hash("valid_password")]
@@ -159,7 +152,7 @@ class TestGetAuthUser:
         })
 
         with patch('core.security.authentication.constants.USER_SECRETS_DF', mock_df):
-            authorize_credentials_with_df("valid_user", "valid_password")  # Should not raise an exception
+            authorize_credentials_with_df("valid_user", "valid_password")
 
     def test_authorize_credentials_with_invalid_username(self):
         mock_df = pd.DataFrame({
@@ -195,6 +188,5 @@ class TestGetAuthUser:
         with patch('core.security.authentication.constants.USER_SECRETS_DF', mock_df):
             with pytest.raises(UnauthorizedException, match="User authentication data format error"):
                 authorize_credentials_with_df("valid_user", "valid_password")
-            
+                        
 
-                
