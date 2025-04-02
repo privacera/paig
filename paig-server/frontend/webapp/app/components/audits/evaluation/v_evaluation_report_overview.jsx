@@ -248,8 +248,10 @@ class VEvaluationReportOverview extends Component {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item lg={6} md={6} sm={12} xs={12} >     
-                    <Box display="flex" flexWrap="wrap">
+                  <Grid container spacing={3}>
                       {Object.entries(appsData || {}).map(([appName, appData], index, array) => (
+                
+                        <Grid item lg={Object.keys(appsData || {}).length === 1 ? 12 : 6} md={Object.keys(appsData || {}).length === 1 ? 12 : 6} sm={12} xs={12} >
                         <Box key={appName} flex="1 0 200px">
                           <Typography variant="subtitle1" color="textSecondary">
                             {array.length === 1 ? "Overall Pass Rate" : appName}
@@ -272,8 +274,9 @@ class VEvaluationReportOverview extends Component {
                             data={appData}
                           />
                         </Box>
+                        </Grid>
                       ))}
-                    </Box>
+                    </Grid>
                   </Grid>
                   {/* <Divider orientation="vertical" flexItem /> */}
                   <Grid item lg={6} md={6} sm={12} xs={12}>
@@ -309,6 +312,7 @@ class VEvaluationReportOverview extends Component {
                                 className="eval-chips m-r-xs m-b-xs"
                                 size="small"
                                 label={categoryItem.name}
+                                title={categoryItem.name}
                               />
                             </td>
                             {Object.values(appsData || {}).map((appData, idx) => (
