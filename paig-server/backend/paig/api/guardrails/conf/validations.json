@@ -15,4 +15,4 @@
         "regex": "topicPolicyConfig\\.topicsConfig\\.\\d+\\.member\\.definition",
         "error_message": "The guardrail Off-topic definition must be less than or equal to 200 characters."
     }
-} 
+}

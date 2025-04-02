@@ -5,7 +5,6 @@ from functools import lru_cache
 import os
 import logging
 from core.utils import recursive_merge_dicts, format_to_root_path
-from pathlib import Path
 
 
 Config: dict = {}
@@ -78,47 +77,15 @@ def get_version():
     raise ValueError("Version not found")
 
 
-@lru_cache
-def load_validation_config(module_path: str = None, validation_file: str = 'validations.json'):
+def load_config_json(json_file_path: str):
     """
     Load validation configuration from JSON file.
     
     Args:
-        module_path (str, optional): The path to the module's conf directory. If None, uses the caller's module path.
-        validation_file (str, optional): The name of the validation file. Defaults to 'validations.json'.
+        json_file_path (str): The path to the JSON file to load.
     
     Returns:
         dict: The loaded validation configuration.
-        
-    Raises:
-        FileNotFoundError: If the validation file does not exist
-        json.JSONDecodeError: If the file contains invalid JSON
-        ValueError: If the loaded configuration is not a dictionary
     """
-    if module_path is None:
-        # Get the caller's module path
-        import inspect
-        caller_frame = inspect.stack()[1]
-        caller_module = inspect.getmodule(caller_frame[0])
-        module_path = caller_module.__file__
-    
-    # Convert module path to conf directory path
-    conf_dir = Path(module_path).parent.parent / 'conf'
-    validation_file_path = conf_dir / validation_file
-    
-    if not validation_file_path.exists():
-        raise FileNotFoundError(f"Validation configuration file not found at {validation_file_path}")
-    
-    try:
-        with open(validation_file_path, 'r') as f:
-            config = json.load(f)
-            
-        if not isinstance(config, dict):
-            raise ValueError(f"Validation configuration must be a dictionary, got {type(config)}")
-            
-        return config
-        
-    except json.JSONDecodeError as e:
-        raise json.JSONDecodeError(f"Invalid JSON in validation configuration file {validation_file_path}: {str(e)}", e.doc, e.pos)
-    except Exception as e:
-        raise Exception(f"Error loading validation configuration from {validation_file_path}: {str(e)}")
+    with open(format_to_root_path(json_file_path), 'r') as f:
+        return json.load(f)

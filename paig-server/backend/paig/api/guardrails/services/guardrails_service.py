@@ -19,7 +19,7 @@ from api.guardrails.providers import GuardrailProviderManager, CreateGuardrailRe
     UpdateGuardrailRequest
 from api.guardrails.services.gr_connections_service import GRConnectionService
 from api.guardrails.transformers.guardrail_transformer import GuardrailTransformer
-from core.config import load_config_file, load_validation_config
+from core.config import load_config_file, load_config_json
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable, create_pageable_response
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
@@ -32,7 +32,7 @@ from core.utils import validate_id, validate_string_data, validate_boolean, Sing
 config = load_config_file()
 
 # Load validations from the current module's conf directory
-validations_config = load_validation_config()
+validations_config = load_config_json("api/guardrails/conf/validations.json")
 
 
 class GuardrailRequestValidator:
