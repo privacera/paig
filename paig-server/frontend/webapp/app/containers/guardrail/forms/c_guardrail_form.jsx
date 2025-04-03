@@ -61,6 +61,7 @@ class CGuardrailForm extends Component {
             this._vState.guardrail = guardrail;
             this._vState.providerName = this.formUtil.getProvider();
         });
+
         if (moveToNextStep) {
             setTimeout(() => {
                 let index = this.stepper?.findIndex(step => step.step === 'test_guardrail')
