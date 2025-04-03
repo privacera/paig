@@ -51,7 +51,7 @@ class VDeniedTerms extends Component {
             <Table
                 hasElevation={false}
                 data={data}
-                noDataText="No phrases and keywords found"
+                noDataText="No data found"
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
                 tableRowAttr={{

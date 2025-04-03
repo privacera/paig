@@ -215,12 +215,12 @@ class CDeniedTerms extends Component {
                                 onChange={this.handleOnChange}
                             /> */}
                             <Grid item xs={6} sm={6}>
-                                <Typography variant="subtitle1">Terms</Typography>
+                                <Typography variant="subtitle1">Phrases and Keywords</Typography>
                             </Grid>
                             <AddButtonWithPermission
                                 permission={this.permission}
                                 colAttr={{xs: 6, sm: 6}}
-                                label="Add Terms"
+                                label="Add"
                                 onClick={this.handleAdd}
                             />
                         </Grid>
