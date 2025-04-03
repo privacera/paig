@@ -9,13 +9,15 @@ const RadialBarChart = ({ chartData, title }) => {
       inverted: true,
       polar: true,
       height: "250px",
-      plotBorderWidth: null
+      width: 400,
+      spacingRight: 10
     },
     title: {
       text: title
     },
     tooltip: {
-      outside: true
+      outside: true,
+      pointFormat: "{series.name}: <b>{point.percentage:.0f}%</b><br/>"
     },
     pane: {
       size: "85%",

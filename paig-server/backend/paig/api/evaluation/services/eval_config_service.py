@@ -7,7 +7,6 @@ from core.utils import SingletonDepends, current_utc_time
 from api.evaluation.database.db_operations.eval_config_repository import EvaluationConfigRepository, EvaluationConfigHistoryRepository
 import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
-from core.controllers.paginated_response import create_pageable_response
 from core.controllers.paginated_response import Pageable
 
 

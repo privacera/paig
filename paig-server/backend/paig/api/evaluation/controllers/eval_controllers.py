@@ -1,5 +1,4 @@
 import json
-import traceback
 
 from api.evaluation.services.eval_config_service import EvaluationConfigService
 from api.evaluation.services.eval_result_service import EvaluationResultService
@@ -33,9 +32,9 @@ class EvaluationController:
         except Exception as e:
             raise BadRequestException(str(e))
 
-    async def run_evaluation(self, eval_config_id, user, report_name):
+    async def run_evaluation(self, eval_config_id, user, report_name, auth_user=None):
         try:
-            resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name)
+            resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
             return resp
         except Exception as e:
             logger.error(f"Error while running evaluation: {str(e)}")
@@ -59,6 +58,12 @@ class EvaluationController:
 
     async def delete_evaluation(self, eval_id):
         return await self.evaluation_service.delete_evaluation(eval_id)
+
+    async def get_evaluation(self, eval_id):
+        eval_result = await self.evaluation_result_service.get_evaluation(eval_id)
+        if eval_result is None:
+            raise NotFoundException("No results found")
+        return BaseEvaluationView.model_validate(eval_result)
 
     async def get_categories(self, purpose):
         return await self.evaluation_service.get_categories(purpose)
@@ -103,9 +108,19 @@ class EvaluationController:
                 resp_dict['category_score'] = json.loads(resp.category_score)
                 resp_dict['status'] = resp.status
                 resp_dict['category'] = resp.category
+                resp_dict['category_type'] = resp.category_type
+                resp_dict['category_severity'] = resp.category_severity
                 responses.append(resp_dict)
             dict_record['responses'] = responses
             results_list.append(dict_record)
         return create_pageable_response(results_list, total_count, page, size, sort)
 
 
+    async def get_result_by_severity(self, eval_uuid):
+        return await self.evaluation_result_service.get_result_by_severity(eval_uuid)
+
+    async def get_result_by_category(self, eval_uuid):
+        return await self.evaluation_result_service.get_result_by_category(eval_uuid)
+
+    async def get_all_categories_from_result (self, eval_uuid):
+        return await self.evaluation_result_service.get_all_categories_from_result(eval_uuid)

@@ -32,9 +32,9 @@ import CReporting from 'containers/reports/c_reporting';
 import CSavedReportsListing from 'containers/reports/c_saved_reports_listing';
 
 import CEvaluationForm from 'containers/audits/evaluation/c_evaluation_create_form';
-import CEvaluationConfigList from 'containers/audits/evaluation/c_evaluation_config_list';
+import CEvaluationConfigMain from 'containers/audits/evaluation/c_evaluation_main';
 import CEvaluationReportsList from 'containers/audits/evaluation/c_evaluation_report_list';
-import CEvaluationReport from 'containers/audits/evaluation/c_evaluation_report';
+import CEvaluationReportMain from 'containers/audits/evaluation/c_evaluation_report_main';
 
 import CGuardrailListing from 'containers/guardrail/c_guardrail_listing';
 import CResponseTemplate from 'containers/guardrail/c_response_template';
@@ -84,9 +84,9 @@ const Routes = () => (
         <Route path="/dashboard" name="Dashboard" component={Authorization(CDashboard, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.DASHBOARD])} />
 
         <Route path="/eval_reports" name="Evaluation Reports" component={Authorization(CEvaluationReportsList, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
-        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
-        <Route path="/eval_configs" name="Security Evaluation" component={Authorization(CEvaluationConfigList, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_CONFIG])} />
-        <Route path="/eval_report/:eval_id" name="Evaluation Report" component={Authorization(CEvaluationReport, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
+        <Route path="/eval/create" name="Create Security Evaluation" component={Authorization(CEvaluationForm, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_SECURITY, UI_CONSTANTS.EVALUATION_CONFIG])} />
+        <Route path="/eval_configs" name="Security Evaluation" component={Authorization(CEvaluationConfigMain, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_SECURITY])} />
+        <Route path="/eval_report/:eval_id" name="Evaluation Report" component={Authorization(CEvaluationReportMain, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.EVALUATION_REPORTS])} />
 
         <Route path="/audits_security" name="Access Audits" component={Authorization(CSecurityAudits, [UI_CONSTANTS.PAIG_LENS, UI_CONSTANTS.SECURITY])} />
         {/* TODO: [PAIG-2025] Uncomment this route once Admin Audits implemented */}
