@@ -6,7 +6,6 @@ import {Grid, Typography, Box, Paper} from '@material-ui/core';
 import {Alert} from '@material-ui/lab';
 
 import f from 'common-ui/utils/f';
-import {FormGroupSwitch} from 'common-ui/components/form_fields';
 import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
 import {FEATURE_PERMISSIONS, GUARDRAIL_CONFIG_TYPE} from 'utils/globals';
 import { SearchField } from 'common-ui/components/filters';
@@ -84,7 +83,7 @@ class CDeniedTerms extends Component {
         this.form.model = null;
         this.form.index = null;
         this.Modal.show({
-            title: 'Add Terms',
+            title: 'Add Phrases and Keywords',
             btnOkText: 'Add'
         });
     }
@@ -94,7 +93,7 @@ class CDeniedTerms extends Component {
         this.form.model = model;
         this.form.index = i;
         this.Modal.show({
-            title: 'Edit Terms',
+            title: 'Edit Phrases and Keywords',
             btnOkText: 'Save'
         });
     }
@@ -128,12 +127,22 @@ class CDeniedTerms extends Component {
 
         let models = f.models(this.cDeniedTerms);
 
-        let index = models.findIndex((m, i) =>
-            this.form.index !== i && (m.term || '').toLowerCase() === (data.term || '').toLowerCase()
-        );
+        let duplicateKeywords = [];
+        models.forEach((m, i) => {
+            if (this.form.index !== i) {
+                const existingKeywords = m.keywords || [];
+                const newKeywords = data.keywords;
+                const duplicates = newKeywords.filter(k => 
+                    existingKeywords.some(ek => ek.toLowerCase() === k.toLowerCase())
+                );
+                if (duplicates.length > 0) {
+                    duplicateKeywords.push(...duplicates);
+                }
+            }
+        });
 
-        if (index !== -1) {
-            f.notifyError(`The term ${data.term} already exists`);
+        if (duplicateKeywords.length > 0) {
+            f.notifyError(`The keywords ${duplicateKeywords.join(', ')} already exists`);
             return;
         }
 
@@ -144,9 +153,7 @@ class CDeniedTerms extends Component {
         }
 
         f.resetCollection(this.cDeniedTerms, models);
-
         this.Modal.hide();
-
         this.handleTermsChange();
     }
     handleProfanityChange = (e) => {
