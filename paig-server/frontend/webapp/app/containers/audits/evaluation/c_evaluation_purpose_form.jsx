@@ -43,13 +43,16 @@ class CEvaluationPurposeForm extends Component {
     this.props.evaluationStore.fetchEvaluationReports({
       params: this.cEvalTemplateList.params
     }).then(res => {
-      const apiTemplates = res.models.map(model => ({
+      const apiTemplates = res.models.map((model, index) => ({
+        index: hardcodedTemplates.length + index, // Adding index
         title: `Custom - Last Used ${this.formatCreateTime(model.create_time)}`,
         chip: "",
         description: model.purpose
       }));
-      const combinedTemplates = [...hardcodedTemplates, ...apiTemplates];
-
+      const combinedTemplates = hardcodedTemplates.map((template, index) => ({
+        index, // Adding index
+        ...template
+      })).concat(apiTemplates);
       this.cEvalTemplateList.models = combinedTemplates;
 
       f.resetCollection(this.cEvalTemplateList, combinedTemplates, res.pageState);

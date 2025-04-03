@@ -972,3 +972,92 @@ span.diff-danger>span {
 .nav-rotated-icon {
   transform: rotate(45deg);
 }
+
+.eval-metrics-container {
+  flex-grow: 1;
+  flex-direction: column;
+  display: flex;
+}
+
+.eval-metrics-container .eval-metrics-box{
+  display: flex;
+  flex-grow: 1;
+}
+
+.eval-metrics-container .eval-metrics-box .eval-metrics {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.eval-metrics-container .eval-metrics-box .eval-metrics > div {
+  flex-grow: 1;
+}
+
+.stretch-box {
+  display: flex;
+  flex-grow: 1;
+}
+
+.stretch-box .stretch-cards {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.category-column {
+  padding: 8px;
+  position: sticky;
+  left: 0;
+  background: white;
+  z-index: 2;
+}
+
+.table-header-cell {
+  padding: 8px;
+  text-align: right;
+}
+
+
+
+.table-body-cell {
+  padding: 8px;
+  text-align: right;
+}
+
+.stretch-eval-card > div > div {
+  display: flex;
+  height: 100%;
+}
+
+.eval-chips{
+  max-width: 100%;
+}
+
+.min-height-50 {
+  min-height: 50px;
+}
+
+.col-5-grid {
+  max-width: 20% !important;
+}
+
+.results-table {
+  overflow-y: auto;
+  max-height: 230px;
+  width: 100%;
+}
+
+.results-table table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.results-table-header{
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 2; 
+}

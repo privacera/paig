@@ -74,7 +74,7 @@ class CEvaluationForm extends Component {
   }
 
   getSteps = () => {
-    return ['Details', 'Purpose', 'Categories'];
+    return ['Details', 'Evaluation Focus', 'Categories'];
   }
 
   scrollIntoView = () => {

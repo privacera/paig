@@ -40,19 +40,19 @@ class CGuardrailForm extends Component {
     componentDidMount() {
         let id = this.props.match.params.id || this.props.match.params.newId;
         if (id) {
-            this.fetchGuardrail(id);
+            this.fetchGuardrail(id, !!this.props.match.params.newId);
         }
     }
-    fetchGuardrail = async(id) => {
+    fetchGuardrail = async(id, moveToNextStep) => {
         try {
             const guardrail = await this.props.guardrailStore.getGuardrail(id);
-            this.setGuardrail(guardrail);
+            this.setGuardrail(guardrail, moveToNextStep);
         } catch(e) {
             this._vState.guardrail = null;
             f.handleError()(e);
         }
     }
-    setGuardrail = (guardrail) => {
+    setGuardrail = (guardrail, moveToNextStep) => {
         guardrail.guardrailConfigs?.forEach(c => {
             c.status = 1;
         })
@@ -61,8 +61,7 @@ class CGuardrailForm extends Component {
             this._vState.guardrail = guardrail;
             this._vState.providerName = this.formUtil.getProvider();
         });
-
-        if (this.props.match.params.newId) {
+        if (moveToNextStep) {
             setTimeout(() => {
                 let index = this.stepper?.findIndex(step => step.step === 'test_guardrail')
                 if (index !== -1) {
@@ -192,7 +191,7 @@ class CGuardrailForm extends Component {
 
                 let model = await this.props.guardrailStore.updateGuardrail(data.id, data);
                 f.notifySuccess(`Guardrail ${data.name} updated successfully`);
-                this.setGuardrail(model);
+                this.setGuardrail(model, true);
             } else {
                 let model = await this.props.guardrailStore.createGuardrail(data);
                 f.notifySuccess(`Guardrail ${data.name} created successfully`);

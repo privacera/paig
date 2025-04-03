@@ -6,9 +6,10 @@ import {Box, Grid, Paper, Typography, TableCell} from "@material-ui/core";
 import f from 'common-ui/utils/f';
 import Table from "common-ui/components/table";
 import {EVAL_REPORT_CATEGORIES} from 'utils/globals';
-import RadialBarChart from "components/audits/evaluation/radial_bar_chart";
-import {Loader, getSkeleton} from "common-ui/components/generic_components";
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
+import {CustomButtonGroup} from 'common-ui/components/filters';
+import {FormGroupSelect2} from 'common-ui/components/form_fields';
+import {SEVERITY_MAP} from 'utils/globals';
 
 const PaperCard = (props) => {
   const { children, boxProps={}, paperProps={} } = props;
@@ -22,7 +23,14 @@ const PaperCard = (props) => {
 };
 
 @observer
-class VEvaluationOverview extends Component {
+class VEvaluationReportDetails extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { 
+      selectedValue: 'Show All', 
+      selectedCategory: null,
+    };
+  }
 
   getHeaders = () => {
     const { data } = this.props;
@@ -34,6 +42,7 @@ class VEvaluationOverview extends Component {
     return (
       <Fragment>
         <TableCell key="category" className='min-width-100'>Category</TableCell>
+        <TableCell key="type" className='min-width-100'>Type</TableCell>
         <TableCell key="prompt" className='min-width-200'>Prompt</TableCell>
         {responseHeaders}
       </Fragment>
@@ -52,6 +61,7 @@ class VEvaluationOverview extends Component {
         <TableCell key={`response-${appName}-${index}`}>
           {appResponse ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
               <Typography
                 style={{
                   padding: '4px 8px',
@@ -66,6 +76,19 @@ class VEvaluationOverview extends Component {
               >
                 {appResponse.status || '--'}
               </Typography>
+              {(appResponse.status === 'FAILED' || appResponse.status === 'ERROR') && <span><Typography
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: SEVERITY_MAP?.[appResponse.category_severity]?.COLOR || SEVERITY_MAP?.HIGH?.COLOR,
+                  fontSize: '12px',
+                  fontWeight: 500
+                }}
+              >
+                {SEVERITY_MAP?.[appResponse.category_severity]?.LABEL || SEVERITY_MAP?.HIGH?.LABEL}
+              </Typography></span>
+            }
+            </div>
               {appResponse.response || '--'}
               {(appResponse.status === 'FAILED' || appResponse.status === 'ERROR') && appResponse.failure_reason && (
                 <Box
@@ -98,6 +121,9 @@ class VEvaluationOverview extends Component {
         <TableCell key="category">
           {model.responses?.[0]?.category || '--'}
         </TableCell>
+        <TableCell key="type">
+          {model.responses?.[0]?.category_type || '--'}
+        </TableCell>
         <TableCell key="prompt">
           {model.prompt || '--'}
         </TableCell>
@@ -106,37 +132,19 @@ class VEvaluationOverview extends Component {
     );
   };
 
+
+  handleCategorySelection = (selectedValue) => {
+    this.setState({ selectedCategory: selectedValue }, () => {
+        this.props.handleCategoryChange(selectedValue);
+    });
+  };  
+
   render() {
-    const { _vState, cEvaluationOverview, data, handlePageChange, handleSearchByField } = this.props;
-    const evaluationDataList = f.models(cEvaluationOverview) || [];
+    const { _vState, data, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange, reportCategories } = this.props;
+    const { selectedCategory } = this.state;
     return (
       <Fragment>
         <PaperCard boxProps={{ mb: 2 }}>
-          <Loader
-            promiseData={cEvaluationOverview}
-            loaderContent={getSkeleton("THREE_SLIM_LOADER")}
-          >
-            <Grid container spacing={2}>
-              {evaluationDataList.map((evaluationData, index) => {
-                return (
-                  <Grid item md={4} sm={6} xs={12} key={index} className="graph-border-left m-l-md">
-                    <Typography className="graph-title" gutterBottom>
-                      Evaluation Overview
-                    </Typography>
-                    <RadialBarChart
-                      chartData={evaluationData}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-
-          </Loader>
-        </PaperCard>
-        <PaperCard boxProps={{ mb: 2 }}>
-          <Typography className="graph-title" gutterBottom>
-            Results
-          </Typography>
           <Grid container spacing={3}>
             <Grid item xs={6} sm={6} md={6} lg={6}>
               <IncludeExcludeComponent
@@ -145,7 +153,29 @@ class VEvaluationOverview extends Component {
                 onChange={handleSearchByField}
               />
             </Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6}>
+              <Grid container spacing={3} justify="flex-end">
+                  <FormGroupSelect2
+                      inputColAttr={{ xs: 6, sm: 6, md: 5, lg: 5 }}
+                      required={false}
+                      showLabel={false}
+                      value={selectedCategory}
+                      data={reportCategories?.category?.map(category => ({ name: category }))}
+                      labelKey={'name'}
+                      valueKey={'name'}
+                      onChange={(newValue) => this.handleCategorySelection(newValue)}
+                      data-testid="category-filter"
+                      multiple={false}
+                      disableClearable={false}
+                      placeholder={'Filter Category'}
+                  />
+                <Grid item>
+                      <CustomButtonGroup buttonList={['Show All', 'Passed', 'Failed']} value={this.state.selectedValue}  onClick={handleToggleChange} size='small'/>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
+
           <Table
             className="eval-table"
             tableClassName="eval-table"
@@ -161,4 +191,4 @@ class VEvaluationOverview extends Component {
   };
 }
 
-export default VEvaluationOverview;
+export default VEvaluationReportDetails;

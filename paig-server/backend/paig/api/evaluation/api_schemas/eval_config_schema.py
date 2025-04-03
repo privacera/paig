@@ -41,9 +41,11 @@ class EvalConfigView(BaseView):
     status: str = Field(..., max_length=1024, description="The status of the config")
     version: int = Field(..., gt=0, description="The version of the config")
     application_names: str = Field(..., description="The application names")
+    application_ids: str = Field(..., description="The application ids")
     eval_run_count: int = Field(..., ge=0, description="The number of evaluation runs")
     owner: Optional[str] = Field(None, description="The User Name", alias="owner")
     model_config = BaseView.model_config
+
 
 
 class QueryParamsBase(BaseAPIFilter):

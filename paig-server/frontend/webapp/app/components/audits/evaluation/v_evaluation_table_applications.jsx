@@ -44,7 +44,7 @@ class VEvaluationAppsTable extends Component{
   
   getHeaders = () => {
     let headers = ([
-      <TableCell key="1">Select</TableCell>,
+      !this.props.tabsState && <TableCell key="1">Select</TableCell>,
       <TableCell key="2">Name</TableCell>,
       <TableCell key="3">Details</TableCell>,
       <TableCell width="100px" key="9">Actions</TableCell>
@@ -54,12 +54,13 @@ class VEvaluationAppsTable extends Component{
   }
 
   getRowData = (model) => {
-    const {handleDelete, handleEdit, permission} = this.props;
-    const selectedTargetIds = Array.isArray(this.props.form.fields.application_ids.value)
+    const {handleDelete, handleEdit, permission, tabsState} = this.props;
+    const selectedTargetIds = !tabsState
+    ?  Array.isArray(this.props.form.fields.application_ids.value)
       ? this.props.form.fields.application_ids.value
-      : [];
+      : [] : [];
     let rows = [
-      <TableCell column="select" key="1" className='p-xxs'>
+      !tabsState && ( <TableCell column="select" key="1" className='p-xxs'>
         <Checkbox 
           color='primary'
           data-test="select-all"
@@ -67,7 +68,7 @@ class VEvaluationAppsTable extends Component{
           onChange={() => this.handleSelectRow(model.id, model.target_id)}
           disabled={!model.target_id}
         />
-      </TableCell>,
+      </TableCell>),
       <TableCell key="2">{model.name || "--"}</TableCell>,
       <TableCell key="3">{model.url || "--"}</TableCell>,
       <TableCell key="9" column="actions">
@@ -86,10 +87,11 @@ class VEvaluationAppsTable extends Component{
   }
 
   render() {
-    const { data, pageChange, parent_vState} = this.props;
+    const { data, pageChange, parent_vState, tabsState} = this.props;
+
     return (
       <>
-        {this.state.showAlert && (
+        {!tabsState && this.state.showAlert && (
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Alert severity="error">
@@ -98,7 +100,7 @@ class VEvaluationAppsTable extends Component{
             </Grid>
           </Grid>
         )}
-        {parent_vState.errorMsg && (
+        {!tabsState && parent_vState.errorMsg && (
           <Grid container spacing={3}>
             <Grid item xs={12}>
               <Alert severity="error">

@@ -1,17 +1,18 @@
 import sys
 import uuid
 from typing import List, Dict
-
+from . import constants
 from .promptfoo_utils import (
     suggest_promptfoo_redteam_plugins_with_openai,
     generate_promptfoo_redteam_config,
     run_promptfoo_redteam_evaluation,
-    get_all_security_plugins_with_description,
-    get_suggested_plugins_with_description,
+    get_suggested_plugins_with_info,
+    get_all_security_plugins_with_info,
     check_and_install_npm_dependency,
     get_response_object,
     validate_generate_prompts_request_params,
-    validate_evaluate_request_params
+    validate_evaluate_request_params,
+    ensure_promptfoo_config
 )
 from .config import load_config_file
 
@@ -34,7 +35,7 @@ def get_suggested_plugins(purpose: str) -> Dict:
             suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
             if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
                 if isinstance(suggested_plugins['plugins'], list):
-                    response['result'] = get_suggested_plugins_with_description(suggested_plugins['plugins'])
+                    response['result'] = get_suggested_plugins_with_info(suggested_plugins['plugins'])
                     response['status'] = 'success'
                     response['message'] = 'Suggested plugins fetched successfully'
                 else:
@@ -48,7 +49,7 @@ def get_suggested_plugins(purpose: str) -> Dict:
 
 
 
-def get_all_plugins(plugin_file_path: str = None) -> Dict:
+def get_all_plugins() -> Dict:
     """
     Get all security plugins.
 
@@ -58,7 +59,7 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
     response = get_response_object()
     response['result'] = []
     try:
-        all_plugins = get_all_security_plugins_with_description(plugin_file_path)
+        all_plugins = get_all_security_plugins_with_info()
         if isinstance(all_plugins, list):
             response['result'] = all_plugins
             response['status'] = 'success'
@@ -71,7 +72,11 @@ def get_all_plugins(plugin_file_path: str = None) -> Dict:
         return response
 
 
-def init_setup():
+def init_config(plugin_file_path: str = None, email: str = 'promptfoo@paig.ai') -> Dict:
+    constants.PLUGIN_FILE_PATH = plugin_file_path
+    ensure_promptfoo_config(email)
+
+def init_setup() -> Dict:
     """
     Initialize the setup by checking and installing the npm dependency.
     """

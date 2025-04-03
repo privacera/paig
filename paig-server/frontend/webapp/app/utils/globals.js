@@ -31,7 +31,11 @@ const UI_CONSTANTS = {
     VECTOR_DB_PERMISSIONS: 'VECTOR_DB_PERMISSIONS',
     EVALUATION: 'EVALUATION',
     EVALUATION_CONFIG: 'EVALUATION_CONFIG',
+    EVALUATION_ENDPOINT: 'EVALUATION_ENDPOINT',
+    EVALUATION_SECURITY: 'EVALUATION_SECURITY',
     EVALUATION_REPORTS: 'EVALUATION_REPORTS',
+    EVALUATION_REPORT_OVERVIEW: 'EVALUATION_REPORT_OVERVIEW',
+    EVALUATION_REPORT_DETAILS: 'EVALUATION_REPORT_DETAILS',
     USERS: 'USERS',
     GUARDRAILS: 'GUARDRAILS',
     RESPONSE_TEMPLATES: 'RESPONSE_TEMPLATES',
@@ -304,11 +308,27 @@ const AWS_PROVIDER_CONNECTION_CONFIG_TYPE = {
 }
 
 const EVAL_REPORT_CATEGORIES = {
-    CATEGORY: { multi: false, category: "Category", type: "text", key: 'category' },
+    TYPE: { multi: false, category: "Type", type: "text", key: 'category_type' },
     PROMPT: { multi: false, category: "Prompt", type: "text", key: 'prompt' },
     RESPONSE: { multi: false, category: "Response", type: "text", key: 'response' },
-    STATUS: { multi: false, category: "Status", type: "text", key: 'status', options: () => ['PASSED', 'FAILED', 'ERROR'] }
+    SEVERITY: { multi: false, category: "Severity", type: "text", key: 'category_severity' },
 }
+
+
+const SEVERITY_MAP = {
+    CRITICAL: {LABEL: 'Severe Failure', COLOR: '#ee8b8b', DONUTCOLOR: 'E10101'},
+    HIGH: {LABEL: 'High Concern', COLOR: '#E101014D', DONUTCOLOR: 'FF6B35'},
+    MEDIUM: {LABEL: 'Moderate Concern', COLOR: '#FFEDB2', DONUTCOLOR: 'FFC233'},
+    LOW: {LABEL: 'Low Concern', COLOR: '#B2F0D6', DONUTCOLOR: '2CA02C'}
+}
+
+const CATEGORY_DESCRIPTIONS = {
+    "Brand": "Tests focused on brand protection, including competitor mentions, misinformation, hallucinations, and model behavior that could impact brand reputation.",
+    "Compliance & Legal": "Tests for LLM behavior that may encourage illegal activity, breach contractual commitments, or violate intellectual property rights.",
+    "Security & Access Control": "Technical security risk tests mapped to OWASP Top 10 for LLMs, APIs, and web applications, covering SQL injection, SSRF, broken access control, and cross-session leaks.",
+    "Trust & Safety": "Tests that attempt to produce illicit, graphic, or inappropriate responses from the LLM.",
+    "Custom": "Configurable tests for specific policies or generating custom probes for your use case."
+};
 
 export {
     UI_CONSTANTS,
@@ -339,5 +359,7 @@ export {
     EVAL_REPORT_CATEGORIES,
     GUARDRAIL_PROVIDER,
     GUARDRAIL_CONFIG_TYPE,
-    AWS_PROVIDER_CONNECTION_CONFIG_TYPE
+    AWS_PROVIDER_CONNECTION_CONFIG_TYPE,
+    SEVERITY_MAP,
+    CATEGORY_DESCRIPTIONS
 }

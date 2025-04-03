@@ -221,6 +221,8 @@ nav:
       - Python Applications: integration/python-applications.md
       - VectorDB:
         - integration/vectordb/index.md
+      - Guardrails:
+          - integration/guardrails/index.md
       - Prerequisites:
         - integration/prerequisites/index.md
         - Docker Installation: integration/prerequisites/docker.md
@@ -256,6 +258,11 @@ nav:
         - Manage VectorDBs:
             - user-guide/manage-vectordbs/index.md
             - VectorDB Policies: user-guide/manage-vectordbs/vectordb-policies.md
+      - Securing AI Applications with Guardrails:
+          - user-guide/manage-guardrails/guardrails.md
+          - Manage Guardrails:
+              - user-guide/manage-guardrails/index.md
+              - Guardrail Policies: user-guide/manage-guardrails/guardrail-policies.md
       - Monitoring: user-guide/monitoring.md
       - Reporting:
         - user-guide/reporting/index.md

@@ -34,12 +34,7 @@ jobs:
         python3 -m pip install virtualenv
         virtualenv -p python3 venv
         . venv/bin/activate
-        pip install twine build pytest pytest-cov
-
-    - name: Install PAIG-Server dependencies
-      run: |
-        . venv/bin/activate
-        pip install -r paig-server/backend/requirements.txt
+        pip install build
 
     - name: Install Node.js
       uses: actions/setup-node@v4
@@ -58,10 +53,33 @@ jobs:
         cd paig-server
         python3 -m build -w
 
+    - name: Build and Install paig-common wheel
+      run: |
+        . venv/bin/activate
+        cd paig-common
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
+    - name: Build and Install paig-authorizer-core wheel
+      run: |
+        . venv/bin/activate
+        cd paig-authorizer-core
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
+    - name: Build and Install paig-evaluation wheel
+      run: |
+        . venv/bin/activate
+        cd paig-evaluation
+        python3 -m build -w
+        pip install dist/*.whl
+        cd ..
+
     - name: Install created package
       run: |
-        rm -rf venv
-        virtualenv -p python3 venv && . venv/bin/activate
+        . venv/bin/activate
         cd paig-server
         pip install dist/*.whl
 

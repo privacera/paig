@@ -1,52 +1,302 @@
 {
-  "local_plugins": {
-    "contracts": "Enters business or legal commitments without supervision",
-    "cross-session-leak": "Checks for information sharing between unrelated sessions",
-    "debug-access": "AI ability to maintain security boundaries when faced with debug-related queries.",
-    "excessive-agency": "Model taking excessive initiative or misunderstanding its capabilities",
-    "hallucination": "Model generating false or misleading information",
-    "harmful:intellectual-property": "Content violating intellectual property rights",
-    "harmful:privacy": "Content violating privacy rights",
-    "imitation": "AI capacity to recognize and resist requests for impersonation",
-    "overreliance": "The model capacity to provide accurate information even when faced with incorrect premises",
-    "pii:api-db": "PII exposed through API or database",
-    "pii:direct": "Direct exposure of PII",
-    "pii:session": "PII exposed in session data",
-    "pii:social": "PII exposed through social engineering",
-    "pii": "All PII categories",
-    "politics": "Makes political statements",
-    "rbac": "Tests if the model properly implements Role-Based Access Control",
-    "shell-injection": "AI response to malicious input disguised as part of legitimate queries or commands",
-    "sql-injection": "Tests for SQL Injection vulnerabilities"
+  "harmful:child-exploitation": {
+    "description": "Content exploiting or harming children",
+    "severity": "CRITICAL",
+    "type": "Trust & Safety",
+    "remote": true
   },
-  "remote_plugins": {
-    "ascii-smuggling": "Detects the use of ASCII characters to bypass security controls",
-    "bfla": "Checks for Broken Function Level Authorization issues",
-    "bola": "Checks for Broken Object Level Authorization vulnerabilities",
-    "competitors": "AI response to direct questions about competitors or comparative queries",
-    "harmful:chemical-biological-weapons": "Content related to chemical or biological weapons",
-    "harmful:child-exploitation": "Content exploiting or harming children",
-    "harmful:copyright-violations": "Content violating copyright laws",
-    "harmful:cybercrime": "Content related to cybercriminal activities",
-    "harmful:harassment-bullying": "Content that harasses or bullies individuals",
-    "harmful:hate": "Content that promotes hate or discrimination",
-    "harmful:illegal-activities": "Content promoting illegal activities",
-    "harmful:illegal-drugs": "Content related to illegal drug use or trade",
-    "harmful:indiscriminate-weapons": "Content related to weapons without context",
-    "harmful:insults": "Content that insults or demeans individuals",
-    "harmful:misinformation-disinformation": "Spreading false or misleading information",
-    "harmful:non-violent-crime": "Content related to non-violent criminal activities",
-    "harmful:profanity": "Content containing profane or inappropriate language",
-    "harmful:radicalization": "Content that promotes radical or extremist views",
-    "harmful:self-harm": "Content that encourages self-harm or suicide",
-    "harmful:sex-crime": "Content related to sexual crimes",
-    "harmful:sexual-content": "Explicit or inappropriate sexual content",
-    "harmful:specialized-advice": "Providing advice in specialized fields without expertise",
-    "harmful:unsafe-practices": "Content promoting unsafe or harmful practices",
-    "harmful:violent-crime": "Content related to violent criminal activities",
-    "harmful": "AI responses to various types of sensitive or dangerous information",
-    "hijacking": "Unauthorized or off-topic resource use",
-    "religion": "AI response to requests for commentary on sensitive religious matters",
-    "ssrf": "Tests for Cross-Site Request Forgery vulnerabilities"
+  "harmful:hate": {
+    "description": "Content that promotes hate or discrimination",
+    "severity": "CRITICAL",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:self-harm": {
+    "description": "Content that encourages self-harm or suicide",
+    "severity": "CRITICAL",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "bfla": {
+    "description": "Checks for Broken Function Level Authorization issues",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": true
+  },
+  "bola": {
+    "description": "Checks for Broken Object Level Authorization vulnerabilities",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": true
+  },
+  "debug-access": {
+    "description": "AI ability to maintain security boundaries when faced with debug-related queries.",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "harmful:chemical-biological-weapons": {
+    "description": "Content related to chemical or biological weapons",
+    "severity": "HIGH",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:privacy": {
+    "description": "Content violating privacy rights",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "harmful:sex-crime": {
+    "description": "Content related to sexual crimes",
+    "severity": "HIGH",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:violent-crime": {
+    "description": "Content related to violent criminal activities",
+    "severity": "HIGH",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "hijacking": {
+    "description": "Unauthorized or off-topic resource use",
+    "severity": "HIGH",
+    "type": "Brand",
+    "remote": true
+  },
+  "pii": {
+    "description": "All PII categories",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "pii:api-db": {
+    "description": "PII exposed through API or database",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "pii:direct": {
+    "description": "Direct exposure of PII",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "pii:session": {
+    "description": "PII exposed in session data",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "pii:social": {
+    "description": "PII exposed through social engineering",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "rbac": {
+    "description": "Tests if the model properly implements Role-Based Access Control",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "shell-injection": {
+    "description": "AI response to malicious input disguised as part of legitimate queries or commands",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "sql-injection": {
+    "description": "Tests for SQL Injection vulnerabilities",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "ssrf": {
+    "description": "Tests for Cross-Site Request Forgery vulnerabilities",
+    "severity": "HIGH",
+    "type": "Security & Access Control",
+    "remote": true
+  },
+  "contracts": {
+    "description": "Enters business or legal commitments without supervision",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": false
+  },
+  "cross-session-leak": {
+    "description": "Checks for information sharing between unrelated sessions",
+    "severity": "MEDIUM",
+    "type": "Security & Access Control",
+    "remote": false
+  },
+  "excessive-agency": {
+    "description": "Model taking excessive initiative or misunderstanding its capabilities",
+    "severity": "MEDIUM",
+    "type": "Brand",
+    "remote": false
+  },
+  "hallucination": {
+    "description": "Model generating false or misleading information",
+    "severity": "MEDIUM",
+    "type": "Brand",
+    "remote": false
+  },
+  "harmful:intellectual-property": {
+    "description": "Content violating intellectual property rights",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": false
+  },
+  "imitation": {
+    "description": "AI capacity to recognize and resist requests for impersonation",
+    "severity": "LOW",
+    "type": "Brand",
+    "remote": false
+  },
+  "overreliance": {
+    "description": "The model capacity to provide accurate information even when faced with incorrect premises",
+    "severity": "LOW",
+    "type": "Brand",
+    "remote": false
+  },
+  "politics": {
+    "description": "Makes political statements",
+    "severity": "LOW",
+    "type": "Brand",
+    "remote": false
+  },
+  "ascii-smuggling": {
+    "description": "Detects the use of ASCII characters to bypass security controls",
+    "severity": "LOW",
+    "type": "Security & Access Control",
+    "remote": true
+  },
+  "competitors": {
+    "description": "AI response to direct questions about competitors or comparative queries",
+    "severity": "LOW",
+    "type": "Brand",
+    "remote": true
+  },
+  "harmful:copyright-violations": {
+    "description": "Content violating copyright laws",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:cybercrime": {
+    "description": "Content related to cybercriminal activities",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:harassment-bullying": {
+    "description": "Content that harasses or bullies individuals",
+    "severity": "LOW",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:illegal-activities": {
+    "description": "Content promoting illegal activities",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+   "harmful:illegal-drugs": {
+    "description": "Content related to illegal drug use or trade",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:indiscriminate-weapons": {
+    "description": "Content related to weapons without context",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:insults": {
+    "description": "Content that insults or demeans individuals",
+    "severity": "LOW",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:misinformation-disinformation": {
+    "description": "Spreading false or misleading information",
+    "severity": "MEDIUM",
+    "type": "Brand",
+    "remote": true
+  },
+  "harmful:non-violent-crime": {
+    "description": "Content related to non-violent criminal activities",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:profanity": {
+    "description": "Content containing profane or inappropriate language",
+    "severity": "LOW",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:radicalization": {
+    "description": "Content that promotes radical or extremist views",
+    "severity": "LOW",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:sexual-content": {
+    "description": "Explicit or inappropriate sexual content",
+    "severity": "MEDIUM",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:specialized-advice": {
+    "description": "Providing advice in specialized fields without expertise",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:unsafe-practices": {
+    "description": "Content promoting unsafe or harmful practices",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful": {
+    "description": "AI responses to various types of sensitive or dangerous information",
+    "severity": "MEDIUM",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "religion": {
+    "description": "AI response to requests for commentary on sensitive religious matters",
+    "severity": "LOW",
+    "type": "Brand",
+    "remote": true
+  },
+  "harmful:graphic-content": {
+    "description": "Content containing graphic or disturbing images",
+    "severity": "MEDIUM",
+    "type": "Trust & Safety",
+    "remote": true
+  },
+  "harmful:cybercrime:malicious-code": {
+    "description": "Content related to the distribution of malicious code",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:illegal-drugs:meth": {
+    "description": "Content related to methamphetamine use or trade",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
+  },
+  "harmful:weapons:ied": {
+    "description": "Tests handling of Improvised Explosive Devices",
+    "severity": "LOW",
+    "type": "Compliance & Legal",
+    "remote": true
   }
 }

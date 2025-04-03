@@ -82,6 +82,12 @@ class EvaluationStore extends BaseStore {
         return this.fetchAll('', opts);
     }
 
+    fetchEvaluationReportaInfo(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch("", opts);
+    }
+
     fetchEvaluationAppsList(opts = {}) {
         opts.path = '/target/application/list';
         opts.recordMapper = (json) => new MEvaluation(json);
@@ -123,6 +129,24 @@ class EvaluationStore extends BaseStore {
             return content;
         }
         return this.fetchAll('', opts);
+    }
+
+    fetchReportSeverity(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}/severity`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch("", opts);
+    }
+
+    fetchReportCategoryStats(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}/category-stats`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch("", opts);
+    }
+
+    fetchReportAllCategory(eval_uuid, opts = {}) {
+        opts.path = `/eval/report/${eval_uuid}/category`;
+        opts.recordMapper = (json) => new MEvaluation(json);
+        return this.fetch("", opts);
     }
 
 }

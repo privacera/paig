@@ -246,9 +246,6 @@ def test_aws_guardrail_transform_denied_terms_config():
     expected_config = GuardrailConfig(configType="wordPolicyConfig", guardrailProvider="AWS", configData={
         "wordsConfig": [
             {
-                "text": "Violance"
-            },
-            {
                 "text": "Violent Bahaviour"
             },
             {
