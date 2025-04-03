@@ -23,13 +23,13 @@ security_conf = Config["security"]
 okta_conf = security_conf.get("okta", dict())
 okta_enabled = okta_conf.get("enabled", "false") == "true"
 basic_auth_config = security_conf.get("basic_auth", dict())
-basic_auth_enabled = basic_auth_config.get("enabled", "false") == "true"
-basic_auth_header_enabled = basic_auth_config.get("enable_header_auth", "false").lower() == "true"
+basic_auth_enabled = basic_auth_config.get("enabled", "false").lower == "true"
+ui_auth_enabled = basic_auth_config.get("ui_auth_enabled", "false").lower() == "true"
 
 
 user_secrets_df = pd.DataFrame()
 
-if basic_auth_enabled or basic_auth_header_enabled:
+if basic_auth_enabled or ui_auth_enabled:
     user_secrets_path = basic_auth_config.get("credentials_path", None)
 
     if not user_secrets_path:
@@ -77,7 +77,7 @@ async def user_login(
             raise UnauthorizedException("Invalid access token")
 
     # Validate credentials using the utility function
-    elif basic_auth_enabled:
+    elif basic_auth_enabled and ui_auth_enabled:
         user_name = body_params.user_name.strip()
         user_secret = body_params.password.strip()
         authorize_credentials_with_df(user_name, user_secret)
