@@ -95,16 +95,16 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').should('be.visible').and('have.value', '');
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Name is required.');
 
-                cy.get('input').type('Test Guardrail Name');
+                cy.get('input').type('Test-Guardrail-Name');
                 cy.get('[class*="-error"]').should('not.exist');
 
                 cy.get('input').type('!@#$%^&*() ')
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Name should contain only alphanumeric characters, underscores and hyphens.');
 
-                cy.get('input').clear().type('Test Guardrail Name_-');
+                cy.get('input').clear().type('Test-Guardrail-Name_-');
                 cy.get('[class*="-error"]').should('not.exist');
 
-                cy.get('input').clear().type('Test Guardrail Name Test Guardrail Name Test Guardr');
+                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-Name-Test-Guardr');
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Max 50 characters allowed!');
 
                 cy.get('input').type('{backspace}');
