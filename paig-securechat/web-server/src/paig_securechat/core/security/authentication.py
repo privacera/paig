@@ -13,8 +13,6 @@ conf = config.load_config_file()
 # Load authentication settings from config
 basic_auth_enabled = conf.get("security", {}).get("basic_auth", {}).get("enabled", "false").lower() == "true"
 
-if not conf.get("security", {}).get("basic_auth", {}).get("credentials_path"):
-    raise ValueError("User authentication data path is missing in the config.")
 
 user_details_service = UserDataService()
 

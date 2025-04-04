@@ -21,38 +21,43 @@ class UserDataService:
         return cls._instance
 
     def _load_user_data(self):
-        """Loads the user authentication data from CSV."""
+        """Loads the user authentication data from CSV only if auth is enabled."""
         logger = logging.getLogger(__name__)
         config = load_config_file()
         security_conf = config.get("security", {})
         basic_auth_config = security_conf.get("basic_auth", {})
+        ui_auth_enabled = basic_auth_config.get("ui_auth_enabled", "false").lower() == "true"
+        basic_auth_enabled = basic_auth_config.get('enabled', "false").lower() == "true"
 
-        user_secrets_path = basic_auth_config.get("credentials_path")
+    
+        if basic_auth_enabled or ui_auth_enabled:
+            user_secrets_path = basic_auth_config.get('credentials_path', None)
 
-        if not user_secrets_path:
-            logger.warning("User secrets CSV file path not provided")
-            sys.exit("User secrets CSV file path not provided")
+            if not user_secrets_path:
+                logger.warning("User secrets CSV file path not provided")
+                sys.exit("User secrets CSV file path not provided")
 
-        if not os.path.exists(user_secrets_path):
-            logger.error(f"User secrets CSV file not found at {user_secrets_path}")
-            sys.exit(f"User secrets CSV file not found at {user_secrets_path}")
+            if not os.path.exists(user_secrets_path):
+                logger.error(f"User secrets CSV file not found at {user_secrets_path}")
+                sys.exit(f"User secrets CSV file not found at {user_secrets_path}")
 
-        try:
-            user_secrets_df = pd.read_csv(user_secrets_path)
-            if user_secrets_df.empty:
-                logger.error(f"User secrets CSV file is empty, File Path: {user_secrets_path}")
-                sys.exit(f"User secrets CSV file is empty, File Path: {user_secrets_path}")
+            try:
+                user_secrets_df = pd.read_csv(user_secrets_path)
+                if user_secrets_df.empty:
+                    logger.error(f"User secrets CSV file is empty, File Path: {user_secrets_path}")
+                    sys.exit(f"User secrets CSV file is empty, File Path: {user_secrets_path}")
 
-            required_columns = {"Username", "Secrets"}
-            if not required_columns.issubset(user_secrets_df.columns):
-                logger.error("User authentication data format error: Missing required columns")
-                sys.exit("User authentication data format error: Missing required columns")
+                required_columns = {"Username", "Secrets"}
+                if not required_columns.issubset(user_secrets_df.columns):
+                    logger.error("User authentication data format error: Missing required columns")
+                    sys.exit("User authentication data format error: Missing required columns")
 
-            self.user_data = user_secrets_df
+                self.user_data = user_secrets_df
 
-        except Exception as e:
-            logger.error(f"Error while reading user secrets CSV file, File Path: {user_secrets_path}, Error: {e}")
-            sys.exit(f"Error while reading user secrets CSV file, File Path: {user_secrets_path}, Error: {e}")
+            except Exception as e:
+                logger.error(f"Error while reading user secrets CSV file, File Path: {user_secrets_path}, Error: {e}")
+                sys.exit(f"Error while reading user secrets CSV file, File Path: {user_secrets_path}, Error: {e}")
+
 
     def verify_user_credentials(self, user_name: str, user_secret: str):
         """Validates the given user_name and password against the DataFrame."""
