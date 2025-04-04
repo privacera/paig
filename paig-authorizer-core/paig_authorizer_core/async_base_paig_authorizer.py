@@ -128,7 +128,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
         """
         pass
 
-    def enrich_authorization_request(self, request: AuthzRequest | VectorDBAuthzRequest) \
+    async def enrich_authorization_request(self, request: AuthzRequest | VectorDBAuthzRequest) \
             -> AuthzRequest | VectorDBAuthzRequest:
         """
         Enriches the authorization request with additional details.
@@ -142,7 +142,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
         # First check if user provided is email or not
         user_id = request.user_id
         if "@" in user_id:
-            user_id_from_email = self.get_user_id_by_email(user_id.lower())
+            user_id_from_email = await self.get_user_id_by_email(user_id.lower())
             if not user_id_from_email:
                 user_id_from_email = user_id.split("@")[0]
             return request.model_copy(update={'user_id': user_id_from_email}, deep=True)
@@ -161,7 +161,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
                           masked traits, and audit policy IDs.
         """
         # Enrich the authorization request
-        request = self.enrich_authorization_request(authz_request)
+        request = await self.enrich_authorization_request(authz_request)
 
         # Step 1: Retrieve application details and configuration
         app_details: AIApplicationData = await self.get_application_details(request.application_key)
@@ -249,7 +249,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
             VectorDBAuthzResponse: The authorization response object containing vector DB details and filter expression.
         """
         # Enrich the authorization request
-        request = self.enrich_authorization_request(authz_request)
+        request = await self.enrich_authorization_request(authz_request)
 
         # Step 1: Retrieve application details and configuration
         app_details: AIApplicationData = await self.get_application_details(request.application_key)
