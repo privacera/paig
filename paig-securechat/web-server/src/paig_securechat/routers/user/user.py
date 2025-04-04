@@ -29,13 +29,13 @@ if okta_enabled:
     paig_okta_verifier = PaigOktaVerifier(okta_conf)
 
 jwt_handler = JWTHandler()
-user_data_service = UserDataService()  # Singleton for auth
+user_data_service = UserDataService() 
 
 
 @user_router.post("/login", responses=CommonErrorResponse)
 async def user_login(
     request: Request,
-    response: Response,  # fixed typo from "resonse"
+    response: Response,  
     body_params: PostUserLoginRequest,
     user_controller: UserController = Depends(ControllerInitiator().get_user_controller),
 ) -> UserLoginResponse:

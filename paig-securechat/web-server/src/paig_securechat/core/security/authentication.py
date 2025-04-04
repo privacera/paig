@@ -16,7 +16,6 @@ basic_auth_enabled = conf.get("security", {}).get("basic_auth", {}).get("enabled
 if not conf.get("security", {}).get("basic_auth", {}).get("credentials_path"):
     raise ValueError("User authentication data path is missing in the config.")
 
-# No need to pass path anymore — singleton handles it internally
 user_details_service = UserDataService()
 
 async def get_auth_user(
@@ -31,7 +30,7 @@ async def get_auth_user(
     if hasattr(request, "headers") and "Authorization" in request.headers:
         authorization = request.headers["Authorization"]
 
-        if authorization.startswith("Basic "):
+        if authorization.startswith("Basic ") and basic_auth_enabled:
             return await __validate_basic_auth(authorization, user_controller)
 
         elif authorization.startswith("Bearer "):
@@ -45,9 +44,6 @@ async def get_auth_user(
 
 async def __validate_basic_auth(authorization: str, user_controller: UserController):
     """Validates Basic Authentication credentials."""
-
-    if not basic_auth_enabled:
-        raise UnauthorizedException("Basic authentication is disabled")
 
     try:
         api_token = authorization.split("Basic ")[1]

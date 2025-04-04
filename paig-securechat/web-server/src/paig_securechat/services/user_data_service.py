@@ -22,6 +22,7 @@ class UserDataService:
 
     def _load_user_data(self):
         """Loads the user authentication data from CSV."""
+        logger = logging.getLogger(__name__)
         config = load_config_file()
         security_conf = config.get("security", {})
         basic_auth_config = security_conf.get("basic_auth", {})
