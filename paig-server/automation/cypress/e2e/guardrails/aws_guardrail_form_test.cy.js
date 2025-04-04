@@ -1,7 +1,6 @@
 import commonUtils from "../common/common_utils";
 
-const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5);
-//const name = 'guardrails_pcqvk fvhgg jpwgq axzom qjmvy';
+const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5).replace(/ /g, '_');
 const description = 'Test Guardrail Description';
 
 describe('Guardrail Form PAIG provider', () => {

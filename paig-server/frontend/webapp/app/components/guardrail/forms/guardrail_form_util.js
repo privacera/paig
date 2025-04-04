@@ -140,8 +140,8 @@ const validators = {
             case "name":
                 if (!value) error = "Name is required.";
                 if (value && value.length > 50) error = "Max 50 characters allowed!";
-                if (value && (!/^[a-zA-Z0-9_\- ]+$/.test(value))) {
-                    error = "Name should contain only alphanumeric characters, space, underscores and hyphens.";
+                if (value && (!/^[a-zA-Z0-9_\-]+$/.test(value))) {
+                    error = "Name should contain only alphanumeric characters, underscores and hyphens.";
                 }
                 break;
             case "description":

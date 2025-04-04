@@ -123,7 +123,7 @@ class CDeniedTerms extends Component {
 
         let data = this.form.toJSON();
 
-        data.keywords = data.keywords.split('##|##').filter(k => k.trim());
+        data.keywords = data.keywords.split('##|##').map(k => k.trim()).filter(k => k);
 
         let models = f.models(this.cDeniedTerms);
 
@@ -131,8 +131,7 @@ class CDeniedTerms extends Component {
         models.forEach((m, i) => {
             if (this.form.index !== i) {
                 const existingKeywords = m.keywords || [];
-                const newKeywords = data.keywords;
-                const duplicates = newKeywords.filter(k => 
+                const duplicates = data.keywords.filter(k =>
                     existingKeywords.some(ek => ek.toLowerCase() === k.toLowerCase())
                 );
                 if (duplicates.length > 0) {
