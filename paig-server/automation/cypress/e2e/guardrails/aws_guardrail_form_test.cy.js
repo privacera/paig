@@ -98,8 +98,8 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').type('Test Guardrail Name');
                 cy.get('[class*="-error"]').should('not.exist');
 
-                cy.get('input').type('!@#$%^&*()')
-                cy.get('[class*="-error"]').should('exist').and('contain', 'Name should contain only alphanumeric characters, space, underscores and hyphens.');
+                cy.get('input').type('!@#$%^&*() ')
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Name should contain only alphanumeric characters, underscores and hyphens.');
 
                 cy.get('input').clear().type('Test Guardrail Name_-');
                 cy.get('[class*="-error"]').should('not.exist');
