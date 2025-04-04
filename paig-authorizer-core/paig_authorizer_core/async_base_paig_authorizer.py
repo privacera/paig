@@ -249,7 +249,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
             VectorDBAuthzResponse: The authorization response object containing vector DB details and filter expression.
         """
         # Enrich the authorization request
-        request = self.enrich_authorization_request(authz_request)
+        request = await self.enrich_authorization_request(authz_request)
 
         # Step 1: Retrieve application details and configuration
         app_details: AIApplicationData = await self.get_application_details(request.application_key)
