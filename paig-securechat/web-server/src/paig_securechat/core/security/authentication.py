@@ -10,7 +10,7 @@ from services.user_data_service import UserDataService
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
-# Load authentication settings from config
+
 basic_auth_enabled = conf.get("security", {}).get("basic_auth", {}).get("enabled", "false").lower() == "true"
 
 
@@ -49,15 +49,15 @@ async def __validate_basic_auth(authorization: str, user_controller: UserControl
 
     try:
         api_token = authorization.split("Basic ")[1]
-        payload = base64.b64decode(api_token).decode("utf-8")  # "username:password"
+        payload = base64.b64decode(api_token).decode("utf-8") 
         username, password = payload.split(":", 1)
     except (IndexError, ValueError, base64.binascii.Error):
         raise UnauthorizedException("Invalid Basic Authentication header")
 
-    # Validate credentials using the singleton service
+
     user_details_service.verify_user_credentials(username, password)
 
-    # Fetch the actual user from the database
+
     user = await user_controller.get_user_by_user_name({"user_name": username})
     if user is None:
         raise UnauthorizedException("Unauthorized user")

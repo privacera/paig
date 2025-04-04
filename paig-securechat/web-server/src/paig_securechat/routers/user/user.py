@@ -41,7 +41,7 @@ async def user_login(
 ) -> UserLoginResponse:
     access_token = request.headers.get("authorization", None)
 
-    # Okta validation
+    
     if okta_enabled and access_token is not None:
         try:
             access_token = access_token.split(" ")[1]
@@ -50,13 +50,13 @@ async def user_login(
             logger.error(f"Okta access token validation failed: {e}")
             raise UnauthorizedException("Invalid access token")
 
-    # Basic Auth fallback
+    
     elif basic_auth_enabled and ui_auth_enabled:
         user_name = body_params.user_name.strip()
         user_secret = body_params.password.strip()
         user_data_service.verify_user_credentials(user_name, user_secret)
 
-    # User retrieval
+
     user_name = body_params.user_name.strip()
     user_object = await user_controller.login_user(user_name)
 
