@@ -1,18 +1,23 @@
 import base64
-import pandas as pd
-from werkzeug.security import check_password_hash
 from fastapi import Depends, Request
 from app.controllers.user import UserController
 from core.factory.controller_initiator import ControllerInitiator
 from core.exceptions import UnauthorizedException
 from core.security.jwt import JWTHandler
 from core import constants, config
-
+from services.user_data_service import UserDataService
 
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
+# Load authentication settings from config
 basic_auth_enabled = conf.get("security", {}).get("basic_auth", {}).get("enabled", "false").lower() == "true"
+
+if not conf.get("security", {}).get("basic_auth", {}).get("credentials_path"):
+    raise ValueError("User authentication data path is missing in the config.")
+
+# No need to pass path anymore — singleton handles it internally
+user_details_service = UserDataService()
 
 async def get_auth_user(
     request: Request,
@@ -25,7 +30,6 @@ async def get_auth_user(
 
     if hasattr(request, "headers") and "Authorization" in request.headers:
         authorization = request.headers["Authorization"]
-
 
         if authorization.startswith("Basic "):
             return await __validate_basic_auth(authorization, user_controller)
@@ -42,7 +46,7 @@ async def get_auth_user(
 async def __validate_basic_auth(authorization: str, user_controller: UserController):
     """Validates Basic Authentication credentials."""
 
-    if not basic_auth_enabled :
+    if not basic_auth_enabled:
         raise UnauthorizedException("Basic authentication is disabled")
 
     try:
@@ -52,8 +56,8 @@ async def __validate_basic_auth(authorization: str, user_controller: UserControl
     except (IndexError, ValueError, base64.binascii.Error):
         raise UnauthorizedException("Invalid Basic Authentication header")
 
-    # Validate credentials
-    authorize_credentials_with_df(username, password)
+    # Validate credentials using the singleton service
+    user_details_service.verify_user_credentials(username, password)
 
     # Fetch the actual user from the database
     user = await user_controller.get_user_by_user_name({"user_name": username})
@@ -61,27 +65,6 @@ async def __validate_basic_auth(authorization: str, user_controller: UserControl
         raise UnauthorizedException("Unauthorized user")
 
     return user  
-
-def authorize_credentials_with_df(username: str, password: str):
-    """Validates the given username and password against a DataFrame."""
-
-    df: pd.DataFrame = constants.USER_SECRETS_DF
-
-    if df is None or df.empty:
-        raise UnauthorizedException("User authentication data not available")
-
-    if "Username" not in df.columns or "Secrets" not in df.columns:
-        raise UnauthorizedException("User authentication data format error")
-
-    user_record = df[df["Username"] == username]
-
-    if user_record.empty:
-        raise UnauthorizedException("Invalid username or password")
-
-    stored_hashed_password = user_record.iloc[0]["Secrets"]
-
-    if not check_password_hash(stored_hashed_password, password):
-        raise UnauthorizedException("Invalid username or password")
 
 async def __validate_token(authorization: str):
     """Validates Bearer token authentication."""
