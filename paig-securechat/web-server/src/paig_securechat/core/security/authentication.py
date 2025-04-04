@@ -38,6 +38,12 @@ async def get_auth_user(
                 raise UnauthorizedException("Unauthorized user")
             return user
 
+        else:
+            raise UnauthorizedException("Invalid Authorization header")
+
+    return await __validate_session(request, user_controller)
+
+
     return await __validate_session(request, user_controller)
 
 async def __validate_basic_auth(authorization: str, user_controller: UserController):
