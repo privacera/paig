@@ -44,8 +44,6 @@ async def get_auth_user(
     return await __validate_session(request, user_controller)
 
 
-    return await __validate_session(request, user_controller)
-
 async def __validate_basic_auth(authorization: str, user_controller: UserController):
     """Validates Basic Authentication credentials."""
 
