@@ -72,10 +72,10 @@ const VBasicInfo = ({formUtil, data, stepConfig, i, onEditClick}) => {
             <CardContent className={classes.cardContent}>
                 <Grid container spacing={3}>
                     {
-                        (error.basicInfo?.name) &&
+                        (error.basicInfo?.name || error.basicInfo?.description) &&
                         <Grid item xs={12}>
                             <Alert severity="error" data-testid="guardrail-basic-alert">
-                                {error.basicInfo.name}
+                                {error.basicInfo.name || error.basicInfo.description}
                             </Alert>
                         </Grid>
                     }
@@ -540,8 +540,7 @@ const VDeniedTerms = ({formUtil, stepConfig, i, onEditClick}) => {
                                    <Table className="table-header-bg" data-testid="table">
                                        <TableHead data-testid="thead">
                                            <TableRow className="grey-bg">
-                                               <TableCell>Terms</TableCell>
-                                               <TableCell>Phrases and keywords</TableCell>
+                                               <TableCell>Phrases and Keywords</TableCell>
                                            </TableRow>
                                        </TableHead>
                                        <TableBody data-testid="tbody">
@@ -551,7 +550,6 @@ const VDeniedTerms = ({formUtil, stepConfig, i, onEditClick}) => {
                                                    nonProfanity.map(config => {
                                                        return (
                                                            <TableRow className="table-search-row" key={config.term}>
-                                                                <TableCell>{config.term}</TableCell>
                                                                 <TableCell>{config.keywords?.join(', ') || '--'}</TableCell>
                                                            </TableRow>
                                                        )

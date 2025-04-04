@@ -3,7 +3,7 @@ import React, {Component} from 'react';
 import {TableCell} from '@material-ui/core';
 
 import Table from 'common-ui/components/table';
-import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
+import {permissionCheckerUtil} from "common-ui/utils/permission_checker_util";
 import {ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
 
 class VDeniedTerms extends Component {
@@ -11,8 +11,7 @@ class VDeniedTerms extends Component {
         const {permission} = this.props;
 
         const headers = [
-            <TableCell key="terms">Term</TableCell>,
-            <TableCell key="phrases-and-keywords">Phrases and keywords</TableCell>,
+            <TableCell key="phrases-and-keywords">Phrases and Keywords</TableCell>
         ];
 
         if (permissionCheckerUtil.checkHasDeletePermission(permission)) {
@@ -27,10 +26,9 @@ class VDeniedTerms extends Component {
         const {permission, handleEdit, handleRemove} = this.props;
 
         let rows = [
-            <TableCell key="terms">{model.term}</TableCell>,
             <TableCell key="phrases-and-keywords">
                 {model.keywords?.join(', ')}
-            </TableCell>,
+            </TableCell>
         ]
 
         if (permissionCheckerUtil.checkHasDeletePermission(permission)) {
@@ -53,7 +51,7 @@ class VDeniedTerms extends Component {
             <Table
                 hasElevation={false}
                 data={data}
-                noDataText="No terms found"
+                noDataText="No data found"
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
                 tableRowAttr={{

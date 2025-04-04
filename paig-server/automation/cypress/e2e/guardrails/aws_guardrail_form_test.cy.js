@@ -1,7 +1,6 @@
 import commonUtils from "../common/common_utils";
 
-const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5);
-//const name = 'guardrails_pcqvk fvhgg jpwgq axzom qjmvy';
+const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5).replace(/ /g, '_');
 const description = 'Test Guardrail Description';
 
 describe('Guardrail Form PAIG provider', () => {
@@ -96,12 +95,31 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').should('be.visible').and('have.value', '');
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Name is required.');
 
-                cy.get('input').type('Test Guardrail Name');
+                cy.get('input').type('Test-Guardrail-Name');
+                cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('input').type('!@#$%^&*() ')
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Name should contain only alphanumeric characters, underscores and hyphens.');
+
+                cy.get('input').clear().type('Test-Guardrail-Name_-');
+                cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-Name-Test-Guardr');
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 50 characters allowed!');
+
+                cy.get('input').type('{backspace}');
                 cy.get('[class*="-error"]').should('not.exist');
             });
 
             cy.get('[data-testid="description"]').within(() => {
                 cy.get('textarea').should('be.visible').and('have.value', '');
+                cy.get('[class*="-error"]').should('not.exist');
+
+                cy.get('[data-testid="input-field"]').type('This is a test description that is exactly 201 characters long. It is used to test the input field for the guardrail form. The description should be long enough to ensure that the input field can handl');
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 200 characters allowed!');
+
+                // remove 1 character
+                cy.get('[data-testid="input-field"]').type('{backspace}');
                 cy.get('[class*="-error"]').should('not.exist');
             })
         });
@@ -306,6 +324,32 @@ describe('Guardrail Form PAIG provider', () => {
 
         // Check for custom dialog
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
+
+        //checking validation
+        cy.get('[data-testid="custom-dialog"]').within(() => {
+            cy.get('[data-testid="name"]').type('a'.repeat(101));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 100 characters allowed!');
+
+            cy.get('[data-testid="name"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            cy.get('[data-testid="pattern"]').type('a').clear();
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Required!');
+            cy.get('[data-testid="pattern"]').type('a'.repeat(501));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 500 characters allowed!');
+            cy.get('[data-testid="pattern"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            cy.get('[data-testid="description"]').type('a'.repeat(1001));
+            cy.get('[class*="-error"]').should('exist').and('contain', 'Max 1000 characters allowed!');
+            cy.get('[data-testid="description"]').type('{backspace}');
+            cy.get('[class*="-error"]').should('not.exist');
+
+            //clear all fields
+            cy.get('[data-testid="name"]').clear();
+            cy.get('[data-testid="pattern"]').clear();
+            cy.get('[data-testid="description"]').clear();
+        });
 
         cy.get('[data-testid="custom-dialog"]').within(() => {
             // Check for title
@@ -525,12 +569,31 @@ describe('Guardrail Form PAIG provider', () => {
             cy.get('[data-testid="definition"]').should('contain.text', 'Required!');
             cy.get('[data-testid="sample-phrases"]').should('not.contain.text', 'Required!');
 
-            cy.get('[data-testid="topic"]').type('Test Topic');
-            cy.get('[data-testid="definition"]').type('Test Definition');
-            cy.get('[data-testid="sample-phrases"]').type('Test Sample Phrases');
+            cy.get('[data-testid="topic"]').type('a'.repeat(101));
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
+            cy.get('[data-testid="topic"]').should('contain.text', 'Max 100 characters allowed!');
+
+            cy.get('[data-testid="topic"]').clear().type('Invalid@#$');
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
+            cy.get('[data-testid="topic"]').should('contain.text', 'Only alphanumeric characters, spaces, underscores, hyphens, exclamation points, question marks, and periods are allowed!');
+
+            cy.get('[data-testid="topic"]').clear().type('Test Topic');
+
+            cy.get('[data-testid="definition"]').type('a'.repeat(201));
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
+            cy.get('[data-testid="definition"]').should('contain.text', 'Max 200 characters allowed!');
+
+            cy.get('[data-testid="definition"]').clear().type('Test Definition');
+
+            cy.get('[data-testid="sample-phrases"]').type('a'.repeat(101));
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
+            cy.get('[data-testid="sample-phrases"]').should('contain.text', 'Max 100 characters allowed!');
+
+            cy.get('[data-testid="sample-phrases"]').clear().type('Test Sample Phrases');
 
             cy.get('[data-testid="topic"]').should('not.contain.text', 'Required!');
             cy.get('[data-testid="definition"]').should('not.contain.text', 'Required!');
+            cy.get('[data-testid="sample-phrases"]').should('not.contain.text', 'Max 100 characters allowed!');
 
             cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
         });
@@ -666,15 +729,14 @@ describe('Guardrail Form PAIG provider', () => {
         cy.get('[data-testid="denied-terms-table"]').within(() => {
             cy.get('[data-testid="thead"]').within(() => {
                 cy.get('tr').should('have.length', 1).within(() => {
-                    cy.get('th').should('have.length', 3);
+                    cy.get('th').should('have.length', 2);
 
-                    cy.get('th').eq(0).should('be.visible').and('contain', 'Term');
-                    cy.get('th').eq(1).should('be.visible').and('contain', 'Phrases and keywords');
-                    cy.get('th').eq(2).should('be.visible').and('contain', 'Actions');
+                    cy.get('th').eq(0).should('be.visible').and('contain', 'Phrases and Keywords');
+                    cy.get('th').eq(1).should('be.visible').and('contain', 'Actions');
                 })
             });
 
-            cy.get('[data-testid="tbody-with-nodata"]').should('be.visible').and('contain', 'No terms found');
+            cy.get('[data-testid="tbody-with-nodata"]').should('be.visible').and('contain', 'No data found');
         });
 
         cy.get('[data-testid="profanity-filter"]').click();
@@ -691,21 +753,27 @@ describe('Guardrail Form PAIG provider', () => {
         // Check for error alert
         cy.get('[data-testid="denied-terms-error-alert"]').should('be.visible').and('contain', 'Please add at least one denied term, or enable profanity filter.');
 
-        cy.get('[data-test="add-btn"]').should('be.visible').and('contain', 'Add Terms').click();
+        cy.get('[data-test="add-btn"]').should('be.visible').and('contain', 'Add').click();
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
         cy.get('[data-testid="custom-dialog"]').within(() => {
             cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
 
-            cy.get('[data-testid="term"]').should('contain.text', 'Required!');
-            cy.get('[data-testid="phrases-and-keywords"]').should('contain.text', 'Required');
+            cy.get('[data-testid="phrases-and-keywords"]').should('contain.text', 'Required!');
+            cy.get('[data-testid="phrases-and-keywords"]').type('a'.repeat(101)).type('{enter}');
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
 
-            cy.get('[data-testid="term"]').type('Test Term');
+            cy.get('[data-testid="phrases-and-keywords"]').should('contain.text', 'Each keyword can contain up to 100 characters');
+            cy.get('[data-testid="phrases-and-keywords"]').click();
+            cy.get('.MuiAutocomplete-clearIndicator').click();
+
+            cy.wait(1000);
+
             cy.get('[data-testid="phrases-and-keywords"]').type('Test Phrases and Keywords').type('{enter}');
 
-            cy.get('[data-testid="term"]').should('not.contain.text', 'Required!');
-            cy.get('[data-testid="phrases-and-keywords"]').should('not.contain.text', 'Required');
+            cy.get('[data-testid="phrases-and-keywords"]').should('not.contain.text', 'Required!');
+            cy.get('[data-testid="phrases-and-keywords"]').should('not.contain.text', 'Each keyword can contain up to 100 characters');
 
             cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
         })
@@ -715,11 +783,10 @@ describe('Guardrail Form PAIG provider', () => {
         cy.get('[data-testid="denied-terms-table"]').within(() => {
             cy.get('[data-testid="tbody-with-data"]').within(() => {
                 cy.get('tr').should('have.length', 1).within(() => {
-                    cy.get('td').should('have.length', 3);
+                    cy.get('td').should('have.length', 2);
 
-                    cy.get('td').eq(0).should('be.visible').contains('Test Term');
-                    cy.get('td').eq(1).should('be.visible').contains('Test Phrases and Keywords');
-                    cy.get('td').eq(2).should('be.visible').within(() => {
+                    cy.get('td').eq(0).should('be.visible').contains('Test Phrases and Keywords');
+                    cy.get('td').eq(1).should('be.visible').within(() => {
                         cy.get('[data-test="delete"]').should('be.visible');
                         cy.get('[data-test="edit"]').should('be.visible').click();
                     });
@@ -730,48 +797,34 @@ describe('Guardrail Form PAIG provider', () => {
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
         cy.get('[data-testid="custom-dialog"]').within(() => {
-            cy.get('[data-testid="term"]').type(' Updated');
+            cy.get('[data-testid="phrases-and-keywords"]').type('Test Phrases and Keywords edit').type('{enter}');
+            cy.get('[data-testid="phrases-and-keywords"]').click();
             cy.get('[data-test="modal-ok-btn"]').contains('Save').click();
         });
 
-        cy.get('[data-testid="custom-dialog"]').should('not.exist');
-
-        cy.get('[data-testid="denied-terms-table"]').within(() => {
-            cy.get('[data-testid="tbody-with-data"]').within(() => {
-                cy.get('tr').should('have.length', 1).within(() => {
-                    cy.get('td').eq(0).should('be.visible').contains('Test Term Updated');
-                });
-            });
-        });
-
-        cy.get('[data-test="add-btn"]').and('contain', 'Add Terms').click();
+        cy.get('[data-test="add-btn"]').should('be.visible').and('contain', 'Add').click();
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
         cy.get('[data-testid="custom-dialog"]').within(() => {
-            cy.get('[data-testid="term"]').type('Test Term Updated');
-            cy.get('[data-testid="phrases-and-keywords"]').type('Test Phrases and Keywords').type('{enter}');
             cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
-        });
 
-        cy.get('[data-testid="snackbar"]').should('be.visible').and('contain', 'The term Test Term Updated already exists');
+            cy.get('[data-testid="phrases-and-keywords"]').should('contain.text', 'Required');
+
+            cy.get('[data-testid="phrases-and-keywords"]').type('Test Phrases and Keywords').type('{enter}');
+
+            cy.get('[data-testid="phrases-and-keywords"]').should('not.contain.text', 'Required');
+
+            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
+        })
+
+        cy.get('[data-testid="snackbar"]').should('be.visible').and('contain', 'The keywords Test Phrases and Keywords already exists');
 
         cy.get('[data-testid="snackbar-close-btn"]').should('be.visible').click({ multiple: true });
 
         cy.get('[data-testid="custom-dialog"]').should('be.visible');
 
-        cy.get('[data-testid="custom-dialog"]').within(() => {
-            cy.get('[data-testid="term"]').type(' 2');
-            cy.get('[data-test="modal-ok-btn"]').contains('Add').click();
-        });
-
-        cy.get('[data-testid="custom-dialog"]').should('not.exist');
-
-        cy.get('[data-testid="denied-terms-table"]').within(() => {
-            cy.get('[data-testid="tbody-with-data"]').within(() => {
-                cy.get('tr').should('have.length', 2);
-            });
-        });
+        cy.get('[data-test="modal-cancel-btn"]').contains('Close').click();
 
         cy.get('[data-testid="continue-button"]').click();
 
@@ -790,7 +843,6 @@ describe('Guardrail Form PAIG provider', () => {
             cy.get('[data-testid="edit-button"]').click();
         })
     });
-
 
     it('should be able to delete a new AWS connection provider', () => {
         cy.visit('/#/guardrail_connection_provider/AWS');

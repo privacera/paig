@@ -1,6 +1,6 @@
 import commonUtils from "../common/common_utils";
 
-const name = 'guardrails' + '_' + commonUtils.generateRandomWord(5);
+const name = 'guardrails' + '_' + commonUtils.generateRandomWord(5).replace(/ /g, '_');
 const description = 'Test Guardrail Description';
 
 describe('Guardrail Form PAIG provider', () => {
@@ -70,7 +70,7 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').should('be.visible').and('have.value', '');
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Name is required.');
 
-                cy.get('input').type('Test Guardrail Name');
+                cy.get('input').type('Test-Guardrail-Name');
                 cy.get('[class*="-error"]').should('not.exist');
 
                 cy.get('input').clear();
@@ -320,7 +320,7 @@ describe('Guardrail Form PAIG provider', () => {
             //check guardrail url
             cy.url().should('match', /\/guardrails\/create\/\d+/);
 
-            cy.get('[data-testid="test-text"]').type('Test Guardrail Text');
+            cy.get('[data-testid="test-text"]').type('Test-Guardrail_Text');
             cy.get('[data-testid="test-guardrail"]').should('be.visible').and('contain', 'TEST INPUT').click();
 
              cy.wait(5000);
