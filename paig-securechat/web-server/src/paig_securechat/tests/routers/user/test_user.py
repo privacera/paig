@@ -46,7 +46,7 @@ async def test_user_login_exceptions(client: AsyncClient):
 class TestUIAuth:
     @pytest.mark.asyncio
     async def test_userlogin_with_ui_auth(self, client: AsyncClient):
-        existing_basic_auth_enabled = user.basic_auth_enabled
+        existing_ui_auth_enabled = user.ui_auth_enabled
 
         uds_instance = UserDataService()
         original_user_data = uds_instance.user_data.copy() if uds_instance.user_data is not None else None
@@ -106,5 +106,5 @@ class TestUIAuth:
         assert response.status_code == 401
 
         # Update user existing values
-        user.basic_auth_enabled = existing_basic_auth_enabled
+        user.ui_auth_enabled = existing_ui_auth_enabled
         uds_instance.user_data = original_user_data            
