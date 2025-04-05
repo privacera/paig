@@ -1,10 +1,14 @@
 import pytest
 import base64
-from unittest.mock import AsyncMock, patch
 from fastapi import Request
-from core.security.authentication import get_auth_user
+from unittest.mock import AsyncMock, patch
+import pandas as pd
+
 from core.exceptions import UnauthorizedException
+from core.security.authentication import get_auth_user
 from core.security.okta_verifier import PaigOktaVerifier
+from services.user_data_service import UserDataService
+
 
 
 class MockRequest:
@@ -123,4 +127,46 @@ class TestGetAuthUser:
                 await get_auth_user(request, user_controller_mock)
 
 
+@pytest.fixture
+def mock_user_data():
+    return pd.DataFrame({
+        "Username": ["test_user"],
+        "Secrets": ["pbkdf2:sha256:260000$abc$1234567890abcdef"]
+    })
 
+
+@patch("services.user_data_service.check_password_hash")
+def test_verify_user_credentials_success(mock_check_hash, mock_user_data):
+    mock_check_hash.return_value = True
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    result = uds.verify_user_credentials("test_user", "password123")
+    assert result == {"user_name": "test_user"}
+    mock_check_hash.assert_called_once()
+
+
+def test_verify_user_credentials_invalid_user(mock_user_data):
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("invalid_user", "password123")
+
+
+def test_verify_user_credentials_missing_password(mock_user_data):
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("test_user", "")
+
+
+@patch("services.user_data_service.check_password_hash")
+def test_verify_user_credentials_wrong_password(mock_check_hash, mock_user_data):
+    mock_check_hash.return_value = False
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("test_user", "wrongpass")
