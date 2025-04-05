@@ -39,6 +39,8 @@ async def user_login(
     body_params: PostUserLoginRequest,
     user_controller: UserController = Depends(ControllerInitiator().get_user_controller),
 ) -> UserLoginResponse:
+    print(f"######################################################################################################Request body:",request. __dict__)
+    print(f"######################################################################################################Request headers: {request.headers}")
     access_token = request.headers.get("authorization", None)
 
     
@@ -62,10 +64,7 @@ async def user_login(
 
     response.set_cookie(
         key="session",
-        value=jwt_handler.encode({
-            "user_id": user_object["user_id"],
-            "user_name": user_object["user_name"]
-        }),
+        value=jwt_handler.encode({"user_id": user_object['user_id'], "user_name": user_object['user_name']}),
         httponly=True
     )
 
