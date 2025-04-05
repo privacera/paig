@@ -43,9 +43,9 @@ async def test_user_login_exceptions(client: AsyncClient):
         assert response_error.json()['user_id'] is not  None
 
 
-class TestBasicAuth:
+class TestUIAuth:
     @pytest.mark.asyncio
-    async def test_userlogin_with_basic_auth(self, client: AsyncClient):
+    async def test_userlogin_with_ui_auth(self, client: AsyncClient):
         existing_basic_auth_enabled = user.basic_auth_enabled
 
         uds_instance = UserDataService()
