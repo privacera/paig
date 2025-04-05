@@ -1,6 +1,4 @@
 import logging
-import os
-import sys
 import pandas as pd
 from fastapi import APIRouter, Request, Depends, Response
 from app.api_schemas.user import PostUserLoginRequest, UserLoginResponse
@@ -39,8 +37,7 @@ async def user_login(
     body_params: PostUserLoginRequest,
     user_controller: UserController = Depends(ControllerInitiator().get_user_controller),
 ) -> UserLoginResponse:
-    print(f"######################################################################################################Request body:",request. __dict__)
-    print(f"######################################################################################################Request headers: {request.headers}")
+
     access_token = request.headers.get("authorization", None)
 
     
