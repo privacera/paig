@@ -6,6 +6,7 @@ from unittest.mock import patch
 from core.constants import BASE_ROUTE
 from routers.user import user
 import pandas as pd
+from services.user_data_service import UserDataService
 
 @pytest.mark.asyncio
 async def test_user_login(client: AsyncClient):
@@ -42,11 +43,13 @@ async def test_user_login_exceptions(client: AsyncClient):
         assert response_error.json()['user_id'] is not  None
 
 
-class TestBasicAuth:
+class TestUIAuth:
     @pytest.mark.asyncio
-    async def test_userlogin_with_basic_auth(self, client: AsyncClient):
-        existing_basic_auth_enabled = user.basic_auth_enabled
-        existing_user_secrets_df = user.user_secrets_df
+    async def test_userlogin_with_ui_auth(self, client: AsyncClient):
+        existing_ui_auth_enabled = user.ui_auth_enabled
+
+        uds_instance = UserDataService()
+        original_user_data = uds_instance.user_data.copy() if uds_instance.user_data is not None else None
 
         user_secrets_data = {
             "Username": ["test_user1", "test_user2"],
@@ -56,8 +59,8 @@ class TestBasicAuth:
             ]
         }
 
-        user.basic_auth_enabled = "true"
-        user.user_secrets_df = pd.DataFrame(user_secrets_data)
+        user.ui_auth_enabled = True
+        uds_instance.user_data = pd.DataFrame(user_secrets_data)
 
         user_data = {
             "user_name": "test_user1",
@@ -103,5 +106,5 @@ class TestBasicAuth:
         assert response.status_code == 401
 
         # Update user existing values
-        user.basic_auth_enabled = existing_basic_auth_enabled
-        user.user_secrets_df = existing_user_secrets_df
+        user.ui_auth_enabled = existing_ui_auth_enabled
+        uds_instance.user_data = original_user_data            
