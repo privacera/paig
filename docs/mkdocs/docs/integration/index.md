@@ -68,5 +68,5 @@ functionality:
 
 -   :material-lightning-bolt-outline: __How To__
 
-    [Manage Applications](../user-guide/manage-applications/index)
+    [Manage Applications](../user-guide/manage-applications/index.md)
 </div>

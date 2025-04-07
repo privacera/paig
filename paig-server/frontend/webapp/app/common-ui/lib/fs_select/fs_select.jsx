@@ -368,7 +368,7 @@ class FsSelect extends Component {
 
   renderInput = (params) => {
     const { _vState } = this;
-    const { classes, placeholder = "Select...", error = false, tooltip, errorMessage = "Required", multiple, allowCreate,
+    const { classes, placeholder = "Select...", error = false, tooltip, errorMessage = "Required!", multiple, allowCreate,
       chromeAutoComplete, loaderDataTestId="loader", variant="outlined", customEndAdornment, renderInputParams, addKeyDown=true
     } = this.props;
     let { endAdornment, ...restParams} = params.InputProps

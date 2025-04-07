@@ -56,9 +56,9 @@ def validate_required_data(data, field_name):
 def validate_string_data(data: str, field_name: str, required: bool = True, max_length: int = 255):
     if required:
         validate_required_data(data, field_name)
-    else:
-        if data and len(data) > max_length:
-            raise BadRequestException(get_error_message(ERROR_FIELD_LENGTH_EXCEEDS, field_name, max_length))
+
+    if data and len(data) > max_length:
+        raise BadRequestException(get_error_message(ERROR_FIELD_LENGTH_EXCEEDS, field_name, max_length))
 
 
 def validate_id(id: int, field: str):

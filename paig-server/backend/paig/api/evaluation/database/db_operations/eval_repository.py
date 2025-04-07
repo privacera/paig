@@ -1,16 +1,23 @@
-from dns.e164 import query
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, case
+
 from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
 from api.evaluation.database.db_models import EvaluationModel
 from api.evaluation.database.db_models.eval_model import EvaluationResultPromptsModel, EvaluationResultResponseModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
 
+
+def create_like_filter(model_attr, key, include_query, exclude_list):
+    """Helper function to create like/notlike filters."""
+    if key in include_query and include_query[key]:
+        value = f"%{include_query[key]}%"
+        return model_attr.notlike(value) if key in exclude_list else model_attr.like(value)
+    return None
 
 class EvaluationRepository(BaseOperations[EvaluationModel]):
 
@@ -87,7 +94,13 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
                 query = self.order_by(query, sort_column_name, sort_type)
         query = query.limit(size).offset(skip)
         results = (await session.execute(query)).scalars().all()
-        count = (await self.get_count_with_filter(include_filters.model_dump()))
+        filters = include_filters.model_dump()
+        if'create_time_to' in filters and max_value:
+            filters['create_time_to'] = max_value
+        if 'create_time_from' in filters and min_value:
+            filters['create_time_from'] = min_value
+        count = (await self.get_count_with_filter(filters))
+
         return results, count
 
 
@@ -129,26 +142,23 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
             search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
         if to_time:
             search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
-        if 'prompt' in include_query and include_query['prompt']:
-            if 'prompt' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.prompt.notlike('%' + include_query['prompt'] + '%'))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.prompt.like('%' + include_query['prompt'] + '%'))
-        if 'response' in include_query and include_query['response']:
-            if 'response' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.notlike('%' + include_query['response'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.response.like('%' + include_query['response'] + '%')))
-        if 'category' in include_query and include_query['category']:
-            if 'category' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.notlike('%' + include_query['category'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.category.like('%' + include_query['category'] + '%')))
-        if 'status' in include_query and include_query['status']:
-            if 'status' in exclude_list:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.notlike('%' + include_query['status'] + '%')))
-            else:
-                search_filters.append(EvaluationResultPromptsModel.responses.any(EvaluationResultResponseModel.status.like('%' + include_query['status'] + '%')))
+        prompt_filter = create_like_filter(EvaluationResultPromptsModel.prompt, 'prompt', include_query, exclude_list)
+        if prompt_filter is not None:
+            search_filters.append(prompt_filter)
+
+        response_filters = {
+            'response': EvaluationResultResponseModel.response,
+            'category': EvaluationResultResponseModel.category,
+            'status': EvaluationResultResponseModel.status,
+            'category_type': EvaluationResultResponseModel.category_type,
+            "category_severity": EvaluationResultResponseModel.category_severity
+        }
+
+        for key, model_attr in response_filters.items():
+            response_filter = create_like_filter(model_attr, key, include_query, exclude_list)
+            if response_filter is not None:
+                search_filters.append(EvaluationResultPromptsModel.responses.any(response_filter))
+
         if len(search_filters) > 0:
             query = query.filter(*search_filters)
 
@@ -163,4 +173,116 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
 
 
 
+class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]):
+    def __init__(self):
+        """
+        Initialize the EvaluationPromptsRepository.
 
+        Args:
+            db_session (Session): The database session to use for operations.
+        """
+        super().__init__(EvaluationResultResponseModel)
+
+
+    async def get_result_by_severity(self, eval_id):
+        query = (
+            select(
+                EvaluationResultResponseModel.category_severity,
+                EvaluationResultResponseModel.application_name,
+                func.count().label("count")
+            )
+            .where(
+                EvaluationResultResponseModel.eval_id == eval_id,
+                EvaluationResultResponseModel.category_type.isnot(None)  # Exclude NULL category_type
+            )
+            .group_by(EvaluationResultResponseModel.category_severity, EvaluationResultResponseModel.application_name)
+        )
+
+        result = await session.execute(query)
+        rows = result.fetchall()
+        return rows
+
+    async def get_result_by_category(self, eval_id):
+        severity_order = case(
+            (EvaluationResultResponseModel.category_severity == "CRITICAL", 4),
+            (EvaluationResultResponseModel.category_severity == "HIGH", 3),
+            (EvaluationResultResponseModel.category_severity == "MEDIUM", 2),
+            (EvaluationResultResponseModel.category_severity == "LOW", 1),
+            else_=0
+        )
+        query = (
+            select(
+                EvaluationResultResponseModel.category_type,
+                EvaluationResultResponseModel.category,
+                EvaluationResultResponseModel.application_name,
+                func.count().label("total"),
+                func.sum(case((EvaluationResultResponseModel.status == "PASSED", 1), else_=0)).label("pass_count"),
+                func.sum(case((EvaluationResultResponseModel.status == "FAILED", 1), else_=0)).label("fail_count"),
+                func.sum(case((EvaluationResultResponseModel.status == "ERROR", 1), else_=0)).label("error_count"),
+                func.max(severity_order).label("max_severity")
+            )
+            .where(EvaluationResultResponseModel.eval_id == eval_id)
+            .group_by(EvaluationResultResponseModel.category_type, EvaluationResultResponseModel.category, EvaluationResultResponseModel.application_name)
+        )
+
+        result = await session.execute(query)
+        rows = result.fetchall()
+
+        final_stats = dict()
+        severity_map = {4: "CRITICAL", 3: "HIGH", 2: "MEDIUM", 1: "LOW"}
+
+        for category_type, category, application_name, total, pass_count, fail_count, error_count, max_severity in rows:
+            if category_type not in final_stats:
+                final_stats[category_type] = dict()
+            if application_name not in final_stats[category_type]:
+                final_stats[category_type][application_name] = {
+                    "categories": {},
+                    "total": 0,
+                    "passes": 0,
+                    "severity": None
+                }
+
+            final_stats[category_type][application_name]["categories"][category] = {
+                "pass": pass_count,
+                "fail": fail_count,
+                "error": error_count,
+                "total": pass_count + fail_count + error_count
+            }
+            final_stats[category_type][application_name]["total"] += total
+            final_stats[category_type][application_name]["passes"] += pass_count
+
+            # If max_severity is 0, ignore it (equivalent to NULL/NONE)
+            if max_severity > 0:
+                new_severity = severity_map[max_severity]
+                if final_stats[category_type][application_name]["severity"] is None or \
+                        list(severity_map.values()).index(new_severity) > list(severity_map.values()).index(
+                    final_stats[category_type][application_name]["severity"]):
+                    final_stats[category_type][application_name]["severity"] = new_severity
+
+        return final_stats
+
+    async def get_all_categories_from_result(self, eval_id):
+        query = (
+            select(
+                EvaluationResultResponseModel.category_type,
+                EvaluationResultResponseModel.category
+            )
+            .where(EvaluationResultResponseModel.eval_id == eval_id)
+            .distinct()
+        )
+
+        result = await session.execute(query)
+        rows = result.fetchall()
+        result = dict()
+        result['category'] = list()
+        result['category_type'] = list()
+
+        for category_type, category in rows:
+            if category:
+                result['category'].append(category)
+            if category_type:
+                result['category_type'].append(category_type)
+
+        result['category'] = list(set(result['category']))
+        result['category_type'] = list(set(result['category_type']))
+        return result

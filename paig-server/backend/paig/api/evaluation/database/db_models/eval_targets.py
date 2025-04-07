@@ -1,6 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, JSON, Text
-from core.utils import current_utc_time
-from core.db_session import Base
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Text
 from sqlalchemy.orm import relationship
 from api.evaluation.database.db_models.base_model import CommonBase
 
@@ -19,5 +17,6 @@ class EvaluationTargetModel(CommonBase):
     config = Column(JSON, nullable=False)
     name = Column(String(255), default='')
     url = Column(Text(), default='')
+    target_user = Column(String(255), default='NA')
 
     ai_app = relationship("AIApplicationModel", back_populates="host")

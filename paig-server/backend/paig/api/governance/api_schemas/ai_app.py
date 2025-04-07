@@ -22,7 +22,7 @@ class AIApplicationView(BaseView):
         vector_db_id (Optional[int]): The vector databases id with the AI application.
         vector_db_name (Optional[str]): The vector database associated with the AI application.
     """
-    name: str = Field(default=None, description="The name of the AI application")
+    name: str = Field(default=None, description="The name of the AI application", pattern=r"^[^~!@#$%^&*(),|\"']+$")
     description: Optional[str] = Field(default=None, description="The description of the AI application")
     application_key: Optional[str] = Field(None, description="The application key", alias="applicationKey")
     vector_dbs: Optional[List[str]] = Field([], description="The vector databases associated with the AI application", alias="vectorDBs")

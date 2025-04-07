@@ -18,6 +18,19 @@ import shutil
 from core.db_session.session import set_session_context
 from core import constants
 
+# Import all models to ensure they're registered with metadata
+from api.governance.database.db_models import ai_app_model, ai_app_policy_model
+from api.governance.database.db_models import vector_db_model, vector_db_policy_model
+from api.governance.database.db_models import ai_app_config_model
+from api.governance.database.db_models import metadata_key_model, metadata_value_model
+from api.governance.database.db_models import tag_model
+from api.user.database.db_models import user_model, groups_model
+from api.audit.RDS_service.db_models import access_audit_model, admin_audit_model
+from api.encryption.database.db_models import encryption_master_key_model, encryption_key_model
+from api.evaluation.database.db_models import eval_model, eval_targets, eval_config
+from api.guardrails.database.db_models import guardrail_model, gr_connection_model
+from api.guardrails.database.db_models import response_template_model
+
 cnf = config.load_config_file()
 ROOT_DIR = os.path.join(os.path.dirname(__file__), "..")
 os.environ["PAIG_ROOT_DIR"] = ROOT_DIR
@@ -31,6 +44,14 @@ def event_loop(request) -> Generator:  # noqa: indirect usage
     loop = asyncio.get_event_loop_policy().new_event_loop()
     yield loop
     loop.close()
+
+
+@pytest.fixture(autouse=True)
+def ensure_models_registered():
+    """Ensure all models are registered with SQLAlchemy metadata before running tests."""
+    # This fixture will run automatically before each test
+    # The imports above will ensure all models are registered with Base.metadata
+    pass
 
 
 @pytest.fixture()

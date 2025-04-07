@@ -80,6 +80,9 @@ class VOffTopics extends React.Component {
                 noDataText="No off topics found"
                 getHeaders={this.getHeaders}
                 getRowData={this.getRowData}
+                tableRowAttr={{
+                    'data-testid': 'off-topics-table'
+                }}
             />
         );
     }

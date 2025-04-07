@@ -1,4 +1,5 @@
 import traceback
+from http import HTTPStatus
 
 from api.shield.utils.config_utils import load_shield_configs
 from core.logging_init import set_logging
@@ -75,7 +76,8 @@ def init_listeners(app_: FastAPI) -> None:
     @app_.exception_handler(CustomException)
     async def custom_exception_handler(request: Request, exc: CustomException):
         content = {"error_code": exc.error_code, "success": False, "message": exc.message}
-        logger.error(f"Exception occurred({exc.error_code.name}): {exc}")
+        if exc.error_code == HTTPStatus.INTERNAL_SERVER_ERROR or exc.error_code == HTTPStatus.UNPROCESSABLE_ENTITY:
+            logger.error(f"Exception occurred({exc.error_code.name}): {exc}")
         return JSONResponse(
             status_code=exc.code,
             content=content
