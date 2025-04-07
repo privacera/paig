@@ -12,10 +12,10 @@ from api.encryption.utils.secure_encryptor import SecureEncryptor
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from api.governance.services.ai_app_service import AIAppService
 from core.db_session.transactional import Transactional, Propagation
-from api.apikey.utils.api_key_utils import convert_token_expiry_to_epoch_time, validate_token_expiry_time, short_uuid, get_default_token_expiry_epoch_time
+from api.apikey.utils import convert_token_expiry_to_epoch_time, validate_token_expiry_time, short_uuid, get_default_token_expiry_epoch_time
 from core.exceptions import BadRequestException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_FIELD_INVALID
-from api.apikey.utils.apikey_secure_encryptor import apikey_encrypt, mask_api_key, apikey_decrypt
+from api.apikey.apikey_secure_encryptor import apikey_encrypt, mask_api_key, apikey_decrypt
 from core.constants import DEFAULT_TENANT_ID
 import base64
 

@@ -7,7 +7,7 @@ from api.apikey.database.db_operations.paig_level1_encryption_key_repository imp
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import NotFoundException
-from api.apikey.utils.api_key_utils import generate_hex_key, short_uuid
+from api.apikey.utils import generate_hex_key, short_uuid
 
 
 logger = logging.getLogger(__name__)

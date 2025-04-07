@@ -4,7 +4,7 @@ from fastapi import Depends, APIRouter, Request
 from starlette.responses import StreamingResponse
 from api.governance.controllers.ai_app_config_download_controller import AIAppConfigDownloadController
 from core.utils import SingletonDepends
-from api.apikey.utils.apikey_validator import APIKeyValidator
+from api.apikey.apikey_validator import APIKeyValidator
 
 
 ai_app_config_download_router = APIRouter()
