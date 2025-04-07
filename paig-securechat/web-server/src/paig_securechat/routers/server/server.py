@@ -20,7 +20,7 @@ async def get_server_configs(
         server_config = dict()
         basic_auth_conf = security_conf.get('basic_auth', dict())
         resp_basic_auth_config = dict()
-        resp_basic_auth_config['enabled'] = basic_auth_conf.get('ui_auth_enabled', "false") == "true"
+        resp_basic_auth_config['enabled'] = (basic_auth_conf.get('ui_auth_enabled', "false") == "true" and basic_auth_conf.get('enabled', "false") == "true")
         server_config['basic_auth'] = resp_basic_auth_config
         okta_conf = security_conf.get('okta', dict())
         resp_okta_config = dict()
