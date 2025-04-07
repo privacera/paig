@@ -8,6 +8,7 @@ from sqlalchemy.future import select
 from core.utils import get_field_name_by_alias
 from api.apikey.api_schemas.paig_api_key import PaigApiKeyView
 from sqlalchemy import and_
+from api.apikey.utils import APIKeyStatus
 
 
 class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
@@ -50,7 +51,7 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
             List[PaigApiKeyModel]: The keys with the specified IDs.
         """
         try:
-            return await self.get_all(filters={"id": key_ids, "key_status": "ACTIVE"}, apply_in_list_filter=True)
+            return await self.get_all(filters={"id": key_ids, "key_status": APIKeyStatus.ACTIVE.value}, apply_in_list_filter=True)
         except NoResultFound:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "API Key", "keyIds", key_ids))
 
@@ -114,7 +115,7 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
         """
         try:
             api_key = await self.get_by(filters={"id": key_id}, unique=True)
-            api_key.set_attribute({"key_status": "DISABLED"})
+            api_key.set_attribute({"key_status": APIKeyStatus.DISABLED.value})
             return api_key
         except NoResultFound:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "API Key", "keyId", key_id))
@@ -151,6 +152,6 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
             NoResultFound: If no API key with the specified UUID is found.
         """
         try:
-            return await self.get_by(filters={"key_id": key_uuid, "key_status": "ACTIVE"}, unique=True)
+            return await self.get_by(filters={"key_id": key_uuid, "key_status": APIKeyStatus.ACTIVE.value}, unique=True)
         except NoResultFound:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "API Key", "keyUuid", key_uuid))

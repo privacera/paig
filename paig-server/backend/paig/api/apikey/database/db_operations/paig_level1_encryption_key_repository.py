@@ -3,6 +3,7 @@ from core.exceptions import NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from core.factory.database_initiator import BaseOperations
 from api.apikey.database.db_models.paig_level1_encryption_key_model import PaigLevel1EncryptionKeyModel
+from api.apikey.utils import EncryptionKeyStatus
 
 
 
@@ -32,9 +33,9 @@ class PaigLevel1EncryptionKeyRepository(BaseOperations[PaigLevel1EncryptionKeyMo
             NoResultFound: If no active encryption key is found.
         """
         try:
-            return await self.get_by(filters={"key_status": "ACTIVE"}, unique=True)
+            return await self.get_by(filters={"key_status": EncryptionKeyStatus.ACTIVE.value}, unique=True)
         except NoResultFound:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Active Level1 Encryption key", "key_status", "ACTIVE"))
+            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Active Level1 Encryption key", "key_status", EncryptionKeyStatus.ACTIVE.value))
 
     async def get_level1_encryption_key_by_id(self, key_id: int):
         """

@@ -53,13 +53,10 @@ class PaigApiKeyView(BaseView):
 
 
 class GenerateApiKeyBase(BaseModel):
-    user_id: int = Field(..., description="User ID associated with the API key", alias="userId")
     api_key_name: str = Field(None, description="Name of the API key", alias="apiKeyName")
-    created_by_id: int = Field(None, description="ID of the user who added the API key", alias="addedById")
     description: str = Field(None, description="Description of the API key", alias="description")
     never_expire: bool = Field(None, description="Indicates if the key never expires", alias="neverExpire")
     expiry: datetime = Field(None, description="Token expiration timestamp", alias="tokenExpiry")
-    updated_by_id: int = Field(None, description="ID of the user who last updated the key", alias="updatedById")
     application_id: int = Field(..., description="Application ID associated with the API key", alias="applicationId")
 
 class GenerateApiKeyRequest(GenerateApiKeyBase):
@@ -72,6 +69,9 @@ class GenerateApiKeyRequest(GenerateApiKeyBase):
 
 class GenerateApiKeyResponse(GenerateApiKeyBase):
     id: int = Field(..., description="Unique identifier for the API key", alias="id")
+    user_id: int = Field(..., description="User ID associated with the API key", alias="userId")
+    created_by_id: int = Field(None, description="ID of the user who added the API key", alias="addedById")
+    updated_by_id: int = Field(None, description="ID of the user who last updated the key", alias="updatedById")
     status: int = Field(..., description="Status of the API key", alias="status")
     create_time: datetime = Field(..., description="Creation timestamp", alias="createTime")
     update_time: datetime = Field(..., description="Update timestamp", alias="updateTime")

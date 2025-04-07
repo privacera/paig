@@ -3,6 +3,7 @@ from sqlalchemy.exc import NoResultFound
 from core.exceptions import NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from api.apikey.database.db_models.paig_level2_encryption_key_model import PaigLevel2EncryptionKeyModel
+from api.apikey.utils import EncryptionKeyStatus
 
 
 class PaigLevel2EncryptionKeyRepository(BaseOperations[PaigLevel2EncryptionKeyModel]):
@@ -31,9 +32,9 @@ class PaigLevel2EncryptionKeyRepository(BaseOperations[PaigLevel2EncryptionKeyMo
             NoResultFound: If no active encryption key is found.
         """
         try:
-            return await self.get_by(filters={"key_status": "ACTIVE"}, unique=True)
+            return await self.get_by(filters={"key_status": EncryptionKeyStatus.ACTIVE.value}, unique=True)
         except NoResultFound:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Active Level2 Encryption key", "key_status", "ACTIVE"))
+            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Active Level2 Encryption key", "key_status", EncryptionKeyStatus.ACTIVE.value))
 
     async def get_level2_encryption_key_by_id(self, key_id: int) -> PaigLevel2EncryptionKeyModel:
         """

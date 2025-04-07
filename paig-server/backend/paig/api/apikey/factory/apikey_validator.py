@@ -7,7 +7,7 @@ from api.apikey.services.paig_level2_encryption_key_service import PaigLevel2Enc
 from api.apikey.services.paig_api_key_service import PaigApiKeyService
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import BadRequestException
-from api.apikey.apikey_secure_encryptor import apikey_decrypt
+from api.apikey.factory.apikey_secure_encryptor import apikey_decrypt
 from api.apikey.utils import validate_token_expiry_time
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 

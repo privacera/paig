@@ -51,14 +51,14 @@ class PaigApiKeyController:
         """
         return await self._api_key_service.get_api_key_by_ids(api_key_ids)
 
-    async def create_api_key(self, request: dict):
+    async def create_api_key(self, request: dict, user_id: int):
         """
         Create a new API key.
 
         Args:
             request (dict): The request object containing the API key and description.
         """
-        return await self._api_key_service.create_api_key(request)
+        return await self._api_key_service.create_api_key(request, user_id)
 
 
     async def disable_api_key(self, api_key_id: int):

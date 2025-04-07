@@ -4,23 +4,23 @@ from api.apikey.database.db_models.paig_api_key_model import PaigApiKeyModel
 from core.utils import SingletonDepends
 from api.apikey.database.db_operations.paig_api_key_repository import PaigApiKeyRepository
 from api.apikey.api_schemas.paig_api_key import PaigApiKeyView
-
 from api.apikey.services.paig_level1_encryption_key_service import PaigLevel1EncryptionKeyService
 from api.apikey.services.paig_level2_encryption_key_service import PaigLevel2EncryptionKeyService
-
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from api.governance.services.ai_app_service import AIAppService
 from core.db_session.transactional import Transactional, Propagation
-from api.apikey.utils import convert_token_expiry_to_epoch_time, validate_token_expiry_time, short_uuid, get_default_token_expiry_epoch_time
+from api.apikey.utils import convert_token_expiry_to_epoch_time, validate_token_expiry_time, short_uuid, get_default_token_expiry_epoch_time, APIKeyStatus
 from core.exceptions import BadRequestException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_FIELD_INVALID
-from api.apikey.apikey_secure_encryptor import apikey_encrypt, mask_api_key, apikey_decrypt
-from core.constants import DEFAULT_TENANT_ID
+from api.apikey.factory.apikey_secure_encryptor import apikey_encrypt, mask_api_key, apikey_decrypt
+from core.exceptions import NotFoundException
+from core.constants import DEFAULT_TENANT_ID, DEFAULT_SCOP_ID
 import base64
 
 SEMI_COLON_SEPARATOR  = ";"
 COLON_SEPARATOR = ":"
+USER_DATA_PATTERN = "{user_id}{separator}{tenant_id}{separator}{token_expiry}{separator}{scope}{separator}{app_id}"
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class PaigApiKeyService(BaseController[PaigApiKeyModel, PaigApiKeyView]):
         return await self.repository.get_api_keys_by_application_id(*args)
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def create_api_key(self, request):
+    async def create_api_key(self, request, user_id: int):
         level1_encrypted_key = await self.paig_level1_encryption_key_service.get_active_paig_level1_encryption_key()
         level2_encrypted_key = await self.paig_level2_encryption_key_service.get_active_paig_level2_encryption_key()
 
@@ -83,13 +83,19 @@ class PaigApiKeyService(BaseController[PaigApiKeyModel, PaigApiKeyView]):
             raise BadRequestException(get_error_message(ERROR_FIELD_INVALID, "Expiry Date", token_expiry))
 
         shield_server_url = await self.ai_app_service.get_shield_server_url()
+        if not shield_server_url:
+            raise BadRequestException(get_error_message(ERROR_FIELD_INVALID, "Shield Server URL", shield_server_url))
 
-        user_id = request.get('user_id')
-        tenant_id = DEFAULT_TENANT_ID
-        scope = "3"
         app_id = request.get('application_id')
 
-        user_data = f"{user_id}{COLON_SEPARATOR}{tenant_id}{COLON_SEPARATOR}{token_expiry_epoch_time}{COLON_SEPARATOR}{scope}{COLON_SEPARATOR}{app_id}"
+        user_data = USER_DATA_PATTERN.format(
+            user_id=user_id,
+            tenant_id=DEFAULT_TENANT_ID,
+            token_expiry=token_expiry_epoch_time,
+            scope=DEFAULT_SCOP_ID,
+            app_id=app_id,
+            separator=COLON_SEPARATOR
+        )
 
         level1_encrypted_data = apikey_encrypt(user_data, level1_decrypted_key)
 
@@ -103,10 +109,13 @@ class PaigApiKeyService(BaseController[PaigApiKeyModel, PaigApiKeyView]):
         final_api_key = base64.urlsafe_b64encode(api_key_temp.encode()).decode('utf-8')
         masked_api_key = mask_api_key(final_api_key)
 
+        request['user_id'] = user_id
+        request['created_by_id'] = user_id
+        request['updated_by_id'] = user_id
         request['api_key_encrypted'] = None
         request['api_key_masked'] = masked_api_key
-        request['key_status'] = "ACTIVE"
-        request['api_scope_id'] = 3
+        request['key_status'] = APIKeyStatus.ACTIVE.value
+        request['api_scope_id'] = DEFAULT_SCOP_ID
         request['key_id'] = api_key_uuid
 
         # remove scopes from request
@@ -129,7 +138,10 @@ class PaigApiKeyService(BaseController[PaigApiKeyModel, PaigApiKeyView]):
 
 
     async def get_paig_api_key_by_uuid(self, key_uuid: str):
-        return await self.repository.get_paig_api_key_by_uuid(key_uuid)
+        try:
+            return await self.repository.get_paig_api_key_by_uuid(key_uuid)
+        except NotFoundException:
+            return None
 
 
 

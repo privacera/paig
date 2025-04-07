@@ -23,7 +23,7 @@ async def generate_api_key(
     """
     Generate a new API key.
     """
-    return await paig_api_key_controller.create_api_key(paig_api_key_request.model_dump())
+    return await paig_api_key_controller.create_api_key(paig_api_key_request.model_dump(), user.get("id"))
 
 
 @paig_api_key_router.get("/keys", response_model=List[GenerateApiKeyResponse], status_code=status.HTTP_200_OK)

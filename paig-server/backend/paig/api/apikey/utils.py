@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from core.config import load_config_file
+from enum import Enum
 import secrets
 import uuid
 
@@ -39,3 +40,16 @@ def validate_token_expiry_time(token_expiry: int) -> int:
     if token_expiry > max_valid_epoch or token_expiry < current_epoch:
         return False
     return True
+
+
+class EncryptionKeyStatus(Enum):
+    ACTIVE = "ACTIVE"
+    PASSIVE = 'PASSIVE'
+    DISABLED = "DISABLED"
+    DELETED = "DELETED"
+
+
+class APIKeyStatus(Enum):
+    ACTIVE = "ACTIVE"
+    DISABLED = "DISABLED"
+    DELETED = "DELETED"

@@ -1,13 +1,13 @@
 import logging
 from core.controllers.base_controller import BaseController
 from api.apikey.database.db_models.paig_level2_encryption_key_model import PaigLevel2EncryptionKeyModel
-from api.apikey.schemas.paig_level2_encryption_key import PaigLevel2EncryptionKeyView
+from api.apikey.services.paig_encryption_views import PaigLevel2EncryptionKeyView
 from core.utils import SingletonDepends
 from api.apikey.database.db_operations.paig_level2_encryption_key_repository import PaigLevel2EncryptionKeyRepository
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import NotFoundException
-from api.apikey.utils import generate_hex_key, short_uuid
+from api.apikey.utils import generate_hex_key, short_uuid, EncryptionKeyStatus
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class PaigLevel2EncryptionKeyService(BaseController[PaigLevel2EncryptionKeyModel
 
             existing_paig_level2_encryption_key_updated_request = PaigLevel2EncryptionKeyView.model_validate(
                 existing_paig_level2_encryption_key)
-            existing_paig_level2_encryption_key_updated_request.key_status = "PASSIVE"
+            existing_paig_level2_encryption_key_updated_request.key_status = EncryptionKeyStatus.PASSIVE.value
 
             await self.update_record(existing_paig_level2_encryption_key.id,
                                      existing_paig_level2_encryption_key_updated_request)
@@ -63,7 +63,7 @@ class PaigLevel2EncryptionKeyService(BaseController[PaigLevel2EncryptionKeyModel
 
         paig_level2_encryption_key_view: PaigLevel2EncryptionKeyView = PaigLevel2EncryptionKeyView()
         paig_level2_encryption_key_view.paig_key_value = encrypted_key
-        paig_level2_encryption_key_view.key_status = "ACTIVE"
+        paig_level2_encryption_key_view.key_status = EncryptionKeyStatus.ACTIVE.value
         paig_level2_encryption_key_view.key_id = level2_key_uuid
 
         result: PaigLevel2EncryptionKeyView = await self.create_record(paig_level2_encryption_key_view)
