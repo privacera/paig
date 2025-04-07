@@ -8,7 +8,7 @@ from api.apikey.services.paig_api_key_service import PaigApiKeyService
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import BadRequestException
 from api.apikey.utils.apikey_secure_encryptor import apikey_decrypt
-from core.utils import validate_token_expiry_time
+from api.apikey.utils.api_key_utils import validate_token_expiry_time
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 
 logger = logging.getLogger(__name__)

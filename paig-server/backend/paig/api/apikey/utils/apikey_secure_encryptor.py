@@ -20,7 +20,7 @@ IV = bytes([163, 124, 145, 182, 239, 45, 67, 143, 153, 116, 205, 86])
 SALT = bytes([72, 22, 44, 56, 72, 121, 109, 68])
 
 
-def apikey_encrypt(data: str, secret: str, version: str = None) -> str:
+def apikey_encrypt(data: str, secret: str) -> str:
     """
     Encrypt the given data using AES/GCM encryption.
 

@@ -1,14 +1,13 @@
 import logging
 from core.controllers.base_controller import BaseController
 from api.apikey.database.db_models.paig_level1_encryption_key_model import PaigLevel1EncryptionKeyModel
-from api.apikey.api_schemas.paig_level1_encryption_key import PaigLevel1EncryptionKeyView
+from api.apikey.schemas.paig_level1_encryption_key import PaigLevel1EncryptionKeyView
 from core.utils import SingletonDepends
 from api.apikey.database.db_operations.paig_level1_encryption_key_repository import PaigLevel1EncryptionKeyRepository
 from api.encryption.utils.secure_encryptor import SecureEncryptor
-from api.apikey.database.db_models.base_model import EncryptionKeyStatus
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import NotFoundException
-from core.utils import generate_hex_key, short_uuid
+from api.apikey.utils.api_key_utils import generate_hex_key, short_uuid
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +48,7 @@ class PaigLevel1EncryptionKeyService(BaseController[PaigLevel1EncryptionKeyModel
             existing_paig_level1_encryption_key: PaigLevel1EncryptionKeyModel = await repository.get_active_paig_level1_encryption_key()
 
             existing_paig_level1_encryption_key_updated_request = PaigLevel1EncryptionKeyView.model_validate(existing_paig_level1_encryption_key)
-            existing_paig_level1_encryption_key_updated_request.key_status = EncryptionKeyStatus.PASSIVE
+            existing_paig_level1_encryption_key_updated_request.key_status = "DISABLED"
 
             await self.update_record(existing_paig_level1_encryption_key.id, existing_paig_level1_encryption_key_updated_request)
         except NotFoundException:
@@ -66,7 +65,7 @@ class PaigLevel1EncryptionKeyService(BaseController[PaigLevel1EncryptionKeyModel
 
         paig_level1_encryption_key_view: PaigLevel1EncryptionKeyView = PaigLevel1EncryptionKeyView()
         paig_level1_encryption_key_view.paig_key_value = encrypted_key
-        paig_level1_encryption_key_view.key_status = EncryptionKeyStatus.ACTIVE
+        paig_level1_encryption_key_view.key_status = "ACTIVE"
         paig_level1_encryption_key_view.key_id = level1_key_uuid
 
         # Store masked/encrypted level1 encryption key in the database

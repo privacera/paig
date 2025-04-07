@@ -1,14 +1,12 @@
 import threading
 import uuid
 from urllib.parse import urlparse
-import secrets
 
 from sqlalchemy import func
 
 from core.exceptions.error_messages_parser import get_error_message, ERROR_FIELD_REQUIRED, ERROR_FIELD_LENGTH_EXCEEDS, \
     ERROR_INVALID_STATUS, ERROR_FIELD_VALUE_INVALID
 from .exceptions import BadRequestException
-
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 import os
@@ -278,30 +276,3 @@ def is_valid_url(url):
     parsed_url = urlparse(url)
     # Check if the URL has a valid scheme (http or https) and netloc (domain)
     return parsed_url.scheme in ['http', 'https'] and bool(parsed_url.netloc)
-
-def generate_hex_key(length: int = 22):
-    return secrets.token_hex(length)[:length]
-
-def short_uuid():
-    return f"{uuid.uuid4().int % (36**10):010x}"  # 13-char base36
-
-
-def convert_token_expiry_to_epoch_time(token_expiry) -> int:
-    # Convert token expiry time to epoch time
-    if token_expiry:
-        return int(token_expiry.timestamp())
-    else:
-        current_epoch = int(datetime.now(timezone.utc).timestamp())
-        max_valid_epoch = current_epoch + 365 * 24 * 60 * 60
-        return max_valid_epoch
-
-
-
-def validate_token_expiry_time(token_expiry: int) -> int:
-    # Validate token expiry time is in between 1 year from current time to one year max
-    current_epoch = int(datetime.now(timezone.utc).timestamp())
-    max_valid_epoch = current_epoch + 365 * 24 * 60 * 60  # 1 year in seconds
-
-    if token_expiry > max_valid_epoch:
-        return False
-    return True

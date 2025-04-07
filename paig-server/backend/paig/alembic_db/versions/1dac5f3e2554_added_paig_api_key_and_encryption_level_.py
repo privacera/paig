@@ -1,8 +1,8 @@
 """added paig api key and encryption level tables
 
-Revision ID: 42e4598328a1
+Revision ID: 1dac5f3e2554
 Revises: 2d992e5994c8
-Create Date: 2025-04-07 12:13:30.457307
+Create Date: 2025-04-07 15:32:23.971869
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ import core.db_models.utils
 
 
 # revision identifiers, used by Alembic.
-revision: str = '42e4598328a1'
+revision: str = '1dac5f3e2554'
 down_revision: Union[str, None] = '2d992e5994c8'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,7 +26,7 @@ def upgrade() -> None:
     sa.Column('created_by_id', sa.String(length=20), nullable=True),
     sa.Column('updated_by_id', sa.String(length=20), nullable=True),
     sa.Column('paig_key_value', sa.String(length=1024), nullable=False),
-    sa.Column('key_status', sa.Enum('ACTIVE', 'PASSIVE', 'DISABLED', 'DELETED', name='encryptionkeystatus'), nullable=False),
+    sa.Column('key_status', sa.String(length=255), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -42,7 +42,7 @@ def upgrade() -> None:
     sa.Column('created_by_id', sa.String(length=20), nullable=True),
     sa.Column('updated_by_id', sa.String(length=20), nullable=True),
     sa.Column('paig_key_value', sa.String(length=1024), nullable=False),
-    sa.Column('key_status', sa.Enum('ACTIVE', 'PASSIVE', 'DISABLED', 'DELETED', name='encryptionkeystatus'), nullable=False),
+    sa.Column('key_status', sa.String(length=255), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('status', sa.Integer(), nullable=False),
     sa.Column('create_time', sa.DateTime(), nullable=False),
@@ -60,12 +60,12 @@ def upgrade() -> None:
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('created_by_id', sa.String(length=20), nullable=True),
     sa.Column('updated_by_id', sa.String(length=20), nullable=True),
-    sa.Column('key_status', sa.Enum('ACTIVE', 'DISABLED', 'DELETED', name='apikeystatus'), nullable=False),
+    sa.Column('key_status', sa.String(length=255), nullable=False),
     sa.Column('description', sa.String(length=1024), nullable=True),
     sa.Column('last_used_on', sa.DateTime(), nullable=True),
     sa.Column('api_key_masked', sa.String(length=255), nullable=False),
     sa.Column('api_key_encrypted', sa.String(length=512), nullable=True),
-    sa.Column('token_expiry', sa.DateTime(), nullable=True),
+    sa.Column('expiry', sa.DateTime(), nullable=True),
     sa.Column('never_expire', sa.Boolean(), nullable=False),
     sa.Column('api_scope_id', sa.String(length=255), nullable=True),
     sa.Column('version', sa.String(length=255), nullable=True),

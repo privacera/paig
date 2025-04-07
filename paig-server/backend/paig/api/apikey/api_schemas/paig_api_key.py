@@ -26,7 +26,7 @@ class PaigApiKeyView(BaseView):
         last_used_on (str): The last time the API key was used.
         api_key_masked (str): The masked value of the API key.
         api_key_encrypted (str): The encrypted value of the API key.
-        token_expiry (str): The expiry time of the token.
+        expiry (str): The expiry time of the token.
         never_expire (bool): A flag indicating whether the token never expires.
         api_scope_id (str): The ID of the API scope associated with the API key.
         version (str): The version of the API key.
@@ -42,7 +42,7 @@ class PaigApiKeyView(BaseView):
     last_used_on: str = Field(default=None, description="The last time the API key was used", alias="lastUsedOn")
     api_key_masked: str = Field(default=None, description="The masked value of the API key", alias="apiKeyMasked")
     api_key_encrypted: str = Field(default=None, description="The encrypted value of the API key", alias="apiKeyEncrypted")
-    token_expiry: str = Field(default=None, description="The expiry time of the token", alias="tokenExpiry")
+    expiry: str = Field(default=None, description="The expiry time of the token", alias="tokenExpiry")
     never_expire: bool = Field(default=None, description="A flag indicating whether the token never expires", alias="neverExpire")
     api_scope_id: str = Field(default=None, description="The ID of the API scope associated with the API key", alias="apiScopeId")
     version: str = Field(default=None, description="The version of the API key")
@@ -53,14 +53,14 @@ class PaigApiKeyView(BaseView):
 
 
 class GenerateApiKeyBase(BaseModel):
-    user_id: Optional[int] = Field(None, description="User ID associated with the API key", alias="userId")
-    api_key_name: Optional[str] = Field(None, description="Name of the API key", alias="apiKeyName")
-    created_by_id: Optional[int] = Field(None, description="ID of the user who added the API key", alias="addedById")
-    description: Optional[str] = Field(None, description="Description of the API key", alias="description")
-    never_expire: Optional[bool] = Field(None, description="Indicates if the key never expires", alias="neverExpire")
-    token_expiry: Optional[datetime] = Field(None, description="Token expiration timestamp", alias="tokenExpiry")
-    updated_by_id: Optional[int] = Field(None, description="ID of the user who last updated the key", alias="updatedById")
-    application_id: Optional[int] = Field(None, description="Application ID associated with the API key", alias="applicationId")
+    user_id: int = Field(..., description="User ID associated with the API key", alias="userId")
+    api_key_name: str = Field(None, description="Name of the API key", alias="apiKeyName")
+    created_by_id: int = Field(None, description="ID of the user who added the API key", alias="addedById")
+    description: str = Field(None, description="Description of the API key", alias="description")
+    never_expire: bool = Field(None, description="Indicates if the key never expires", alias="neverExpire")
+    expiry: datetime = Field(None, description="Token expiration timestamp", alias="tokenExpiry")
+    updated_by_id: int = Field(None, description="ID of the user who last updated the key", alias="updatedById")
+    application_id: int = Field(..., description="Application ID associated with the API key", alias="applicationId")
 
 class GenerateApiKeyRequest(GenerateApiKeyBase):
     scopes: List[int] = Field(..., description="List of scope IDs associated with the key")

@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from core.db_models.BaseSQLModel import BaseSQLModel
-from sqlalchemy import Enum as SQLEnum
-from api.apikey.database.db_models.base_model import ApiKeyStatus
 from sqlalchemy.orm import relationship
 
 
@@ -14,12 +12,12 @@ class PaigApiKeyModel(BaseSQLModel):
     user_id = Column(Integer, nullable=False)
     created_by_id = Column(String(20), nullable=True)
     updated_by_id = Column(String(20), nullable=True)
-    key_status = Column(SQLEnum(ApiKeyStatus), nullable=False)
+    key_status = Column(String(255), nullable=False)
     description = Column(String(1024), nullable=True)
     last_used_on = Column(DateTime, nullable=True)
     api_key_masked = Column(String(255), nullable=False)
     api_key_encrypted = Column(String(512), nullable=True)
-    token_expiry = Column(DateTime, nullable=True)
+    expiry = Column(DateTime, nullable=True)
     never_expire = Column(Boolean, nullable=False, default=False)
     api_scope_id = Column(String(255), nullable=True, default='3')
     version = Column(String(255), nullable=True, default='v2')
@@ -42,9 +40,8 @@ class PaigApiKeyModel(BaseSQLModel):
             "updatedById": self.updated_by_id,
             "keyStatus": self.key_status,
             "description": self.description,
-            "lastUsedOn": self.last_used_on.isoformat() if self.last_used_on else None,
             "apiKeyMasked": self.api_key_masked,
-            "tokenExpiry": self.token_expiry.isoformat() if self.token_expiry else None,
+            "tokenExpiry": self.expiry.isoformat() if self.expiry else None,
             "neverExpire": self.never_expire,
             "apiScopeId": [self.api_scope_id],
             "version": self.version,

@@ -1,6 +1,5 @@
-from sqlalchemy import Column, String, Enum as SQLEnum
+from sqlalchemy import Column, String
 from core.db_models.BaseSQLModel import BaseSQLModel
-from api.apikey.database.db_models.base_model import EncryptionKeyStatus
 
 
 class PaigLevel2EncryptionKeyModel(BaseSQLModel):
@@ -10,7 +9,7 @@ class PaigLevel2EncryptionKeyModel(BaseSQLModel):
     created_by_id = Column(String(20), nullable=True)
     updated_by_id = Column(String(20), nullable=True)
     paig_key_value = Column(String(1024), nullable=False)
-    key_status = Column(SQLEnum(EncryptionKeyStatus), nullable=False)
+    key_status = Column(String(255), nullable=False)
 
     def set_attribute(self, attributes):
         for key in attributes:
