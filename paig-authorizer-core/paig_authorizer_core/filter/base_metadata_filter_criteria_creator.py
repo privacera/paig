@@ -139,7 +139,8 @@ class BaseMetadataFilterCriteriaCreator:
         elif self.is_boolean(metadata_value):
             return metadata_value.upper()
         else:
-            return f"'{metadata_value}'"
+            # TODO: Handle string values based on the vector db type
+            return f"{metadata_value}"
 
     # noinspection PyMethodMayBeStatic
     def is_integer(self, value: str) -> bool:
