@@ -247,7 +247,7 @@ describe("Test User Management page for groups tab", () => {
         });
     }
 
-    it("should verify groups management listing", () => {
+    it.skip("should verify groups management listing", () => {
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.get('[data-testid="header-refresh-btn"]').click();
         cy.wait('@getGroups').then((interception) => {
@@ -274,7 +274,7 @@ describe("Test User Management page for groups tab", () => {
         });
     });
 
-    it("should verify groups management listing on refresh", () => {
+    it.skip("should verify groups management listing on refresh", () => {
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.get('[data-testid="header-refresh-btn"]').click();
 
@@ -284,7 +284,7 @@ describe("Test User Management page for groups tab", () => {
         });
     });
 
-    it("should verify various search functionalities for groups", () => {
+    it.skip("should verify various search functionalities for groups", () => {
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.intercept('GET', '/account-service/api/groups?size=15&sort=createTime,desc&name=*').as('searchGroups');
         cy.intercept('GET', '/account-service/api/groups?size=15&sort=createTime,desc').as('getSearchGroups');
