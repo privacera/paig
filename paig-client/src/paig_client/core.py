@@ -587,10 +587,11 @@ class PAIGApplication:
                 )
 
             server_url = parts[1]
-            if not server_url.startswith("https://"):
+            if server_url.startswith("https://") or server_url.startswith("http://"):
+                request_url = f"{server_url.rstrip('/')}/api/ai/application/config"
+            else:
                 raise ValueError("Invalid server URL format found in API key. please Ensure API key is valid")
 
-            request_url = f"{server_url.rstrip('/')}/api/ai/application/config"
             headers = {"x-paig-api-key": api_key}
             _logger.debug(f"Constructed request URL for fetching application json: {request_url} with headers : {headers}")
 
