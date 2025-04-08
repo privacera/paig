@@ -251,8 +251,10 @@ describe("Test User Management page for groups tab", () => {
         let newGroups = false;
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.get('[data-testid="header-refresh-btn"]').click();
+        let content = null;
         cy.wait('@getGroups').then((interception) => {
-            let { content } = interception.response.body;
+            content = interception.response.body;
+            content = content.content;
             if (content.length === 0) {
                 newGroups = true
                 // If no groups exist, create a couple of groups to start the test cases
@@ -264,16 +266,19 @@ describe("Test User Management page for groups tab", () => {
                 const group2Description = commonUtils.generateRandomSentence(10, 5);;
                 createNewGroup(group2Name, group2Description);
                 cy.get('[data-testid="custom-dialog"]').should('not.exist');
+            } else {
+                verifyUserManagementGroupsTable(content);
             }
         });
         if(newGroups) {
             cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups1');
             cy.get('[data-testid="header-refresh-btn"]').click();
             cy.wait('@getGroups1').then((interception) => {
-                let { content } = interception.response.body;
+                content = interception.response.body;
+                content = content.content;
             });
+            verifyUserManagementGroupsTable(content);
         }
-        verifyUserManagementGroupsTable(content);
     });
 
     it("should verify groups management listing on refresh", () => {
