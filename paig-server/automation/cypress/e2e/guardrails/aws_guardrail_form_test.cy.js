@@ -104,7 +104,7 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').clear().type('Test-Guardrail-Name_-');
                 cy.get('[class*="-error"]').should('not.exist');
 
-                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-00');
+                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-0');
                 cy.get('[class*="-error"]').should('exist').and('contain', 'Max 35 characters allowed!');
 
                 cy.get('input').type('{backspace}');
