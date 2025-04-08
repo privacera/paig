@@ -34,7 +34,7 @@ class GuardrailFormUtil {
 	    this.apps = apps;
 	}
 	getApps() {
-	    return this.apps || [];
+	    return this.apps;
 	}
 
 	getSaveFormData () {
@@ -98,7 +98,8 @@ class GuardrailFormUtil {
 	validateField(fieldName, value, fieldKeyObject) {
 	    let error = validators.validateField(fieldName, value);
 	    if (!this.getErrors()[fieldKeyObject]) {
-	        return;
+	        this.getErrors()[fieldKeyObject] = {};
+	        //return;
 	    }
         if (error) {
             this.getErrors()[fieldKeyObject][fieldName] = error;
@@ -138,6 +139,13 @@ const validators = {
         switch (fieldName) {
             case "name":
                 if (!value) error = "Name is required.";
+                if (value && value.length > 50) error = "Max 50 characters allowed!";
+                if (value && (!/^[a-zA-Z0-9_\-]+$/.test(value))) {
+                    error = "Name should contain only alphanumeric characters, underscores and hyphens.";
+                }
+                break;
+            case "description":
+                if (value && value.length > 200) error = "Max 200 characters allowed!";
                 break;
             default:
                 break;
@@ -149,8 +157,10 @@ const validators = {
 		const errors = {};
 		if (!data.name) errors.name = 'Name is required.';
 
+		if (data.description && data.description.length > 200) errors.description = "Max 200 characters allowed!";
+
 		if (data.guardrailProvider && !data.guardrailConnectionName) {
-		    errors.guardrailConnections = 'Please select an account for enabled guardrail connections.';
+		    errors.guardrailConnections = 'Please select a connection from below enabled connection provider.';
 		}
 
 		return {basicInfo: errors};

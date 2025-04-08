@@ -1,15 +1,24 @@
 import pytest
-from unittest.mock import patch
-from core.security.authentication import get_auth_user, UnauthorizedException
+import base64
+from fastapi import Request
+from unittest.mock import AsyncMock, patch
+import pandas as pd
+
+from core.exceptions import UnauthorizedException
+from core.security.authentication import get_auth_user
 from core.security.okta_verifier import PaigOktaVerifier
+from services.user_data_service import UserDataService
+
 
 class MockRequest:
     def __init__(self, cookies):
         self.cookies = cookies
 
+
 class MockUserController:
     async def get_user(self, user):
         return {"user_id": 1, "user_name": "test_user"}
+
 
 class TestGetAuthUser:
     @pytest.mark.asyncio
@@ -52,8 +61,10 @@ class TestGetAuthUser:
         async def mock_get_user(user):
             return None
 
-        with (patch('core.security.authentication.jwt_handler.decode', new=mock_decode),
-                    patch.object(mock_user_controller, 'get_user', new=mock_get_user)):
+        with (
+            patch('core.security.authentication.jwt_handler.decode', new=mock_decode),
+            patch.object(mock_user_controller, 'get_user', new=mock_get_user)
+        ):
             with pytest.raises(UnauthorizedException, match="Unauthorized session"):
                 await get_auth_user(mock_request, mock_user_controller)
 
@@ -72,11 +83,89 @@ class TestGetAuthUser:
             try:
                 obj.verify('random_access_token')
             except Exception as exc:
-                print('exc', exc)
-                assert exc.match('Invalid access token')
+               assert exc.match('Invalid access token')
 
         with (patch('requests.post', new={"status_code": 200, 'active': False})):
             try:
                 obj.verify('random_access_token')
             except Exception as exc:
-                assert exc.match('Invalid access token')
+                 assert exc.match('Invalid access token')
+
+    @pytest.mark.asyncio
+    async def test_get_auth_user_basic_auth_valid(self):
+        user_controller_mock = AsyncMock()
+        user_controller_mock.login_user.return_value = {"user_name": "valid_user"}
+
+        valid_credentials = base64.b64encode(b"valid_user:valid_password").decode("utf-8")
+
+        request = Request(scope={
+            "type": "http",
+            "headers": [(b"authorization", f"Basic {valid_credentials}".encode("utf-8"))]
+        })
+
+        with patch('core.security.authentication.user_details_service.verify_user_credentials', return_value=True), \
+             patch('core.security.authentication.basic_auth_enabled', True):
+            result = await get_auth_user(request, user_controller_mock)
+            assert result["user_name"] == "valid_user"
+
+    @pytest.mark.asyncio
+    async def test_get_auth_user_basic_auth_invalid_credentials(self):
+        user_controller_mock = AsyncMock()
+        user_controller_mock.login_user.return_value = None
+
+        invalid_credentials = base64.b64encode(b"invalid_user:wrong_password").decode("utf-8")
+
+        request = Request(scope={
+            "type": "http",
+            "headers": [(b"authorization", f"Basic {invalid_credentials}".encode("utf-8"))]
+        })
+
+        with patch('core.security.authentication.user_details_service.verify_user_credentials', side_effect=UnauthorizedException("Invalid credentials")), \
+             patch('core.security.authentication.basic_auth_enabled', True):
+            with pytest.raises(UnauthorizedException, match="Invalid credentials"):
+                await get_auth_user(request, user_controller_mock)
+
+
+@pytest.fixture
+def mock_user_data():
+    return pd.DataFrame({
+        "Username": ["test_user"],
+        "Secrets": ["pbkdf2:sha256:260000$abc$1234567890abcdef"]
+    })
+
+
+@patch("services.user_data_service.check_password_hash")
+def test_verify_user_credentials_success(mock_check_hash, mock_user_data):
+    mock_check_hash.return_value = True
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    result = uds.verify_user_credentials("test_user", "password123")
+    assert result == {"user_name": "test_user"}
+    mock_check_hash.assert_called_once()
+
+
+def test_verify_user_credentials_invalid_user(mock_user_data):
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("invalid_user", "password123")
+
+
+def test_verify_user_credentials_missing_password(mock_user_data):
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("test_user", "")
+
+
+@patch("services.user_data_service.check_password_hash")
+def test_verify_user_credentials_wrong_password(mock_check_hash, mock_user_data):
+    mock_check_hash.return_value = False
+    uds = UserDataService()
+    uds.user_data = mock_user_data
+
+    with pytest.raises(UnauthorizedException, match="Invalid user_name or password"):
+        uds.verify_user_credentials("test_user", "wrongpass")

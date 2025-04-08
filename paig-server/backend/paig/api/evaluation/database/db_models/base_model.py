@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, DateTime, String, ForeignKey, JSON
+from sqlalchemy import Column, Integer, DateTime, String
 from core.utils import current_utc_time
 from core.db_session import Base
 

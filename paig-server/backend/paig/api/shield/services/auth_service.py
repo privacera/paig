@@ -535,10 +535,17 @@ class AuthService:
             await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrail_connection_details", {}))
             auth_req.context.update({"guardrail_info": guardrail_info})
             auth_req.context.update({"pii_traits": all_result_traits})
+            auth_req.context.update({"guardrail_name": guardrail_name})
             masked_traits = {}
             non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
                                                                             analyzer_result_map, auth_req, False,
                                                                             masked_traits)
+
+            if Guardrail.ANONYMIZED.value in access_control_traits:
+                authz_service_res.authorized = is_allowed = True
+                authz_service_res.masked_traits.update(masked_traits)
+                logger.debug(
+                    f"Non Authz scanners allowed the request with all tags: {all_result_traits}, masked tags: {masked_traits} and actions: {access_control_traits}")
 
             if Guardrail.BLOCKED.value in access_control_traits:
                 authz_service_res.authorized = is_allowed = False
@@ -547,7 +554,7 @@ class AuthService:
 
                 logger.debug(
                     f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
-            authz_service_res.masked_traits.update(masked_traits)
+
             auth_req.context.pop("guardrail_info")
             auth_req.context.pop("pii_traits")
         return is_allowed, non_authz_scan_timings_per_message

@@ -6,7 +6,6 @@ import {Grid, Typography, Box, Paper} from '@material-ui/core';
 import {Alert} from '@material-ui/lab';
 
 import f from 'common-ui/utils/f';
-import {FormGroupSwitch} from 'common-ui/components/form_fields';
 import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
 import {FEATURE_PERMISSIONS, GUARDRAIL_CONFIG_TYPE} from 'utils/globals';
 import { SearchField } from 'common-ui/components/filters';
@@ -82,8 +81,9 @@ class CDeniedTerms extends Component {
     handleAdd = () => {
         this.form.clearForm();
         this.form.model = null;
+        this.form.index = null;
         this.Modal.show({
-            title: 'Add Terms',
+            title: 'Add Phrases and Keywords',
             btnOkText: 'Add'
         });
     }
@@ -93,7 +93,7 @@ class CDeniedTerms extends Component {
         this.form.model = model;
         this.form.index = i;
         this.Modal.show({
-            title: 'Edit Terms',
+            title: 'Edit Phrases and Keywords',
             btnOkText: 'Save'
         });
     }
@@ -123,28 +123,36 @@ class CDeniedTerms extends Component {
 
         let data = this.form.toJSON();
 
-        data.keywords = data.keywords.split('##|##').filter(k => k.trim());
+        data.keywords = data.keywords.split('##|##').map(k => k.trim()).filter(k => k);
 
         let models = f.models(this.cDeniedTerms);
 
-        let index = models.findIndex(m => (m.term || '').toLowerCase() === (data.term || '').toLowerCase());
-        if (this.form.index != null) {
-            if (index !== this.form.index) {
-                f.notifyError(`The term ${data.term} already exists`);
-                return;
+        let duplicateKeywords = [];
+        models.forEach((m, i) => {
+            if (this.form.index !== i) {
+                const existingKeywords = m.keywords || [];
+                const duplicates = data.keywords.filter(k =>
+                    existingKeywords.some(ek => ek.toLowerCase() === k.toLowerCase())
+                );
+                if (duplicates.length > 0) {
+                    duplicateKeywords.push(...duplicates);
+                }
             }
-            Object.assign(models[index], data);
-        } else if (index !== -1) {
-                f.notifyError(`The term ${data.term} already exists`);
-                return;
+        });
+
+        if (duplicateKeywords.length > 0) {
+            f.notifyError(`The keywords ${duplicateKeywords.join(', ')} already exists`);
+            return;
+        }
+
+        if (this.form.index != null) {
+            Object.assign(models[this.form.index], data);
         } else {
             models.push(data);
         }
 
         f.resetCollection(this.cDeniedTerms, models);
-
         this.Modal.hide();
-
         this.handleTermsChange();
     }
     handleProfanityChange = (e) => {
@@ -177,7 +185,7 @@ class CDeniedTerms extends Component {
                             error.deniedTermsFilters?.deniedTerms &&
                             <Grid container spacing={3} className="m-b-xs">
                                 <Grid item xs={12}>
-                                    <Alert severity="error">
+                                    <Alert severity="error" data-testid="denied-terms-error-alert">
                                         {error.deniedTermsFilters.deniedTerms}
                                     </Alert>
                                 </Grid>
@@ -192,7 +200,7 @@ class CDeniedTerms extends Component {
                             </Grid>
                             <FormGroupCheckbox
                                 label="Block all profanity"
-                                inputProps={{'data-testid': 'profanity-filter'}}
+                                data-testid="profanity-filter"
                                 checked={this._vState.profanity}
                                 onChange={this.handleProfanityChange}
                             />
@@ -206,12 +214,12 @@ class CDeniedTerms extends Component {
                                 onChange={this.handleOnChange}
                             /> */}
                             <Grid item xs={6} sm={6}>
-                                <Typography variant="subtitle1">Terms</Typography>
+                                <Typography variant="subtitle1">Phrases and Keywords</Typography>
                             </Grid>
                             <AddButtonWithPermission
                                 permission={this.permission}
                                 colAttr={{xs: 6, sm: 6}}
-                                label="Add Terms"
+                                label="Add"
                                 onClick={this.handleAdd}
                             />
                         </Grid>

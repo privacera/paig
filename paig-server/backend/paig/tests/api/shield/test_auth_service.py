@@ -6,11 +6,14 @@ import pytest
 
 from pathlib import Path
 
+from api.shield.enum.ShieldEnums import Guardrail
 from api.shield.model.shield_audit import ShieldAudit, ShieldAuditViaApi
 from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
+from api.shield.model.scanner_result import ScannerResult
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
+from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
 from api.shield.services.auth_service import AuthService
 from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
@@ -708,3 +711,322 @@ class TestAuthService:
         assert instance.clientIp == payload["clientIp"]
         assert instance.clientHostname == payload["clientHostname"]
         assert instance.numberOfTokens == payload["numberOfTokens"]
+
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_blocked(self, mocker):
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = self.get_auth_service()
+
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name', new_callable=AsyncMock, return_value='test_guardrail')
+
+        guardrail_info = {"guardrail_connection_details": {}, "config_type": {"SENSITIVE_DATA": {"configs": {"PERSON": "DENY"}, "response_message": "Access Denied"}}}
+        mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name', new_callable=AsyncMock, return_value=guardrail_info)
+        mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_guardrail_connection_details', new_callable=AsyncMock)
+        mocker.patch.object(auth_service, 'analyze_scan_messages', return_value=10)
+        mocker.patch.object(auth_service, 'generate_access_denied_message', return_value="Access Denied")
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        access_control_traits = {Guardrail.BLOCKED.value}
+        all_result_traits = ['PERSON']
+        analyzer_result_map = {}
+
+        is_allowed, scan_timings = await auth_service.do_guardrail_scan(access_control_traits, all_result_traits, analyzer_result_map, auth_req, authz_res)
+
+        assert is_allowed is False
+        assert authz_res.authorized is False
+        assert authz_res.status_message == "Access Denied"
+        assert scan_timings == 10
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_no_guardrail(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, return_value=None)
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        access_control_traits = set()
+        all_result_traits = []
+        analyzer_result_map = {}
+
+        is_allowed, scan_timings = await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
+                                                                        analyzer_result_map, auth_req, authz_res)
+
+        assert is_allowed is True
+        assert scan_timings == 0
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_allowed(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, return_value='test_guardrail')
+
+        guardrail_info = {"guardrail_connection_details": {}}
+        mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name', new_callable=AsyncMock,
+                            return_value=guardrail_info)
+
+        mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_guardrail_connection_details',
+                            new_callable=AsyncMock)
+        mocker.patch.object(auth_service, 'analyze_scan_messages', return_value=5)
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        access_control_traits = {Guardrail.ANONYMIZED.value}
+        all_result_traits = ['EMAIL']
+        analyzer_result_map = {}
+
+        is_allowed, scan_timings = await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
+                                                                        analyzer_result_map, auth_req, authz_res)
+
+        assert is_allowed is True
+        assert authz_res.authorized is True
+        assert scan_timings == 5
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_guardrail_exists_but_no_config(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, return_value='test_guardrail')
+        mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name', new_callable=AsyncMock,
+                            return_value=None)
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        access_control_traits = set()
+        all_result_traits = []
+        analyzer_result_map = {}
+
+        is_allowed, scan_timings = await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
+                                                                        analyzer_result_map, auth_req, authz_res)
+
+        assert is_allowed is True
+        assert scan_timings == 0
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_exception_handling(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, side_effect=Exception("Service Failure"))
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        access_control_traits = set()
+        all_result_traits = []
+        analyzer_result_map = {}
+
+        with pytest.raises(Exception) as exc_info:
+            await auth_service.do_guardrail_scan(access_control_traits, all_result_traits, analyzer_result_map,
+                                                 auth_req, authz_res)
+
+        assert str(exc_info.value) == "Service Failure"
+
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_context_update(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, return_value='test_guardrail')
+        guardrail_info = {"guardrail_connection_details": {}}
+        mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name',
+                            new_callable=AsyncMock, return_value=guardrail_info)
+        mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_guardrail_connection_details',
+                            new_callable=AsyncMock)
+        mocker.patch.object(auth_service, 'analyze_scan_messages', return_value=None)
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        original_context = {}
+        context_mock = MagicMock(wraps=original_context)
+        auth_req.context = context_mock
+
+        access_control_traits = {Guardrail.ANONYMIZED.value}
+        all_result_traits = ['EMAIL']
+        analyzer_result_map = {}
+        await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
+                                             analyzer_result_map, auth_req, authz_res)
+
+        context_mock.update.assert_any_call({'guardrail_name': 'test_guardrail'})
+        assert auth_req.context.get("guardrail_name") == "test_guardrail"
+
+    @pytest.fixture
+    def scanner(self):
+        return AWSBedrockGuardrailScanner(
+            name='TestScanner',
+            guardrail_id='guardrail_id',
+            guardrail_version='guardrail_version',
+            region='us-west-2'
+        )
+
+    def test_basic_anonymization_detection(self, scanner):
+        message = "My email is user@example.com"
+        tag_set = {'EMAIL'}
+        scanner_result = ScannerResult(traits=list(tag_set))
+        bedrock_response = {
+            "assessments": [
+                {
+                    "sensitiveInformationPolicy": {
+                        "regexes": [
+                            {
+                                "name": "Email Address",
+                                "match": "user@example.com"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+
+        assert scanner_result.masked_traits == {'EMAIL': '<<EMAIL>>'}
+        assert len(scanner_result.analyzer_result) == 1
+        analyzer_result = scanner_result.analyzer_result[0]
+        assert analyzer_result.entity_type == "EMAIL_ADDRESS"
+        assert analyzer_result.start == 12
+        assert analyzer_result.end == 28
+
+    def test_multiple_detections(self, scanner):
+        message = "Contact me at user@example.com or 555-1234"
+        tag_set = {'EMAIL', 'PHONE'}
+        scanner_result = ScannerResult(traits=list(tag_set))
+        bedrock_response = {
+            "assessments": [
+                {
+                    "sensitiveInformationPolicy": {
+                        "regexes": [
+                            {"name": "Email", "match": "user@example.com"},
+                            {"name": "Phone", "match": "555-1234"}
+                        ]
+                    }
+                }
+            ]
+        }
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+
+        assert len(scanner_result.analyzer_result) == 2
+        email_result = scanner_result.analyzer_result[0]
+        phone_result = scanner_result.analyzer_result[1]
+        assert email_result.entity_type == "EMAIL"
+        assert email_result.start == 14
+        assert email_result.end == 30
+        assert phone_result.entity_type == "PHONE"
+        assert phone_result.start == 34
+        assert phone_result.end == 42
+
+    def test_no_sensitive_information_detected(self, scanner):
+        message = "Hello World"
+        tag_set = set()
+        scanner_result = ScannerResult(traits=[])
+        bedrock_response = {"assessments": []}
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+
+        assert scanner_result.analyzer_result == []
+
+    def test_detected_word_not_found_in_message(self, scanner):
+        message = "No sensitive info here"
+        tag_set = {'SSN'}
+        scanner_result = ScannerResult(traits=list(tag_set))
+        bedrock_response = {
+            "assessments": [
+                {
+                    "sensitiveInformationPolicy": {
+                        "regexes": [
+                            {"name": "SSN", "match": "123-45-6789"}
+                        ]
+                    }
+                }
+            ]
+        }
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+
+        assert scanner_result.analyzer_result == []
+
+    def test_partial_matches_in_message(self, scanner):
+        message = "Partial match: user@example.comuser@example.com"
+        tag_set = {'EMAIL'}
+        scanner_result = ScannerResult(traits=list(tag_set))
+        bedrock_response = {
+            "assessments": [
+                {
+                    "sensitiveInformationPolicy": {
+                        "regexes": [
+                            {"name": "Email", "match": "user@example.com"}
+                        ]
+                    }
+                }
+            ]
+        }
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+
+        assert len(scanner_result.analyzer_result) == 1
+        first_match = scanner_result.analyzer_result[0]
+        assert first_match.start == 15
+        assert first_match.end == 31
+
+    def test_no_assessments_data(self, scanner):
+        message = "Test message"
+        tag_set = set()
+        scanner_result = ScannerResult(traits=[])
+        bedrock_response = {"assessments": []}
+
+        scanner._extract_and_process_anonymization_info(
+            message, tag_set, scanner_result, bedrock_response
+        )
+        assert scanner_result.analyzer_result == []

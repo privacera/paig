@@ -115,16 +115,17 @@ class COffTopicFilters extends Component {
 
         let models = f.models(this.cOffTopics);
 
-        let index = models.findIndex(m => (m.topic || '').toLowerCase() === (data.topic || '').toLowerCase());
+        let index = models.findIndex((m, i) =>
+            this.form.index !== i && (m.topic || '').toLowerCase() === (data.topic || '').toLowerCase()
+        );
+
+        if (index !== -1) {
+            f.notifyError(`The topic ${data.topic} already exists`);
+            return;
+        }
+
         if (this.form.index != null) {
-            if (index !== this.form.index) {
-                f.notifyError(`The topic ${data.topic} already exists`);
-                return;
-            }
-            Object.assign(models[index], data);
-        } else if (index !== -1) {
-                f.notifyError(`The topic ${data.topic} already exists`);
-                return;
+            Object.assign(models[this.form.index], data);
         } else {
             models.push(data);
         }
@@ -157,7 +158,7 @@ class COffTopicFilters extends Component {
                             error.offTopicFilters?.offTopic &&
                             <Grid container spacing={3}>
                                 <Grid item xs={12}>
-                                    <Alert severity="error">
+                                    <Alert severity="error" data-testid="off-topic-error-alert">
                                         {error.offTopicFilters.offTopic}
                                     </Alert>
                                 </Grid>

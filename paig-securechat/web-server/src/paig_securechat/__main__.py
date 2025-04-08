@@ -1,5 +1,6 @@
 import os, sys
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.normpath(ROOT_DIR).replace("\\", "/")
 sys.path.append(ROOT_DIR)
 import click
 import uvicorn
