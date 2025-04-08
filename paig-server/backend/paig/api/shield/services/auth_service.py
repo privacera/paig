@@ -535,6 +535,7 @@ class AuthService:
             await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrail_connection_details", {}))
             auth_req.context.update({"guardrail_info": guardrail_info})
             auth_req.context.update({"pii_traits": all_result_traits})
+            auth_req.context.update({"guardrail_name": guardrail_name})
             masked_traits = {}
             non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
                                                                             analyzer_result_map, auth_req, False,
