@@ -104,7 +104,7 @@ class TestGetAuthUser:
             "headers": [(b"authorization", f"Basic {valid_credentials}".encode("utf-8"))]
         })
 
-        with patch('core.security.authentication.user_details_service.verify_user_credentials', return_value=None), \
+        with patch('core.security.authentication.user_details_service.verify_user_credentials', return_value=True), \
              patch('core.security.authentication.basic_auth_enabled', True):
             result = await get_auth_user(request, user_controller_mock)
             assert result["user_name"] == "valid_user"
