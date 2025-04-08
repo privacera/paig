@@ -10,7 +10,6 @@ from core.security.okta_verifier import PaigOktaVerifier
 from services.user_data_service import UserDataService
 
 
-
 class MockRequest:
     def __init__(self, cookies):
         self.cookies = cookies
@@ -95,7 +94,7 @@ class TestGetAuthUser:
     @pytest.mark.asyncio
     async def test_get_auth_user_basic_auth_valid(self):
         user_controller_mock = AsyncMock()
-        user_controller_mock.get_user_by_user_name.return_value = {"user_name": "valid_user"}
+        user_controller_mock.login_user.return_value = {"user_name": "valid_user"}
 
         valid_credentials = base64.b64encode(b"valid_user:valid_password").decode("utf-8")
 
@@ -112,7 +111,7 @@ class TestGetAuthUser:
     @pytest.mark.asyncio
     async def test_get_auth_user_basic_auth_invalid_credentials(self):
         user_controller_mock = AsyncMock()
-        user_controller_mock.get_user_by_user_name.return_value = None
+        user_controller_mock.login_user.return_value = None
 
         invalid_credentials = base64.b64encode(b"invalid_user:wrong_password").decode("utf-8")
 

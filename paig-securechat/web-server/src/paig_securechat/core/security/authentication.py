@@ -31,7 +31,7 @@ async def get_auth_user(
 
         elif authorization.startswith("Bearer "):
             user_name = await __validate_token(authorization)
-            user = await user_controller.get_user_by_user_name({"user_name": user_name})
+            user = await user_controller.login_user(user_name)
             if user is None:
                 raise UnauthorizedException("Unauthorized user")
             return user
@@ -55,7 +55,7 @@ async def __validate_basic_auth(authorization: str, user_controller: UserControl
     if not user_details_service.verify_user_credentials(username, password):
         raise UnauthorizedException("Invalid credentials")
 
-    user = await user_controller.get_user_by_user_name({"user_name": username})
+    user = await user_controller.login_user(username)
     if user is None:
         raise UnauthorizedException("Unauthorized user")
 
