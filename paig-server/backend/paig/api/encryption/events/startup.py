@@ -11,6 +11,7 @@ from api.encryption.database.db_operations.encryption_master_key_repository impo
 from api.encryption.services.encryption_key_service import EncryptionKeyService, EncryptionKeyRequestValidator
 from api.encryption.utils.master_key_generator import MasterKeyGenerator
 from api.encryption.utils.secure_encryptor import SecureEncryptor
+from api.apikey.events.startup import create_level1_encryption_keys_if_not_exists, create_level2_encryption_keys_if_not_exists
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +93,8 @@ async def create_default_encryption_keys():
     try:
         await create_encryption_master_key_if_not_exists()
         await create_default_encryption_keys_if_not_exists()
+        await create_level1_encryption_keys_if_not_exists()
+        await create_level2_encryption_keys_if_not_exists()
         await session.commit()
     except Exception as exception:
         raise exception

@@ -7,8 +7,7 @@ from sqlalchemy import func
 from core.exceptions.error_messages_parser import get_error_message, ERROR_FIELD_REQUIRED, ERROR_FIELD_LENGTH_EXCEEDS, \
     ERROR_INVALID_STATUS, ERROR_FIELD_VALUE_INVALID
 from .exceptions import BadRequestException
-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 import os
 

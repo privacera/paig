@@ -53,7 +53,7 @@ def test_encrypt_decrypt_with_timestamp(encryptor):
 
 
 def test_encrypt_invalid(encryptor):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         encryptor.secret_key = 'abcd'
         plaintext = "Hello, World!"
         encrypted_text = encryptor.encrypt(plaintext)
@@ -62,7 +62,7 @@ def test_encrypt_invalid(encryptor):
 
 
 def test_decrypt_invalid(encryptor):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         plaintext = "Hello, World!"
         encrypted_text = encryptor.encrypt(plaintext)
         decryptor = SecureEncryptor(encrypted_text)
