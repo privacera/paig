@@ -877,7 +877,7 @@ async def test_validate_name_valid_cases(guardrail_request_validator):
         "valid-name",
         "valid_name_123",
         "valid-name-123",
-        "a" * 50  # Max length
+        "a" * 35  # Max length
     ]
 
     for name in valid_names:
@@ -890,7 +890,7 @@ async def test_validate_name_invalid_cases(guardrail_request_validator):
     # Test invalid names
     invalid_cases = [
         ("", "Guardrail name must be provided"),  # Empty string
-        ("a" * 51, "Guardrail name length exceeds maximum allowed length of 50"),  # Too long
+        ("a" * 36, "Guardrail name length exceeds maximum allowed length of 35"),  # Too long
         ("invalid name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Space
         ("invalid@name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char
         ("invalid/name", "Guardrail name can only contain alphabets, numbers, underscore (_) and hyphen (-)"),  # Special char

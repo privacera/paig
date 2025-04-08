@@ -1,6 +1,6 @@
 import commonUtils from "../common/common_utils";
 
-const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(5, 5).replace(/ /g, '_');
+const name = 'guardrails' + '_' + commonUtils.generateRandomSentence(3, 4).replace(/ /g, '_');
 const description = 'Test Guardrail Description';
 
 describe('Guardrail Form PAIG provider', () => {
@@ -104,8 +104,8 @@ describe('Guardrail Form PAIG provider', () => {
                 cy.get('input').clear().type('Test-Guardrail-Name_-');
                 cy.get('[class*="-error"]').should('not.exist');
 
-                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-Name-Test-Guardr');
-                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 50 characters allowed!');
+                cy.get('input').clear().type('Test-Guardrail-Name-Test-Guardrail-0');
+                cy.get('[class*="-error"]').should('exist').and('contain', 'Max 35 characters allowed!');
 
                 cy.get('input').type('{backspace}');
                 cy.get('[class*="-error"]').should('not.exist');
