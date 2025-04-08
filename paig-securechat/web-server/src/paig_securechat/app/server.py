@@ -3,7 +3,7 @@ from core.logging_init import set_logging
 set_logging()
 
 from typing import List
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends , status
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
