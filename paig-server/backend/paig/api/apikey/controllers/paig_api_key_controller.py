@@ -1,8 +1,8 @@
 from api.apikey.services.paig_api_key_service import PaigApiKeyService
 from core.exceptions import NotFoundException
-from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from core.controllers.paginated_response import create_pageable_response
-from api.apikey.api_schemas.paig_api_key import GenerateApiKeyResponse
+from api.apikey.utils import normalize_parameter
+
 
 class PaigApiKeyController:
     """
@@ -17,7 +17,7 @@ class PaigApiKeyController:
         """
         self._api_key_service = PaigApiKeyService()
 
-    async def get_api_keys_by_application_id_with_filters(self, application_id, include_filters, page, size, sort, key_status):
+    async def get_api_keys_by_application_id_with_filters(self, application_id, api_key_name, description, page, size, sort, key_status, exact_match):
         """
         Retrieve API keys by their application ID.
 
@@ -29,16 +29,21 @@ class PaigApiKeyController:
             sort (str): The sort options.
             key_status (list): The key status options.
         """
-        if include_filters.api_key_name:
-            include_filters.api_key_name = include_filters.api_key_name.strip("*")
-        if include_filters.description:
-            include_filters.description = include_filters.description.strip("*")
-        # return await self._api_key_service.get_api_keys_by_application_id(application_id, include_filters, page, size, sort, key_status)
+        sort = normalize_parameter(sort)
+        key_status = normalize_parameter(key_status)
+        include_filters = dict()
+        include_filters["exact_match"] = False
+        if api_key_name:
+            include_filters["api_key_name"] = api_key_name.strip()
+        if description:
+            include_filters["description"] = description.strip()
+        if exact_match in  {True, "true", "True", "TRUE"}:
+            include_filters["exact_match"] = True
         api_key_results, total_count = await self._api_key_service.get_api_keys_by_application_id(application_id, include_filters, page, size, sort, key_status)
         if api_key_results is None:
             raise NotFoundException("No results found")
         api_key_results_list = [ api_key_result.to_ui_dict() for api_key_result in api_key_results]
-        return create_pageable_response(api_key_results_list, total_count, page, size, [sort])
+        return create_pageable_response(api_key_results_list, total_count, page, size, sort)
 
 
 

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from core.config import load_config_file
+from typing import Union, List
 from enum import Enum
 import secrets
 import uuid
@@ -40,6 +41,17 @@ def validate_token_expiry_time(token_expiry: int) -> int:
     if token_expiry > max_valid_epoch or token_expiry < current_epoch:
         return False
     return True
+
+
+def normalize_parameter(param: Union[str, List[str]]) -> List[str]:
+    """
+    Normalize query param that may be a comma-separated string or a list.
+    """
+    if isinstance(param, list) and len(param) == 1 and isinstance(param[0], str):
+        return [s.strip() for s in param[0].split(",") if s.strip()]
+    if isinstance(param, str):
+        return [s.strip() for s in param.split(",") if s.strip()]
+    return param if isinstance(param, list) else []
 
 
 class EncryptionKeyStatus(Enum):

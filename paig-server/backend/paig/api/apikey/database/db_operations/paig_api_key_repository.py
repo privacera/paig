@@ -75,7 +75,7 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
             skip = 0 if page is None else (page * size)
             query = select(PaigApiKeyModel)
             query = query.filter(PaigApiKeyModel.application_id == application_id)
-            query = self.create_filter(query, include_filters.model_dump())
+            query = self.create_filter(query, include_filters)
             if key_status:
                 all_filters.append(PaigApiKeyModel.key_status.in_(key_status))
 
@@ -96,7 +96,7 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
 
             query = query.limit(size).offset(skip)
             results = (await session.execute(query)).scalars().all()
-            count = (await self.get_count_with_filter(include_filters.model_dump()))
+            count = (await self.get_count_with_filter(include_filters))
             return results, count
 
 

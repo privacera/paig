@@ -1,7 +1,7 @@
-from typing import List
+from typing import List, Optional, Union
 from fastapi import APIRouter, Depends, status, Request, Response
 from core.controllers.paginated_response import Pageable
-from api.apikey.api_schemas.paig_api_key import GenerateApiKeyRequest, GenerateApiKeyResponse, IncludeApiQueryParams, include_api_query_params
+from api.apikey.api_schemas.paig_api_key import GenerateApiKeyRequest, GenerateApiKeyResponse
 from api.apikey.controllers.paig_api_key_controller import PaigApiKeyController
 from core.utils import SingletonDepends
 from core.security.authentication import get_auth_user
@@ -45,10 +45,12 @@ async def get_api_keys_by_application_id(
         response: Response,
         page: int = Query(0, description="The page number to retrieve"),
         size: int = Query(15, description="The number of items per page"),
-        sort: str = Query("tokenExpiry,DESC", description="The sort options"),
-        keyStatus: List[str] = Query(["ACTIVE", "DISABLED", "EXPIRED"], description="The key status"),
+        sort: Union[str, List[str]] = Query("tokenExpiry,DESC", description="The sort options"),
+        key_status: Union[str, List[str]] = Query("ACTIVE,DISABLED,EXPIRED", description="The key status", alias="keyStatus"),
+        api_key_name: Optional[str] = Query(None, description="Search by API key name", alias="apiKeyName"),
+        description: Optional[str] = Query(None, description="Search by API key description"),
+        exact_match: Optional[bool] = Query(None, description="Exact match for API key name and description", alias="exactMatch"),
         user: dict = Depends(get_auth_user),
-        includeApiQuery: IncludeApiQueryParams = Depends(include_api_query_params),
         paig_api_key_controller: PaigApiKeyController = paig_api_key_controller_instance
 ):
     """
@@ -56,7 +58,7 @@ async def get_api_keys_by_application_id(
     """
     # get application id from request hearder
     application_id = request.headers.get("x-app-id")
-    return await paig_api_key_controller.get_api_keys_by_application_id_with_filters(application_id, includeApiQuery, page, size, sort, keyStatus)
+    return await paig_api_key_controller.get_api_keys_by_application_id_with_filters(application_id, api_key_name, description, page, size, sort, key_status, exact_match)
 
 
 @paig_api_key_router.put("/disableKey/{api_key_id}", response_model=GenerateApiKeyResponse, status_code=status.HTTP_200_OK)

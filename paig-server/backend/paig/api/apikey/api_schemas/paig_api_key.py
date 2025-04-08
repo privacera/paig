@@ -85,28 +85,3 @@ class GenerateApiKeyResponse(GenerateApiKeyBase):
         from_attributes=True,
         populate_by_name=True
     )
-
-
-class IncludeApiQueryParams(BaseAPIFilter):
-    api_key_name: Optional[str] = Field(None, description="Name of the API key", alias="apiKeyName")
-    description: Optional[str] = Field(None, description="Description of the API key")
-    exact_match: Optional[bool] = Field(False, description="Indicates if the search should be an exact match", alias="exactMatch")
-
-
-def include_api_query_params(
-        include_query_api_key_name: Optional[str] = Query(None, alias="includeQuery.apiKeyName"),
-        include_query_description: Optional[str] = Query(None, alias="includeQuery.description"),
-        include_query_exact_match: Optional[bool] = Query(False, alias="includeQuery.exactMatch")
-) -> IncludeApiQueryParams:
-    return IncludeApiQueryParams(
-        apiKeyName=include_query_api_key_name,
-        description=include_query_description,
-        exactMatch=include_query_exact_match
-    )
-
-
-
-
-
-
-
