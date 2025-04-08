@@ -130,7 +130,7 @@ class GuardrailRequestValidator:
         Args:
             name (str): The name of the Guardrail.
         """
-        validate_string_data(name, "Guardrail name", required=True, max_length=50)
+        validate_string_data(name, "Guardrail name", required=True, max_length=35)
         if not re.match(validations_config['name']['regex'], name):
             raise BadRequestException(validations_config['name']['error_message'])
 
