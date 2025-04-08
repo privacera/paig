@@ -248,6 +248,7 @@ describe("Test User Management page for groups tab", () => {
     }
 
     it("should verify groups management listing", () => {
+        let newGroups = false;
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.get('[data-testid="header-refresh-btn"]').click();
         cy.wait('@getGroups').then((interception) => {
