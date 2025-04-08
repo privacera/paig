@@ -10,9 +10,7 @@ from services.user_data_service import UserDataService
 jwt_handler = JWTHandler()
 conf = config.load_config_file()
 
-
 basic_auth_enabled = conf.get("security", {}).get("basic_auth", {}).get("enabled", "false").lower() == "true"
-
 
 user_details_service = UserDataService()
 
@@ -28,7 +26,7 @@ async def get_auth_user(
     if hasattr(request, "headers") and "Authorization" in request.headers:
         authorization = request.headers["Authorization"]
 
-        if authorization.startswith("Basic ") and basic_auth_enabled:
+        if basic_auth_enabled and authorization.startswith("Basic "):
             return await __validate_basic_auth(authorization, user_controller)
 
         elif authorization.startswith("Bearer "):
@@ -54,9 +52,8 @@ async def __validate_basic_auth(authorization: str, user_controller: UserControl
     except (IndexError, ValueError, base64.binascii.Error):
         raise UnauthorizedException("Invalid Basic Authentication header")
 
-
-    user_details_service.verify_user_credentials(username, password)
-
+    if not user_details_service.verify_user_credentials(username, password):
+        raise UnauthorizedException("Invalid credentials")
 
     user = await user_controller.get_user_by_user_name({"user_name": username})
     if user is None:
