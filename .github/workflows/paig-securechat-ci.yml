@@ -2,11 +2,15 @@ name: paig-securechat-ci
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-securechat/**'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-securechat/**'
   workflow_dispatch: # Allows manual trigger
