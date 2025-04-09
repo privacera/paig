@@ -248,30 +248,37 @@ describe("Test User Management page for groups tab", () => {
     }
 
     it("should verify groups management listing", () => {
+        let newGroups = false;
         cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups');
         cy.get('[data-testid="header-refresh-btn"]').click();
+        let content = null;
         cy.wait('@getGroups').then((interception) => {
-            const { content } = interception.response.body;
+            content = interception.response.body;
+            content = content.content;
             if (content.length === 0) {
+                newGroups = true
                 // If no groups exist, create a couple of groups to start the test cases
                 const group1Name = generateUniqueName("TestGroup");
                 const group1Description = commonUtils.generateRandomSentence(10, 5);
                 createNewGroup(group1Name, group1Description);
                 cy.get('[data-testid="custom-dialog"]').should('not.exist');
-
                 const group2Name = generateUniqueName("TestGroup");
                 const group2Description = commonUtils.generateRandomSentence(10, 5);;
                 createNewGroup(group2Name, group2Description);
                 cy.get('[data-testid="custom-dialog"]').should('not.exist');
-            }
-            cy.wait(3000);
-            cy.get('[data-testid="header-refresh-btn"]').click();
-            // Proceed with verifying the groups management listing
-            cy.wait('@getGroups').then((interception) => {
-                const { content } = interception.response.body;
+            } else {
                 verifyUserManagementGroupsTable(content);
-            });
+            }
         });
+        if(newGroups) {
+            cy.intercept('GET', '/account-service/api/groups?page=0&size=15&sort=createTime,desc').as('getGroups1');
+            cy.get('[data-testid="header-refresh-btn"]').click();
+            cy.wait('@getGroups1').then((interception) => {
+                content = interception.response.body;
+                content = content.content;
+            });
+            verifyUserManagementGroupsTable(content);
+        }
     });
 
     it("should verify groups management listing on refresh", () => {

@@ -70,7 +70,7 @@ class AsyncRDSBasedPaigAuthorizer(AsyncBasePAIGAuthorizer):
             )
             if users_list.totalElements > 0:
                 user = users_list.content[0]
-                return user.username
+                return user.get("username")
         except NotFoundException:
             # If the user is not found, return None.
             return None

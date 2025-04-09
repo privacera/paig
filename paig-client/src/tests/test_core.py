@@ -62,6 +62,20 @@ def test_fetch_application_config_file_if_apikey_is_not_present(setup_curr_dir):
     assert result["apiServerUrl"] == "https://paig-server.com"
     assert result["apiKey"] == "apikey"
 
+@patch("paig_client.core.HttpTransport.get_http")
+def test_fetch_application_config_from_server_http_url(mock_http_transport):
+    api_key = base64.urlsafe_b64encode(b"test_api_key;http://paig-server.com").decode("utf-8")
+    mock_response = MagicMock()
+    mock_response.status = 200
+    mock_response.json.return_value = {"key": "value"}
+    mock_http_transport.return_value.request.return_value = mock_response
+
+    result = PAIGApplication.fetch_application_config_from_server(api_key, {})
+
+    assert result["key"] == "value"
+    assert result["apiServerUrl"] == "http://paig-server.com"
+    assert result["apiKey"] == api_key
+
 
 def test_get_plugin_app_config_with_dict():
     kwargs = {"application_config": {"key": "value"}}

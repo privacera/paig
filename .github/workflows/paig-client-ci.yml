@@ -2,11 +2,15 @@ name: paig-client-ci
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-client/**'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-client/**'
   workflow_dispatch: # Allows manual trigger

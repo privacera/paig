@@ -139,7 +139,7 @@ const validators = {
         switch (fieldName) {
             case "name":
                 if (!value) error = "Name is required.";
-                if (value && value.length > 50) error = "Max 50 characters allowed!";
+                if (value && value.length > 35) error = "Max 35 characters allowed!";
                 if (value && (!/^[a-zA-Z0-9_\-]+$/.test(value))) {
                     error = "Name should contain only alphanumeric characters, underscores and hyphens.";
                 }
@@ -155,7 +155,16 @@ const validators = {
     },
 	validateBasicInfo(data) {
 		const errors = {};
-		if (!data.name) errors.name = 'Name is required.';
+		if (!data.name) {
+            errors.name = 'Name is required.';
+        } else {
+            if (data.name.length > 35) {
+                errors.name = 'Max 35 characters allowed!';
+            }
+            if (!/^[a-zA-Z0-9_\-]+$/.test(data.name)) {
+                errors.name = 'Name should contain only alphanumeric characters, underscores and hyphens.';
+            }
+        }
 
 		if (data.description && data.description.length > 200) errors.description = "Max 200 characters allowed!";
 

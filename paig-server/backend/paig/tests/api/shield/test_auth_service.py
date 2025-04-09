@@ -857,6 +857,40 @@ class TestAuthService:
 
         assert str(exc_info.value) == "Service Failure"
 
+    @pytest.mark.asyncio
+    async def test_do_guardrail_scan_context_update(self, mocker):
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+
+        auth_service = AuthService()
+        mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
+                            new_callable=AsyncMock, return_value='test_guardrail')
+        guardrail_info = {"guardrail_connection_details": {}}
+        mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name',
+                            new_callable=AsyncMock, return_value=guardrail_info)
+        mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_guardrail_connection_details',
+                            new_callable=AsyncMock)
+        mocker.patch.object(auth_service, 'analyze_scan_messages', return_value=None)
+
+        auth_req = authorize_req_data()
+        authz_res = authz_res_data()
+        original_context = {}
+        context_mock = MagicMock(wraps=original_context)
+        auth_req.context = context_mock
+
+        access_control_traits = {Guardrail.ANONYMIZED.value}
+        all_result_traits = ['EMAIL']
+        analyzer_result_map = {}
+        await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
+                                             analyzer_result_map, auth_req, authz_res)
+
+        context_mock.update.assert_any_call({'guardrail_name': 'test_guardrail'})
+        assert auth_req.context.get("guardrail_name") == "test_guardrail"
+
     @pytest.fixture
     def scanner(self):
         return AWSBedrockGuardrailScanner(
