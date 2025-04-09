@@ -2,11 +2,15 @@ name: paig-common-ci
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-common/**'
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+      - "feature/**"
     paths:
       - 'paig-common/**'
 
