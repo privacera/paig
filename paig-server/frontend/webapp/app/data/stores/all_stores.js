@@ -2,6 +2,7 @@ import generalStore from 'data/stores/s_general_store';
 import userStore from 'data/stores/s_user_store';
 import groupStore from 'data/stores/s_group_store';
 import aiApplicationStore from 'data/stores/s_ai_application_store';
+import aiApplicationApiKeyStore from './s_ai_application_api_key_store';
 import aiPoliciesStore from 'data/stores/s_ai_policies_store';
 import securityAuditsStore from 'data/stores/s_security_audits_store';
 import sensitiveDataStore from 'data/stores/s_sensitive_data_store';
@@ -47,7 +48,8 @@ const stores = {
 	guardrailStore,
 	guardrailResponseTemplateStore,
 	guardrailConnectionProviderStore,
-	shieldStore
+	shieldStore,
+	aiApplicationApiKeyStore
 }
 
 export default stores;

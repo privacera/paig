@@ -1,6 +1,10 @@
 database:
   url: "sqlite+aiosqlite:///db/database.db"
 
+api_key:
+  expire_days: 365
+
+
 security:
   expire_minutes: 1440
   basic_auth:
