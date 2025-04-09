@@ -11,3 +11,4 @@ class PermissionType:
 class VectorDBType:
     OPENSEARCH = 'OPENSEARCH'
     MILVUS = 'MILVUS'
+    SNOWFLAKE_CORTEX = 'SNOWFLAKE_CORTEX'

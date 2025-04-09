@@ -139,7 +139,8 @@ const FEATURE_PROPERTIES_MAPPING = {
 
 const VECTOR_DB_TYPES = {
     OPENSEARCH: {TYPE: 'OPENSEARCH', LABEL: 'OpenSearch'},
-    MILVUS: {TYPE: 'MILVUS', LABEL: 'Milvus'}
+    MILVUS: {TYPE: 'MILVUS', LABEL: 'Milvus'},
+    SNOWFLAKE_CORTEX: {TYPE: 'SNOWFLAKE_CORTEX', LABEL: 'Snowflake Cortex'}
 }
 
 const REPORT_DETAILS = {

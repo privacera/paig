@@ -9,6 +9,7 @@ from core.db_models.BaseSQLModel import BaseSQLModel
 class VectorDBType(Enum):
     OPENSEARCH = 'OPENSEARCH'
     MILVUS = 'MILVUS'
+    SNOWFLAKE_CORTEX = 'SNOWFLAKE_CORTEX'
 
 
 class VectorDBModel(BaseSQLModel):
