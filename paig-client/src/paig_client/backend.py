@@ -44,6 +44,8 @@ class ShieldAccessRequest:
         self.stream_id = kwargs.get('stream_id', None)
         self.request_id = kwargs.get('request_id')
         self.user_name = kwargs.get('user_name')
+        self.use_external_groups = kwargs.get('use_external_groups', True)
+        self.user_groups = kwargs.get('user_groups', [])
         self.context = kwargs.get('context', {})
         self.request_text = kwargs.get('request_text')
         self.conversation_type = kwargs.get('conversation_type', ConversationType.PROMPT)
@@ -76,6 +78,8 @@ class ShieldAccessRequest:
             "applicationKey": self.application_key,
 
             "userId": self.user_name,
+            "useExternalGroups": self.use_external_groups,
+            "userGroups": self.user_groups,
 
             "context": self.context,  # Additional context information
             "messages": self.request_text,
@@ -205,6 +209,8 @@ class VectorDBAccessRequest:
         self.conversation_thread_id = kwargs.get('conversation_thread_id')
         self.request_id = kwargs.get('request_id')
         self.user_name = kwargs.get('user_name')
+        self.use_external_groups = kwargs.get('use_external_groups', True)
+        self.user_groups = kwargs.get('user_groups', [])
 
     def to_payload_dict(self):
         """
@@ -221,6 +227,8 @@ class VectorDBAccessRequest:
             "clientApplicationKey": self.client_application_key,
             "applicationKey": self.application_key,
             "userId": self.user_name,
+            "useExternalGroups": self.use_external_groups,
+            "userGroups": self.user_groups,
             "context": {},  # Additional context information
             "clientIp": util.get_my_ip_address(),
             "clientHostName": util.get_my_hostname(),
@@ -287,6 +295,8 @@ class StreamAccessAuditRequest:
             thread_sequence_number (int): The sequence number of the thread.
             request_type (ConversationType): The type of request (default is ConversationType.REPLY).
             user_id (str): The ID of the user.
+            use_external_groups (bool): Whether to use external groups.
+            user_groups (list): The list of user groups.
             client_application_key (str): The key of the client application.
             application_key (str): The key of the application.
             application_name (str): The name of the application.
@@ -312,6 +322,8 @@ class StreamAccessAuditRequest:
         self.thread_sequence_number = kwargs.get("thread_sequence_number")
         self.request_type = kwargs.get("request_type", ConversationType.REPLY)
         self.user_id = kwargs.get("user_id")
+        self.use_external_groups = kwargs.get("use_external_groups", True)
+        self.user_groups = kwargs.get("user_groups", [])
         self.client_application_key = kwargs.get("client_application_key")
         self.application_key = kwargs.get("application_key")
         self.application_name = kwargs.get("application_name")
@@ -347,6 +359,8 @@ class StreamAccessAuditRequest:
             "threadSequenceNumber": self.thread_sequence_number,
             "requestType": self.request_type,
             "userId": self.user_id,
+            "useExternalGroups": self.use_external_groups,
+            "userGroups": self.user_groups,
             "clientApplicationKey": self.client_application_key,
             "applicationKey": self.application_key,
             "applicationName": self.application_name,

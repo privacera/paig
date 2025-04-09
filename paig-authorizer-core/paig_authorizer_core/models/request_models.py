@@ -27,6 +27,8 @@ class AuthzRequest(BaseModel):
         context (Optional[Dict[str, Any]]): Additional context as list of key-value pairs.
         request_date_time (datetime): Date and time of the request. If not sent by client,
             server will generate one and return in the response.
+        user_groups (Optional[List[str]]): List of user groups provided by the client. Used when use_external_groups is True.
+        use_external_groups (bool): Flag to indicate whether to use externally provided groups (True) or fetch from internal system (False).
     """
 
     conversation_id: Optional[str] = Field(None, alias="conversationId")
@@ -41,6 +43,8 @@ class AuthzRequest(BaseModel):
     traits: List[str] = Field(None)
     context: Optional[Dict[str, Any]] = Field(None)
     request_date_time: datetime = Field(None, alias="requestDateTime")
+    user_groups: Optional[List[str]] = Field(None, alias="userGroups")
+    use_external_groups: bool = Field(False, alias="useExternalGroups")
 
     model_config = ConfigDict(
         populate_by_name=True
@@ -54,10 +58,14 @@ class VectorDBAuthzRequest(BaseModel):
     Attributes:
         user_id (str): The unique identifier for the user. This is a mandatory field.
         application_key (str): The application key. This is a mandatory field.
+        user_groups (Optional[List[str]]): List of user groups provided by the client. Used when use_external_groups is True.
+        use_external_groups (bool): Flag to indicate whether to use externally provided groups (True) or fetch from internal system (False).
     """
 
     user_id: str = Field(None, alias="userId")
     application_key: str = Field(None, alias="applicationKey")
+    user_groups: Optional[List[str]] = Field(None, alias="userGroups")
+    use_external_groups: bool = Field(False, alias="useExternalGroups")
 
     model_config = ConfigDict(
         populate_by_name=True

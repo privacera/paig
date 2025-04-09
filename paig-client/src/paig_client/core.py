@@ -163,6 +163,30 @@ class PAIGPlugin:
         """
         return self.get_current("username")
 
+    def set_use_external_groups(self, use_external_groups):
+        """
+        Set the use_external_groups flag.
+        """
+        self.set_current(use_external_groups=use_external_groups)
+
+    def get_use_external_groups(self):
+        """
+        Get the use_external_groups flag.
+        """
+        return self.get_current("use_external_groups", False)
+
+    def set_user_groups(self, user_groups):
+        """
+        Set the user_groups list.
+        """
+        self.set_current(user_groups=user_groups)
+
+    def get_user_groups(self):
+        """
+        Get the user_groups list.
+        """
+        return self.get_current("user_groups", [])
+
     def get_llm_stream_access_checker(self):
         """
         Retrieve an instance of the LLMStreamAccessChecker for this object.
@@ -712,6 +736,8 @@ class PAIGApplication:
                 stream_id=kwargs.get("stream_id", None),
                 request_id=_paig_plugin.generate_request_id(),
                 user_name=_paig_plugin.get_current_user(),
+                use_external_groups=_paig_plugin.get_use_external_groups(),
+                user_groups=_paig_plugin.get_user_groups(),
                 context=ShieldAccessRequest.create_request_context(paig_plugin=_paig_plugin),
                 request_text=text if isinstance(text, list) else [text],
                 conversation_type=conversation_type,
@@ -736,7 +762,9 @@ class PAIGApplication:
                 client_application_key=self.get_client_application_key(),
                 conversation_thread_id=kwargs.get("thread_id", _paig_plugin.generate_conversation_thread_id()),
                 request_id=_paig_plugin.generate_request_id(),
-                user_name=_paig_plugin.get_current_user()
+                user_name=_paig_plugin.get_current_user(),
+                use_external_groups=_paig_plugin.get_use_external_groups(),
+                user_groups=_paig_plugin.get_user_groups()
             )
 
         access_result = self.get_shield_client().get_filter_expression(request=access_request)

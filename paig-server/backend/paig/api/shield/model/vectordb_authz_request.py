@@ -19,6 +19,8 @@ class AuthorizeVectorDBRequest:
         # Mandatory fields
 
         self.userId = str(self.extract_data(req_data, "userId")).lower()
+        self.useExternalGroups = req_data.get("useExternalGroups") if req_data.get("useExternalGroups") else False
+        self.userGroups = req_data.get("userGroups") if req_data.get("userGroups") else []
         self.applicationKey = self.extract_data(req_data, "applicationKey")
         self.user_role = user_role
 
@@ -48,5 +50,7 @@ class AuthorizeVectorDBRequest:
         """
         return {
             "userId": self.userId,
-            "applicationKey": self.applicationKey
+            "applicationKey": self.applicationKey,
+            "useExternalGroups": self.useExternalGroups,
+            "userGroups": self.userGroups
         }

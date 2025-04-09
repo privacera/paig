@@ -95,3 +95,15 @@ def test_app_config_as_env_var_does_not_exist(setup_paig_plugin_with_app_config_
 def test_access_exception():
     with pytest.raises(paig_client.exception.AccessControlException):
         paig_client.client.dummy_access_denied()
+
+@pytest.mark.e2e_test
+def test_paig_application_authorize_with_user_groups(setup_paig_plugin_with_app_config_file_name):
+    """
+    Test that PAIGApplication.authorize properly includes user groups in the request.
+    """
+    # Create a mock PAIGPlugin
+    with patch("paig_client.backend.ShieldRestHttpClient.init_shield_server", return_value=None):
+        paig_client.client.setup(application_config_file=setup_paig_plugin_with_app_config_file_name, frameworks=[])
+        with paig_client.client.create_shield_context(username="user1", use_external_groups=True, user_groups=["group1", "group2"]):
+            assert paig_client.client.get_use_external_groups() is True
+            assert paig_client.client.get_user_groups() == ["group1", "group2"]

@@ -1,6 +1,6 @@
 import pytest
 import pytest_asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 from typing import List
 
 from paig_authorizer_core.async_base_paig_authorizer import AsyncBasePAIGAuthorizer
@@ -228,3 +228,163 @@ async def test_authorize_application_config_no_access(authz_request, authorizer:
     assert response.status_code == 403
     assert 1 in response.paig_policy_ids
     assert response.reason == "No Access to Application"
+
+@pytest.mark.asyncio
+async def test_authorize_with_external_groups(authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up external groups
+    authz_request.use_external_groups = True
+    authz_request.user_groups = ["external_group1", "external_group2"]
+
+    # Mock application config to allow one of the external groups
+    app_config = AIApplicationConfigData(id=1, allowed_groups=["external_group1"])
+    authorizer.get_application_config = AsyncMock(return_value=app_config)
+    authorizer.get_application_policies = AsyncMock(return_value=[])
+
+    response = await authorizer.authorize(authz_request)
+
+    assert response.authorized is True
+    assert response.status_code == 200
+    assert 1 in response.paig_policy_ids
+    # Verify that get_user_groups was not called
+    authorizer.get_user_groups.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_authorize_with_external_groups_denied(authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up external groups
+    authz_request.use_external_groups = True
+    authz_request.user_groups = ["external_group1", "external_group2"]
+
+    # Mock application config to deny one of the external groups
+    app_config = AIApplicationConfigData(id=1, denied_groups=["external_group1"])
+    authorizer.get_application_config = AsyncMock(return_value=app_config)
+    authorizer.get_application_policies = AsyncMock(return_value=[])
+
+    response = await authorizer.authorize(authz_request)
+
+    assert response.authorized is False
+    assert response.status_code == 403
+    assert 1 in response.paig_policy_ids
+    assert response.reason == "Explicit deny access to Application"
+    # Verify that get_user_groups was not called
+    assert authorizer.get_user_groups.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_authorize_with_empty_external_groups(authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up empty external groups
+    authz_request.use_external_groups = True
+    authz_request.user_groups = []
+
+    # Mock application config
+    app_config = AIApplicationConfigData(id=1, allowed_groups=["group1"])
+    authorizer.get_application_config = AsyncMock(return_value=app_config)
+    authorizer.get_application_policies = AsyncMock(return_value=[])
+
+    response = await authorizer.authorize(authz_request)
+
+    assert response.authorized is False
+    assert response.status_code == 403
+    assert response.reason == "No Access to Application"
+    # Verify that get_user_groups was not called
+    assert authorizer.get_user_groups.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_vector_db_authorize_with_external_groups(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up external groups
+    vector_db_authz_request.use_external_groups = True
+    vector_db_authz_request.user_groups = ["external_group1", "external_group2"]
+
+    # Mock vector DB policies to allow one of the external groups
+    vector_db_policy = VectorDBPolicyData(
+        id=1,
+        name="TestPolicy",
+        description="Test policy",
+        allowed_users=["test_user"],
+        allowed_groups=["external_group1"],
+        allowed_roles=["role1"],
+        denied_users=[],
+        denied_groups=[],
+        denied_roles=[],
+        metadata_key="key",
+        metadata_value="value",
+        operator="eq",
+        vector_db_id=1
+    )
+    authorizer.get_vector_db_policies = AsyncMock(return_value=[vector_db_policy])
+
+    response = await authorizer.authorize_vector_db(vector_db_authz_request)
+
+    assert response.vector_db_id == 1
+    assert response.vector_db_name == "TestDB"
+    assert response.filter_expression is not None
+    # Verify that get_user_groups was not called
+    authorizer.get_user_groups.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_vector_db_authorize_with_external_groups_denied(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up external groups
+    vector_db_authz_request.use_external_groups = True
+    vector_db_authz_request.user_groups = ["external_group1", "external_group2"]
+
+    # Mock vector DB policies to deny one of the external groups
+    vector_db_policy = VectorDBPolicyData(
+        id=1,
+        name="TestPolicy",
+        description="Test policy",
+        allowed_users=["test_user"],
+        allowed_groups=["other_group"],
+        allowed_roles=["role1"],
+        denied_users=[],
+        denied_groups=["external_group1"],
+        denied_roles=[],
+        metadata_key="key",
+        metadata_value="value",
+        operator="eq",
+        vector_db_id=1
+    )
+    authorizer.get_vector_db_policies = AsyncMock(return_value=[vector_db_policy])
+
+    response = await authorizer.authorize_vector_db(vector_db_authz_request)
+
+    assert response.vector_db_id == 1
+    assert response.vector_db_name == "TestDB"
+    assert response.filter_expression is not None
+    # Verify that get_user_groups was not called
+    authorizer.get_user_groups.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_vector_db_authorize_with_empty_external_groups(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
+    # Set up empty external groups
+    vector_db_authz_request.use_external_groups = True
+    vector_db_authz_request.user_groups = []
+
+    # Mock vector DB policies
+    vector_db_policy = VectorDBPolicyData(
+        id=1,
+        name="TestPolicy",
+        description="Test policy",
+        allowed_users=["test_user"],
+        allowed_groups=["group1"],
+        allowed_roles=["role1"],
+        denied_users=[],
+        denied_groups=[],
+        denied_roles=[],
+        metadata_key="key",
+        metadata_value="value",
+        operator="eq",
+        vector_db_id=1
+    )
+    authorizer.get_vector_db_policies = Mock(return_value=[vector_db_policy])
+    authorizer.get_user_groups = Mock(return_value=["group1"])
+
+    response = await authorizer.authorize_vector_db(vector_db_authz_request)
+
+    assert response.vector_db_id == 1
+    assert response.vector_db_name == "TestDB"
+    assert response.filter_expression is not None
+    # Verify that get_user_groups was not called
+    authorizer.get_user_groups.assert_not_called()

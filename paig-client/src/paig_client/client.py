@@ -69,6 +69,20 @@ def set_current_user(username):
     core.set_current_user(username)  # Set the current user_name
 
 
+def set_use_external_groups(use_external_groups):
+    """
+    Set the use_external_groups context for the PAIG plugin.
+    """
+    core.set_use_external_groups(use_external_groups)
+
+
+def set_user_groups(user_groups):
+    """
+    Set the user_groups context for the PAIG plugin.
+    """
+    core.set_user_groups(user_groups)
+
+
 def set_current(**kwargs):
     """
     Set the list of name-value pairs from kwargs into the thread-local context for the PAIG plugin.
@@ -85,6 +99,20 @@ def get_current_user():
         The username of the current user_name from the context.
     """
     return core.get_current("username")
+
+
+def get_use_external_groups():
+    """
+    Get the use_external_groups context for the PAIG plugin.
+    """
+    return core.get_current("use_external_groups")
+
+
+def get_user_groups():
+    """
+    Get the user_groups context for the PAIG plugin.
+    """
+    return core.get_current("user_groups")
 
 
 def get_current(key, default_value=None):
