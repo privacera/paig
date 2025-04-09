@@ -6,6 +6,7 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 
 | Version | Date                | Release Notes                             |
 |---------|---------------------|-------------------------------------------|
+| v0.0.8  | April 9th, 2025     | [View Notes](paig-server/release0.0.8.md) |
 | v0.0.7  | April 2nd, 2025     | [View Notes](paig-server/release0.0.7.md) |
 | v0.0.6  | March 17th, 2025    | [View Notes](paig-server/release0.0.6.md) |
 | v0.0.5  | March 6th, 2025     | [View Notes](paig-server/release0.0.5.md) |
@@ -20,6 +21,7 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 
 | Version | Date                | Release Notes                             |
 |---------|---------------------|-------------------------------------------|
+| v0.0.5  | April 8th, 2025     | [View Notes](paig-client/release0.0.5.md) |
 | v0.0.4  | March 18th, 2025    | [View Notes](paig-client/release0.0.4.md) |
 | v0.0.3  | February 7th, 2025  | [View Notes](paig-client/release0.0.3.md) |
 | v0.0.2  | November 12th, 2024 | [View Notes](paig-client/release0.0.2.md) |
