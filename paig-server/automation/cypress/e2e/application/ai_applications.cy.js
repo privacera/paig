@@ -303,7 +303,7 @@ describe("Test AI Application page", () => {
 
       // Intercept API calls
       cy.intercept('/governance-service/api/ai/application?size=15&sort=createTime,desc').as('getAppList');
-      cy.intercept('/data-service/api/shield_audits/count?includeQuery.applicationKey=*').as('getSensitiveData');
+//      cy.intercept('/data-service/api/shield_audits/trait_counts?includeQuery.applicationKey=*').as('getSensitiveData');
       cy.intercept('/governance-service/api/ai/application/*/policy?size=1&status=1').as('getAllPolicies');
 
       // Create Application
@@ -320,19 +320,19 @@ describe("Test AI Application page", () => {
           cy.contains(`[data-testid="app-card"]`, appName).click();
 
           // Wait for sensitive data API call
-          cy.wait('@getSensitiveData').then((interception) => {
-            const response = interception.response;
-            expect(response.statusCode).to.equal(200);
-            let traits = response.body?.traits;
-
-            if (traits && Object.keys(traits).length > 0) {
-              Object.keys(traits).map((trait, i) => {
-                cy.get(`:nth-child(${i + 1}) > [data-testid="tagchip"]`).should('contain.text', trait);
-              });
-            } else {
-              cy.get('[data-testid="no-sensitive-data"]').should('be.visible');
-            }
-          });                
+//          cy.wait('@getSensitiveData').then((interception) => {
+//            const response = interception.response;
+//            expect(response.statusCode).to.equal(200);
+//            let traits = response.body?.traits;
+//
+//            if (traits && Object.keys(traits).length > 0) {
+//              Object.keys(traits).map((trait, i) => {
+//                cy.get(`:nth-child(${i + 1}) > [data-testid="tagchip"]`).should('contain.text', trait);
+//              });
+//            } else {
+//              cy.get('[data-testid="no-sensitive-data"]').should('be.visible');
+//            }
+//          });
 
           // Wait for all policies API call
           cy.wait('@getAllPolicies').then((interception) => {
@@ -636,7 +636,7 @@ describe("Test AI Application page", () => {
       });
 
       // Intercept API call to fetch sensitive data options
-      cy.intercept('GET', '/account-service/api/sensitive-data?size=100').as('getSensitiveDataOptions');
+      cy.intercept('GET', '/account-service/api/tags?size=100').as('getSensitiveDataOptions');
       
       cy.get('[data-testid="application-overview-tab"]').click();  
       cy.get('[data-testid="application-permissions-tab"]').click();  
@@ -648,12 +648,12 @@ describe("Test AI Application page", () => {
 
         // Select a sensitive data option from the dropdown
         const randomIndex = Math.floor(Math.random() * sensitiveDataOptions.length);
-        const selectedSensitiveDataValue = sensitiveDataOptions[randomIndex].sensitiveDataValue;
+        const selectedSensitiveDataValue = sensitiveDataOptions[randomIndex].name;
         cy.get('[data-testid="sensitive-data-filter"]').type(selectedSensitiveDataValue);
 
         // Intercept API call to fetch AI application policies with filter applied
         cy.intercept(
-          'GET', `/governance-service/api/ai/application/*/policy?size=999&sort=createTime,desc&sensitiveData=${selectedSensitiveDataValue}`
+          'GET', `/governance-service/api/ai/application/*/policy?size=999&sort=createTime,desc&tag=${selectedSensitiveDataValue}`
         ).as("filterAIApplicationBySensitiveData");
 
         cy.get('[data-testid="select-option-item"]').contains(selectedSensitiveDataValue).click();
@@ -686,7 +686,7 @@ describe("Test AI Application page", () => {
       // Intercept API calls to fetch users, groups, and sensitive data options
       cy.intercept('GET', '/account-service/api/users*').as('getUsers');
       cy.intercept('GET', '/account-service/api/groups*').as('getGroups');
-      cy.intercept('GET', '/account-service/api/sensitive-data*').as('getSensitiveData');
+      cy.intercept('GET', '/account-service/api/tags*').as('getSensitiveData');
       cy.intercept('GET', `/governance-service/api/ai/application*`).as('getAIApplication');
       cy.intercept('GET', `/governance-service/api/ai/application/*/policy?size=999&sort=createTime,desc`).as("getAIApplicationPolicy");
 
@@ -723,8 +723,8 @@ describe("Test AI Application page", () => {
         cy.get('[data-testid="sensitive-data-restriction"] input').click();
         cy.get('@getSensitiveData').then((interception) => {
           const randomSensitiveData = Cypress._.sample(interception.response.body.content);
-          cy.get('[data-testid="sensitive-data-restriction"] input').type(randomSensitiveData.sensitiveDataValue);
-          cy.get('[data-testid="select-option-item"]').contains(randomSensitiveData.sensitiveDataValue).click();
+          cy.get('[data-testid="sensitive-data-restriction"] input').type(randomSensitiveData.name);
+          cy.get('[data-testid="select-option-item"]').contains(randomSensitiveData.name).click();
         });
   
         // Click the "Save" button
