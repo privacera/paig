@@ -79,7 +79,7 @@ class ShieldAccessRequest:
 
             "userId": self.user_name,
             "useExternalGroups": self.use_external_groups,
-            "externalGroups": self.user_groups,
+            "userGroups": self.user_groups,
 
             "context": self.context,  # Additional context information
             "messages": self.request_text,
@@ -228,7 +228,7 @@ class VectorDBAccessRequest:
             "applicationKey": self.application_key,
             "userId": self.user_name,
             "useExternalGroups": self.use_external_groups,
-            "externalGroups": self.user_groups,
+            "userGroups": self.user_groups,
             "context": {},  # Additional context information
             "clientIp": util.get_my_ip_address(),
             "clientHostName": util.get_my_hostname(),
@@ -360,7 +360,7 @@ class StreamAccessAuditRequest:
             "requestType": self.request_type,
             "userId": self.user_id,
             "useExternalGroups": self.use_external_groups,
-            "externalGroups": self.user_groups,
+            "userGroups": self.user_groups,
             "clientApplicationKey": self.client_application_key,
             "applicationKey": self.application_key,
             "applicationName": self.application_name,

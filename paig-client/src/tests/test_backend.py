@@ -83,7 +83,7 @@ def test_shield_access_request_with_user_groups():
     # Verify they are included in the payload dictionary
     payload = request.to_payload_dict()
     assert payload["useExternalGroups"] is True
-    assert payload["externalGroups"] == ["group1", "group2"]
+    assert payload["userGroups"] == ["group1", "group2"]
 
     # Test default values
     request = ShieldAccessRequest(
@@ -119,7 +119,7 @@ def test_vector_db_access_request_with_user_groups():
     # Verify they are included in the payload dictionary
     payload = request.to_payload_dict()
     assert payload["useExternalGroups"] is True
-    assert payload["externalGroups"] == ["group1", "group2"]
+    assert payload["userGroups"] == ["group1", "group2"]
 
     # Test default values
     request = VectorDBAccessRequest(
@@ -153,7 +153,7 @@ def test_stream_access_audit_request_with_user_groups():
     # Verify they are included in the payload dictionary
     payload = request.to_payload_dict()
     assert payload["useExternalGroups"] is True
-    assert payload["externalGroups"] == ["group1", "group2"]
+    assert payload["userGroups"] == ["group1", "group2"]
 
     # Test default values
     request = StreamAccessAuditRequest(
