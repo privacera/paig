@@ -28,6 +28,8 @@ class AuthorizeRequest:
         self.shield_server_key_id = self.extract_data(req_data, "shieldServerKeyId")
         self.shield_plugin_key_id = self.extract_data(req_data, "shieldPluginKeyId")
         self.user_id = str(self.extract_data(req_data, "userId")).lower()
+        self.use_external_groups = req_data.get("useExternalGroups") if req_data.get("useExternalGroups") else False
+        self.user_groups = req_data.get("userGroups") if req_data.get("userGroups") else []
 
         # Optional fields
         self.messages = req_data.get("messages") if req_data.get("messages") else []

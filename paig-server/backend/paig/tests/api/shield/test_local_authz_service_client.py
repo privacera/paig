@@ -79,13 +79,21 @@ class TestLocalAuthzClient:
         # Assert
         mock_paig_authorizer.authorize.assert_awaited_once()
         assert isinstance(result, AuthzServiceResponse)
+        # Verify new fields are passed correctly
+        authz_request = mock_paig_authorizer.authorize.call_args[0][0]
+        assert authz_request.use_external_groups == True
+        assert authz_request.user_groups == ["group1", "group2"]
 
     @pytest.mark.asyncio
     async def test_post_authorize_vectordb(self, client, mock_paig_authorizer):
         # Arrange
         tenant_id = "test_tenant"
-        mock_vectordb_auth_req = AuthorizeVectorDBRequest({"userId": "userId", "applicationKey": "applicationKey",
-                                                           }, user_role=None)
+        mock_vectordb_auth_req = AuthorizeVectorDBRequest({
+            "userId": "userId",
+            "applicationKey": "applicationKey",
+            "useExternalGroups": True,
+            "userGroups": ["group1", "group2"]
+        }, user_role=None)
         from paig_authorizer_core.models.response_models import VectorDBAuthzResponse
         mock_vectordb_response = MagicMock(spec=VectorDBAuthzResponse)
         create_mock_vectordb_response(mock_vectordb_response)
@@ -97,3 +105,7 @@ class TestLocalAuthzClient:
         # Assert
         mock_paig_authorizer.authorize_vector_db.assert_awaited_once()
         assert isinstance(result, AuthorizeVectorDBResponse)
+        # Verify new fields are passed correctly
+        vectordb_request = mock_paig_authorizer.authorize_vector_db.call_args[0][0]
+        assert vectordb_request.use_external_groups == True
+        assert vectordb_request.user_groups == ["group1", "group2"]

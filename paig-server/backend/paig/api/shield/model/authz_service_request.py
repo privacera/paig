@@ -31,6 +31,8 @@ class AuthzServiceRequest:
 
         self.traits = traits
         self.userId = auth_req.user_id
+        self.useExternalGroups = auth_req.use_external_groups
+        self.userGroups = auth_req.user_groups
         self.enforce = True
         self.context = auth_req.context
         self.user_role = auth_req.user_role
@@ -54,6 +56,8 @@ class AuthzServiceRequest:
             "requestType": self.requestType,
             "traits": self.traits,
             "userId": self.userId,
+            "useExternalGroups": self.useExternalGroups,
+            "userGroups": self.userGroups,
             "enforce": self.enforce,
             "context": self.context,
         }
