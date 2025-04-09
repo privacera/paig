@@ -289,7 +289,7 @@ class BasePAIGAuthorizer(PAIGAuthorizer, ABC):
         policies = self.get_vector_db_policies(vector_db_id, request.user_id, user_groups)
 
         # Step 4: Create filter expression based on metadata filters
-        filter_criteria_creator: BaseMetadataFilterCriteriaCreator = BaseMetadataFilterCriteriaCreator()
+        filter_criteria_creator = self.get_metadata_filter_creator(vector_db.type)
         metadata_wise_filters: Dict[
             str, List[MetadataFilterCriteria]] = filter_criteria_creator.create_metadata_filters(policies,
                                                                                                  request.user_id,
@@ -346,3 +346,19 @@ class BasePAIGAuthorizer(PAIGAuthorizer, ABC):
             user_group_mapping (Dict[str, List[str]]): The mapping of users to groups.
         """
         pass
+    
+    def get_metadata_filter_creator(self, vector_db_type: VectorDBType) -> BaseMetadataFilterCriteriaCreator:
+        """
+        Gets the appropriate metadata filter criteria creator for the vector DB type.
+
+        Args:
+            vector_db_type (VectorDBType): The type of the vector DB.
+
+        Returns:
+            BaseMetadataFilterCriteriaCreator: The appropriate metadata filter criteria creator.
+        """
+        if vector_db_type == VectorDBType.SNOWFLAKE_CORTEX:
+            from paig_authorizer_core.filter.snowflake_cortex_metadata_filter_creator import SnowflakeCortexMetadataFilterCreator
+            return SnowflakeCortexMetadataFilterCreator()
+        else:
+            return BaseMetadataFilterCriteriaCreator()
