@@ -135,7 +135,7 @@ class TestVectorDBRouters:
         )
         assert response.status_code == 400
         assert response.json()['success'] is False
-        assert response.json()['message'] == "type: Input should be 'OPENSEARCH' or 'MILVUS'"
+        assert response.json()['message'] == "type: Input should be 'OPENSEARCH', 'MILVUS' or 'SNOWFLAKE_CORTEX'"
 
         self.invalid_vector_db_dict['type'] = "OPENSEARCH"
         response = await client.post(
