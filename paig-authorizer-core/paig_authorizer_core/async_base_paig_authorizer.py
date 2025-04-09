@@ -188,7 +188,13 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
                                                                                 application_id=application_id)
 
         # Step 2: Retrieve user groups including 'public' if not already present
-        user_groups = await self.get_user_groups(request.user_id)
+        user_groups = []
+        if request.use_external_groups:
+            if request.user_groups:
+                user_groups = request.user_groups
+        else:
+            user_groups = await self.get_user_groups(request.user_id)
+
         if GROUP_PUBLIC not in user_groups:
             user_groups.append(GROUP_PUBLIC)
 
@@ -282,7 +288,13 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
                                                        reason="Vector DB is disabled")
 
         # Step 3: Retrieve user groups including 'public' if not already present
-        user_groups = await self.get_user_groups(request.user_id)
+        user_groups = []
+        if request.use_external_groups:
+            if request.user_groups:
+                user_groups = request.user_groups
+        else:
+            user_groups = await self.get_user_groups(request.user_id)
+
         if GROUP_PUBLIC not in user_groups:
             user_groups.append(GROUP_PUBLIC)
 

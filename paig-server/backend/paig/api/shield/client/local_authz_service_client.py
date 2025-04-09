@@ -102,6 +102,8 @@ class LocalAuthzClient(IAuthzClient):
         authz_request.request_type = authz_service_request.requestType
         authz_request.traits = authz_service_request.traits
         authz_request.user_id = authz_service_request.userId
+        authz_request.use_external_groups = authz_service_request.useExternalGroups
+        authz_request.user_groups = authz_service_request.userGroups
         authz_request.enforce = authz_service_request.enforce
         authz_request.context = authz_service_request.context
         return authz_request
@@ -143,6 +145,8 @@ class LocalAuthzClient(IAuthzClient):
         """
         vectordb_authz_request: VectorDBAuthzRequest = VectorDBAuthzRequest()
         vectordb_authz_request.user_id = vectordb_auth_req.userId
+        vectordb_authz_request.use_external_groups = vectordb_auth_req.useExternalGroups
+        vectordb_authz_request.user_groups = vectordb_auth_req.userGroups
         vectordb_authz_request.application_key = vectordb_auth_req.applicationKey
         return vectordb_authz_request
 
