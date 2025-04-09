@@ -10,6 +10,7 @@ from typing import Union
 from datetime import datetime
 
 from core.db_models.utils import CommaSeparatedList
+from core.middlewares.request_session_context_middleware import get_tenant_id
 
 ModelType = TypeVar("ModelType", bound=Base)
 from sqlalchemy import desc
@@ -192,6 +193,12 @@ class BaseOperations(Generic[ModelType]):
             query = self.order_by(query, column_name, sort_type)
         return query
 
+    def get_tenant(self):
+        """
+        Get the tenant ID from the request context.
+        """
+        return get_tenant_id()
+
     async def get_all(self,
                       filters=None,
                       columns=None,
@@ -203,6 +210,11 @@ class BaseOperations(Generic[ModelType]):
                       **kwargs
                       ) -> list[ModelType]:
         # Usage: select all query executor
+        if hasattr(self.model_class, 'tenant_id'):
+            tenant_id = self.get_tenant()
+            if tenant_id is not None:
+                filters["tenant_id"] = tenant_id
+
         query = await self._query()
         query = self.create_filter(query, filters, apply_in_list_filter)
         query = self.select_columns(query, columns)
@@ -255,6 +267,10 @@ class BaseOperations(Generic[ModelType]):
 
     async def _get_by(self, query: Select, filters) -> Select:
         # Usage: executes actual query conditional select
+        if hasattr(self.model_class, 'tenant_id'):
+            tenant_id = self.get_tenant()
+            if tenant_id is not None:
+                filters["tenant_id"] = tenant_id
         return query.where(*self._get_filter(filters))
 
     # CRUD Operations
@@ -322,6 +338,10 @@ class BaseOperations(Generic[ModelType]):
         Returns:
             ModelType: The model instance that was added to the session.
         """
+        if hasattr(self.model_class, 'tenant_id'):
+            tenant_id = self.get_tenant()
+            if tenant_id is not None:
+                model.tenant_id = tenant_id
         session.add(model)
         await session.flush()
         return await self.get_record_by_id(model.id)
