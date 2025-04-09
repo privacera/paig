@@ -2,8 +2,11 @@ import json
 import threading
 
 import pytest
+from unittest.mock import Mock, patch
 
-from paig_client.backend import ShieldRestHttpClient, ShieldAccessRequest
+import paig_client.client
+from paig_client.backend import ShieldRestHttpClient, ShieldAccessRequest, VectorDBAccessRequest, StreamAccessAuditRequest
+from paig_client.core import PAIGPlugin, PAIGApplication
 from paig_client.model import ConversationType
 
 SHIELD_SERVER_URL = "http://localhost:8000"
@@ -56,3 +59,108 @@ def test_post3(setup_paig_plugin_with_app_config_file_name):
         thread.start()
     for thread in thread_list:
         thread.join()
+
+
+def test_shield_access_request_with_user_groups():
+    """
+    Test that ShieldAccessRequest properly handles user groups and external groups.
+    """
+    # Create a ShieldAccessRequest with user groups
+    request = ShieldAccessRequest(
+        application_key="test_app_key",
+        client_application_key="test_client_key",
+        conversation_thread_id="test_thread",
+        request_id="test_request",
+        user_name="test_user",
+        use_external_groups=True,
+        user_groups=["group1", "group2"]
+    )
+
+    # Verify the fields are set correctly
+    assert request.use_external_groups is True
+    assert request.user_groups == ["group1", "group2"]
+
+    # Verify they are included in the payload dictionary
+    payload = request.to_payload_dict()
+    assert payload["useExternalGroups"] is True
+    assert payload["externalGroups"] == ["group1", "group2"]
+
+    # Test default values
+    request = ShieldAccessRequest(
+        application_key="test_app_key",
+        client_application_key="test_client_key",
+        conversation_thread_id="test_thread",
+        request_id="test_request",
+        user_name="test_user"
+    )
+    assert request.use_external_groups is True  # Default value
+    assert request.user_groups == []  # Default value
+
+
+def test_vector_db_access_request_with_user_groups():
+    """
+    Test that VectorDBAccessRequest properly handles user groups and external groups.
+    """
+    # Create a VectorDBAccessRequest with user groups
+    request = VectorDBAccessRequest(
+        application_key="test_app_key",
+        client_application_key="test_client_key",
+        conversation_thread_id="test_thread",
+        request_id="test_request",
+        user_name="test_user",
+        use_external_groups=True,
+        user_groups=["group1", "group2"]
+    )
+
+    # Verify the fields are set correctly
+    assert request.use_external_groups is True
+    assert request.user_groups == ["group1", "group2"]
+
+    # Verify they are included in the payload dictionary
+    payload = request.to_payload_dict()
+    assert payload["useExternalGroups"] is True
+    assert payload["externalGroups"] == ["group1", "group2"]
+
+    # Test default values
+    request = VectorDBAccessRequest(
+        application_key="test_app_key",
+        client_application_key="test_client_key",
+        conversation_thread_id="test_thread",
+        request_id="test_request",
+        user_name="test_user"
+    )
+    assert request.use_external_groups is True  # Default value
+    assert request.user_groups == []  # Default value
+
+
+def test_stream_access_audit_request_with_user_groups():
+    """
+    Test that StreamAccessAuditRequest properly handles user groups and external groups.
+    """
+    # Create a StreamAccessAuditRequest with user groups
+    request = StreamAccessAuditRequest(
+        event_time=1234567890,
+        tenant_id="test_tenant",
+        user_id="test_user",
+        use_external_groups=True,
+        user_groups=["group1", "group2"]
+    )
+
+    # Verify the fields are set correctly
+    assert request.use_external_groups is True
+    assert request.user_groups == ["group1", "group2"]
+
+    # Verify they are included in the payload dictionary
+    payload = request.to_payload_dict()
+    assert payload["useExternalGroups"] is True
+    assert payload["externalGroups"] == ["group1", "group2"]
+
+    # Test default values
+    request = StreamAccessAuditRequest(
+        event_time=1234567890,
+        tenant_id="test_tenant",
+        user_id="test_user"
+    )
+    assert request.use_external_groups is True  # Default value
+    assert request.user_groups == []  # Default value
+
