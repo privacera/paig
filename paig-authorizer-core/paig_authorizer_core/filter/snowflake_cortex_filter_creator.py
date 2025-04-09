@@ -93,6 +93,8 @@ class SnowflakeCortexFilterCreator(BaseVectorDBFilterCreator):
 
         for metadata, filter_criteria_list in filters.items():
             field_expressions = []
+            has_negative_operator = False
+            
             for filter_criteria in filter_criteria_list:
                 # Convert operator and value into Snowflake Cortex syntax
                 operator = filter_criteria.operator_value
@@ -100,16 +102,27 @@ class SnowflakeCortexFilterCreator(BaseVectorDBFilterCreator):
                 
                 # Handle different operators
                 if "==" in operator:
-                    field_expressions.append({"@eq": {metadata: value}})
+                    # Add an OR condition: either matches the value or empty string
+                    field_expressions.append({
+                        "@or": [
+                            {"@eq": {metadata: value}},
+                            {"@eq": {metadata: ""}}
+                        ]
+                    })
                 elif "!=" in operator:
-                    field_expressions.append({"@not": {"@eq": {metadata: value}}})
+                    has_negative_operator = True
+                    field_expressions.append({
+                        "@or": [
+                            {"@not": {"@eq": {metadata: value}}},
+                            {"@eq": {metadata: ""}}
+                        ]
+                    })
                 else:
                     raise ValueError(f"Unsupported operator for Snowflake Cortex: {operator}")
             
             # Combine expressions for this metadata field
             if len(field_expressions) > 1:
                 # If there are multiple criteria for the same field, combine with @or or @and depending on operators
-                has_negative_operator = any("@not" in str(expr) for expr in field_expressions)
                 if has_negative_operator:
                     expressions.append({"@and": field_expressions})
                 else:
