@@ -8,6 +8,7 @@ from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import Me
 from paig_authorizer_core.filter.base_vector_db_filter_creator import BaseVectorDBFilterCreator
 from paig_authorizer_core.filter.milvus_filter_creator import MilvusFilterCreator
 from paig_authorizer_core.filter.opensearch_filter_creator import OpenSearchFilterCreator
+from paig_authorizer_core.filter.snowflake_cortex_filter_creator import SnowflakeCortexFilterCreator
 from paig_authorizer_core.models.request_models import AuthzRequest, VectorDBAuthzRequest
 from paig_authorizer_core.models.response_models import AuthzResponse, VectorDBAuthzResponse
 from paig_authorizer_core.utils.authorizer_response_utils import create_authorize_response, \
@@ -289,7 +290,7 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
         policies = await self.get_vector_db_policies(vector_db_id, request.user_id, user_groups)
 
         # Step 4: Create filter expression based on metadata filters
-        filter_criteria_creator: BaseMetadataFilterCriteriaCreator = BaseMetadataFilterCriteriaCreator()
+        filter_criteria_creator = self.get_metadata_filter_creator(vector_db.type)
         metadata_wise_filters: Dict[
             str, List[MetadataFilterCriteria]] = filter_criteria_creator.create_metadata_filters(policies,
                                                                                                  request.user_id,
@@ -320,6 +321,8 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
             filter_creator = MilvusFilterCreator()
         elif vector_db.type == VectorDBType.OPENSEARCH:
             filter_creator = OpenSearchFilterCreator()
+        elif vector_db.type == VectorDBType.SNOWFLAKE_CORTEX:
+            filter_creator = SnowflakeCortexFilterCreator()
 
         if filter_creator:
             return filter_creator.create_filter_expression(vector_db, user, groups, metadata_wise_filters)
@@ -346,3 +349,19 @@ class AsyncBasePAIGAuthorizer(AsyncPAIGAuthorizer, ABC):
             user_group_mapping (Dict[str, List[str]]): The mapping of users to groups.
         """
         pass
+
+    def get_metadata_filter_creator(self, vector_db_type: VectorDBType) -> BaseMetadataFilterCriteriaCreator:
+        """
+        Gets the appropriate metadata filter criteria creator for the vector DB type.
+
+        Args:
+            vector_db_type (VectorDBType): The type of the vector DB.
+
+        Returns:
+            BaseMetadataFilterCriteriaCreator: The appropriate metadata filter criteria creator.
+        """
+        if vector_db_type == VectorDBType.SNOWFLAKE_CORTEX:
+            from paig_authorizer_core.filter.snowflake_cortex_metadata_filter_creator import SnowflakeCortexMetadataFilterCreator
+            return SnowflakeCortexMetadataFilterCreator()
+        else:
+            return BaseMetadataFilterCriteriaCreator()
