@@ -339,9 +339,7 @@ class BaseOperations(Generic[ModelType]):
             ModelType: The model instance that was added to the session.
         """
         if hasattr(self.model_class, 'tenant_id'):
-            tenant_id = self.get_tenant()
-            if tenant_id is not None:
-                model.tenant_id = tenant_id
+            model.tenant_id = self.get_tenant()
         session.add(model)
         await session.flush()
         return await self.get_record_by_id(model.id)
