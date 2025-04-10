@@ -63,8 +63,8 @@ module.exports = defineConfig({
       return config;
     },
     testIsolation: false,
-    viewportHeight: 768,
-    viewportWidth: 1400
+    viewportHeight: 1080,
+    viewportWidth: 1920
   },
 
   component: {
