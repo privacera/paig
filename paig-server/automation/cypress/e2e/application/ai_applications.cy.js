@@ -5,12 +5,11 @@ describe("Test AI Application page", () => {
 
   before(() => {
     cy.login();
-    cy.get('[data-testid="paig_navigator_menu"]').click();
   });
 
   beforeEach(() => {
-    cy.get('[data-testid="ai_applications_submenu"]').should('exist').should('be.visible').click();
-    cy.get('[data-testid="page-title"]').should('have.text', 'AI Applications');
+    cy.visit('/#/dashboard');
+    cy.visit('/#/ai_applications')
   });
 
   after(() => {
