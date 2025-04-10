@@ -16,6 +16,7 @@ class AdminAuditModel(Base):
     object_type = Column(String(255), nullable=True)
     object_state = Column(JSON, nullable=True)
     object_state_previous = Column(JSON, nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True)
     transaction_id = Column(String(255), nullable=True, index=True)
     transaction_sequence_number = Column(Integer, nullable=True)
 
