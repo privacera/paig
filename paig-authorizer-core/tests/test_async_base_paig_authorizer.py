@@ -103,7 +103,9 @@ def authz_request():
 def vector_db_authz_request():
     return VectorDBAuthzRequest(
         user_id="test_user",
-        application_key="TestApp"
+        application_key="TestApp",
+        use_external_groups=False,
+        user_groups=None
     )
 
 
@@ -259,6 +261,10 @@ async def test_authorize_vector_db_uses_correct_filter_creator(authorizer, monke
     mock_vector_db = Mock(spec=VectorDBData)
     mock_vector_db.type = VectorDBType.SNOWFLAKE_CORTEX
     mock_vector_db.status = 1
+    mock_vector_db.user_enforcement = 0
+    mock_vector_db.group_enforcement = 0
+    mock_vector_db.name = "TestDB"
+    mock_vector_db.id = 1
 
     # Mock get_vector_db_details to return our mock
     async def mock_get_vector_db_details(self, vector_db_id, **kwargs):
@@ -280,6 +286,8 @@ async def test_authorize_vector_db_uses_correct_filter_creator(authorizer, monke
     mock_request = Mock(spec=VectorDBAuthzRequest)
     mock_request.user_id = "test_user"
     mock_request.application_key = "TestApp"
+    mock_request.use_external_groups = False
+    mock_request.user_groups = None
 
     # Call authorize_vector_db
     await authorizer.authorize_vector_db(mock_request)
