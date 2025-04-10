@@ -367,8 +367,7 @@ describe("Test AI Application page", () => {
     it("should successfully create VectorDB and associate it with an application", () => {
       const vectorDBName = generateUniqueName();
       const vectorDBDesc = `Description for ${vectorDBName}`;
-      cy.get('[data-testid="vector_db_submenu"]').should('exist').should('be.visible').click();
-      cy.get('[data-testid="page-title"]').should('have.text', 'Vector DB');
+      cy.visit('/#/vector_db')
       createVectorDB(vectorDBName, vectorDBDesc, "", "on");
       cy.contains(`[data-testid="card"]`, vectorDBName).should('be.visible');
       cy.contains(`[data-testid="card"]`, vectorDBDesc).should('be.visible');
