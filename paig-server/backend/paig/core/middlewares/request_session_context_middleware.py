@@ -2,31 +2,47 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from contextvars import ContextVar, Token
 
-session_context_user: ContextVar[dict] = ContextVar("login_user")
+session_context: ContextVar[dict] = ContextVar("login_user", default={})
 
 
-def get_user() -> dict:
+def get_context_value(key: str):
     """
-    Get the user of the current request.
-
-    Returns:
-        dict: The user of the current request.
+    Get a specific value from the context.
     """
-    return session_context_user.get()
+    return session_context.get().get(key)
+
+
+def set_context_value(key: str, value: any):
+    """
+    Set a specific value in the context.
+    """
+    context = session_context.get().copy()  # Avoid modifying the default dict
+    context[key] = value
+    return session_context.set(context)
+
+
+def reset_context(token: Token):
+    """
+    Reset the session context to a previous state.
+    """
+    session_context.reset(token)
+
+
+def get_user():
+    return get_context_value("user")
 
 
 def set_user(user: dict):
-    """
-    Set the user of the current request.
-    """
-    return session_context_user.set(user)
+    if user:
+        return set_context_value("user", user)
 
 
-def reset_user(context: Token):
-    """
-    Reset the user of the current request.
-    """
-    session_context_user.reset(context)
+def get_tenant_id():
+    return get_context_value("tenant_id")
+
+
+def set_tenant_id(tenant_id: str):
+    return set_context_value("tenant_id", tenant_id)
 
 
 class RequestSessionContextMiddleware(BaseHTTPMiddleware):
@@ -38,10 +54,15 @@ class RequestSessionContextMiddleware(BaseHTTPMiddleware):
         from core.security.authentication import get_auth_token_user_info
         token_user_info = await get_auth_token_user_info(request)
         context = set_user(token_user_info)
+
+        tenant_id = request.headers.get('x-tenant-id')
+        if tenant_id:
+            set_tenant_id(tenant_id)
+
         try:
             response = await call_next(request)
             return response
         except Exception as exception:
             raise exception
         finally:
-            reset_user(context)
+            reset_context(context)

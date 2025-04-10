@@ -88,6 +88,8 @@ class GuardrailFilter(BaseAPIFilter):
         version (int, optional): Filter by version.
         guardrail_provider (GuardrailProvider, optional): Filter by guardrail provider.
         guardrail_connection_name (str, optional): Filter by connection name.
+        extended (bool, optional): Include extended information.
+        tenant_id (str, optional): The tenant id.
     """
     name: Optional[str] = Field(default=None, description="Filter by name")
     description: Optional[str] = Field(default=None, description="Filter by description")
@@ -95,6 +97,7 @@ class GuardrailFilter(BaseAPIFilter):
     guardrail_provider: Optional[GuardrailProvider] = Field(default=None, description="Filter by guardrail provider", alias="guardrailProvider")
     guardrail_connection_name: Optional[str] = Field(default=None, description="Filter by connection name", alias="guardrailConnectionName")
     extended: Optional[bool] = Field(default=False, description="Give the extended result with connections and guardrail responses")
+    tenant_id: Optional[str] = Field(default=None, description="The tenant id", alias="tenantId")
 
 
 class GRVersionHistoryFilter(GuardrailFilter):
