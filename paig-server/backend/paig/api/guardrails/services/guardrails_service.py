@@ -475,6 +475,8 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             transformed_audit.object_state_previous['createTime'] = normalize_datetime(previous_guardrail.create_time)
             transformed_audit.object_state_previous['updateTime'] = normalize_datetime(previous_guardrail.update_time)
 
+        transformed_audit.tenant_id = self.repository.get_tenant() or "1"
+
         return transformed_audit
 
     def get_request_user(self):
