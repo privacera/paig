@@ -10,7 +10,7 @@ from .exceptions import BadRequestException
 from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 import os
-
+from typing import Tuple
 
 def recursive_merge_dicts(dict1, dict2):
     result = dict1.copy()
@@ -276,3 +276,31 @@ def is_valid_url(url):
     parsed_url = urlparse(url)
     # Check if the URL has a valid scheme (http or https) and netloc (domain)
     return parsed_url.scheme in ['http', 'https'] and bool(parsed_url.netloc)
+
+def parse_sort_option(sort_option: str) -> Tuple[str, str]:
+    if "," in sort_option:
+        splited = sort_option.split(",")
+        column_name = splited[0]
+        if splited[-1].lower() in ["asc", "desc"]:
+            sort_type = splited[-1].lower()
+            column_name = ",".join(splited[:-1])  # in case the column name has commas
+        else:
+            sort_type = "asc"  # default sort type
+    else:
+        column_name = sort_option
+        sort_type = "asc"  # default sort type
+    return column_name, sort_type
+
+def alias_field_to_column_name(sort, model_view):
+    result = []
+    if not isinstance(sort, list):
+        sort = [sort]
+    for sort_option in sort:
+        column_name, sort_type = parse_sort_option(sort_option)
+        alias_names = column_name.split(",")
+        field_names = []
+        for alias_name in alias_names:
+            field_names.append(get_field_name_by_alias(model=model_view, alias=alias_name))
+        sort_column_name = ",".join(field_names)
+        result.append(f"{sort_column_name},{sort_type}")
+    return result
