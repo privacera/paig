@@ -29,7 +29,6 @@ class PaigApiKeyController:
             sort (str): The sort options.
             key_status (list): The key status options.
         """
-        sort = normalize_parameter(sort)
         key_status = normalize_parameter(key_status)
         include_filters = dict()
         include_filters["exact_match"] = False

@@ -72,7 +72,7 @@ class PaigApiKeyService(BaseController[PaigApiKeyModel, PaigApiKeyView]):
 
         api_key_uuid = short_uuid()
 
-        token_expiry = request.get('token_expiry')
+        token_expiry = request.get('expiry')
         if token_expiry:
             token_expiry_epoch_time = convert_token_expiry_to_epoch_time(token_expiry)
         else:

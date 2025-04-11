@@ -1,4 +1,4 @@
-from api.apikey.paig_level2_encryption_key_service import PaigLevel2EncryptionKeyService
+from api.apikey.services.paig_level2_encryption_key_service import PaigLevel2EncryptionKeyService
 from core.exceptions import NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 
@@ -30,11 +30,8 @@ class PaigLevel2EncryptionKeyController:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Level 2 encryption key", "keyId", key_id))
 
 
-    async def create_paig_level2_encryption_key(self, request: dict):
+    async def create_paig_level2_encryption_key(self):
         """
         Create a new level 2 encryption key.
-
-        Args:
-            request (dict): The request object containing the key type.
         """
-        return await self._level2_encryption_key_service.create_paig_level2_encryption_key(request)
+        return await self._level2_encryption_key_service.create_paig_level2_encryption_key()

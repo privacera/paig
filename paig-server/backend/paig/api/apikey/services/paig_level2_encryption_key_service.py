@@ -8,6 +8,7 @@ from api.encryption.utils.secure_encryptor import SecureEncryptor
 from api.encryption.factory.secure_encryptor_factory import SecureEncryptorFactory
 from core.exceptions import NotFoundException
 from api.apikey.utils import generate_hex_key, short_uuid, EncryptionKeyStatus
+from core.db_session.transactional import Transactional, Propagation
 
 
 logger = logging.getLogger(__name__)
@@ -41,6 +42,7 @@ class PaigLevel2EncryptionKeyService(BaseController[PaigLevel2EncryptionKeyModel
     async def get_paig_level2_encryption_key_by_uuid(self, key_uuid: str):
         return await self.repository.get_paig_level2_encryption_key_by_uuid(key_uuid)
 
+    @Transactional(propagation=Propagation.REQUIRED)
     async def create_paig_level2_encryption_key(self):
         repository = self.get_repository()
         try:
@@ -70,6 +72,7 @@ class PaigLevel2EncryptionKeyService(BaseController[PaigLevel2EncryptionKeyModel
 
         response: PaigLevel2EncryptionKeyView = PaigLevel2EncryptionKeyView()
         response.id = result.id
+        response.key_id = result.key_id
         response.status = result.status
         response.create_time = result.create_time
         response.update_time = result.update_time
