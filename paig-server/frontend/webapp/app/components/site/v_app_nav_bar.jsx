@@ -194,6 +194,8 @@ const NavList = observer(({menu, location}) => {
                     className={"pointer border-radius-4 list-item active-list-item padding-left-right-0"}
                     // selected={!!selectedClass}
                     key={selectedChildMenu.to ? selectedChildMenu.to : selectedChildMenu.name}
+                    data-testid={selectedChildMenu.to?.substr(selectedChildMenu.to.lastIndexOf("/") + 1).toLowerCase()+"_submenu"}
+                    data-track-id={selectedChildMenu.to?.substr(selectedChildMenu.to.lastIndexOf("/") + 1).toLowerCase()+"_submenu"}
                     onClick={(...props) => handleRedirectToRoute(selectedChildMenu, ...props)}
                 >
                   <Box display="flex" alignItems="center" >

@@ -3,6 +3,7 @@ from core.security.authentication import get_auth_user
 from fastapi import FastAPI
 from httpx import AsyncClient
 import json
+from api.encryption.events.startup import create_default_encryption_keys
 
 governance_services_base_route = "/governance-service/api/ai"
 encryption_router_base_route = "/account-service/api/data-protect"
@@ -43,7 +44,7 @@ class TestAIApplicationConfigDownloadRouter:
         assert response.status_code == 200
 
 
-        from api.encryption.events.startup import create_default_encryption_keys
+
         await create_default_encryption_keys()
         response = await client.post(
             f"{encryption_router_base_route}/keys/generate?key_type=MSG_PROTECT_PLUGIN"
