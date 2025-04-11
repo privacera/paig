@@ -37,7 +37,7 @@ class PaigLevel1EncryptionKeyRepository(BaseOperations[PaigLevel1EncryptionKeyMo
         except NoResultFound:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Active Level1 Encryption key", "key_status", EncryptionKeyStatus.ACTIVE.value))
 
-    async def get_level1_encryption_key_by_id(self, key_id: int):
+    async def get_paig_level1_encryption_key_by_id(self, key_id: int):
         """
         Retrieve an encryption key by its ID.
 

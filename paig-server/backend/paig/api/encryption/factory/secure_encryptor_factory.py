@@ -2,21 +2,29 @@ from api.encryption.database.db_models.encryption_master_key_model import Encryp
 from api.encryption.database.db_operations.encryption_master_key_repository import EncryptionMasterKeyRepository
 from api.encryption.utils.secure_encryptor import SecureEncryptor
 from core.utils import SingletonDepends
+from typing import Optional
+
 
 
 class SecureEncryptorFactory:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
 
     def __init__(self, encryption_master_key_repository: EncryptionMasterKeyRepository = SingletonDepends(EncryptionMasterKeyRepository)):
+        if self._initialized:
+            return
         self.encryption_master_key_repository = encryption_master_key_repository
-        self.secure_encryptor : SecureEncryptor | None = None
+        self.secure_encryptor: Optional[SecureEncryptor] = None
+        self._initialized = True
 
-    # noinspection PyMethodMayBeStatic
     async def get_or_create_secure_encryptor(self) -> SecureEncryptor:
         """
-        Get a secure encryptor
-
-        Args: encryption_master_key_repository (EncryptionMasterKeyRepository): The repository handling encryption
-        master key database operations.
+        Lazily initialize and return a SecureEncryptor instance.
 
         Returns:
             SecureEncryptor: The secure encryptor instance.
