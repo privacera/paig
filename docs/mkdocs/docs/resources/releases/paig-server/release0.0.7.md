@@ -10,5 +10,5 @@ title: PAIG Server 0.0.7
     - Added comprehensive Cypress test suite for guardrail features.
 
 <div class="grid cards" markdown>
--  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-server)
 </div>

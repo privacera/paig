@@ -1,6 +1,15 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+
+## [v0.0.8] - 2025-04-09
+### Added
+- Enhanced PAIG evaluation
+    - Improved user interface for PAIG evaluation results
+    - Detailed breakdown of evaluation metrics and category-wise performance
+    - Support for different authorization methods for authentication with application under evaluation
+
+
 ## [v0.0.7] - 2025-04-02
 ### Added
 - Enhanced Guardrail Functionality

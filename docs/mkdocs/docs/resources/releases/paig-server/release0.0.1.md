@@ -6,5 +6,5 @@ title: PAIG Server 0.0.1
     - Initial release of the PAIG Server. 
 
 <div class="grid cards" markdown>
--  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-server)
 </div>
