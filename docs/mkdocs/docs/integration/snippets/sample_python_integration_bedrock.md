@@ -17,6 +17,8 @@ bedrock_runtime = boto3.client(
 accept = "application/json"
 contentType = "application/json"
 
+# Initialize PAIG Shield  
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_shield_client.setup(frameworks=[])
 
 # Replace "testuser" with the user who is using the application. Or you can use the service username
@@ -25,12 +27,12 @@ try:
     with paig_shield_client.create_shield_context(username=user):
         prompt_text = "Who was the first President of USA and where did they live?"
         print(f"User Prompt: {prompt_text}")
-        # Validate prompt with Privacera Shield
+        # Validate prompt with PAIG Shield
         updated_prompt_text = paig_shield_client.check_access(
             text=prompt_text,
             conversation_type=ConversationType.PROMPT
         )
-        print(f"User Prompt (After Privacera Shield): {prompt_text}")
+        print(f"User Prompt (After PAIG Shield): {prompt_text}")
         if prompt_text != updated_prompt_text:
             print(f"Updated prompt text: {updated_prompt_text}")
 
@@ -52,12 +54,12 @@ try:
         results = response_body.get("results")
         for result in results:
             reply_text = result.get('outputText')
-            # Validate LLM response with Privacera Shield
+            # Validate LLM response with PAIG Shield
             update_reply_text = paig_shield_client.check_access(
                 text=reply_text,
                 conversation_type=ConversationType.REPLY
             )
-            print(f"LLM Response (After Privacera Shield): {update_reply_text}")
+            print(f"LLM Response (After PAIG Shield): {update_reply_text}")
 except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")

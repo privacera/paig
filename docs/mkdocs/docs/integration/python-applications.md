@@ -10,7 +10,7 @@ PAIG.
 
 ## **Install paig_client**
 
-Privacera's plugin library needs to be first installed. This can be done by running the following command:
+PAIG clinet library needs to be first installed. This can be done by running the following command:
 
 ```shell
 pip install paig_client
@@ -23,9 +23,28 @@ If you already added the Application to the PAIG, then you can skip this step.
 
 --8<-- "docs/integration/snippets/create_application.md"
 
-## **Downloading Privacera Shield Configuration File**
+## **Generate AI application API key**
 
---8<-- "docs/integration/snippets/download_application_config.md"
+--8<-- "docs/integration/snippets/paig_apikey_generate.md"
+
+## **Set the PAIG API Key**
+
+To initialize the PAIG Shield library in your AI application, export the __PAIG_APP_API_KEY__ as an environment variable.
+
+```shell
+export PAIG_APP_API_KEY=<API_KEY>
+```
+
+!!! note "Alternative Method: Pass API Key in Code"
+    If you prefer not to use environment variables, you can directly pass the API key when initializing the library:
+        ```python
+        paig_shield_client.setup(frameworks=[], application_config_api_key="<API_KEY>")
+        ```
+    For a complete code example showing where to place this, locate the `setup()` method in the provided [sample code](#sample-code) section below.
+
+!!! info "Precedence Rule"
+    If the __PAIG_APP_API_KEY__ is set both as an environment variable and in the code, the key specified in the code will take priority.
+
 
 ## **Sample Code**
 
@@ -62,14 +81,6 @@ vi sample_python_integration.py
 
         Make sure you are running on AWS infrastructure which has access to Bedrock
 
-
-**Copy Privacera Shield configugration file to the privacera folder**
-
-```shell
-mkdir -p privacera
-#Copy the Privacera Shield Application configuration file to the privacera folder
-```
-
 **Run the sample application**
 ```shell
 python sample_python_integration.py
@@ -78,8 +89,8 @@ python sample_python_integration.py
 ``` title="Output" linenums="0" hl_lines="2 4"
 User Prompt: Who was first President of USA and where did they live?
 LLM Response: The first President of the USA was George Washington. He lived in Mount Vernon, Virginia.
-User Prompt (After Privacera Shield): Who is first President of USA and where did they live?
-LLM Response (After Privacera Shield): The first President of the USA was <<PERSON>>. He lived in Mount Vernon, Virginia.
+User Prompt (After PAIG Shield): Who is first President of USA and where did they live?
+LLM Response (After PAIG Shield): The first President of the USA was <<PERSON>>. He lived in Mount Vernon, Virginia.
 ```
 
 ## **Code Breakup and explanation**
@@ -99,7 +110,7 @@ import uuid
 
 **Initializing the PAIG Library**
 
-Call the setup method to initialize the Privacera Shield library. Since you are not using any frameworks, you can pass
+Call the setup method to initialize the PAIG Shield library. Since you are not using any frameworks, you can pass
 an empty list to the setup method.
 
 ```python
@@ -108,7 +119,7 @@ paig_shield_client.setup(frameworks=[])
 
 Generate a random UUID which will be used to bind a prompt with a response
 ```python
-privacera_thread_id = str(uuid.uuid4())
+paig_thread_id = str(uuid.uuid4())
 ```
 **Checking Access Before Sending Prompt to LLM**
 !!! note "Prompt User"
@@ -117,14 +128,14 @@ privacera_thread_id = str(uuid.uuid4())
 ```python
 try:
     with paig_shield_client.create_shield_context(username=user):
-        # Validate prompt with Privacera Shield
+        # Validate prompt with PAIG Shield
         updated_prompt_text = paig_shield_client.check_access(
             text=prompt_text,
             conversation_type=ConversationType.PROMPT,
-            thread_id=privacera_thread_id
+            thread_id=paig_thread_id
         )
         updated_prompt_text = updated_prompt_text[0].response_text
-        print(f"User Prompt (After Privacera Shield): {updated_prompt_text}")
+        print(f"User Prompt (After PAIG Shield): {updated_prompt_text}")
 except paig_client.exception.AccessControlException as e:
     # If access is denied, then this exception will be thrown. You can handle it accordingly.
     print(f"AccessControlException: {e}")
@@ -134,11 +145,11 @@ except paig_client.exception.AccessControlException as e:
 ```python
 try:
     with paig_shield_client.create_shield_context(username=user):
-        # Validate LLM response with Privacera Shield
+        # Validate LLM response with PAIG Shield
         updated_reply_text = paig_shield_client.check_access(
             text=llm_response,
             conversation_type=ConversationType.REPLY,
-            thread_id=privacera_thread_id
+            thread_id=paig_thread_id
         )
         updated_reply_text = updated_reply_text[0].response_text
 except paig_client.exception.AccessControlException as e:
@@ -151,11 +162,6 @@ The conversation type is used to differentiate between the prompt, RAG and the r
 - **Prompt** - `ConversationType.PROMPT`
 - **RAG** - `ConversationType.RAG`
 - **Reply** - `ConversationType.REPLY`
-
-**Privacera Shield Application configuration file**
-
-Create a folder called `privacera` in your application and copy the Privacera Shield Application configuration file
-
 
 ---
 :octicons-tasklist-16: **What Next?**

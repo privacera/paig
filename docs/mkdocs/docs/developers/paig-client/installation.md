@@ -13,27 +13,28 @@ pip3 install paig_client
 ```
 
 ## Initialization
-Start your PAIG-Server. Create your AI application and 
-download the Shield Configuration file. Place the file in a folder called `privacera` relative to 
-where you are running the app.
+Start your PAIG-Server. Create your AI application and generate API key.
+Set the `PAIG_APP_API_KEY` as environment variable.
 
 ```python
 # Import paig_client
 import paig_client.client
 
-# Setup Privacera Shield
+# Setup PAIG Shield
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_client.client.setup(frameworks=["langchain"])
 ```
 
 ## Usage
 Once you have completed the setup of paig_client, you can set the user in the context 
-for Privacera Shield to use.
+for PAIG Shield to use.
 
 ### Using context manager
 
 ```python
 import paig_client.client
 
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_client.client.setup(frameworks=["langchain"])
 
 # Set the current user_name in the context
@@ -49,29 +50,29 @@ except paig_client.exception.AccessControlException as e:
 You can refer to the [Sample Code](../../integration/python-applications.md).
 
 
-### Additional ways of passing the application config file to set up Privacera Shield
-- Place the file in ```privacera``` folder relative to where you are running the app
-- Set the environment variable ```PRIVACERA_SHEILD_CONFIG_FILE``` to the path of the file
-- Set the environment variable ```PRIVACERA_SHEILD_CONFIG_DIR``` to a folder that contains the file. Only one
-  application config file should be present in the folder.
-- Pass the file path as ```application_config_file``` parameter to the setup function
-- Pass the string contents of the file to the setup function as ```application_config``` parameter
-- Pass a dict by converting file contents which is in json format and pass to the setup function as 
-  ```application_config``` parameter
+### Additional ways of passing the PAIG_APP_API_KEY to set up Privacera Shield
+
+!!! note "Alternative Method: Pass API Key in Code"
+    If you prefer not to use environment variables, you can directly pass the API key when initializing the library:
+        ```python
+        paig_shield_client.setup(frameworks=[], application_config_api_key="<API_KEY>")
+        ```
+    For a complete code example showing where to place this, locate the `setup()` method in the provided [sample code](#sample-code) section below.
+
+!!! info "Precedence Rule"
+    If the __PAIG_APP_API_KEY__ is set both as an environment variable and in the code, the key specified in the code will take priority.
+
 
 ### You can create multiple applications
 
 If your application has multiple AI models to be governed, you can create multiple applications as follows:
 
 ```python
-app1 = paig_client.client.setup_app(...)
-app2 = paig_client.client.setup_app(...)
+app1 = paig_client.client.setup_app(application_config_api_key="<API_KEY>")
+app2 = paig_client.client.setup_app(application_config_api_key="<API_KEY>")
 ```
-You can pass the following parameters to the setup_app function:
-- Pass the file path as ```application_config_file``` parameter to the setup function
-- Pass the string contents of the file to the setup function as ```application_config``` parameter
-- Pass a dict by converting file contents which is in json format and pass to the setup function as 
-  ```application_config``` parameter
+
+- Pass the api key as ```application_config_api_key="<API_KEY>"``` parameter to the setup function
 
 And then you can pass the application object to the context manager as follows:
 
