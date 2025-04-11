@@ -109,9 +109,27 @@ Log in to the PAIG portal and navigate to **Paig Navigator > VectorDB**. Click t
 Navigate to **Paig Navigator > AI Application** and click the **CREATE APPLICATION** button in the top right corner. Fill in the required details and, under **Associated VectorDB**, 
 select the VectorDB created in the previous step to link the application with the VectorDB.
 
-### Download Application Configuration File
-Navigate to the application you created in the previous step and click the **DOWNLOAD APP CONFIG** button in the top right corner. 
-Save the downloaded configuration file in a folder named `privacera` within the root directory of your code.
+### Generate AI application API Key
+
+--8<-- "docs/integration/snippets/paig_apikey_generate.md"
+
+### Set the PAIG API Key
+
+To initialize the PAIG Shield library in your AI application, export the __PAIG_APP_API_KEY__ as an environment variable.
+
+```shell
+export PAIG_APP_API_KEY=<API_KEY>
+```
+
+!!! note "Alternative Method: Pass API Key in Code"
+    If you prefer not to use environment variables, you can directly pass the API key when initializing the library:
+        ```python
+        paig_shield_client.setup(frameworks=[], application_config_api_key="<API_KEY>")
+        ```
+    For a complete code example showing where to place this, locate the `setup()` method in the provided [sample code](#sample-code) section below.
+
+!!! info "Precedence Rule"
+    If the __PAIG_APP_API_KEY__ is set both as an environment variable and in the code, the key specified in the code will take priority.
 
 ### Query the Milvus collection
 Run the following command to query the Milvus collection.
