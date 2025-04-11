@@ -6,6 +6,7 @@ from core.controllers.paginated_response import Pageable
 from api.governance.api_schemas.ai_app import AIApplicationView, AIApplicationFilter, GuardrailApplicationsAssociation
 from api.governance.controllers.ai_app_controller import AIAppController
 from core.utils import SingletonDepends
+from core.utils import alias_field_to_column_name
 
 ai_app_router = APIRouter()
 
@@ -23,6 +24,7 @@ async def list_applications(
     """
     List all AI applications.
     """
+    sort = alias_field_to_column_name(sort, AIApplicationView)
     return await ai_app_controller.list_ai_applications(application_filter, page, size, sort)
 
 

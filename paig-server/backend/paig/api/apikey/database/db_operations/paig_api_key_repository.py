@@ -12,6 +12,7 @@ from api.apikey.utils import APIKeyStatus
 from core.db_session.transactional import Transactional, Propagation
 
 
+
 class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
     """
         Repository class for handling database operations related to encryption key models.
@@ -25,6 +26,7 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
         Initialize the ApiKeyRepository.
         """
         super().__init__(PaigApiKeyModel)
+
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def create_api_key(self, api_key_params: dict):

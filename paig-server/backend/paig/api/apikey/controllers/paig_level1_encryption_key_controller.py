@@ -34,4 +34,3 @@ class PaigLevel1EncryptionKeyController:
         Create a new level 1 encryption key.
         """
         return await self._level1_encryption_key_service.create_paig_level1_encryption_key()
-

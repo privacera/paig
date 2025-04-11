@@ -29,7 +29,6 @@ class PaigLevel2EncryptionKeyController:
         except NotFoundException:
             raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Level 2 encryption key", "keyId", key_id))
 
-
     async def create_paig_level2_encryption_key(self):
         """
         Create a new level 2 encryption key.
