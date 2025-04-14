@@ -9,5 +9,5 @@ title: PAIG Server 0.0.4
     - Fixed application count in the Sensitive Data Access dashboard graph.
 
 <div class="grid cards" markdown>
--  :material-page-previous: Prev topic: [Releases](../index.md#paig-sever)
+-  :material-page-previous: Prev topic: [Releases](../index.md#paig-server)
 </div>

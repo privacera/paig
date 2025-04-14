@@ -42,6 +42,7 @@ class PaigLevel2EncryptionKeyService(BaseController[PaigLevel2EncryptionKeyModel
     async def get_paig_level2_encryption_key_by_uuid(self, key_uuid: str):
         return await self.repository.get_paig_level2_encryption_key_by_uuid(key_uuid)
 
+
     @Transactional(propagation=Propagation.REQUIRED)
     async def create_paig_level2_encryption_key(self):
         repository = self.get_repository()
