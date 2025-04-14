@@ -10,7 +10,7 @@ PAIG.
 
 ## **Install paig_client**
 
-PAIG clinet library needs to be first installed. This can be done by running the following command:
+PAIG client library needs to be first installed. This can be done by running the following command:
 
 ```shell
 pip install paig_client
