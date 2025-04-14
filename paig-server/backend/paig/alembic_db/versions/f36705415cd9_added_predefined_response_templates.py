@@ -9,6 +9,8 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from alembic.context import get_context
+
 from core.utils import current_utc_time
 
 # revision identifiers, used by Alembic.
@@ -53,11 +55,22 @@ def upgrade() -> None:
     # ### end Alembic commands ###
 
     # Create a view that combines response_template and predefined_response_template
+    # Detect dialect: 'sqlite', 'mysql', etc.
+    dialect_name = get_context().dialect.name
+
+    if dialect_name == 'sqlite':
+        concat_custom = "'custom_' || rt.id"
+        concat_predef = "'predef_' || prt.id"
+    else:
+        # For other dialects MySQL, MariaDB, PostgreSQL, use CONCAT function
+        concat_custom = "CONCAT('custom_', rt.id)"
+        concat_predef = "CONCAT('predef_', prt.id)"
+
     connection.execute(
-        sa.text("""
+        sa.text(f"""
             CREATE VIEW response_template_view AS
                 SELECT 
-                    'custom_' || rt.id AS synthetic_id,
+                    {concat_custom} AS synthetic_id,
                     rt.id,
                     rt.response,
                     rt.description,
@@ -69,7 +82,7 @@ def upgrade() -> None:
                 FROM response_template rt
             UNION ALL
                 SELECT 
-                    'predef_' || prt.id AS synthetic_id,
+                    {concat_predef} AS synthetic_id,
                     prt.id,
                     prt.response,
                     prt.description,
