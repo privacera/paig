@@ -26,7 +26,6 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
         """
         super().__init__(PaigApiKeyModel)
 
-    @Transactional(propagation=Propagation.REQUIRED)
     async def create_api_key(self, api_key_params: dict):
         """
         Create a new API key.
@@ -37,11 +36,10 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
         Returns:
             PaigApiKeyModel: The newly created API key.
         """
-        if not isinstance(api_key_params, dict):
-            api_key_params = api_key_params.model_dump()
         model = self.model_class()
         model.set_attribute(api_key_params)
         session.add(model)
+        await session.flush()
         return model
 
     async def get_api_key_by_ids(self, key_ids: list):

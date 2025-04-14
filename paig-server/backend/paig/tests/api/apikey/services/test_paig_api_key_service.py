@@ -8,8 +8,7 @@ from api.apikey.database.db_operations.paig_api_key_repository import PaigApiKey
 from api.apikey.services.paig_api_key_service import PaigApiKeyService
 from api.apikey.database.db_operations.paig_level1_encryption_key_repository import PaigLevel1EncryptionKeyRepository
 from api.apikey.database.db_operations.paig_level2_encryption_key_repository import PaigLevel2EncryptionKeyRepository
-from api.apikey.controllers.paig_level1_encryption_key_controller import PaigLevel1EncryptionKeyController
-from api.apikey.controllers.paig_level2_encryption_key_controller import PaigLevel2EncryptionKeyController
+from api.encryption.events.startup import create_default_encryption_keys
 import pytest
 
 
@@ -75,21 +74,6 @@ def service(db_session, set_context_session, paig_level1_encryption_key_service,
     return service
 
 
-
-@pytest.fixture
-def level1_controller(db_session, set_context_session, paig_level1_encryption_key_service):
-    controller_instance = PaigLevel1EncryptionKeyController()
-    controller_instance._level1_encryption_key_service = paig_level1_encryption_key_service
-    return controller_instance
-
-
-@pytest.fixture
-def level2_controller(db_session, set_context_session, paig_level2_encryption_key_service):
-    controller_instance = PaigLevel2EncryptionKeyController()
-    controller_instance._level2_encryption_key_service = paig_level2_encryption_key_service
-    return controller_instance
-
-
 @pytest.fixture
 def token_expiry_date():
     from datetime import datetime, timedelta
@@ -106,11 +90,8 @@ def api_key_data(token_expiry_date):
 
 
 @pytest.mark.asyncio
-async def test_create_api_key(service, level1_controller, level2_controller, token_expiry_date, api_key_data):
-    from api.encryption.events.startup import create_encryption_master_key_if_not_exists
-    await create_encryption_master_key_if_not_exists()
-    await level1_controller.create_paig_level1_encryption_key()
-    await level2_controller.create_paig_level2_encryption_key()
+async def test_create_api_key(service, token_expiry_date, api_key_data):
+    await create_default_encryption_keys()
 
     user_id = 123
     created_key = await service.create_api_key(api_key_data, user_id)
@@ -124,11 +105,8 @@ async def test_create_api_key(service, level1_controller, level2_controller, tok
 
 
 @pytest.mark.asyncio
-async def test_get_api_key_by_ids(service, level1_controller, level2_controller, token_expiry_date, api_key_data):
-    from api.encryption.events.startup import create_encryption_master_key_if_not_exists
-    await create_encryption_master_key_if_not_exists()
-    await level1_controller.create_paig_level1_encryption_key()
-    await level2_controller.create_paig_level2_encryption_key()
+async def test_get_api_key_by_ids(service, token_expiry_date, api_key_data):
+    await create_default_encryption_keys()
 
     user_id = 123
 
@@ -142,11 +120,8 @@ async def test_get_api_key_by_ids(service, level1_controller, level2_controller,
 
 
 @pytest.mark.asyncio
-async def test_get_api_keys_by_application_id(service, level1_controller, level2_controller, api_key_data):
-    from api.encryption.events.startup import create_encryption_master_key_if_not_exists
-    await create_encryption_master_key_if_not_exists()
-    await level1_controller.create_paig_level1_encryption_key()
-    await level2_controller.create_paig_level2_encryption_key()
+async def test_get_api_keys_by_application_id(service, api_key_data):
+    await create_default_encryption_keys()
 
     user_id = 123
 
@@ -219,11 +194,8 @@ async def test_get_api_keys_by_application_id(service, level1_controller, level2
 
 
 @pytest.mark.asyncio
-async def test_disable_api_key(service, level1_controller, level2_controller, token_expiry_date, api_key_data):
-    from api.encryption.events.startup import create_encryption_master_key_if_not_exists
-    await create_encryption_master_key_if_not_exists()
-    await level1_controller.create_paig_level1_encryption_key()
-    await level2_controller.create_paig_level2_encryption_key()
+async def test_disable_api_key(service, token_expiry_date, api_key_data):
+    await create_default_encryption_keys()
 
     user_id = 123
 
@@ -238,11 +210,8 @@ async def test_disable_api_key(service, level1_controller, level2_controller, to
 
 
 @pytest.mark.asyncio
-async def test_permanent_delete_api_key(service, level1_controller, level2_controller, token_expiry_date, api_key_data):
-    from api.encryption.events.startup import create_encryption_master_key_if_not_exists
-    await create_encryption_master_key_if_not_exists()
-    await level1_controller.create_paig_level1_encryption_key()
-    await level2_controller.create_paig_level2_encryption_key()
+async def test_permanent_delete_api_key(service, token_expiry_date, api_key_data):
+    await create_default_encryption_keys()
 
     user_id = 123
 
