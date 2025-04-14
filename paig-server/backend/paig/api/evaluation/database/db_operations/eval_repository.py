@@ -145,10 +145,10 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
             search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
         if to_time:
             search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
-        tenand_id = self.get_tenant()
-        if tenand_id:
-            include_query['tenant_id'] = tenand_id
-            search_filters.append(EvaluationResultPromptsModel.tenant_id == tenand_id)
+        tenant_id = self.get_tenant()
+        if tenant_id:
+            include_query['tenant_id'] = tenant_id
+            search_filters.append(EvaluationResultPromptsModel.tenant_id == tenant_id)
         prompt_filter = create_like_filter(EvaluationResultPromptsModel.prompt, 'prompt', include_query, exclude_list)
         if prompt_filter is not None:
             search_filters.append(prompt_filter)
