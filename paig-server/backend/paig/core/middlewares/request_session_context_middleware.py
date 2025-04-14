@@ -1,5 +1,4 @@
 from starlette.middleware.base import BaseHTTPMiddleware
-
 from contextvars import ContextVar, Token
 
 session_context: ContextVar[dict] = ContextVar("login_user", default={})
@@ -65,14 +64,13 @@ def set_email(email: str):
 
 class RequestSessionContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
-        # Skip the middleware if the request is not for guardrail-service
-        if not request.url.path.startswith("/guardrail-service"):
+        from core.security.authentication import get_auth_token_user_info
+        try:
+            token_user_info = await get_auth_token_user_info(request)
+        except:
             return await call_next(request)
 
-        from core.security.authentication import get_auth_token_user_info
-        token_user_info = await get_auth_token_user_info(request)
         context = set_user(token_user_info)
-
         tenant_id = request.headers.get('x-tenant-id')
         if tenant_id:
             set_tenant_id(tenant_id)
@@ -83,4 +81,5 @@ class RequestSessionContextMiddleware(BaseHTTPMiddleware):
         except Exception as exception:
             raise exception
         finally:
-            reset_context(context)
+            if context:
+                reset_context(context)

@@ -290,6 +290,7 @@ const VEvalTargetForm = ({form}) => {
 
 const eval_target_form_def = {
     id: {},
+    status: {},
     ai_application_id: {},
     target_id: {},
     desc: {},

@@ -7,6 +7,7 @@ from api.user.database.db_models import User
 from api.governance.database.db_models.ai_app_model import AIApplicationModel
 from api.governance.database.db_models.ai_app_config_model import AIApplicationConfigModel
 from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
+from api.evaluation.database.db_models.eval_targets import EvaluationTargetModel
 from core.utils import generate_unique_identifier_key
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, Session
@@ -146,6 +147,47 @@ async def check_and_create_default_ai_application():
         if engine:
             await engine.dispose()
 
+async def check_and_create_eval_target_application():
+    engine = None
+    try:
+        engine = create_async_engine(url=database_url)
+
+        class SyncSession(Session):
+            def get_bind(self, mapper=None, clause=None, **kwargs):
+                return engine.sync_engine
+
+        async_session = sessionmaker(
+            class_=AsyncSession,
+            sync_session_class=SyncSession,
+            expire_on_commit=False
+        )
+        async with async_session() as session:
+            async with session.begin():
+                # Fetch all AI applications
+                ai_applications = await session.execute(select(AIApplicationModel))
+                ai_applications = ai_applications.scalars().all()
+
+                # Iterate through AI applications and create entries in eval_target if not exists
+                for app in ai_applications:
+                    result = await session.execute(
+                        select(EvaluationTargetModel).filter_by(application_id=app.id)
+                    )
+                    eval_target = result.scalars().first()
+                    if not eval_target:
+                        new_eval_target = EvaluationTargetModel(
+                            application_id=app.id,
+                            name=app.name,
+                            url=None,
+                            config="{}"
+                        )
+                        session.add(new_eval_target)
+    except Exception as e:
+        print(f"An error occurred during eval application creation: {e}")
+        sys.exit(f"An error occurred during eval application creation: {e}")
+    finally:
+        if engine:
+            await engine.dispose()
+
 
 def create_default_user():
     asyncio.run(check_and_create_default_user())
@@ -154,9 +196,13 @@ def create_default_user():
 def create_default_ai_application():
     asyncio.run(check_and_create_default_ai_application())
 
+def sync_eval_target_with_ai_application():
+    asyncio.run(check_and_create_eval_target_application())
 
 def create_default_user_and_ai_application():
     if not config.get("skip_default_user_creation", False):
         create_default_user()
     if not config.get("skip_default_application_creation", False):
         create_default_ai_application()
+    if not config.get("skip_eval_target_sync", False):
+        sync_eval_target_with_ai_application()

@@ -63,9 +63,7 @@ class EvaluationConfigRepository(BaseOperations[EvaluationConfigModel]):
             dict: The response message.
         """
         param = EvaluationConfigModel(**body_params)
-        session.add(param)
-        await session.flush()
-        return param
+        return await self.create_record(param)
 
     async def get_eval_config_by_id(self, config_id: int):
         """
@@ -133,9 +131,7 @@ class EvaluationConfigHistoryRepository(BaseOperations[EvaluationConfigHistoryMo
             dict: The response message.
         """
         param = EvaluationConfigHistoryModel(**body_params)
-        session.add(param)
-        await session.flush()
-        return param
+        return await self.create_record(param)
 
     async def  get_eval_config_by_config_id(self, eval_config_id: int):
         try:

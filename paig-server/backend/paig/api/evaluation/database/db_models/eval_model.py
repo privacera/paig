@@ -31,6 +31,7 @@ class EvaluationModel(CommonBase):
     failed = Column(String(255), default='0')
     base_run_id = Column(String(255))
     target_users = Column(String(255), nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
 
 
     # Relationship with EvaluationConfigHistoryModel based on config_id
@@ -59,6 +60,7 @@ class EvaluationResultPromptsModel(CommonBase):
     eval_id = Column(String(255), nullable=False)
     prompt_uuid = Column(String(255), nullable=False, unique=True)
     prompt = Column(Text(), nullable=False)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
 
     # One-to-Many relationship with EvaluationResultResponseModel
     responses = relationship("EvaluationResultResponseModel",
@@ -90,6 +92,6 @@ class EvaluationResultResponseModel(CommonBase):
     category = Column(String(255), nullable=True)
     category_severity = Column(String(255), nullable=True)
     category_type = Column(String(255), nullable=True)
-
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
     # Back-reference to EvaluationResultPromptsModel
     prompt = relationship("EvaluationResultPromptsModel", back_populates="responses")

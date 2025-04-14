@@ -8,6 +8,7 @@ from api.governance.api_schemas.ai_app_config import AIApplicationConfigView
 from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView
 from api.governance.services.ai_app_config_service import AIAppConfigService
 from api.governance.services.ai_app_policy_service import AIAppPolicyService
+from api.evaluation.services.eval_target_service import EvaluationTargetService
 from api.governance.services.ai_app_service import AIAppService
 from core.utils import format_to_root_path, SingletonDepends
 from core.middlewares.usage import background_capture_event
@@ -25,10 +26,13 @@ class AIAppController:
     def __init__(self,
                  ai_app_service: AIAppService = SingletonDepends(AIAppService),
                  ai_app_policy_service: AIAppPolicyService = SingletonDepends(AIAppPolicyService),
-                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService)):
+                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService),
+                 evaluation_target_service: EvaluationTargetService = SingletonDepends(EvaluationTargetService)
+                 ):
         self.ai_app_service = ai_app_service
         self.ai_app_policy_service = ai_app_policy_service
         self.ai_app_config_service = ai_app_config_service
+        self.evaluation_target_service = evaluation_target_service
 
         ai_app_defaults_file_path = format_to_root_path("api/governance/configs/ai_application_defaults.json")
         application_defaults = self.get_application_defaults(ai_app_defaults_file_path)
@@ -84,6 +88,7 @@ class AIAppController:
         for policy in self.ai_app_default_policies:
             policy_create_view = AIApplicationPolicyView(**policy.model_dump())
             await self.ai_app_policy_service.create_ai_application_policy(created_app.id, policy_create_view)
+        await self.evaluation_target_service.update_app_target_on_ai_app(created_app.id, created_app.name)
         await background_capture_event(event=CreateAIApplicationEvent())
         return created_app
 
@@ -112,6 +117,7 @@ class AIAppController:
             AIApplicationView: The updated AI application view object.
         """
         updated_app = await self.ai_app_service.update_ai_application(id, request)
+        await self.evaluation_target_service.update_app_target_on_ai_app(id, updated_app.name)
         await background_capture_event(event=UpdateAIApplicationEvent())
         return updated_app
 
@@ -124,6 +130,7 @@ class AIAppController:
             id (int): The ID of the AI application to delete.
         """
         await self.ai_app_service.delete_ai_application(id)
+        await self.evaluation_target_service.delete_app_target_on_ai_app(id)
         await background_capture_event(event=DeleteAIApplicationEvent())
 
     @Transactional(propagation=Propagation.REQUIRED)

@@ -122,10 +122,12 @@ class CEvaluationAppsList extends Component {
                 confirm.hide();
                 f.notifySuccess('Application Config Deleted');
                 // Update the form fields to remove the deleted ID
-                const updatedApplicationIds = Array.isArray(this.props.form.fields.application_ids.value)
+                if (this.props.form && this.props.form.fields) {
+                    const updatedApplicationIds = Array.isArray(this.props.form.fields.application_ids.value)
                     ? this.props.form.fields.application_ids.value.filter((id) => id !== model.target_id)
                     : [];
-                this.props.form.fields.application_ids.value = updatedApplicationIds;
+                    this.props.form.fields.application_ids.value = updatedApplicationIds;
+                }
                 this.fetchEvaluationAppsList();
             }, f.handleError(null, null, {confirm}));
         }, () => {});
@@ -133,7 +135,7 @@ class CEvaluationAppsList extends Component {
 
     handleEdit = async (model) => {
         this.form.clearForm();
-        if (!model?.target_id) {
+        if (model?.status !== 'ACTIVE') {
             this.form.refresh(model);
             this.showEditModal();
             return;
@@ -183,7 +185,6 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
-
         if (!data.id) {
             data.ai_application_id = null;
         }
@@ -197,7 +198,7 @@ class CEvaluationAppsList extends Component {
 
         this.modalRef.current.okBtnDisabled(true);
     
-        if (data.target_id) {
+        if (data.status === 'ACTIVE') {
           try {
             await this.props.evaluationStore.updateConfig(data);
             this.modalRef.current.hide();
