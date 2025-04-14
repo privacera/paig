@@ -6,7 +6,7 @@ from core.exceptions import BadRequestException
 from core.exceptions.error_messages_parser import (get_error_message, ERROR_RESOURCE_ALREADY_EXISTS)
 from core.utils import validate_id, validate_string_data, SingletonDepends
 from api.guardrails.api_schemas.response_template import ResponseTemplateView, ResponseTemplateFilter
-from api.guardrails.database.db_models.response_template_model import ResponseTemplateModel
+from api.guardrails.database.db_models.response_template_view_model import ResponseTemplateViewModel
 from api.guardrails.database.db_operations.response_template_repository import ResponseTemplateRepository
 
 
@@ -110,7 +110,7 @@ class ResponseTemplateRequestValidator:
             response (str): The response of the ResponseTemplate.
 
         Returns:
-            ResponseTemplateModel: The ResponseTemplate model corresponding to the response.
+            ResponseTemplateViewModel: The Response Template model corresponding to the response.
         """
         response_template_filter = ResponseTemplateFilter()
         response_template_filter.response = response
@@ -121,7 +121,7 @@ class ResponseTemplateRequestValidator:
         return None
 
 
-class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemplateView]):
+class ResponseTemplateService(BaseController[ResponseTemplateViewModel, ResponseTemplateView]):
 
     def __init__(self, response_template_repository: ResponseTemplateRepository = SingletonDepends(ResponseTemplateRepository),
                  response_template_request_validator: ResponseTemplateRequestValidator = SingletonDepends(ResponseTemplateRequestValidator)):
@@ -133,7 +133,7 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
         """
         super().__init__(
             response_template_repository,
-            ResponseTemplateModel,
+            ResponseTemplateViewModel,
             ResponseTemplateView
         )
         self.response_template_request_validator = response_template_request_validator
