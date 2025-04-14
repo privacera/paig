@@ -32,3 +32,4 @@ class ResponseTemplateFilter(BaseAPIFilter):
 
     response: Optional[str] = Field(default=None, description="The response of the Response Template")
     description: Optional[str] = Field(default=None, description="The Description of Response Template")
+    tenant_id: Optional[str] = Field(default=None, description="The tenant id", alias="tenantId")
