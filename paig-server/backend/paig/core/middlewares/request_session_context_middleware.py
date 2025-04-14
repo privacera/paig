@@ -45,6 +45,24 @@ def set_tenant_id(tenant_id: str):
     return set_context_value("tenant_id", tenant_id)
 
 
+def get_user_role():
+    return get_context_value("user_role")
+
+
+def set_user_role(user_role: str):
+    if user_role:
+        return set_context_value("user_role", user_role)
+
+
+def get_email():
+    return get_context_value("email")
+
+
+def set_email(email: str):
+    if email:
+        return set_context_value("email", email)
+
+
 class RequestSessionContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         # Skip the middleware if the request is not for guardrail-service

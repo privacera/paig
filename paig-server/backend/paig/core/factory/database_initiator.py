@@ -193,12 +193,6 @@ class BaseOperations(Generic[ModelType]):
             query = self.order_by(query, column_name, sort_type)
         return query
 
-    def get_tenant(self):
-        """
-        Get the tenant ID from the request context.
-        """
-        return get_tenant_id()
-
     async def get_all(self,
                       filters=None,
                       columns=None,
@@ -211,7 +205,7 @@ class BaseOperations(Generic[ModelType]):
                       ) -> list[ModelType]:
         # Usage: select all query executor
         if hasattr(self.model_class, 'tenant_id'):
-            tenant_id = self.get_tenant()
+            tenant_id = get_tenant_id()
             if tenant_id is not None:
                 filters["tenant_id"] = tenant_id
 
@@ -268,7 +262,7 @@ class BaseOperations(Generic[ModelType]):
     async def _get_by(self, query: Select, filters) -> Select:
         # Usage: executes actual query conditional select
         if hasattr(self.model_class, 'tenant_id'):
-            tenant_id = self.get_tenant()
+            tenant_id = get_tenant_id()
             if tenant_id is not None:
                 filters["tenant_id"] = tenant_id
         return query.where(*self._get_filter(filters))
@@ -339,7 +333,7 @@ class BaseOperations(Generic[ModelType]):
             ModelType: The model instance that was added to the session.
         """
         if hasattr(self.model_class, 'tenant_id'):
-            model.tenant_id = self.get_tenant()
+            model.tenant_id = get_tenant_id()
         session.add(model)
         await session.flush()
         return await self.get_record_by_id(model.id)

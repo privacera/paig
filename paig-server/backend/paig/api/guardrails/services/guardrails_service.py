@@ -25,7 +25,7 @@ from core.controllers.paginated_response import Pageable, create_pageable_respon
 from core.exceptions import BadRequestException, NotFoundException, InternalServerError
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS, \
     ERROR_RESOURCE_NOT_FOUND, ERROR_FIELD_REQUIRED
-from core.middlewares.request_session_context_middleware import get_user
+from core.middlewares.request_session_context_middleware import get_user, get_tenant_id
 from core.utils import validate_id, validate_string_data, validate_boolean, SingletonDepends, \
     generate_unique_identifier_key, normalize_datetime, current_utc_time_epoch
 
@@ -462,7 +462,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         transformed_audit.log_id = generate_unique_identifier_key()
         transformed_audit.log_time = current_utc_time_epoch()
 
-        user: dict = self.get_request_user()
+        user: dict = get_user()
         transformed_audit.acted_by_user_id = user.get("id")
         transformed_audit.acted_by_user_name = user.get("username")
 
@@ -475,12 +475,9 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
             transformed_audit.object_state_previous['createTime'] = normalize_datetime(previous_guardrail.create_time)
             transformed_audit.object_state_previous['updateTime'] = normalize_datetime(previous_guardrail.update_time)
 
-        transformed_audit.tenant_id = self.repository.get_tenant()
+        transformed_audit.tenant_id = get_tenant_id()
 
         return transformed_audit
-
-    def get_request_user(self):
-        return get_user()
 
     async def save_guardrail_version_history(self, guardrail):
         guardrail_dict = model_to_dict(guardrail)
@@ -738,21 +735,20 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
 
         return update_guardrail_response
 
-    def generate_guardrail_name(self, input_string: str) -> str:
+    def generate_guardrail_name(self, guardrail_name: str) -> str:
         """
-        Replace characters in the string that do not match the regex [0-9a-zA-Z-_]+ with an underscore.
+        Generate a guardrail name from the given guardrail name by adding tenant_id prefix.
 
         Args:
-            input_string (str): The input string to process.
+            guardrail_name (str): The name of the guardrail.
 
         Returns:
-            str: The updated string with invalid characters replaced.
+            str: Guardrail name with tenant_id prefix.
         """
-        # Define the regex pattern for allowed characters
-        pattern = r'[^0-9a-zA-Z-_]'
-        # Replace characters not matching the pattern with an underscore
-        updated_string = re.sub(pattern, '_', input_string)
-        return updated_string
+        tenant_id = get_tenant_id()
+        if tenant_id:
+            return tenant_id + '_' + guardrail_name
+        return guardrail_name
 
     async def _create_guardrail_to_external_provider(self, guardrail, guardrail_connections,
                                                      guardrails_configs):
