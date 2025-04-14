@@ -9,6 +9,7 @@ from core.utils import get_field_name_by_alias
 from api.apikey.api_schemas.paig_api_key import PaigApiKeyView
 from sqlalchemy import and_
 from api.apikey.utils import APIKeyStatus
+from core.db_session.transactional import Transactional, Propagation
 
 
 class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
@@ -35,10 +36,11 @@ class PaigApiKeyRepository(BaseOperations[PaigApiKeyModel]):
         Returns:
             PaigApiKeyModel: The newly created API key.
         """
-        param = PaigApiKeyModel(**api_key_params)
-        session.add(param)
+        model = self.model_class()
+        model.set_attribute(api_key_params)
+        session.add(model)
         await session.flush()
-        return param
+        return model
 
     async def get_api_key_by_ids(self, key_ids: list):
         """

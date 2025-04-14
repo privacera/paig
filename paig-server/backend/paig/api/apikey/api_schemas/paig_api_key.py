@@ -58,14 +58,15 @@ class GenerateApiKeyBase(BaseModel):
     never_expire: bool = Field(None, description="Indicates if the key never expires", alias="neverExpire")
     expiry: datetime = Field(None, description="Token expiration timestamp", alias="tokenExpiry")
     application_id: int = Field(..., description="Application ID associated with the API key", alias="applicationId")
-
-class GenerateApiKeyRequest(GenerateApiKeyBase):
-    scopes: List[int] = Field(..., description="List of scope IDs associated with the key")
-
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True
     )
+
+
+class GenerateApiKeyRequest(GenerateApiKeyBase):
+    pass
+
 
 class GenerateApiKeyResponse(GenerateApiKeyBase):
     id: int = Field(..., description="Unique identifier for the API key", alias="id")
