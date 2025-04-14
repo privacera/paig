@@ -7,7 +7,8 @@ from langchain.chains import LLMChain
 
 api_key = os.getenv("OPENAI_API_KEY")  # (1)
 
-# Initialize Privacera Shield
+# Initialize PAIG Shield
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_shield_client.setup(frameworks=["langchain"])
 
 llm = OpenAI(openai_api_key=api_key)
