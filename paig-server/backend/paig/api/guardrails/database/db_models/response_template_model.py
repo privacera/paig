@@ -21,3 +21,4 @@ class ResponseTemplateModel(BaseSQLModel):
 
     response = Column(String(4000), nullable=False)
     description = Column(String(4000), nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
