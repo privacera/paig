@@ -37,6 +37,7 @@ class BaseAPIFilter(BaseModel):
     exact_match: Optional[bool] = Field(False, description="The exact match of the resource", alias="exactMatch")
     exclude_match: Optional[bool] = Field(False, description="The exclude match of the resource", alias="excludeMatch")
     exclude_list: Optional[str] = Field(None, description="The exclude list of the resource", alias="excludeList")
+    comma_separated_value: Optional[bool] = Field(True, description="The all multiple of the resource", alias="commaSeparatedValue")
 
 
 class BaseOperations(Generic[ModelType]):
@@ -73,7 +74,7 @@ class BaseOperations(Generic[ModelType]):
             if isinstance(column.type, CommaSeparatedList):
                 return self._process_comma_separated_list(column, value, filters)
             else:
-                if isinstance(value, str) and "," in value:
+                if isinstance(value, str) and "," in value and filters.get('comma_separated_value'):
                     return self._process_multi_value_filter(column, value, filters, field)
                 else:
                     return self._process_single_value_filter(column, value, filters, apply_in_list_filter, field)

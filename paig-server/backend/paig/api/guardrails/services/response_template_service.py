@@ -132,6 +132,7 @@ class ResponseTemplateRequestValidator:
         response_template_filter = ResponseTemplateFilter()
         response_template_filter.response = response
         response_template_filter.exact_match = True
+        response_template_filter.comma_separated_value = False
         records, total_count = await self.response_template_view_repository.list_records(filter=response_template_filter)
         if total_count > 0:
             return records[0]
