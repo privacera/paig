@@ -37,7 +37,7 @@ class BaseAPIFilter(BaseModel):
     exact_match: Optional[bool] = Field(False, description="The exact match of the resource", alias="exactMatch")
     exclude_match: Optional[bool] = Field(False, description="The exclude match of the resource", alias="excludeMatch")
     exclude_list: Optional[str] = Field(None, description="The exclude list of the resource", alias="excludeList")
-    comma_separated_value: Optional[bool] = Field(True, description="The all multiple of the resource", alias="commaSeparatedValue")
+    comma_separated_value: Optional[bool] = Field(True, description="Flag indicating whether values are provided as a comma-separated list", alias="commaSeparatedValue")
     or_column_list: Optional[str] = Field(None, description="The or column list(comma separated string) of the resource", alias="orColumnList")
 
 

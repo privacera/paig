@@ -18,7 +18,7 @@ class ResponseTemplateRequestValidator:
     Validator class for validating ResponseTemplate requests.
 
     Args:
-        response_template_repository (ResponseTemplateViewRepository): The repository handling Response Template view database operations.
+        response_template_repository (ResponseTemplateRepository): The repository handling Response Template table database operations.
     """
 
     def __init__(self, response_template_repository: ResponseTemplateRepository = SingletonDepends(ResponseTemplateRepository)):
@@ -79,7 +79,7 @@ class ResponseTemplateRequestValidator:
             BadRequestException: If the type is not a valid ResponseTemplateView.
         """
         if request.type == ResponseTemplateType.SYSTEM_DEFINED:
-            raise BadRequestException("System-generated Response templates cannot be updated or deleted")
+            raise BadRequestException("System-generated Response templates cannot be added, updated or deleted")
 
     async def validate_delete_request(self, id: int):
         """
