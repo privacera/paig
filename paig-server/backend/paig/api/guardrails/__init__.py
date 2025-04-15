@@ -21,11 +21,11 @@ class ResponseTemplateType(Enum):
     Enum representing the type of response template.
 
     Attributes:
-        CUSTOM (str): Custom response template.
-        PREDEFINED (str): Pre-defined response template.
+        USER_DEFINED (str): Custom response template.
+        SYSTEM_DEFINED (str): Pre-defined response template.
     """
-    CUSTOM = "CUSTOM"
-    PREDEFINED = "PREDEFINED"
+    USER_DEFINED = "USER_DEFINED"
+    SYSTEM_DEFINED = "SYSTEM_DEFINED"
 
 
 def model_to_dict(model):

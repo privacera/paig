@@ -61,7 +61,7 @@ class ResponseTemplateRequestValidator:
         self.validate_response(request.response)
         self.validate_description(request.description)
 
-        await self.validate_response_templated_is_not_predefined(id)
+        await self.validate_response_templated_is_not_system_generated(id)
 
         response_template = await self.get_response_template_by_response(request.response)
         if response_template is not None and response_template.id != id:
@@ -78,8 +78,8 @@ class ResponseTemplateRequestValidator:
         Raises:
             BadRequestException: If the type is not a valid ResponseTemplateView.
         """
-        if request.type == ResponseTemplateType.PREDEFINED:
-            raise BadRequestException("PREDEFINED Response templates cannot be updated or deleted")
+        if request.type == ResponseTemplateType.SYSTEM_DEFINED:
+            raise BadRequestException("System-generated Response templates cannot be updated or deleted")
 
     async def validate_delete_request(self, id: int):
         """
@@ -89,17 +89,17 @@ class ResponseTemplateRequestValidator:
             id (int): The ID of the ResponseTemplate to delete.
         """
         validate_id(id, "Response Template ID")
-        await self.validate_response_templated_is_not_predefined(id)
+        await self.validate_response_templated_is_not_system_generated(id)
 
-    async def validate_response_templated_is_not_predefined(self, id):
+    async def validate_response_templated_is_not_system_generated(self, id):
         """
-        Validate if the ResponseTemplate is not a predefined template.
+        Validate if the ResponseTemplate is not a system generated template.
 
         Args:
             id (int): The ID of the ResponseTemplate to validate.
 
         Raises:
-            BadRequestException: If the ResponseTemplate is a predefined template.
+            BadRequestException: If the ResponseTemplate is a system generated template.
         """
         response_template = await self.response_template_repository.get_record_by_id(id)
         if response_template:
@@ -152,6 +152,9 @@ class ResponseTemplateRequestValidator:
         response_template_filter.exact_match = True
         response_template_filter.comma_separated_value = False
         response_template_filter.tenant_id = get_tenant_id()
+        if response_template_filter.tenant_id:
+            response_template_filter.type = ResponseTemplateType.SYSTEM_DEFINED
+            response_template_filter.or_column_list = "tenant_id,type"
         records, total_count = await self.response_template_repository.list_records(filter=response_template_filter)
         if total_count > 0:
             return records[0]
@@ -198,9 +201,10 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
         Returns:
             Pageable: A paginated response containing ResponseTemplate view objects and other fields.
         """
-        # To find records by tenant id or by PREDEFINED type, set the or_column_list filter
-        if not filter.type and get_tenant_id():
-            filter.type = ResponseTemplateType.PREDEFINED
+        # To find records by tenant id or by SYSTEM_DEFINED type, set the or_column_list filter
+        if get_tenant_id():
+            if not filter.type:
+                filter.type = ResponseTemplateType.SYSTEM_DEFINED
             filter.or_column_list = "tenant_id,type"
         return await self.list_records(
             filter=filter,

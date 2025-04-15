@@ -22,5 +22,5 @@ class ResponseTemplateModel(BaseSQLModel):
 
     response = Column(String(4000), nullable=False)
     description = Column(String(4000), nullable=True)
-    type = Column(SQLEnum(ResponseTemplateType), nullable=False, default=ResponseTemplateType.CUSTOM)
+    type = Column(SQLEnum(ResponseTemplateType), nullable=False, default=ResponseTemplateType.USER_DEFINED)
     tenant_id = Column(String(255), nullable=False, index=True, default="1")

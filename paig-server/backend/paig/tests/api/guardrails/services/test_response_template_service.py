@@ -38,6 +38,7 @@ async def test_validate_create_request(request_validator, mock_response_template
     await request_validator.validate_create_request(mock_request)
     mock_response_template_repository.list_records.assert_called_once()
 
+
 @pytest.mark.asyncio
 async def test_validate_create_request_existing_response(request_validator, mock_response_template_repository):
     """Test create request validation when the response template already exists."""
@@ -47,6 +48,7 @@ async def test_validate_create_request_existing_response(request_validator, mock
 
     with pytest.raises(BadRequestException):
         await request_validator.validate_create_request(mock_request)
+
 
 @pytest.mark.asyncio
 async def test_list_response_templates(service, mock_response_template_repository):
@@ -58,6 +60,7 @@ async def test_list_response_templates(service, mock_response_template_repositor
     result = await service.list_response_templates(mock_filter, 1, 10, ["id"])
     assert len(result.content) == 1
     assert result.content[0].response == "Test Response"
+
 
 @pytest.mark.asyncio
 async def test_create_response_template(service, request_validator, mock_response_template_repository):
@@ -71,6 +74,7 @@ async def test_create_response_template(service, request_validator, mock_respons
     assert result.response == "New Response"
     assert result.description == "New Description"
 
+
 @pytest.mark.asyncio
 async def test_update_response_template(service, request_validator, mock_response_template_repository):
     """Test updating an existing response template."""
@@ -82,6 +86,7 @@ async def test_update_response_template(service, request_validator, mock_respons
     result = await service.update_response_template(1, mock_request)
     assert result.response == "Updated Response"
     assert result.description == "Updated Description"
+
 
 @pytest.mark.asyncio
 async def test_delete_response_template(service, request_validator, mock_response_template_repository):
