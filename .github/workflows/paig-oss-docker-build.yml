@@ -25,6 +25,32 @@ jobs:
         id: short_sha
         run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
+      - name: Download workflow artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: ${{ github.event.workflow_run.id }}
+            });
+            
+            for (const artifact of artifacts.data.artifacts) {
+              console.log(`Downloading artifact: ${artifact.name}`);
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip'
+              });
+              
+              require('fs').writeFileSync(`${artifact.name}.zip`, Buffer.from(download.data));
+              await exec.exec('unzip', [`${artifact.name}.zip`, '-d', `artifacts/${artifact.name}`]);
+            }
+            
+            // List all wheel files
+            await exec.exec('find', ['artifacts', '-name', '*.whl']);
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.4.0
         with:
@@ -38,6 +64,8 @@ jobs:
           context: .
           file: docker/Dockerfile
           push: true
+          build-args: |
+            USE_LOCAL_WHEEL=true
           tags: |
             privacera/paig-oss:latest
             privacera/paig-oss:${{ github.event.workflow_run.head_branch }}-${{ steps.short_sha.outputs.SHORT_SHA }}

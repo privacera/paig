@@ -1,7 +1,7 @@
 FROM python:3.11.9-slim-bullseye
 
 ARG VERSION
-ARG USE_LOCAL_WHEEL
+ARG USE_LOCAL_WHEEL=false
 
 ENV APP_NAME=paig
 ENV PAIG_HOME=/opt/${APP_NAME}
@@ -26,7 +26,17 @@ ENV PATH $NODE_PATH:$NPM_PATH:$PATH
 RUN apt-get install -y build-essential gcc g++ make
 RUN $NVM_DIR/versions/node/$NODE_VERSION/bin/npm install -g promptfoo
 
-RUN pip install paig-server
+# Copy wheel files if using local wheels
+COPY artifacts/ /tmp/artifacts/
+
+# Install packages
+RUN if [ "$USE_LOCAL_WHEEL" = "true" ]; then \
+        echo "Installing from local wheel files"; \
+        find /tmp/artifacts -name "*.whl" -exec pip install {} \; ; \
+    else \
+        echo "Installing from PyPI"; \
+        pip install paig-server; \
+    fi
 
 # Install spacy model
 RUN python -m spacy download en_core_web_lg
