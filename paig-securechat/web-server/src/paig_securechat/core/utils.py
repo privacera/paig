@@ -63,7 +63,7 @@ def set_up_standalone_mode(
         single_user_mode=False
 ):
     if config_path is None:
-        config_path = os.path.join(ROOT_DIR, "configs")
+        config_path = os.path.join(ROOT_DIR + "/configs")
     if custom_config_path is None:
         custom_config_path = 'custom-configs'
     if openai_api_key is not None:
