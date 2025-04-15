@@ -38,7 +38,7 @@ def set_user(user: dict):
 
 
 def get_tenant_id():
-    return get_context_value("tenant_id")
+    return get_context_value("tenant_id") or '1'
 
 
 def set_tenant_id(tenant_id: str):
