@@ -35,6 +35,9 @@ jobs:
               run_id: ${{ github.event.workflow_run.id }}
             });
             
+            // Create artifacts directory
+            await exec.exec('mkdir', ['-p', 'artifacts']);
+            
             for (const artifact of artifacts.data.artifacts) {
               console.log(`Downloading artifact: ${artifact.name}`);
               const download = await github.rest.actions.downloadArtifact({
@@ -45,6 +48,7 @@ jobs:
               });
               
               require('fs').writeFileSync(`${artifact.name}.zip`, Buffer.from(download.data));
+              await exec.exec('mkdir', ['-p', `artifacts/${artifact.name}`]);
               await exec.exec('unzip', [`${artifact.name}.zip`, '-d', `artifacts/${artifact.name}`]);
             }
             
@@ -67,8 +71,8 @@ jobs:
           build-args: |
             USE_LOCAL_WHEEL=true
           tags: |
-            privacera/paig-oss:latest
-            privacera/paig-oss:${{ github.event.workflow_run.head_branch }}-${{ steps.short_sha.outputs.SHORT_SHA }}
+            ${{ vars.DOCKER_HUB}}/${{ vars.DOCKER_IMAGE_NAME }}:latest
+            ${{ vars.DOCKER_HUB}}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.event.workflow_run.head_branch }}-${{ steps.short_sha.outputs.SHORT_SHA }}
           labels: |
             maintainer=privacera
             org.opencontainers.image.vendor=Privacera
