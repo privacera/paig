@@ -104,7 +104,6 @@ jobs:
         wait-on: http://localhost:4545
         browser: chrome
         headless: true
-        config: viewportWidth=1920,viewportHeight=1080
         env: |
           CYPRESS_ENVIRONMENT_NAME=ci
 
