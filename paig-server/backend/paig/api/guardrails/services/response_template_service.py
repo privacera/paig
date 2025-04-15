@@ -6,11 +6,11 @@ from core.controllers.paginated_response import Pageable, create_pageable_respon
 from core.exceptions import BadRequestException
 from core.exceptions.error_messages_parser import (get_error_message, ERROR_RESOURCE_ALREADY_EXISTS,
                                                    ERROR_FIELD_CANNOT_BE_UPDATED)
+from core.middlewares.request_session_context_middleware import get_tenant_id
 from core.utils import validate_id, validate_string_data, SingletonDepends
 from api.guardrails.api_schemas.response_template import ResponseTemplateView, ResponseTemplateFilter
 from api.guardrails.database.db_models.response_template_model import ResponseTemplateModel
-from api.guardrails.database.db_operations.response_template_repository import ResponseTemplateRepository, \
-    ResponseTemplateViewRepository
+from api.guardrails.database.db_operations.response_template_repository import ResponseTemplateRepository
 
 
 class ResponseTemplateRequestValidator:
@@ -18,11 +18,11 @@ class ResponseTemplateRequestValidator:
     Validator class for validating ResponseTemplate requests.
 
     Args:
-        response_template_view_repository (ResponseTemplateViewRepository): The repository handling Response Template view database operations.
+        response_template_repository (ResponseTemplateViewRepository): The repository handling Response Template view database operations.
     """
 
-    def __init__(self, response_template_view_repository: ResponseTemplateViewRepository = SingletonDepends(ResponseTemplateViewRepository)):
-        self.response_template_view_repository = response_template_view_repository
+    def __init__(self, response_template_repository: ResponseTemplateRepository = SingletonDepends(ResponseTemplateRepository)):
+        self.response_template_repository = response_template_repository
 
     async def validate_create_request(self, request: ResponseTemplateView):
         """
@@ -31,6 +31,7 @@ class ResponseTemplateRequestValidator:
         Args:
             request (ResponseTemplateView): The view object representing the ResponseTemplate to create.
         """
+        self.validate_type(request)
         self.validate_response(request.response)
         self.validate_description(request.description)
         await self.validate_response_template_exists_by_response(request.response)
@@ -60,6 +61,8 @@ class ResponseTemplateRequestValidator:
         self.validate_response(request.response)
         self.validate_description(request.description)
 
+        await self.validate_response_templated_is_not_predefined(id)
+
         response_template = await self.get_response_template_by_response(request.response)
         if response_template is not None and response_template.id != id:
             raise BadRequestException(get_error_message(ERROR_RESOURCE_ALREADY_EXISTS, "Response Template", "response",
@@ -76,9 +79,9 @@ class ResponseTemplateRequestValidator:
             BadRequestException: If the type is not a valid ResponseTemplateView.
         """
         if request.type == ResponseTemplateType.PREDEFINED:
-            raise BadRequestException(get_error_message(ERROR_FIELD_CANNOT_BE_UPDATED, "Response Template with type", [request.type]))
+            raise BadRequestException("PREDEFINED Response templates cannot be updated or deleted")
 
-    def validate_delete_request(self, id: int):
+    async def validate_delete_request(self, id: int):
         """
         Validate a delete request for ResponseTemplate.
 
@@ -86,6 +89,21 @@ class ResponseTemplateRequestValidator:
             id (int): The ID of the ResponseTemplate to delete.
         """
         validate_id(id, "Response Template ID")
+        await self.validate_response_templated_is_not_predefined(id)
+
+    async def validate_response_templated_is_not_predefined(self, id):
+        """
+        Validate if the ResponseTemplate is not a predefined template.
+
+        Args:
+            id (int): The ID of the ResponseTemplate to validate.
+
+        Raises:
+            BadRequestException: If the ResponseTemplate is a predefined template.
+        """
+        response_template = await self.response_template_repository.get_record_by_id(id)
+        if response_template:
+            self.validate_type(response_template)
 
     def validate_response(self, response: str):
         """
@@ -133,7 +151,8 @@ class ResponseTemplateRequestValidator:
         response_template_filter.response = response
         response_template_filter.exact_match = True
         response_template_filter.comma_separated_value = False
-        records, total_count = await self.response_template_view_repository.list_records(filter=response_template_filter)
+        response_template_filter.tenant_id = get_tenant_id()
+        records, total_count = await self.response_template_repository.list_records(filter=response_template_filter)
         if total_count > 0:
             return records[0]
         return None
@@ -142,14 +161,12 @@ class ResponseTemplateRequestValidator:
 class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemplateView]):
 
     def __init__(self, response_template_repository: ResponseTemplateRepository = SingletonDepends(ResponseTemplateRepository),
-                 response_template_view_repository: ResponseTemplateViewRepository = SingletonDepends(ResponseTemplateViewRepository),
                  response_template_request_validator: ResponseTemplateRequestValidator = SingletonDepends(ResponseTemplateRequestValidator)):
         """
         Initialize the ResponseTemplateService.
 
         Args:
             response_template_repository (ResponseTemplateRepository): The repository handling ResponseTemplate database operations.
-            response_template_view_repository (ResponseTemplateViewRepository): The repository handling ResponseTemplate view database operations.
             response_template_request_validator (ResponseTemplateRequestValidator): The validator for validating ResponseTemplate requests.
         """
         super().__init__(
@@ -158,7 +175,6 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
             ResponseTemplateView
         )
         self.response_template_request_validator = response_template_request_validator
-        self.response_template_view_repository = response_template_view_repository
 
     def get_repository(self) -> ResponseTemplateRepository:
         """
@@ -182,10 +198,16 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
         Returns:
             Pageable: A paginated response containing ResponseTemplate view objects and other fields.
         """
-        records, total_count = await self.response_template_view_repository.list_records(
-            filter=filter, page_number=page_number, size=size, sort=sort)
-        v_records = [ResponseTemplateView.model_validate(record) for record in records]
-        return create_pageable_response(v_records, total_count, page_number, size, sort)
+        # To find records by tenant id or by PREDEFINED type, set the or_column_list filter
+        if not filter.type and get_tenant_id():
+            filter.type = ResponseTemplateType.PREDEFINED
+            filter.or_column_list = "tenant_id,type"
+        return await self.list_records(
+            filter=filter,
+            page_number=page_number,
+            size=size,
+            sort=sort
+        )
 
     async def create_response_template(self, request: ResponseTemplateView) -> ResponseTemplateView:
         """
@@ -198,7 +220,7 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
             ResponseTemplateView: The created ResponseTemplate view object.
         """
         await self.response_template_request_validator.validate_create_request(request)
-        return await self.create_record(request, exclude_fields={"type"})
+        return await self.create_record(request)
 
     async def get_response_template_by_id(self, id: int) -> ResponseTemplateView:
         """
@@ -225,7 +247,7 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
             ResponseTemplateView: The updated ResponseTemplate view object.
         """
         await self.response_template_request_validator.validate_update_request(id, request)
-        return await self.update_record(id, request, exclude_fields={"type"})
+        return await self.update_record(id, request)
 
     async def delete_response_template(self, id: int):
         """
@@ -234,5 +256,5 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
         Args:
             id (int): The ID of the ResponseTemplate to delete.
         """
-        self.response_template_request_validator.validate_delete_request(id)
+        await self.response_template_request_validator.validate_delete_request(id)
         await self.delete_record(id)

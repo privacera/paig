@@ -38,6 +38,7 @@ class BaseAPIFilter(BaseModel):
     exclude_match: Optional[bool] = Field(False, description="The exclude match of the resource", alias="excludeMatch")
     exclude_list: Optional[str] = Field(None, description="The exclude list of the resource", alias="excludeList")
     comma_separated_value: Optional[bool] = Field(True, description="The all multiple of the resource", alias="commaSeparatedValue")
+    or_column_list: Optional[str] = Field(None, description="The or column list(comma separated string) of the resource", alias="orColumnList")
 
 
 class BaseOperations(Generic[ModelType]):
@@ -54,10 +55,23 @@ class BaseOperations(Generic[ModelType]):
 
     def _get_filter(self, filters, apply_in_list_filter=False):
         all_filters = []
+        or_conditions = []
+        or_column_list = filters.get('or_column_list')
+        if or_column_list:
+            or_column_list = [col.strip() for col in or_column_list.split(",")]
+        
+        # First process non-OR filters
         for field, value in filters.items():
             filter_data = self.process_filters(filters, field, value, apply_in_list_filter)
             if filter_data is not None:
-                all_filters.append(filter_data)
+                if or_column_list and field in or_column_list:
+                    or_conditions.append(filter_data)
+                else:
+                    all_filters.append(filter_data)
+                
+        # Then process OR filters
+        if or_conditions:
+            all_filters.append(or_(*or_conditions))
 
         # Handle datetime range filters separately
         self._add_datetime_filters('create_time', filters, all_filters)
