@@ -10,6 +10,7 @@ from api.apikey.database.db_operations.paig_level1_encryption_key_repository imp
 from api.apikey.database.db_operations.paig_level2_encryption_key_repository import PaigLevel2EncryptionKeyRepository
 from api.encryption.events.startup import create_default_encryption_keys
 import pytest
+from datetime import timezone
 
 
 
@@ -101,7 +102,7 @@ async def test_create_api_key(service, token_expiry_date, api_key_data):
     assert created_key["apiKeyName"] == api_key_data["api_key_name"]
     assert created_key["applicationId"] == api_key_data["application_id"]
     assert created_key["description"] == api_key_data["description"]
-    assert created_key["tokenExpiry"] == api_key_data["expiry"].isoformat()
+    assert created_key["tokenExpiry"] == api_key_data["expiry"].replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds')
 
 
 @pytest.mark.asyncio
