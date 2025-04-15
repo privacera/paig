@@ -10,8 +10,11 @@ from core.exceptions import BadRequestException
 from api.apikey.factory.apikey_secure_encryptor import apikey_decrypt
 from api.apikey.utils import validate_token_expiry_time
 from api.encryption.utils.secure_encryptor import SecureEncryptor
+from core.config import load_config_file
 
 logger = logging.getLogger(__name__)
+
+conf = load_config_file()
 
 
 class APIKeyValidator:
@@ -31,7 +34,10 @@ class APIKeyValidator:
 
     async def validate_api_key(self, request: Request):
         secure_encryptor: SecureEncryptor = await self.secure_encryptor_factory.get_or_create_secure_encryptor()
-        paig_app_api_key = request.headers.get("x-paig-api-key")
+        api_key_config = conf.get("api_key")
+        api_key_header_name = api_key_config.get("header_name")
+        paig_app_api_key = request.headers.get(api_key_header_name)
+
         if not paig_app_api_key:
             logger.error("API key header is missing")
             raise BadRequestException("API key header is missing")

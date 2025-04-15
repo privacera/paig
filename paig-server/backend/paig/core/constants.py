@@ -7,4 +7,4 @@ DEFAULT_USER_ID: int = 1
 SINGLE_USER_MODE: bool = False
 TEMP_DIR: str = 'temp'
 SCHEDULER_LOCK: str = TEMP_DIR + '/' + 'fastapi_scheduler.lock'
-DEFAULT_SCOP_ID: int = 3
+DEFAULT_SCOP_ID: str = "3"

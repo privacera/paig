@@ -3,6 +3,7 @@ database:
 
 api_key:
   expire_days: 365
+  header_name: "x-paig-api-key"
 
 
 security:

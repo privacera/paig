@@ -50,7 +50,7 @@ try:
          thread_id=paig_thread_id
       )
       updated_reply_text = updated_reply_text[0].response_text
-      print(f"LLM Response (After PAIG Shield): {updated_reply_text")
+      print(f"LLM Response (After PAIG Shield): {updated_reply_text}")
 except paig_client.exception.AccessControlException as e:
    # If access is denied, then this exception will be thrown. You can handle it accordingly.
    print(f"AccessControlException: {e}")

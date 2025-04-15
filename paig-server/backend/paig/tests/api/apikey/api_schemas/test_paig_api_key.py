@@ -8,7 +8,7 @@ from api.apikey.api_schemas.paig_api_key import (
 
 def test_paig_api_key_view_instantiation():
     data = {
-        "tenantId": 1,
+        "tenantId": "111",
         "apiKeyName": "Test Key",
         "userId": 10,
         "addedById": 100,
@@ -30,7 +30,7 @@ def test_paig_api_key_view_instantiation():
     assert view.api_key_name == "Test Key"
     assert view.api_key_masked == "xyz****abcd"
     assert view.expiry == "2025-01-01T00:00:00"
-    assert view.tenant_id == 1
+    assert view.tenant_id == "111"
     assert view.application_id == 22
 
 def test_generate_api_key_request_validation_success():
@@ -75,9 +75,9 @@ def test_generate_api_key_response_instantiation():
         "createTime": now.isoformat(),
         "updateTime": now.isoformat(),
         "keyStatus": "ACTIVE",
-        "tenantId": "tenant_456",
+        "tenantId": "111",
         "apiKeyMasked": "abcd****1234",
-        "apiScopeId": [4, 5],
+        "apiScopeId": ["4", "5"],
         "version": "v2"
     }
 
@@ -88,5 +88,5 @@ def test_generate_api_key_response_instantiation():
     assert model.user_id == 12
     assert model.status == 1
     assert model.key_status == "ACTIVE"
-    assert model.api_scope_id == [4, 5]
+    assert model.api_scope_id == ["4", "5"]
 
