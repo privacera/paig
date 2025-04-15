@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from core.db_models.BaseSQLModel import BaseSQLModel
 from sqlalchemy.orm import relationship
+from datetime import timezone
 
 
 class PaigApiKeyModel(BaseSQLModel):
@@ -41,12 +42,12 @@ class PaigApiKeyModel(BaseSQLModel):
             "keyStatus": self.key_status,
             "description": self.description,
             "apiKeyMasked": self.api_key_masked,
-            "tokenExpiry": self.expiry.isoformat() if self.expiry else None,
+            "tokenExpiry": self.expiry.replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds') if self.expiry else None,
             "neverExpire": self.never_expire,
             "apiScopeId": [self.api_scope_id],
             "version": self.version,
             "applicationId": self.application_id,
-            "createTime": self.create_time.isoformat() if self.create_time else None,
-            "updateTime": self.update_time.isoformat() if self.update_time else None
+            "createTime": self.create_time.replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds') if self.create_time else None,
+            "updateTime": self.update_time.replace(tzinfo=timezone.utc).isoformat(timespec='milliseconds') if self.update_time else None
         }
 
