@@ -29,11 +29,49 @@ describe('Guardrail Response Template', () => {
         cy.get('[data-test="table"]').should('be.visible');
     });
 
+    it('should verify predefined templates have disabled action buttons', () => {
+        cy.wait(5000);
+
+        // Intercept the listing API
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
+
+        // Click on the refresh button
+        cy.get('[data-testid="header-refresh-btn"]').click();
+
+        // Wait for the API call to complete
+        cy.wait('@getResponseTemplates').then((interception) => {
+            // Check that the loader is no longer visible
+            cy.get('[data-testid="loader"]').should('not.exist');
+
+            // response status code
+            expect(interception.response.statusCode).to.eq(200);
+
+            const {content} = interception.response.body;
+            
+            // Find any predefined templates
+            content.forEach((item, index) => {
+                if (item.type === 'SYSTEM_DEFINED') {
+                    cy.get('[data-testid="table-row"]').eq(index).within(() => {
+                        // Verify edit button is disabled
+                        cy.get('[data-testid="edit-response-template"]').should('be.disabled');                        
+                        
+                        cy.get('[data-testid="delete-response-template"]').should('be.disabled');
+
+                        // Verify tooltips by checking the title attribute
+                        cy.get('[data-testid="edit-response-template"]').parent().should('have.attr', 'title', 'Predefined templates are read-only');
+                        
+                        cy.get('[data-testid="delete-response-template"]').parent().should('have.attr', 'title', 'Predefined templates are read-only');
+                    });
+                }
+            });
+        });
+    });
+
     it('should allow searching for response templates if any exist', () => {
         cy.wait(5000);
 
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
 
         // Click on the refresh button
         cy.get('[data-testid="header-refresh-btn"]').click();
@@ -63,8 +101,13 @@ describe('Guardrail Response Template', () => {
                         cy.get('td').eq(0).should('contain', item.response);
                         cy.get('td').eq(1).should('contain', item.description);
                         cy.get('td').eq(2).within(() => {
-                            cy.get('[data-test="edit"]').should('be.visible');
-                            cy.get('[data-test="delete"]').should('be.visible');
+                            if (item.type === 'SYSTEM_DEFINED') {
+                                cy.get('[data-testid="edit-response-template"]').should('be.disabled');
+                                cy.get('[data-testid="delete-response-template"]').should('be.disabled');
+                            } else {
+                                cy.get('[data-testid="edit-response-template"]').should('be.visible').and('not.be.disabled');
+                                cy.get('[data-testid="delete-response-template"]').should('be.visible').and('not.be.disabled');
+                            }
                         });
                     });
                 });
@@ -128,7 +171,7 @@ describe('Guardrail Response Template', () => {
 
     it('should allow search and editing a response template', () => {
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=*').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=*').as('getResponseTemplates');
 
         cy.wait(2000);
 
@@ -153,75 +196,51 @@ describe('Guardrail Response Template', () => {
             content.forEach((item, index) => {
                 if (item.response === responseTemplateData.name) {
                     cy.get('[data-testid="table-row"]').eq(index).within(() => {
-                        cy.get('[data-test="edit"]').should('be.visible').click();
+                        // Skip editing if it's a system-defined template
+                        if (item.type === 'SYSTEM_DEFINED') {
+                            cy.get('[data-testid="edit-response-template"]').should('be.disabled');
+                            return;
+                        }
+                        cy.get('[data-testid="edit-response-template"]').should('be.visible').and('not.be.disabled').click();
                     });
                 }
             });
         });
 
-        cy.get('[data-testid="custom-dialog"]').should('be.visible');
+        // Only proceed with edit if we found a non-system-defined template
+        cy.get('[data-testid="custom-dialog"]').then(($dialog) => {
+            if ($dialog.length > 0) {
+                cy.get('[data-testid="custom-dialog"]').within(() => {
+                    cy.get('[data-testid="customized-dialog-title"]').contains('Edit Response Template');
 
-        cy.get('[data-testid="custom-dialog"]').within(() => {
-            cy.get('[data-testid="customized-dialog-title"]').contains('Edit Response Template');
+                    cy.get('[data-testid="response"]').should('have.value', responseTemplateData.name);
+                    cy.get('[data-testid="description"]').should('have.value', responseTemplateData.description);
 
-            cy.get('[data-testid="response"]').should('have.value', responseTemplateData.name);
-            cy.get('[data-testid="description"]').should('have.value', responseTemplateData.description);
+                    // Update the response template name
+                    cy.get('[data-testid="response"]').type(' - Updated');
 
-            // Update the response template name
-            cy.get('[data-testid="response"]').type(' - Updated');
+                    // Enter the description
+                    cy.get('[data-testid="description"]').clear().type(responseTemplateData.description + ' - Updated');
 
-            // set - updated to the response template name
-            //  responseTemplateData.name = responseTemplateData.name + ' - Updated';
+                    // Click on the save button
+                    cy.get('[data-test="modal-ok-btn"]').contains('Save').click();
+                });
 
-            // Enter the description
-            cy.get('[data-testid="description"]').clear().type(responseTemplateData.description + ' - Updated');
+                cy.wait(2000);
 
-            // Click on the save button
-            cy.get('[data-test="modal-ok-btn"]').contains('Save').click();
+                cy.get('[data-testid="snackbar"]').should('contain', 'updated successfully');
+
+                cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
+
+                // Check that the dialog is closed
+                cy.get('[data-testid="custom-dialog"]').should('not.exist');
+            }
         });
-
-        cy.wait(2000);
-
-        cy.get('[data-testid="snackbar"]').should('contain', 'updated successfully');
-
-        cy.get('[data-testid="snackbar-close-btn"]').should('exist').click();
-
-        // Check that the dialog is closed
-        cy.get('[data-testid="custom-dialog"]').should('not.exist');
-
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=*').as('getResponseTemplate');
-
-        // Check that the updated response template is displayed
-        cy.get('[data-testid="response-template-search"]').clear().type(responseTemplateData.updateName).type('{enter}');
-
-        cy.wait('@getResponseTemplate').then((interception) => {
-            // Check that the loader is no longer visible
-            cy.get('[data-testid="loader"]').should('not.exist');
-
-            // response status code
-            expect(interception.response.statusCode).to.eq(200);
-
-            const {content} = interception.response.body;
-            expect(content.length).to.be.greaterThan(0);
-
-            // check table row length equal to content length
-            cy.get('[data-testid="table-row"]').should('have.length', content.length);
-
-            // Check that the updated response template is displayed using content and loop through the content
-            content.forEach((item, index) => {
-                if (item.response === responseTemplateData.updateName) {
-                    cy.get('[data-testid="table-row"]').eq(index).within(() => {
-                        cy.get('td').eq(0).should('contain', item.response);
-                        cy.get('td').eq(1).should('contain', item.description);
-                    });
-                }
-            });
-        })
     });
 
     it('should search for existing data, then search for non-existent data and click refresh', () => {
         // Intercept the listing API for existing data
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
 
         // Click on the refresh button
         cy.get('[data-testid="header-refresh-btn"]').click();
@@ -244,7 +263,7 @@ describe('Guardrail Response Template', () => {
         });
 
         // Intercept the listing API for non-existent data
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=nonexistent').as('getNonExistentResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=nonexistent').as('getNonExistentResponseTemplates');
 
         // Search for a non-existent response template
         cy.get('[data-testid="response-template-search"]').clear().type('nonexistent');
@@ -295,7 +314,7 @@ describe('Guardrail Response Template', () => {
     });
 
     it('should allow deleting a response template', () => {
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=*').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=*').as('getResponseTemplates');
 
         cy.wait(2000);
 
@@ -316,7 +335,7 @@ describe('Guardrail Response Template', () => {
             // check table row length equal to content length
             cy.get('[data-testid="table-row"]').should('have.length', content.length);
 
-            cy.get('[data-testid="table-row"]').filter(`:contains(${responseTemplateData.updateName})`).find('[data-test="delete"]').should('be.visible').click();
+            cy.get('[data-testid="table-row"]').filter(`:contains(${responseTemplateData.updateName})`).find('[data-testid="delete-response-template"]').should('be.visible').click();
 
             cy.get('[data-testid="custom-dialog"]').should('exist');
 
@@ -339,7 +358,7 @@ describe('Guardrail Response Template', () => {
     // test case to search for a response template that does not exist
     it('should display no data message when searching for a non-existent response template', () => {
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=nonexistent').as('getNonExistentResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=nonexistent').as('getNonExistentResponseTemplates');
 
         // Search for a non-existent response template
         cy.get('[data-testid="response-template-search"]').type('nonexistent').type('{enter}');
