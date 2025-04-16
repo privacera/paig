@@ -6,9 +6,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 
 import f from 'common-ui/utils/f';
-import Table from "common-ui/components/table";
+import Table from 'common-ui/components/table';
 import { SearchField } from 'common-ui/components/filters';
-import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
+import { permissionCheckerUtil } from 'common-ui/utils/permission_checker_util';
 import {AddButtonWithPermission, CustomAnchorBtn, CanDelete} from 'common-ui/components/action_buttons';
 
 const Filters = observer(({data, _vState, permission, handleCreate, handleOnChange, handleSearch}) => {
@@ -77,7 +77,7 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be Edited" : "Edit"}
+                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be edited" : "Edit"}
                             >
                                 <span>
                                 <CustomAnchorBtn
@@ -93,7 +93,7 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be Deleted" : "Delete"}
+                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be deleted" : "Delete"}
                             >
                                 <span>
                                 <CustomAnchorBtn

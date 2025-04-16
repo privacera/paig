@@ -29,6 +29,44 @@ describe('Guardrail Response Template', () => {
         cy.get('[data-test="table"]').should('be.visible');
     });
 
+    it('should verify predefined templates have disabled action buttons', () => {
+        cy.wait(5000);
+
+        // Intercept the listing API
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+
+        // Click on the refresh button
+        cy.get('[data-testid="header-refresh-btn"]').click();
+
+        // Wait for the API call to complete
+        cy.wait('@getResponseTemplates').then((interception) => {
+            // Check that the loader is no longer visible
+            cy.get('[data-testid="loader"]').should('not.exist');
+
+            // response status code
+            expect(interception.response.statusCode).to.eq(200);
+
+            const {content} = interception.response.body;
+            
+            // Find any predefined templates
+            content.forEach((item, index) => {
+                if (item.type === 'SYSTEM_DEFINED') {
+                    cy.get('[data-testid="table-row"]').eq(index).within(() => {
+                        // Verify edit button is disabled with correct tooltip
+                        cy.get('[data-testid="edit-response-template"]').should('have.attr', 'disabled');
+                        cy.get('[data-testid="edit-response-template"]').trigger('mouseover');
+                        cy.get('div[role="tooltip"]').should('contain', 'Predefined template cannot be Edited');
+                        
+                        // Verify delete button is disabled with correct tooltip
+                        cy.get('[data-testid="delete-response-template"]').should('have.attr', 'disabled');
+                        cy.get('[data-testid="delete-response-template"]').trigger('mouseover');
+                        cy.get('div[role="tooltip"]').should('contain', 'Predefined template cannot be Deleted');
+                    });
+                }
+            });
+        });
+    });
+
     it('should allow searching for response templates if any exist', () => {
         cy.wait(5000);
 
