@@ -102,14 +102,7 @@ class ResponseTemplateRequestValidator:
         Raises:
             BadRequestException: If the ResponseTemplate is a system generated template.
         """
-        filters = {"id": id, "type": ResponseTemplateType.SYSTEM_DEFINED, "or_column_list": "tenant_id,type"}
-        try:
-            response_template = await self.response_template_repository.get_by(
-                filters=filters,
-                unique=True
-            )
-        except NoResultFound as e:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Response Template", "id", [id]), e)
+        response_template = await self.response_template_repository.get_response_templates_by_id(id)
         self.validate_type(response_template)
 
     def validate_response(self, response: str):
@@ -207,9 +200,11 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
             Pageable: A paginated response containing ResponseTemplate view objects and other fields.
         """
         # To find records by tenant id or by SYSTEM_DEFINED type, set the or_column_list filter
-        if not filter.type:
-            filter.type = ResponseTemplateType.SYSTEM_DEFINED
-        filter.or_column_list = "tenant_id,type"
+        filter.type = filter.type or ResponseTemplateType.SYSTEM_DEFINED
+
+        if filter.type == ResponseTemplateType.SYSTEM_DEFINED:
+            filter.or_column_list = "tenant_id,type"
+
         return await self.list_records(
             filter=filter,
             page_number=page_number,
@@ -241,14 +236,7 @@ class ResponseTemplateService(BaseController[ResponseTemplateModel, ResponseTemp
             ResponseTemplateView: The ResponseTemplate view object corresponding to the ID.
         """
         self.response_template_request_validator.validate_read_request(id)
-        filters = {"id": id, "type": ResponseTemplateType.SYSTEM_DEFINED, "or_column_list": "tenant_id,type"}
-        try:
-            return await self.repository.get_by(
-                filters=filters,
-                unique=True
-            )
-        except NoResultFound as e:
-            raise NotFoundException(get_error_message(ERROR_RESOURCE_NOT_FOUND, "Response Template", "id", [id]), e)
+        return await self.get_repository().get_response_templates_by_id(id)
 
     async def update_response_template(self, id: int, request: ResponseTemplateView) -> ResponseTemplateView:
         """
