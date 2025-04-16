@@ -1,7 +1,7 @@
 """added paig api key and encryption level
 
 Revision ID: a9c87d84b974
-Revises: 3e84bb67bced
+Revises: f36705415cd9
 Create Date: 2025-04-14 14:29:35.779715
 
 """
@@ -14,7 +14,7 @@ import core.db_models.utils
 
 # revision identifiers, used by Alembic.
 revision: str = 'a9c87d84b974'
-down_revision: Union[str, None] = '3e84bb67bced'
+down_revision: Union[str, None] = 'f36705415cd9'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
