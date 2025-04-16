@@ -3,7 +3,7 @@ from typing import Generic, Type, TypeVar, Tuple, List, Optional
 from pydantic import BaseModel, Field
 from sqlalchemy import Select, asc, literal, text
 from sqlalchemy.sql.expression import select
-from sqlalchemy.sql.expression import func, false
+from sqlalchemy.sql.expression import func
 from core.db_session.session import Base, session
 from typing import Union
 
@@ -238,10 +238,6 @@ class BaseOperations(Generic[ModelType]):
             query = query.offset(skip)
         if limit is not None:
             query = query.limit(limit)
-
-        cardinality = kwargs.get('cardinality')
-        if cardinality:
-            query = query.distinct(text(cardinality)).group_by(text(cardinality))
 
         return await self._all(query)
 

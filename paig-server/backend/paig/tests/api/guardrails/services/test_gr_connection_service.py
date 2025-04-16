@@ -97,19 +97,15 @@ async def test_list_guardrail_connections(guardrail_connection_service, mock_gua
 @pytest.mark.asyncio
 async def test_list_guardrail_connection_provider_names(guardrail_connection_service,
                                                         mock_guardrail_connection_repository):
-    expected_records = [gr_connection_view]
     # Patch the list_records method on the repository
     with patch.object(
-            mock_guardrail_connection_repository, 'list_records', return_value=(expected_records, 2)
+            mock_guardrail_connection_repository, 'get_connection_providers', return_value=[GuardrailProvider.AWS]
     ) as mock_list_records:
         # Call the method under test
         result = await guardrail_connection_service.list_connection_provider_names()
 
         # Assertions
-        mock_list_records.assert_called_once_with(
-            cardinality="guardrail_provider",
-            filter=GRConnectionFilter(),
-        )
+        mock_list_records.assert_called_once()
         assert result == [GuardrailProvider.AWS]
 
 
