@@ -29,8 +29,8 @@ RUN apt-get update && \
 # Add Node.js to PATH
 ENV PATH=${NVM_DIR}/versions/node/${NODE_VERSION}/bin:$PATH
 
-# Copy wheel files if they exist (will be a no-op if artifacts directory is empty/missing)
-COPY artifacts/ /tmp/artifacts/ 2>/dev/null || true
+# Copy wheel files to the container
+COPY artifacts/ /tmp/artifacts/
 
 # Install packages with fallback
 RUN if [ "$USE_LOCAL_WHEEL" = "true" ] && [ -n "$(find /tmp/artifacts -name '*.whl' 2>/dev/null)" ]; then \
@@ -39,14 +39,14 @@ RUN if [ "$USE_LOCAL_WHEEL" = "true" ] && [ -n "$(find /tmp/artifacts -name '*.w
         pip install /tmp/artifacts/paig_common-*.whl --force-reinstall; \
         pip install /tmp/artifacts/paig_authorizer_core-*.whl --force-reinstall; \
         pip install /tmp/artifacts/paig_evaluation-*.whl --force-reinstall; \
-        rm -rf /tmp/artifacts; \
     else \
         echo "Installing from PyPI"; \
         pip install paig-server; \
         pip install paig-common --force-reinstall; \
         pip install paig-authorizer-core --force-reinstall; \
         pip install paig-evaluation --force-reinstall; \
-    fi
+    fi && \
+    rm -rf /tmp/artifacts
 
 # Install spacy model
 RUN python -m spacy download en_core_web_lg
