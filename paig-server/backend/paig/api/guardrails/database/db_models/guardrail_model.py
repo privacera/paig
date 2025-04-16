@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 
 from api.guardrails import GuardrailProvider
 from core.db_models.BaseSQLModel import BaseSQLModel
-from core.db_models.utils import CommaSeparatedList
 
 
 class BaseGuardrailModel(BaseSQLModel):

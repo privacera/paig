@@ -114,10 +114,8 @@ async def test_delete_response_template(controller, mock_response_template_servi
     mocker.patch("core.db_session.session", mock_session)
     mocker.patch("core.db_session.session.session_context", session_context)
 
-    mock_response_template_service.get_response_template_by_id.return_value = ResponseTemplateView(id=1)
     mock_response_template_service.delete_response_template.return_value = None
 
     await controller.delete_response_template(1)
 
-    mock_response_template_service.get_response_template_by_id.assert_awaited_once_with(1)
     mock_response_template_service.delete_response_template.assert_awaited_once_with(1)

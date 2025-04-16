@@ -87,5 +87,4 @@ class ResponseTemplateController:
         Args:
             id (int): The ID of the ResponseTemplate to delete.
         """
-        response_template = await self.get_response_template_by_id(id)
         await self.response_template_service.delete_response_template(id)

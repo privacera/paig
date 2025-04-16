@@ -37,6 +37,8 @@ class BaseAPIFilter(BaseModel):
     exact_match: Optional[bool] = Field(False, description="The exact match of the resource", alias="exactMatch")
     exclude_match: Optional[bool] = Field(False, description="The exclude match of the resource", alias="excludeMatch")
     exclude_list: Optional[str] = Field(None, description="The exclude list of the resource", alias="excludeList")
+    comma_separated_value: Optional[bool] = Field(True, description="Flag indicating whether values are provided as a comma-separated list", alias="commaSeparatedValue")
+    or_column_list: Optional[str] = Field(None, description="The or column list(comma separated string) of the resource", alias="orColumnList")
 
 
 class BaseOperations(Generic[ModelType]):
@@ -53,10 +55,23 @@ class BaseOperations(Generic[ModelType]):
 
     def _get_filter(self, filters, apply_in_list_filter=False):
         all_filters = []
+        or_conditions = []
+        or_column_list = filters.get('or_column_list')
+        if or_column_list:
+            or_column_list = [col.strip() for col in or_column_list.split(",")]
+        
+        # First process non-OR filters
         for field, value in filters.items():
             filter_data = self.process_filters(filters, field, value, apply_in_list_filter)
             if filter_data is not None:
-                all_filters.append(filter_data)
+                if or_column_list and field in or_column_list:
+                    or_conditions.append(filter_data)
+                else:
+                    all_filters.append(filter_data)
+                
+        # Then process OR filters
+        if or_conditions:
+            all_filters.append(or_(*or_conditions))
 
         # Handle datetime range filters separately
         self._add_datetime_filters('create_time', filters, all_filters)
@@ -73,7 +88,7 @@ class BaseOperations(Generic[ModelType]):
             if isinstance(column.type, CommaSeparatedList):
                 return self._process_comma_separated_list(column, value, filters)
             else:
-                if isinstance(value, str) and "," in value:
+                if isinstance(value, str) and "," in value and filters.get('comma_separated_value'):
                     return self._process_multi_value_filter(column, value, filters, field)
                 else:
                     return self._process_single_value_filter(column, value, filters, apply_in_list_filter, field)
@@ -193,12 +208,6 @@ class BaseOperations(Generic[ModelType]):
             query = self.order_by(query, column_name, sort_type)
         return query
 
-    def get_tenant(self):
-        """
-        Get the tenant ID from the request context.
-        """
-        return get_tenant_id()
-
     async def get_all(self,
                       filters=None,
                       columns=None,
@@ -211,9 +220,7 @@ class BaseOperations(Generic[ModelType]):
                       ) -> list[ModelType]:
         # Usage: select all query executor
         if hasattr(self.model_class, 'tenant_id'):
-            tenant_id = self.get_tenant()
-            if tenant_id is not None:
-                filters["tenant_id"] = tenant_id
+            filters["tenant_id"] = get_tenant_id()
 
         query = await self._query()
         query = self.create_filter(query, filters, apply_in_list_filter)
@@ -268,9 +275,7 @@ class BaseOperations(Generic[ModelType]):
     async def _get_by(self, query: Select, filters) -> Select:
         # Usage: executes actual query conditional select
         if hasattr(self.model_class, 'tenant_id'):
-            tenant_id = self.get_tenant()
-            if tenant_id is not None:
-                filters["tenant_id"] = tenant_id
+            filters["tenant_id"] = get_tenant_id()
         return query.where(*self._get_filter(filters))
 
     # CRUD Operations
@@ -339,7 +344,7 @@ class BaseOperations(Generic[ModelType]):
             ModelType: The model instance that was added to the session.
         """
         if hasattr(self.model_class, 'tenant_id'):
-            model.tenant_id = self.get_tenant()
+            model.tenant_id = get_tenant_id()
         session.add(model)
         await session.flush()
         return await self.get_record_by_id(model.id)
