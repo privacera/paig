@@ -53,7 +53,7 @@ If you are using Windows PowerShell, switch to Git Bash, navigate to the specifi
    Then, return to PowerShell and run the command to install the build.
 
    ```bash
-   cd scripts
+    cd scripts
     bash ./build_ui.sh
     cd ..
    ```
