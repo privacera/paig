@@ -2,6 +2,15 @@
 All changes to paig-server will be documented in this file.
 
 
+## [v0.0.9] - 2025-04-16
+### Added
+- Added predefined response templates for guardrails configuration
+- Implemented Tenant ID support in guardrail system
+
+### Changed
+- Fixed MySQL database compatibility issues in guardrail functionality
+
+
 ## [v0.0.8] - 2025-04-09
 ### Added
 - Enhanced PAIG evaluation
