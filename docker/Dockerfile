@@ -29,11 +29,11 @@ RUN apt-get update && \
 # Add Node.js to PATH
 ENV PATH=${NVM_DIR}/versions/node/${NODE_VERSION}/bin:$PATH
 
-# Copy wheel files if using local wheels
-COPY artifacts/ /tmp/artifacts/
+# Copy wheel files if they exist (will be a no-op if artifacts directory is empty/missing)
+COPY artifacts/ /tmp/artifacts/ 2>/dev/null || true
 
-# Install packages
-RUN if [ "$USE_LOCAL_WHEEL" = "true" ]; then \
+# Install packages with fallback
+RUN if [ "$USE_LOCAL_WHEEL" = "true" ] && [ -n "$(find /tmp/artifacts -name '*.whl' 2>/dev/null)" ]; then \
         echo "Installing from local wheel files"; \
         pip install /tmp/artifacts/paig_server-*.whl; \
         pip install /tmp/artifacts/paig_common-*.whl --force-reinstall; \
