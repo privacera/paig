@@ -36,13 +36,16 @@ COPY artifacts/ /tmp/artifacts/
 RUN if [ "$USE_LOCAL_WHEEL" = "true" ]; then \
         echo "Installing from local wheel files"; \
         pip install /tmp/artifacts/paig_server-*.whl; \
-        pip install /tmp/artifacts/paig_common-*.whl; \
-        pip install /tmp/artifacts/paig_authorizer_core-*.whl; \
-        pip install /tmp/artifacts/paig_evaluation-*.whl; \
+        pip install /tmp/artifacts/paig_common-*.whl --force-reinstall; \
+        pip install /tmp/artifacts/paig_authorizer_core-*.whl --force-reinstall; \
+        pip install /tmp/artifacts/paig_evaluation-*.whl --force-reinstall; \
         rm -rf /tmp/artifacts; \
     else \
         echo "Installing from PyPI"; \
-        pip install paig-server paig-common paig-authorizer-core paig-evaluation; \
+        pip install paig-server; \
+        pip install paig-common --force-reinstall; \
+        pip install paig-authorizer-core --force-reinstall; \
+        pip install paig-evaluation --force-reinstall; \
     fi
 
 # Install spacy model
