@@ -22,6 +22,9 @@ jobs:
           echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
           echo "BRANCH=${GITHUB_REF_NAME:-main}" >> $GITHUB_OUTPUT
 
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+
       - name: Set up Python 3.11
         if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
         uses: actions/setup-python@v5
@@ -35,7 +38,6 @@ jobs:
           virtualenv -p python3 venv
           . venv/bin/activate
           pip install build
-          mkdir -p artifacts
 
       - name: Build module wheel files
         if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
