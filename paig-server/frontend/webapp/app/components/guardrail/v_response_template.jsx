@@ -9,7 +9,7 @@ import f from 'common-ui/utils/f';
 import Table from 'common-ui/components/table';
 import { SearchField } from 'common-ui/components/filters';
 import { permissionCheckerUtil } from 'common-ui/utils/permission_checker_util';
-import {AddButtonWithPermission, CustomAnchorBtn, CanDelete} from 'common-ui/components/action_buttons';
+import {AddButtonWithPermission, CustomAnchorBtn, CanDelete, CanUpdate} from 'common-ui/components/action_buttons';
 
 const Filters = observer(({data, _vState, permission, handleCreate, handleOnChange, handleSearch}) => {
     return (
@@ -73,7 +73,7 @@ class VResponseTemplate extends Component {
             rows.push(
                 <TableCell key="actions" data-testid="actions">
                     <div className="d-flex">
-                        {permissionCheckerUtil.checkHasUpdatePermission(permission) &&
+                        <CanUpdate permission={permission}>
                             <Tooltip 
                                 arrow 
                                 placement="top" 
@@ -88,7 +88,7 @@ class VResponseTemplate extends Component {
                                 />
                                 </span>
                             </Tooltip>
-                        }
+                        </CanUpdate>
                         <CanDelete permission={permission}>
                             <Tooltip 
                                 arrow 
