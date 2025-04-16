@@ -15,6 +15,6 @@ class EvaluationTargetModel(CommonBase):
     application_id = Column(Integer, nullable=True)
     config = Column(JSON, nullable=False)
     name = Column(String(255), default='')
-    url = Column(Text(), nullable=True, default='')
+    url = Column(Text(), default='')
     target_user = Column(String(255), default='NA')
     tenant_id = Column(String(255), nullable=False, index=True, default="1")

@@ -19,7 +19,7 @@ const CATEGORIES = {
     NAME: { multi: false, category: "Name", type: "text", key: 'name' }
 }
 
-@inject('evaluationStore')
+@inject('evaluationStore', 'aiApplicationStore')
 @observer
 class CEvaluationAppsList extends Component {    
     modalRef = createRef();
@@ -28,7 +28,8 @@ class CEvaluationAppsList extends Component {
         showNextPage: null,
         prevNextValueList:[''],
         pageNumber: 0,
-        new_target: {}
+        new_target: {},
+        aiApplications: []
     }
     constructor(props) {
         super(props);
@@ -39,7 +40,10 @@ class CEvaluationAppsList extends Component {
             size: 5,
             sort: 'create_time,desc'
         }
-
+        this.cApplications = f.initCollection();
+        this.cApplications.params = {
+            size: 1000
+        }
         this.applicationKeyMap = {};
 
         this.restoreState();
@@ -67,6 +71,7 @@ class CEvaluationAppsList extends Component {
     }
     handleRefresh = () => {
         this.fetchEvaluationAppsList();
+        this.fetchAIApplications();
     }
 
     fetchEvaluationAppsList = () => {
@@ -78,6 +83,20 @@ class CEvaluationAppsList extends Component {
         },  f.handleError(this.cEvalAppsList));
     }
 
+    fetchAIApplications = async() => {
+        f.beforeCollectionFetch(this.cApplications)
+        try {
+            const res = await this.props.aiApplicationStore.getAIApplications({
+                params: this.cApplications.params
+            });
+
+            let models = res.models.filter(app => !app.default);
+
+            f.resetCollection(this.cApplications, models);
+        } catch(e) {
+            f.handleError(this.cApplications)(e);
+        }
+    }
     handlePageChange = () => {
         this.fetchEvaluationAppsList();
     };
@@ -185,9 +204,10 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
-        if (!data.id) {
-            data.ai_application_id = null;
-        }
+        console.log("Form data:", data);
+        // if (!data.id) {
+        //    data.ai_application_id = null;
+        // }
         // Transform headers array into an object
         if (Array.isArray(data.headers)) {
             data.headers = data.headers.reduce((acc, header) => {
@@ -266,7 +286,7 @@ class CEvaluationAppsList extends Component {
                     tabsState={this.props.tabsState}
                 />
                 <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
-                    <VEvalTargetForm form={this.form} _vState={this.props._vState}/>
+                    <VEvalTargetForm form={this.form} _vState={this.props._vState} cApplications={this.cApplications}/>
                 </FSModal>
             </>
         );

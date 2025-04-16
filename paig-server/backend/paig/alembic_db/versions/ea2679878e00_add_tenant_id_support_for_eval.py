@@ -1,7 +1,7 @@
 """add tenant id support for eval
 
 Revision ID: ea2679878e00
-Revises: 3e84bb67bced
+Revises: a9c87d84b974
 Create Date: 2025-04-14 15:53:25.261204
 
 """
@@ -14,7 +14,7 @@ import core.db_models.utils
 
 # revision identifiers, used by Alembic.
 revision: str = 'ea2679878e00'
-down_revision: Union[str, None] = '3e84bb67bced'
+down_revision: Union[str, None] = 'a9c87d84b974'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

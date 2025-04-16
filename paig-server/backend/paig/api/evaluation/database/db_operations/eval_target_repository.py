@@ -5,6 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.future import select
 from core.utils import current_utc_time, epoch_to_utc
 from core.db_session import session
+from core.middlewares.request_session_context_middleware import get_tenant_id
 
 class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
 
@@ -46,9 +47,8 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
         if max_value:
             max_value = epoch_to_utc(max_value)
             all_filters.append(EvaluationTargetModel.create_time <= max_value)
-        tenant_id = self.get_tenant()
-        if tenant_id:
-            all_filters.append(EvaluationTargetModel.tenant_id == tenant_id)
+        tenant_id = get_tenant_id()
+        all_filters.append(EvaluationTargetModel.tenant_id == tenant_id)
         if all_filters:
             query = query.filter(and_(*all_filters))
         if sort:
@@ -69,8 +69,7 @@ class EvaluationTargetRepository(BaseOperations[EvaluationTargetModel]):
             filters['create_time_to'] = max_value
         if 'create_time_from' in filters and min_value:
             filters['create_time_from'] = min_value
-        if tenant_id:
-            filters['tenant_id'] = tenant_id
+        filters['tenant_id'] = tenant_id
         count = (await self.get_count_with_filter(filters))
 
         return results, count

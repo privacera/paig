@@ -1,6 +1,6 @@
 from starlette.middleware.base import BaseHTTPMiddleware
 from contextvars import ContextVar, Token
-
+from core import constants
 session_context: ContextVar[dict] = ContextVar("login_user", default={})
 
 
@@ -37,7 +37,7 @@ def set_user(user: dict):
 
 
 def get_tenant_id():
-    return get_context_value("tenant_id") or '1'
+    return get_context_value("tenant_id")
 
 
 def set_tenant_id(tenant_id: str):
@@ -72,9 +72,7 @@ class RequestSessionContextMiddleware(BaseHTTPMiddleware):
 
         context = set_user(token_user_info)
         tenant_id = request.headers.get('x-tenant-id')
-        if tenant_id:
-            set_tenant_id(tenant_id)
-
+        set_tenant_id(tenant_id or str(constants.DEFAULT_TENANT_ID))
         try:
             response = await call_next(request)
             return response

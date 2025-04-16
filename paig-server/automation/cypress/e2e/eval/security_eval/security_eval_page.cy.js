@@ -50,6 +50,7 @@ describe('Evaluation Config Main Tabs', () => {
         cy.get('[data-test="add-btn"]').click();
 
         // Fill out the form
+        cy.get('[data-testid="radio-button-app-type"]').check({ force: true });
         cy.get('[data-testid="name-input"]').should('exist').then(($input) => {
             const randomName = `Endpoint_${Math.random().toString(36).substring(2, 10)}`;
             cy.wrap($input).clear().type(randomName).invoke('val').then((value) => {

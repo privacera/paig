@@ -97,28 +97,21 @@ class EvaluationTargetService:
         new_params['target_user'] = body_params['username']
         new_params['status'] = 'ACTIVE'
         if 'ai_application_id' in body_params and body_params['ai_application_id']:
-            app_id = body_params['ai_application_id']
-            # check for existing target
-            target_model = await self.eval_target_repository.get_target_by_app_id(app_id)
-            if target_model is None:
-                raise BadRequestException(f"AI application does not exists for give AI application id {app_id}")
-            body_params['name'] = target_model.name
-            new_params['application_id'] = app_id
-            eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
-            return eval_target
-        else:
-            name_exists = await self.eval_target_repository.application_name_exists(body_params['name'])
-            if name_exists:
-                raise BadRequestException(f"Application with name {body_params['name']} already exists")
-            eval_target = await self.eval_target_repository.create_app_target(new_params)
-            return eval_target
+            new_params['application_id'] = body_params['ai_application_id']
+
+        name_exists = await self.eval_target_repository.application_name_exists(body_params['name'])
+        if name_exists:
+            raise BadRequestException(f"Application with name {body_params['name']} already exists")
+        eval_target = await self.eval_target_repository.create_app_target(new_params)
+        return eval_target
+
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def update_app_target(self, target_id, body_params):
         new_params = dict()
         target_model = await self.eval_target_repository.get_target_by_id(target_id)
         if target_model is None:
-            raise NotFoundException(f"No  application found with id {target_id}")
+            raise NotFoundException(f"No application found with id {target_id}")
         if target_model.application_id:
             body_params['name'] = target_model.name
         else:
@@ -150,15 +143,7 @@ class EvaluationTargetService:
         if target_model is None:
             raise NotFoundException(f"No application found with id {app_id}")
         try:
-            if target_model.application_id:
-                new_params = dict()
-                new_params['url'] = None
-                new_params['config'] = "{}"
-                new_params['status'] = 'INACTIVE'
-                new_params['target_user'] = "NA"
-                eval_target = await self.eval_target_repository.update_app_target(new_params, target_model)
-            else:
-                eval_target = await self.eval_target_repository.delete_target(target_model)
+            eval_target = await self.eval_target_repository.delete_target(target_model)
             return eval_target
         except Exception as e:
             logger.error(f"Error in delete_target: {e}")

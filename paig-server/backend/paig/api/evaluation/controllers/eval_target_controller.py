@@ -83,27 +83,3 @@ class EvaluationTargetController:
         """
         return await self.eval_target_service.get_app_target_by_id(app_id=app_id)
 
-    async def update_app_target_on_ai_app(self, ai_app_id, ai_app_name):
-        """
-        Update the evaluation target for the specified AI application.
-
-        Args:
-            ai_app_id (int): The ID of the AI application.
-            ai_app_name (str): The name of the AI application.
-
-        Returns:
-            dict: The response message.
-        """
-        return await self.eval_target_service.update_app_target_on_ai_app(ai_app_id=ai_app_id, ai_app_name=ai_app_name)
-
-    async def delete_app_target_on_ai_app(self, ai_app_id):
-        """
-        Delete the evaluation target for the specified AI application.
-
-        Args:
-            ai_app_id (int): The ID of the AI application.
-
-        Returns:
-            dict: The response message.
-        """
-        return await self.eval_target_service.delete_app_target_on_ai_app(ai_app_id=ai_app_id)

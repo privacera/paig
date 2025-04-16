@@ -3,8 +3,8 @@ import React, {useState, useEffect} from 'react';
 import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
 import {Grid, Typography, IconButton, Button} from '@material-ui/core';
-
-import {FormHorizontal, FormGroupInput, FormGroupSelect2} from 'common-ui/components/form_fields';
+import {FormHorizontal, FormGroupInput, FormGroupSelect2, FormGroupRadioList} from 'common-ui/components/form_fields';
+import f from 'common-ui/utils/f';
 
 const SUPPORTED_METHODS = [
     { name: 'POST', value: 'POST' },
@@ -12,8 +12,8 @@ const SUPPORTED_METHODS = [
     { name: 'GET', value: 'GET' }
 ];
 
-const VEvalTargetForm = ({form}) => {
-
+const VEvalTargetForm = (props) => {
+    const { form, cApplications } = props;
     const {
         id,
         ai_application_id,
@@ -57,6 +57,37 @@ const VEvalTargetForm = ({form}) => {
     const [authType, setAuthType] = useState(initialAuthType);
     const [password, setPassword] = useState(initialPassword);
     const [token, setToken] = useState(initialToken);
+    const [applicationType, setApplicationType] = useState('ai_application');
+    const fieldObj = {
+        value: applicationType,
+        fieldOpts: {
+            values: [
+                { id: 'ai_application', name: 'AI Application' },
+                { id: 'custom', name: 'custom' }
+            ],
+        },
+    };
+
+    const handleRadioChange = (e) => {
+        setApplicationType(e.target.value);
+        if (e.target.value === 'custom') {
+            name.value = generateReportName();
+            ai_application_id.value = null;
+        } else {
+            let applications = cApplications?f.models(cApplications):[]
+            if (applications.length > 0) {
+                handleApplicationNameChange(applications[0]);
+            }
+        }
+    };
+
+    const handleApplicationNameChange = (option) => {
+        if (!option) return;
+        const selectedOption = Array.isArray(option) ? option[0] : option;
+        name.value = selectedOption?.name || '';
+        ai_application_id.value = selectedOption?.id || null;
+    };
+
     // Update headers field in form
     const updateFormHeaders = (updatedHeaders) => {
         setHeadersList(updatedHeaders);
@@ -102,21 +133,20 @@ const VEvalTargetForm = ({form}) => {
         updateFormHeaders(newHeaders);
     }
 
+    const generateReportName = () => {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-GB').split('/').reverse().join(''); // Format: DDMMYYYY
+        const formattedTime = now.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        }).replace(':', ''); // Format: HHmm
+        return `eval-target-${formattedDate}${formattedTime}`;
+    };
+
     useEffect(() => {
-        const generateReportName = () => {
-            if (!id.value) {
-                const now = new Date();
-                const formattedDate = now.toLocaleDateString('en-GB').split('/').reverse().join(''); // Format: DDMMYYYY
-                const formattedTime = now.toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-                }).replace(':', ''); // Format: HHmm
-                return `eval-target-${formattedDate}${formattedTime}`;
-            }
-            return name.value;
-        };
-    
-        name.value = generateReportName();
+        if (applicationType === 'custom' && !id.value) {
+            name.value = generateReportName();
+        }
     }, [id.value, name]);
 
     useEffect(() => {
@@ -128,10 +158,27 @@ const VEvalTargetForm = ({form}) => {
         update_auths()
     };
 
+    useEffect(() => {
+        if (!id.value) {
+            let applications = cApplications?f.models(cApplications):[]
+            if (applications.length > 0 && applicationType === 'ai_application') {
+                handleApplicationNameChange(applications[0]);
+            }
+        }
+    }, [cApplications]);
+
+    
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
-                <FormGroupInput
+                {!id.value &&<FormGroupRadioList
+                    fieldObj={fieldObj}
+                    onChange={handleRadioChange}
+                    valueKey="id"
+                    labelKey="name"
+                    inputProps={{ 'data-testid': 'radio-button-app-type' }}
+                />}
+                {(applicationType==='custom' || id.value)? <FormGroupInput
                     inputColAttr={{ xs: 12, sm: 7 }}
                     disabled={ai_application_id.value}
                     required={true}
@@ -139,7 +186,20 @@ const VEvalTargetForm = ({form}) => {
                     placeholder="Enter configuration name"
                     fieldObj={name}
                     inputProps={{ 'data-testid': 'name-input' }}
-                />
+                />:
+                <FormGroupSelect2
+                    inputColAttr={{ xs: 12, sm: 7 }}
+                    required={true}
+                    label={"AI Applications"}
+                    showLabel={true}
+                    fieldObj={ai_application_id}
+                    data={cApplications?f.models(cApplications):[]}
+                    labelKey={'name'}
+                    valueKey={'id'}
+                    disableClearable={true}
+                    onChange={(value, option) => handleApplicationNameChange(option)}
+                    data-testid="application-name"
+                />}
                 <Grid item xs={12}>
                     <Typography variant="h7" gutterBottom>Target Details</Typography>
                 </Grid>
