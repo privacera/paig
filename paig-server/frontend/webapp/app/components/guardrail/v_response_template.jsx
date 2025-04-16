@@ -77,14 +77,14 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Edit"}
+                                title={model.type === 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Edit"}
                             >
                                 <span>
                                 <CustomAnchorBtn
                                     data-testid="edit-response-template"
                                     onClick={() => handleEdit(model)}
-                                    disabled={model.type == 'SYSTEM_DEFINED'}
-                                    icon={<EditIcon color={model.type == 'SYSTEM_DEFINED' ? "disabled" : "primary"} fontSize="inherit" />}
+                                    disabled={model.type === 'SYSTEM_DEFINED'}
+                                    icon={<EditIcon color={model.type === 'SYSTEM_DEFINED' ? "disabled" : "primary"} fontSize="inherit" />}
                                 />
                                 </span>
                             </Tooltip>
@@ -93,14 +93,14 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Delete"}
+                                title={model.type === 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Delete"}
                             >
                                 <span>
                                 <CustomAnchorBtn
                                     data-testid="delete-response-template"
                                     onClick={() => handleDelete(model)}
-                                    disabled={model.type == 'SYSTEM_DEFINED'}
-                                    icon={<DeleteIcon color={model.type == 'SYSTEM_DEFINED' ? "disabled" : "primary"}  fontSize="inherit" />}
+                                    disabled={model.type === 'SYSTEM_DEFINED'}
+                                    icon={<DeleteIcon color={model.type === 'SYSTEM_DEFINED' ? "disabled" : "primary"}  fontSize="inherit" />}
                                 />
                                 </span>
                             </Tooltip>
