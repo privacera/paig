@@ -51,8 +51,10 @@ RUN if [ "$USE_LOCAL_WHEEL" = "true" ] && [ -n "$(find /tmp/artifacts -name '*.w
 # Install spacy model
 RUN python -m spacy download en_core_web_lg
 
-# Clean pip cache
-RUN pip cache purge
+# Clean caches
+RUN pip cache purge && \
+    npm cache clean --force && \
+    rm -rf ~/.cache/ms-playwright
 
 # Start the server
 CMD ["paig", "run", "--host", "0.0.0.0"]
