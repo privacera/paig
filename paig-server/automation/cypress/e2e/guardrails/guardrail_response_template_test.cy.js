@@ -33,7 +33,7 @@ describe('Guardrail Response Template', () => {
         cy.wait(5000);
 
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
 
         // Click on the refresh button
         cy.get('[data-testid="header-refresh-btn"]').click();
@@ -71,7 +71,7 @@ describe('Guardrail Response Template', () => {
         cy.wait(5000);
 
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
 
         // Click on the refresh button
         cy.get('[data-testid="header-refresh-btn"]').click();
@@ -171,7 +171,7 @@ describe('Guardrail Response Template', () => {
 
     it('should allow search and editing a response template', () => {
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=*').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=*').as('getResponseTemplates');
 
         cy.wait(2000);
 
@@ -240,7 +240,7 @@ describe('Guardrail Response Template', () => {
 
     it('should search for existing data, then search for non-existent data and click refresh', () => {
         // Intercept the listing API for existing data
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc').as('getResponseTemplates');
 
         // Click on the refresh button
         cy.get('[data-testid="header-refresh-btn"]').click();
@@ -263,7 +263,7 @@ describe('Guardrail Response Template', () => {
         });
 
         // Intercept the listing API for non-existent data
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=nonexistent').as('getNonExistentResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=nonexistent').as('getNonExistentResponseTemplates');
 
         // Search for a non-existent response template
         cy.get('[data-testid="response-template-search"]').clear().type('nonexistent');
@@ -314,7 +314,7 @@ describe('Guardrail Response Template', () => {
     });
 
     it('should allow deleting a response template', () => {
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=*').as('getResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=*').as('getResponseTemplates');
 
         cy.wait(2000);
 
@@ -358,7 +358,7 @@ describe('Guardrail Response Template', () => {
     // test case to search for a response template that does not exist
     it('should display no data message when searching for a non-existent response template', () => {
         // Intercept the listing API
-        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&response=nonexistent').as('getNonExistentResponseTemplates');
+        cy.intercept('GET', 'guardrail-service/api/response_templates?size=15&sort=id,desc&response=nonexistent').as('getNonExistentResponseTemplates');
 
         // Search for a non-existent response template
         cy.get('[data-testid="response-template-search"]').type('nonexistent').type('{enter}');
