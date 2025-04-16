@@ -77,7 +77,7 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be edited" : "Edit"}
+                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Edit"}
                             >
                                 <span>
                                 <CustomAnchorBtn
@@ -93,7 +93,7 @@ class VResponseTemplate extends Component {
                             <Tooltip 
                                 arrow 
                                 placement="top" 
-                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined template cannot be deleted" : "Delete"}
+                                title={model.type == 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Delete"}
                             >
                                 <span>
                                 <CustomAnchorBtn

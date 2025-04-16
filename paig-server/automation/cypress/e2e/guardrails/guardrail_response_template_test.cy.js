@@ -58,9 +58,9 @@ describe('Guardrail Response Template', () => {
                         cy.get('[data-testid="delete-response-template"]').should('be.disabled');
 
                         // Verify tooltips by checking the title attribute
-                        cy.get('[data-testid="edit-response-template"]').parent().should('have.attr', 'title', 'Predefined template cannot be edited');
+                        cy.get('[data-testid="edit-response-template"]').parent().should('have.attr', 'title', 'Predefined templates are read-only');
                         
-                        cy.get('[data-testid="delete-response-template"]').parent().should('have.attr', 'title', 'Predefined template cannot be deleted');
+                        cy.get('[data-testid="delete-response-template"]').parent().should('have.attr', 'title', 'Predefined templates are read-only');
                     });
                 }
             });
