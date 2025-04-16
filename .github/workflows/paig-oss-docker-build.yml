@@ -2,19 +2,16 @@
 name: paig-oss-docker-build
 
 on:
-  workflow_run:
-    workflows: paig-server-ci
-    types:
-      - completed
+  workflow_dispatch: # Allows manual trigger
+
+permissions:
+    packages: write
+    contents: read
 
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.repository.fork == false }}
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
@@ -25,36 +22,29 @@ jobs:
         id: short_sha
         run: echo "SHORT_SHA=$(echo ${{ github.event.workflow_run.head_sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
-      - name: Download workflow artifacts
-        if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
-        uses: actions/github-script@v7
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          script: |
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: ${{ github.event.workflow_run.id }}
-            });
-            
-            // Create artifacts directory
-            await exec.exec('mkdir', ['-p', 'artifacts']);
-            
-            for (const artifact of artifacts.data.artifacts) {
-              console.log(`Downloading artifact: ${artifact.name}`);
-              const download = await github.rest.actions.downloadArtifact({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                artifact_id: artifact.id,
-                archive_format: 'zip'
-              });
-              
-              require('fs').writeFileSync(`${artifact.name}.zip`, Buffer.from(download.data));
-              await exec.exec('mkdir', ['-p', `artifacts/${artifact.name}`]);
-              await exec.exec('unzip', [`${artifact.name}.zip`, '-d', `artifacts/${artifact.name}`]);
-            }
-            
-            // List all wheel files
-            await exec.exec('find', ['artifacts', '-name', '*.whl']);
+          python-version: "3.11"
+
+      - name: Prepare build environment
+        run: |
+          python3 -m pip install virtualenv
+          virtualenv -p python3 venv
+          . venv/bin/activate
+          pip install build
+          mkdir -p artifacts
+
+      - name: Build wheels
+        run: |
+          . venv/bin/activate
+          for package in paig-common paig-authorizer-core paig-evaluation paig-server; do
+            cd $package
+            python3 -m build -w
+            cp dist/*.whl ../artifacts/
+            cd ..
+          done
+          ls -la artifacts
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.4.0
