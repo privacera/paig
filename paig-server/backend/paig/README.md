@@ -24,15 +24,15 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    git clone git@github.com:privacera/paig.git
    ```
- Clone the repository using PowerShell
+   Clone the repository using PowerShell
    ```bash
    git clone git@github.com:privacera/paig.git
-   ```
+      ```
 2. Change directory to the paig-server.
    ```bash
    cd paig/paig-server
    ```
- Change the directory to paig-server using PowerShell.
+   Change the directory to paig-server using PowerShell.
    ```bash
    cd paig/paig-server
    ```
@@ -41,27 +41,27 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    cd scripts
    source ./build_ui.sh
    ```
- Run the script to build the web UI using PowerShell.
+   Run the script to build the web UI using PowerShell.
 
-If you are using Windows PowerShell, switch to Git Bash, navigate to the specific path, and run the following command:
- ```bash
+   If you are using Windows PowerShell, switch to Git Bash, navigate to the specific path, and run the following command:
+   ```bash
 
-    cd paig/paig-server/scripts
-    dos2unix build_ui.sh
-    cd ..
+   cd paig/paig-server/scripts
+   dos2unix build_ui.sh
+   cd ..
    ```
    Then, return to PowerShell and run the command to install the build.
 
    ```bash
-    cd scripts
-    bash ./build_ui.sh
-    cd ..
+   cd scripts
+   bash ./build_ui.sh
+   cd ..
    ```
 4. Go to the backend directory.
    ```bash
    cd backend
    ```
- Go to the backend directory in PowerShell.
+   Go to the backend directory in PowerShell.
 
    ```bash
    cd backend
@@ -69,43 +69,43 @@ If you are using Windows PowerShell, switch to Git Bash, navigate to the specifi
 
 5. Create a virtual environment.
     ```bash
-    python -m venv venv
+   python -m venv venv
     ```
    OR
    ```bash
-    python3 -m venv venv
+   python3 -m venv venv
     ```
-    Create a virtual environment using PowerShell.
-     ```bash
-    python -m venv venv
-    ```
+   Create a virtual environment using PowerShell.
+   ```bash
+   python -m venv venv
+   ```
 
 6. Activate the virtual environment.
-    ```bash
-    source venv/bin/activate
-    ```
-    Activate the virtual environment using PowerShell.
+   ```bash
+   source venv/bin/activate
+   ```
+   Activate the virtual environment using PowerShell.
    
-    ```bash
-     .\venv\Scripts\Activate.ps1
-    ```
+   ```bash
+   .\venv\Scripts\Activate.ps1
+   ```
 7. Install the dependencies.
-    ```bash
-    pip install -r requirements.txt
-    ```
-    Install the dependencies using PowerShell.
-    ```bash
-    pip install -r requirements.txt
-    ```
+   ```bash
+   pip install -r requirements.txt
+   ```
+   Install the dependencies using PowerShell.
+   ```bash
+   pip install -r requirements.txt
+   ```
 8. Change directory to the paig.
-    ```bash
-    cd paig
-    ```
-    Change the directory to paig using PowerShell.
-    ```bash
-    cd paig
-    ```
-    Below are the same:
+   ```bash
+   cd paig
+   ```
+   Change the directory to paig using PowerShell.
+   ```bash
+   cd paig
+   ```
+   Below are the same:
 9. Run the web server.
    ```bash
    python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port> --background <true|false>
