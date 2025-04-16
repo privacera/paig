@@ -150,7 +150,7 @@ class ResponseTemplateRequestValidator:
         response_template_filter = ResponseTemplateFilter()
         response_template_filter.response = response
         response_template_filter.exact_match = True
-        response_template_filter.comma_separated_value = False
+        response_template_filter.value_with_comma = True
         response_template_filter.type = ResponseTemplateType.SYSTEM_DEFINED
         response_template_filter.or_column_list = "tenant_id,type"
         records, total_count = await self.response_template_repository.list_records(filter=response_template_filter)
