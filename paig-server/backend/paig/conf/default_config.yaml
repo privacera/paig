@@ -1,6 +1,11 @@
 database:
   url: "sqlite+aiosqlite:///db/database.db"
 
+api_key:
+  expire_days: 365
+  header_name: "x-paig-api-key"
+
+
 security:
   expire_minutes: 1440
   basic_auth:

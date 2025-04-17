@@ -90,7 +90,7 @@ class SecureEncryptor:
 
         except Exception as e:
             self.logger.error("Unable to Encrypt text", exc_info=e)
-            raise RuntimeError("Unable to Encrypt text") from e
+            raise Exception("Unable to Encrypt text")
 
     def decrypt(self, encrypted_text: str) -> Union[str, None]:
         """
@@ -131,4 +131,4 @@ class SecureEncryptor:
 
         except Exception as e:
             self.logger.error("Unable to Decrypt text", exc_info=e)
-            raise RuntimeError("Unable to Decrypt text") from e
+            raise Exception("Unable to Decrypt text")

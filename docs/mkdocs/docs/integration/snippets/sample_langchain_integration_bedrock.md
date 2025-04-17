@@ -7,7 +7,8 @@ from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
 
-# Inititialize Privacera Shield
+# Initialize PAIG Shield 
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_shield_client.setup(frameworks=["langchain"])
 
 model_name = "amazon.titan-tg1-large"

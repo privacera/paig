@@ -39,7 +39,8 @@ const UI_CONSTANTS = {
     USERS: 'USERS',
     GUARDRAILS: 'GUARDRAILS',
     RESPONSE_TEMPLATES: 'RESPONSE_TEMPLATES',
-    GUARDRAIL_CONNECTION_PROVIDER: 'GUARDRAIL_CONNECTION_PROVIDER'
+    GUARDRAIL_CONNECTION_PROVIDER: 'GUARDRAIL_CONNECTION_PROVIDER',
+    AI_APPLICATIONS_API_KEYS: 'AI_APPLICATIONS_API_KEYS'
 }
 
 const PERMISSIONS = {
@@ -58,6 +59,7 @@ const FEATURE_PERMISSIONS = {
     GOVERNANCE: {
         AI_APPLICATIONS: {PROPERTY: 'governance.ai_applications'},
         AI_POLICIES: {PROPERTY: 'governance.ai_policies'},
+        AI_API_KEYS: {PROPERTY: 'governance.ai_api_keys'},
         VECTOR_DB: {PROPERTY: 'governance.vector_db'},
         VECTOR_DB_POLICIES: {PROPERTY: 'governance.vector_db_policies'},
         EVALUATION_CONFIG: {PROPERTY: 'governance.evaluation_config'},
@@ -315,6 +317,13 @@ const EVAL_REPORT_CATEGORIES = {
 }
 
 
+const API_KEY_STATUS = {
+    ACTIVE: {VALUE: 'ACTIVE', LABEL: 'Active', bsStyle: 'success', COLOR: 'allowed-color'},
+    DISABLED: {VALUE: 'DISABLED', LABEL: 'Revoked', bsStyle: 'default', COLOR: 'masked-color'},
+    DELETED: {VALUE: 'DELETED', LABEL: 'Deleted', bsStyle: 'danger', COLOR: 'denied-color'},
+    EXPIRED: {VALUE: 'EXPIRED', LABEL: 'Expired', bsStyle: 'danger', COLOR: 'denied-color'}
+}
+
 const SEVERITY_MAP = {
     CRITICAL: {LABEL: 'Severe Failure', COLOR: '#ee8b8b', DONUTCOLOR: 'E10101'},
     HIGH: {LABEL: 'High Concern', COLOR: '#E101014D', DONUTCOLOR: 'FF6B35'},
@@ -360,6 +369,7 @@ export {
     GUARDRAIL_PROVIDER,
     GUARDRAIL_CONFIG_TYPE,
     AWS_PROVIDER_CONNECTION_CONFIG_TYPE,
+    API_KEY_STATUS,
     SEVERITY_MAP,
     CATEGORY_DESCRIPTIONS
 }
