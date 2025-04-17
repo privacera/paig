@@ -1,6 +1,10 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+## [v0.0.10] - 2025-04-17
+### Added
+- API Key feature to fetch application configuration from the PAIG server.
+
 
 ## [v0.0.9] - 2025-04-16
 ### Added
