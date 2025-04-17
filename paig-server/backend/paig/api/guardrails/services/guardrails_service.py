@@ -745,10 +745,7 @@ class GuardrailService(BaseController[GuardrailModel, GuardrailView]):
         Returns:
             str: Guardrail name with tenant_id prefix.
         """
-        tenant_id = get_tenant_id()
-        if tenant_id:
-            return tenant_id + '_' + guardrail_name
-        return guardrail_name
+        return str(get_tenant_id()) + '_' + guardrail_name
 
     async def _create_guardrail_to_external_provider(self, guardrail, guardrail_connections,
                                                      guardrails_configs):
