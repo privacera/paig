@@ -26,13 +26,23 @@ To install the PAIG client, run the following command:
 pip install openai==1.11.1 paig-client
 ```
 
-## Step 3: Download the PAIG configuration file
-Download the PAIG configuration file from the PAIG server and save it under directory 'privacera'.
-```shell
-mkdir privacera
-```
+## Step 3: Create a new AI application and Generate an API key
+- To create a new application and generate an API key, follow these steps:
+     - Login to PAIG.
+     - Go to `Paig Navigator` → `AI Applications` and click the `CREATE APPLICATION` button at the top-right.
+     - A dialog box will open where you can enter the details of your application.
+     - Once the Application is created:
+       - Navigate to `Paig Navigator` → `AI Applications` and select the application for which you want to generate the API key.
+       - In the `API KEYS` tab, click the `GENERATE API KEY` button in the top-right corner.
+       - Provide a `Name` and `Description`, and set an `Expiry`, or select the `Max Validity (1 year)` checkbox to use the default expiry.
 
-***Note*** - If you have started server on 4545 port , PAIG default config can be downloaded using url http://127.0.0.1:4545/governance-service/api/ai/application/1/config/json/download
+       > **Note:** Once the API key is generated, it will not be shown again. Ensure you copy and securely store it immediately after generation.
+
+   - To initialize the **PAIG Shield** library in your SecureChat application, export the `PAIG_APP_API_KEY` as an environment variable:
+
+     ```bash
+     export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
+     ```
 
 ## Step 4: Set the OPENAI_API_KEY environment variable
 Set the OPENAI_API_KEY environment variable to your OpenAI API key.

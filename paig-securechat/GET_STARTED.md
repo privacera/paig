@@ -86,20 +86,25 @@
         ```
         _Note:_ You need to have already set up [`paig-server`](../paig-server/GET_STARTED.md) for this command to work
       
-   3. Log into PAIG url: http://127.0.0.1:4545 using `admin/welcome1` as default username and password.
-   4. To create a new application, go to `Application` > `AI Applications` and click the `CREATE APPLICATION` button on the right top. This will open a dialog box where you can enter the details of the application. 
-   5. Once the application is created, Navigate to Application -> AI Applications and select the application you want to download the configuration file for. 
-   6. Click on the `DOWNLOAD APP CONFIG` button from the right top to download the configuration file.
-   7. Copy the downloaded configuration file to the `custom-configs/privacera-shield-config.json`.<br>
-      Create `custom-configs` folder under `paig-securechat/web-server/src/paig_securechat` directory.
+   2. Log into PAIG url: http://127.0.0.1:4545 using `admin/welcome1` as default username and password.
+   3. To create a new application, go to `Application` > `AI Applications` and click the `CREATE APPLICATION` button on the right top. This will open a dialog box where you can enter the details of the application. 
+   4. Once the Application is created, 
+      - Navigate to `Paig Navigator` -> `AI Applications` and select the application for which you want to generate the api key. 
+      - In the `API KEYS` tab, click the `GENERATE API KEY` button in the top-right corner to generate an API key. 
+      - Provide a `Name` and `Description`, along with a `Expiry`, or select the `Max Validity (1 year)` checkbox to set default expiry.
       
-      ```bash
-      cd paig-securechat/web-server/src/paig_securechat
-      mkdir -p custom-configs
-      cp <path to privacera-shield-app-name-config.json> custom-configs/privacera-shield-config.json
-      ```
-
-   9. Start the PAIG SecureChat web server
+        > **Note:** Once the API key is generated, it will not be shown again. Ensure you copy and securely store it immediately after generation.
+   5. To initialize the PAIG Shield library in your AI application, export the __PAIG_APP_API_KEY__ as an environment variable.
+        ```shell
+        export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
+        ``` 
+      **OR**<br>
+      Create a file called `paig.key` in the `custom-configs` folder and save the AI Application API key in the file.
+        ```bash
+        echo "<<AI_APPLICATION_API_KEY>>" > > custom-configs/paig.key
+        ```
+   
+   6. Start the PAIG SecureChat web server
 
       ```bash
        python __main__.py run --host <host> --port <port> --debug True|False --config_path <path to config folder>
