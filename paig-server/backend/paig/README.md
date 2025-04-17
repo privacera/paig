@@ -7,6 +7,7 @@
 - [How to Setup Database](#databsesetup)
 - [Logging](#logging)
 
+
 ## Technology Stack <a name="technology-stack"></a>
 PAIG provides a platform for AI governance. It allows users to governance and audits the data on one platform. 
 <br>PAIG uses the following technologies:
@@ -35,22 +36,24 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    cd scripts
    source ./build_ui.sh
    ```
-      We can't directly run a .sh file using PowerShell or Command Prompt on Windows. So, we need to use Git Bash to convert it first. After that, we can run it from PowerShell or Command Prompt. 
-
-      If you are using Windows,open Git Bash, navigate to the specific path, and run the following command:
-      ```bash
+> [!TIP]  
+> Windows does not allow direct execution of .sh files in PowerShell or Command Prompt. To work around this, use Git Bash to convert the script, and then you can run it from PowerShell or Command Prompt.Follow these steps:
+      
+   ```bash
 
       cd paig/paig-server/scripts
       dos2unix build_ui.sh
       cd ..
-      ```
-      Then run the following command in PowerShell or Command Prompt to install the build.
+   ```
 
-      ```bash
+> [!TIP]  
+> After conversion, open PowerShell or Command Prompt, navigate to the script directory, and execute the build with this command:
+
+   ```bash
       cd scripts
       bash ./build_ui.sh
       cd ..
-      ```
+   ```
 4. Go to the backend directory.
    ```bash
    cd backend
@@ -71,15 +74,18 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    source venv/bin/activate
    ```
-   If you are using Windows, run the following command in PowerShell to activate the virtual environment.
-   
+
+> [!TIP]  
+> If you are using Windows, run the following command in PowerShell to activate the virtual environment.
+
    ```bash
-   .\venv\Scripts\Activate.ps1
+     .\venv\Scripts\Activate.ps1
    ```
-   For Windows Command Prompt, use the following command
-    ```bash
+> [!TIP]  
+>  For Windows Command Prompt, use the following command
+   ```bash
    venv\Scripts\activate
-   ```
+   ```   
 7. Install the dependencies.
    ```bash
    pip install -r requirements.txt
@@ -97,7 +103,9 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545 --background true
    ```
-   **Note:** *Admin user credentials.*
+> [!IMPORTANT]  
+>Admin user credentials.
+
    ```bash
    PAIG URL: http://127.0.0.1:4545
    username: admin
@@ -111,7 +119,9 @@ PAIG can be run in the background mode by setting the background flag to true.
    ```bash
    python __main__.py run --background true
    ```
-   **Note:** Please use help command to see all available options you can pass on command line.
+> [!IMPORTANT]  
+> Please use help command to see all available options you can pass on command line.
+
    ```bash
    python __main__.py --help
    ```
@@ -138,7 +148,9 @@ PAIG can be run in the background mode by setting the background flag to true.
    ```bash
    dev_config.yaml
    ```
-   _Note-_ ENVIRONMENT_NAME is also referred to as PAIG_DEPLOYMENT in the application.
+> [!NOTE]  
+> ENVIRONMENT_NAME is also referred to as PAIG_DEPLOYMENT in the application.
+
 3. In a custom configuration file, the user should provide new configuration key values or override the existing         configuration.
    <br>Example: [custom-conf/dev_config.yaml](conf/default_config.yaml)
 
