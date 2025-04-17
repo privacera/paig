@@ -20,12 +20,33 @@ pip install paig_securechat
 
 ## Usage <a name="usage"></a>
 PAIG Secure chat can be used in following ways:
-Before starting the securechat , please download your PAIG Shield Config file.Then run the following command to copy file to desired destination.
-```bash
-mkdir -p custom-configs
-cp <path to privacera-shield-app-name-config.json> custom-configs/privacera-shield-config.json
-``` 
-1. **Run as a service:** You can simply run the secure chat as a service by running following command:
+1. Before starting the securechat, you need to create a PAIG application and generate an API key for the application.
+   - To create a new application and generate an API key, follow these steps:
+     
+     - Login to PAIG.
+     - Go to `Paig Navigator` → `AI Applications` and click the `CREATE APPLICATION` button at the top-right.
+     - A dialog box will open where you can enter the details of your application.
+     - Once the Application is created:
+       
+       - Navigate to `Paig Navigator` → `AI Applications` and select the application for which you want to generate the API key.
+       - In the `API KEYS` tab, click the `GENERATE API KEY` button in the top-right corner.
+       - Provide a `Name` and `Description`, and set an `Expiry`, or select the `Max Validity (1 year)` checkbox to use the default expiry.
+
+       > **Note:** Once the API key is generated, it will not be shown again. Ensure you copy and securely store it immediately after generation.
+
+   - To initialize the **PAIG Shield** library in your SecureChat application, export the `PAIG_APP_API_KEY` as an environment variable:
+
+     ```bash
+     export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
+     ```
+
+     **OR**  
+     Create a file called `paig.key` in the `custom-configs` folder and save the AI Application API key in it:
+
+     ```bash
+     echo "<<AI_APPLICATION_API_KEY>>" > custom-configs/paig.key
+     ```
+2. **Run as a service:** You can simply run the secure chat as a service by running following command:
  ```bash
 paig_securechat run
  ```
@@ -37,7 +58,7 @@ Example:
 ```bash
 paig_securechat run --port 2324 --host 0.0.0.0 --openai_api_key <API_KEY> 
 ```
-2. **Run as a library:** You can run PAIG Secure chat in background by importing the library in your python code.
+3. **Run as a library:** You can run PAIG Secure chat in background by importing the library in your python code.
 Please run help command to see all available options you can pass while calling launch_app method.
 ```python
 from paig_securechat import launcher

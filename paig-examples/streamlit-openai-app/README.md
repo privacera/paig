@@ -17,13 +17,25 @@ chmod +x install.sh
 ./install.sh
 ```
 
-## Configuration
+## Create a new AI application and Generate an API key
+- To create a new application and generate an API key, follow these steps:
+     - Login to PAIG.
+     - Go to `Paig Navigator` → `AI Applications` and click the `CREATE APPLICATION` button at the top-right.
+     - A dialog box will open where you can enter the details of your application.
+     - Once the Application is created:
+       - Navigate to `Paig Navigator` → `AI Applications` and select the application for which you want to generate the API key.
+       - In the `API KEYS` tab, click the `GENERATE API KEY` button in the top-right corner.
+       - Provide a `Name` and `Description`, and set an `Expiry`, or select the `Max Validity (1 year)` checkbox to use the default expiry.
 
-Download the [Paig Shield Configuration](https://docs.paig.ai/integration/python-applications.html#downloading-privacera-shield-configuration-file) file, and place it in the `privacera` directory.
+       > **Note:** Once the API key is generated, it will not be shown again. Ensure you copy and securely store it immediately after generation.
 
-Once all the required packages are installed and configurations are set up, start the streamlit server within the virtual environment.
+   - To initialize the **PAIG Shield** library in your SecureChat application, export the `PAIG_APP_API_KEY` as an environment variable:
 
+     ```bash
+     export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
+     ```
 ```shell
 source venv/bin/activate
+export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
 streamlit run chatbot_simple.py
 ```
