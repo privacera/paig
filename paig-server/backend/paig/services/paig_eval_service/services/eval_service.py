@@ -3,10 +3,10 @@ import json
 import traceback
 import uuid
 
-from api.evaluation.database.db_operations.eval_config_repository import EvaluationConfigHistoryRepository
-from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
+from ..database.db_operations.eval_config_repository import EvaluationConfigHistoryRepository
+from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
-from api.evaluation.database.db_operations.eval_repository import EvaluationRepository
+from ..database.db_operations.eval_repository import EvaluationRepository
 from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, init_config as eval_init_config
 from paig_evaluation.promptfoo_utils import get_security_plugin_map
 import logging

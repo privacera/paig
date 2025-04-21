@@ -1,10 +1,10 @@
 import json
 import traceback
 
-from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
+from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.db_session.transactional import Transactional, Propagation
 from core.utils import SingletonDepends, current_utc_time
-from api.evaluation.database.db_operations.eval_config_repository import EvaluationConfigRepository, EvaluationConfigHistoryRepository
+from ..database.db_operations.eval_config_repository import EvaluationConfigRepository, EvaluationConfigHistoryRepository
 import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
 from core.controllers.paginated_response import Pageable

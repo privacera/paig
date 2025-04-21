@@ -5,7 +5,7 @@ from typing import Optional
 from core.factory.database_initiator import BaseAPIFilter
 from fastapi import Query
 from datetime import datetime
-from api.evaluation.api_schemas.eval_config_schema import ConfigCreateRequest
+from .eval_config_schema import ConfigCreateRequest
 
 
 class GetCategories(BaseModel):

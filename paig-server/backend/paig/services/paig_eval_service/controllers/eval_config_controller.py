@@ -1,9 +1,9 @@
 from core.utils import SingletonDepends
-from api.evaluation.services.eval_config_service import EvaluationConfigService
-from api.evaluation.api_schemas.eval_config_schema import EvalConfigFilter
+from ..services.eval_config_service import EvaluationConfigService
+from ..api_schemas.eval_config_schema import EvalConfigFilter
 from typing import List
 from core.controllers.paginated_response import Pageable
-from api.evaluation.api_schemas.eval_config_schema import include_query_params, exclude_query_params
+from ..api_schemas.eval_config_schema import include_query_params, exclude_query_params
 
 class EvaluationConfigController:
 

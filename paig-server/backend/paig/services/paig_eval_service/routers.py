@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from api.evaluation.routes.eval_router import evaluation_router
+from .routes.eval_router import evaluation_router
 
-from api.evaluation.routes.eval_target_router import evaluation_target_router
-from api.evaluation.routes.eval_config_router import evaluation_config_router
-from api.evaluation.routes.eval_result_router import evaluation_result_router
+from .routes.eval_target_router import evaluation_target_router
+from .routes.eval_config_router import evaluation_config_router
+from .routes.eval_result_router import evaluation_result_router
 
 evaluation_router_paths = APIRouter()
 

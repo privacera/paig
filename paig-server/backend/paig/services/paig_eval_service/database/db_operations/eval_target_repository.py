@@ -1,5 +1,5 @@
 from sqlalchemy import and_
-from api.evaluation.database.db_models import EvaluationTargetModel
+from ..db_models import EvaluationTargetModel
 from core.factory.database_initiator import BaseOperations
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.future import select

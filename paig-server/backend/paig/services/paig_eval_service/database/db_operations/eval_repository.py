@@ -1,8 +1,8 @@
 from sqlalchemy import and_, func, case
 
-from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
-from api.evaluation.database.db_models import EvaluationModel
-from api.evaluation.database.db_models.eval_model import EvaluationResultPromptsModel, EvaluationResultResponseModel
+from ...api_schemas.eval_schema import BaseEvaluationView
+from ..db_models import EvaluationModel
+from ..db_models.eval_model import EvaluationResultPromptsModel, EvaluationResultResponseModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound

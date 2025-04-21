@@ -1,12 +1,12 @@
 import json
 
-from api.evaluation.services.eval_config_service import EvaluationConfigService
-from api.evaluation.services.eval_result_service import EvaluationResultService
-from api.evaluation.services.eval_service import EvaluationService
+from ..services.eval_config_service import EvaluationConfigService
+from ..services.eval_result_service import EvaluationResultService
+from ..services.eval_service import EvaluationService
 from core.utils import SingletonDepends
 from core.exceptions import NotFoundException, BadRequestException
 from core.controllers.paginated_response import create_pageable_response
-from api.evaluation.api_schemas.eval_schema import BaseEvaluationView
+from ..api_schemas.eval_schema import BaseEvaluationView
 from server import logger
 
 

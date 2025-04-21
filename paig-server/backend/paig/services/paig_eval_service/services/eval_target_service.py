@@ -2,7 +2,7 @@ import copy
 import json
 import traceback
 from core.utils import SingletonDepends, is_valid_url
-from api.evaluation.database.db_operations.eval_target_repository import EvaluationTargetRepository
+from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
 from core.controllers.paginated_response import create_pageable_response

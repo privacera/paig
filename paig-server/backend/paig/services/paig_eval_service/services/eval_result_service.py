@@ -2,7 +2,7 @@ import json
 
 from core.exceptions import BadRequestException
 import logging
-from api.evaluation.database.db_operations.eval_repository import EvaluationRepository, EvaluationPromptRepository, EvaluationResponseRepository
+from ..database.db_operations.eval_repository import EvaluationRepository, EvaluationPromptRepository, EvaluationResponseRepository
 from core.utils import SingletonDepends
 
 logger = logging.getLogger(__name__)

@@ -10,7 +10,7 @@ from api.governance.routes.metadata_key_router import metadata_key_router
 from api.governance.routes.tag_router import tag_router
 from api.audit.routers import data_service_router
 from api.shield.routers import shield_router
-from api.evaluation.routers import evaluation_router_paths
+from services.paig_eval_service.routers import evaluation_router_paths
 from api.apikey.routers import api_key_router
 from core.security.authentication import get_auth_user
 from api.governance.routes.ai_app_config_download_router import ai_app_config_download_with_key_router
@@ -26,7 +26,7 @@ router.include_router(user_router, prefix="/account-service", tags=["User"])
 router.include_router(authz_router, prefix="/authz-service/api", tags=["Authorization"])
 router.include_router(data_service_router, prefix="/data-service", tags=["Data Service"])
 router.include_router(shield_router, prefix="/shield", tags=["Shield"])
-router.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"])
+router.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"], dependencies=[Depends(get_auth_user)])
 router.include_router(paig_guardrails_router, prefix="/guardrail-service/api", dependencies=[Depends(get_auth_user)])
 router.include_router(api_key_router, prefix="/account-service/api/apikey", tags=["API Key"])
 router.include_router(ai_app_config_download_with_key_router, prefix="/api/ai/application/config", tags=["Governance with API Key"])

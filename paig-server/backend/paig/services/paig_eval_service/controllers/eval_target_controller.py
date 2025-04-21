@@ -1,5 +1,5 @@
 from core.utils import SingletonDepends
-from api.evaluation.services.eval_target_service import EvaluationTargetService
+from ..services.eval_target_service import EvaluationTargetService
 from api.governance.api_schemas.ai_app import AIApplicationFilter
 from typing import List
 

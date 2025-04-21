@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, ForeignKey, Text, Integer
 from sqlalchemy.orm import relationship
-from api.evaluation.database.db_models.base_model import CommonBase
+from .base_model import CommonBase
 
 
 class EvaluationModel(CommonBase):

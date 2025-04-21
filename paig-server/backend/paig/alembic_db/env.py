@@ -12,6 +12,8 @@ import asyncio
 # access to the values within the .ini file in use.
 config = context.config
 
+
+
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:
@@ -31,7 +33,7 @@ from api.governance.database.db_models import tag_model
 from api.user.database.db_models import user_model, groups_model
 from api.audit.RDS_service.db_models import access_audit_model, admin_audit_model
 from api.encryption.database.db_models import encryption_master_key_model, encryption_key_model
-from api.evaluation.database.db_models import eval_model, eval_targets, eval_config
+from services.paig_eval_service.database.db_models import eval_model, eval_targets, eval_config
 from api.guardrails.database.db_models import guardrail_model, gr_connection_model
 from api.guardrails.database.db_models import response_template_model
 from api.apikey.database.db_models import paig_api_key_model, paig_level1_encryption_key_model, paig_level2_encryption_key_model

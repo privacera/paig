@@ -1,6 +1,6 @@
 from sqlalchemy import and_
-from api.evaluation.api_schemas.eval_config_schema import EvalConfigView
-from api.evaluation.database.db_models import EvaluationConfigModel, EvaluationConfigHistoryModel, EvaluationModel
+from ...api_schemas.eval_config_schema import EvalConfigView
+from ..db_models import EvaluationConfigModel, EvaluationConfigHistoryModel, EvaluationModel
 from core.factory.database_initiator import BaseOperations
 from core.db_session.transactional import Transactional, Propagation
 from sqlalchemy.orm.exc import NoResultFound
