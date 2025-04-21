@@ -7,6 +7,8 @@ import uuid
 # Set the OPENAI_API_KEY environment variable or set it here
 openai_client = OpenAI()
 
+# Initialize PAIG Shield
+# Set the PAIG_APP_API_KEY environment variable or set it here in the setup method
 paig_shield_client.setup(frameworks=[])
 
 # Model
