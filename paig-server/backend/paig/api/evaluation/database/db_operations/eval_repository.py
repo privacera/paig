@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.future import select
 from core.utils import current_utc_time, get_field_name_by_alias, epoch_to_utc
 from core.db_session import session
+from core.middlewares.request_session_context_middleware import get_tenant_id
 
 
 def create_like_filter(model_attr, key, include_query, exclude_list):
@@ -30,14 +31,12 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         """
         super().__init__(EvaluationModel)
 
-    @Transactional(propagation=Propagation.REQUIRED)
+
     async def create_new_evaluation(self, evaluation_params):
         evaluation_params['create_time'] = current_utc_time()
         model = self.model_class()
         model.set_attribute(evaluation_params)
-        session.add(model)
-        await session.flush()
-        return model
+        return  await self.create_record(model)
 
     async def get_all_evaluation(self, **args):
         return await self.get_all(**args)
@@ -79,6 +78,8 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         if max_value:
             max_value = epoch_to_utc(max_value)
             all_filters.append(EvaluationModel.create_time <= max_value)
+        tenant_id = get_tenant_id()
+        all_filters.append(EvaluationModel.tenant_id == tenant_id)
         if all_filters:
             query = query.filter(and_(*all_filters))
         if sort:
@@ -99,6 +100,7 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
             filters['create_time_to'] = max_value
         if 'create_time_from' in filters and min_value:
             filters['create_time_from'] = min_value
+        filters['tenant_id'] = tenant_id
         count = (await self.get_count_with_filter(filters))
 
         return results, count
@@ -142,6 +144,9 @@ class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):
             search_filters.append(EvaluationResultPromptsModel.create_time >= epoch_to_utc(from_time))
         if to_time:
             search_filters.append(EvaluationResultPromptsModel.create_time <= epoch_to_utc(to_time))
+        tenant_id = get_tenant_id()
+        include_query['tenant_id'] = tenant_id
+        search_filters.append(EvaluationResultPromptsModel.tenant_id == tenant_id)
         prompt_filter = create_like_filter(EvaluationResultPromptsModel.prompt, 'prompt', include_query, exclude_list)
         if prompt_filter is not None:
             search_filters.append(prompt_filter)
@@ -185,6 +190,7 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
 
 
     async def get_result_by_severity(self, eval_id):
+        tenant_id = get_tenant_id()
         query = (
             select(
                 EvaluationResultResponseModel.category_severity,
@@ -193,16 +199,17 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
             )
             .where(
                 EvaluationResultResponseModel.eval_id == eval_id,
-                EvaluationResultResponseModel.category_type.isnot(None)  # Exclude NULL category_type
+                EvaluationResultResponseModel.category_type.isnot(None)           # Exclude NULL category_type
             )
-            .group_by(EvaluationResultResponseModel.category_severity, EvaluationResultResponseModel.application_name)
         )
-
+        query = query.where(EvaluationResultResponseModel.tenant_id == tenant_id)
+        query = query.group_by(EvaluationResultResponseModel.category_severity, EvaluationResultResponseModel.application_name)
         result = await session.execute(query)
         rows = result.fetchall()
         return rows
 
     async def get_result_by_category(self, eval_id):
+        tenant_id = get_tenant_id()
         severity_order = case(
             (EvaluationResultResponseModel.category_severity == "CRITICAL", 4),
             (EvaluationResultResponseModel.category_severity == "HIGH", 3),
@@ -221,10 +228,12 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
                 func.sum(case((EvaluationResultResponseModel.status == "ERROR", 1), else_=0)).label("error_count"),
                 func.max(severity_order).label("max_severity")
             )
-            .where(EvaluationResultResponseModel.eval_id == eval_id)
-            .group_by(EvaluationResultResponseModel.category_type, EvaluationResultResponseModel.category, EvaluationResultResponseModel.application_name)
+            .where(
+                EvaluationResultResponseModel.eval_id == eval_id
+            )
         )
-
+        query = query.where(EvaluationResultResponseModel.tenant_id == tenant_id)
+        query = query.group_by(EvaluationResultResponseModel.category_type, EvaluationResultResponseModel.category, EvaluationResultResponseModel.application_name)
         result = await session.execute(query)
         rows = result.fetchall()
 
@@ -262,14 +271,19 @@ class EvaluationResponseRepository(BaseOperations[EvaluationResultResponseModel]
         return final_stats
 
     async def get_all_categories_from_result(self, eval_id):
+        tenant_id = get_tenant_id()
         query = (
             select(
                 EvaluationResultResponseModel.category_type,
                 EvaluationResultResponseModel.category
             )
-            .where(EvaluationResultResponseModel.eval_id == eval_id)
-            .distinct()
+            .where(
+                EvaluationResultResponseModel.eval_id == eval_id
+            )
         )
+        query = query.where(EvaluationResultResponseModel.tenant_id == tenant_id)
+        query = query.distinct()
+
 
         result = await session.execute(query)
         rows = result.fetchall()

@@ -24,6 +24,7 @@ class EvaluationConfigModel(CommonBase):
     custom_prompts = Column(Text())
     version = Column(Integer, nullable=False)
     owner = Column(String(255), nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
 
     history = relationship('EvaluationConfigHistoryModel', back_populates="eval_config", cascade="all, delete")
     eval_runs = relationship("EvaluationModel",
@@ -54,6 +55,7 @@ class EvaluationConfigHistoryModel(CommonBase):
     custom_prompts = Column(Text())
     version = Column(Integer, nullable=False)
     owner = Column(String(255), nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
     eval_config_id = Column(Integer, ForeignKey('eval_config.id'), nullable=False)
 
     eval_config = relationship('EvaluationConfigModel', back_populates="history")

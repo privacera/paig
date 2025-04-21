@@ -25,7 +25,8 @@ class AIAppController:
     def __init__(self,
                  ai_app_service: AIAppService = SingletonDepends(AIAppService),
                  ai_app_policy_service: AIAppPolicyService = SingletonDepends(AIAppPolicyService),
-                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService)):
+                 ai_app_config_service: AIAppConfigService = SingletonDepends(AIAppConfigService)
+                 ):
         self.ai_app_service = ai_app_service
         self.ai_app_policy_service = ai_app_policy_service
         self.ai_app_config_service = ai_app_config_service

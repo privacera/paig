@@ -66,7 +66,7 @@ class VEvaluationAppsTable extends Component{
           data-test="select-all"
           checked={selectedTargetIds.includes(model.target_id)}
           onChange={() => this.handleSelectRow(model.id, model.target_id)}
-          disabled={!model.target_id}
+          disabled={model?.status !== 'ACTIVE'}
         />
       </TableCell>),
       <TableCell key="2">{model.name || "--"}</TableCell>,
