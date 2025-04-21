@@ -3,6 +3,15 @@ name: paig-oss-docker-build
 
 on:
   workflow_dispatch: # Allows manual trigger
+    inputs:
+      use-local-wheel:
+        description: 'Use local wheel for building docker image'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 permissions:
     packages: write
@@ -54,8 +63,8 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.4.0
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push Docker image
         id: push
@@ -67,8 +76,6 @@ jobs:
           build-args: |
             USE_LOCAL_WHEEL=${{ vars.USE_LOCAL_WHEEL }}
           tags: |
-            ${{ vars.DOCKER_HUB}}/${{ vars.DOCKER_IMAGE_NAME }}:latest
-            ${{ vars.DOCKER_HUB}}/${{ vars.DOCKER_IMAGE_NAME }}:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
-          labels: |
-            maintainer=privacera
-            org.opencontainers.image.vendor=Privacera
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-latest
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
+          no-cache: true
