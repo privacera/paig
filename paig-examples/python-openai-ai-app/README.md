@@ -38,7 +38,7 @@ pip install openai==1.11.1 paig-client
 
        > **Note:** Once the API key is generated, it will not be shown again. Ensure you copy and securely store it immediately after generation.
 
-   - To initialize the **PAIG Shield** library in your SecureChat application, export the `PAIG_APP_API_KEY` as an environment variable:
+   - To initialize the **PAIG Shield** library in your application, export the `PAIG_APP_API_KEY` as an environment variable:
 
      ```bash
      export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>

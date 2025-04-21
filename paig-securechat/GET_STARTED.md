@@ -101,7 +101,8 @@
       **OR**<br>
       Create a file called `paig.key` in the `custom-configs` folder and save the AI Application API key in the file.
         ```bash
-        echo "<<AI_APPLICATION_API_KEY>>" > > custom-configs/paig.key
+        mkdir -p custom-configs
+        echo "<<AI_APPLICATION_API_KEY>>" > custom-configs/paig.key
         ```
    
    6. Start the PAIG SecureChat web server

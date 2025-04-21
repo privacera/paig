@@ -59,7 +59,7 @@ Secure Chat provides a web interface to interact with the chat bot. It is a Reac
          1. Navigate to **Paig Navigator** -> **AI Applications** and select the application for which you want to generate the api key. 
          2. In the **API KEYS** tab, click the **GENERATE API KEY** button in the top-right corner to generate an API key. 
          3. Provide a **Name** and **Description**, along with a **Expiry**, or select the **Max Validity (1 year)** checkbox to set default expiry.
-         __Note__:- Once the Api Key is generated, it will not be displayed again. Ensure you copy and securely store it immediately after generation.
+         __Note__:- Once the API Key is generated, it will not be displayed again. Ensure you copy and securely store it immediately after generation.
    5. To initialize the PAIG Shield library in your AI application, export the __PAIG_APP_API_KEY__ as an environment variable.
         ```shell
         export PAIG_APP_API_KEY=<<AI_APPLICATION_API_KEY>>
@@ -67,7 +67,8 @@ Secure Chat provides a web interface to interact with the chat bot. It is a Reac
       **OR**<br>
       Create a file called `paig.key` in the `custom-configs` folder and save the AI Application API key in the file.
         ```bash
-        echo "<<AI_APPLICATION_API_KEY>>" > > custom-configs/paig.key
+        mkdir -p custom-configs
+        echo "<<AI_APPLICATION_API_KEY>>" > custom-configs/paig.key
         ``` 
 
 8. Start PAIG SecureChat web server
