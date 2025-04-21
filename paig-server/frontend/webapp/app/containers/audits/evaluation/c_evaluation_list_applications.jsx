@@ -204,10 +204,7 @@ class CEvaluationAppsList extends Component {
         }
         let data = this.form.toJSON();
         data = Object.assign({}, this.form.model, data);
-        console.log("Form data:", data);
-        // if (!data.id) {
-        //    data.ai_application_id = null;
-        // }
+
         // Transform headers array into an object
         if (Array.isArray(data.headers)) {
             data.headers = data.headers.reduce((acc, header) => {
