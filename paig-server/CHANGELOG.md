@@ -1,7 +1,7 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
-## [v0.0.10] - 2025-04-17
+## [v0.0.10] - 2025-04-21
 ### Added
 - PAIG now provides a dynamic way to fetch application configurations using API keys, removing the need for manual file downloads and making the process faster and more efficient. 
 - Users can:
