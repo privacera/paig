@@ -35,13 +35,13 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Set up Python 3.11
-        if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
+        if: ${{ inputs.use-local-wheel == 'true' }}
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Prepare build environment
-        if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
+        if: ${{ inputs.use-local-wheel == 'true' }}
         run: |
           python3 -m pip install virtualenv
           virtualenv -p python3 venv
@@ -49,7 +49,7 @@ jobs:
           pip install build
 
       - name: Build module wheel files
-        if: ${{ vars.USE_LOCAL_WHEEL == 'true' }}
+        if: ${{ inputs.use-local-wheel == 'true' }}
         run: |
           . venv/bin/activate
           for package in paig-common paig-authorizer-core paig-evaluation paig-server; do
@@ -74,7 +74,7 @@ jobs:
           file: docker/Dockerfile
           push: true
           build-args: |
-            USE_LOCAL_WHEEL=${{ vars.USE_LOCAL_WHEEL }}
+            USE_LOCAL_WHEEL=${{ inputs.use-local-wheel }}
           tags: |
             privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-latest
             privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
