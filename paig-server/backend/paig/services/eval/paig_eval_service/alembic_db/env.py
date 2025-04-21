@@ -1,11 +1,20 @@
 from logging.config import fileConfig
 from sqlalchemy.ext.asyncio import AsyncEngine
-
+import sys, os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from core.config import load_config_file
+try:
+    from core.config import load_config_file
+except ImportError:
+    PAIG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+    sys.path.append(PAIG_DIR)
+    config_path = os.path.join(PAIG_DIR, "conf")
+    if 'CONFIG_PATH' not in os.environ:
+        os.environ["CONFIG_PATH"] = str(config_path)
+    sys.path.append(os.path.join(PAIG_DIR, 'services', 'paig_eval_service'))
+    from core.config import load_config_file
 import asyncio
 
 # this is the Alembic Config object, which provides
@@ -25,7 +34,10 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from services.paig_eval_service.database.db_models import eval_model, eval_targets, eval_config
+try:
+    from paig_eval_service.database.db_models import eval_model, eval_targets, eval_config
+except ImportError:
+    from database.db_models import eval_model, eval_targets, eval_config
 from core.db_session.session import Base
 target_metadata = Base.metadata
 

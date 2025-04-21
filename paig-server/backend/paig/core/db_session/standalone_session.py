@@ -6,7 +6,6 @@ from core import config
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import MetaData, select, func, update, insert
-from api.user.database.db_models.user_model import Tenant
 
 logger = logging.getLogger(__name__)
 # Load config
@@ -56,6 +55,9 @@ async def get_field_counts(table_name: str, field_name: str):
 
 
 async def get_tenant_uuid():
+    global Tenant
+    if 'Tenant' not in globals():
+        from api.user.database.db_models.user_model import Tenant
     tenants = await execute_query(select(Tenant.uuid))
     if tenants:
         return tenants[0][0]

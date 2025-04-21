@@ -1,7 +1,6 @@
 import pytest
 from httpx import AsyncClient
-import json
-from core.security.authentication import get_auth_user
+from core.middlewares.request_session_context_middleware import get_user
 from fastapi import FastAPI
 
 
@@ -26,7 +25,7 @@ class TestTargetRouters:
 
     @pytest.mark.asyncio
     async def test_target_routes(self, client: AsyncClient, app: FastAPI):
-        app.dependency_overrides[get_auth_user] = self.auth_user
+        app.dependency_overrides[get_user] = self.auth_user
         post_data = {
             "url": "http://localhost:8080",
             "body": {},

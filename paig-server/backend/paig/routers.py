@@ -10,7 +10,7 @@ from api.governance.routes.metadata_key_router import metadata_key_router
 from api.governance.routes.tag_router import tag_router
 from api.audit.routers import data_service_router
 from api.shield.routers import shield_router
-from services.paig_eval_service.routers import evaluation_router_paths
+from api.eval.routers import evaluation_router_paths
 from api.apikey.routers import api_key_router
 from core.security.authentication import get_auth_user
 from api.governance.routes.ai_app_config_download_router import ai_app_config_download_with_key_router

@@ -1,19 +1,12 @@
 import traceback
 from http import HTTPStatus
-
-from api.shield.utils.config_utils import load_shield_configs
 from core.logging_init import set_logging
-from core.middlewares.request_session_context_middleware import RequestSessionContextMiddleware
-
 set_logging()
-
-from core.middlewares.usage import register_usage_events
 from typing import List
 from fastapi import FastAPI, Request, status
 from fastapi.middleware import Middleware
 from fastapi.middleware.cors import CORSMiddleware
 from core.middlewares.sqlalchemy_middleware import SQLAlchemyMiddleware
-from core.middlewares.request_count_middleware import RequestCounterMiddleware
 from core.exceptions import CustomException
 from fastapi.responses import JSONResponse
 from core import config
@@ -26,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 def init_routers(app_: FastAPI) -> None:
-    from routers import router
-    app_.include_router(router)
+    from routers import evaluation_router_paths
+    app_.include_router(evaluation_router_paths, prefix="/eval-service", tags=["Evaluation"])
 
 
 def init_listeners(app_: FastAPI) -> None:
@@ -96,24 +89,20 @@ def make_middleware() -> List[Middleware]:
             allow_methods=["*"],
             allow_headers=["*"],
         ),
-        Middleware(SQLAlchemyMiddleware),
-        Middleware(RequestCounterMiddleware),
-        Middleware(RequestSessionContextMiddleware)
+        Middleware(SQLAlchemyMiddleware)
     ]
     return middleware
 
 
 def create_app() -> FastAPI:
     init_settings()
-    load_shield_configs()
     app_ = FastAPI(
         title="Paig Eval Service",
         description="Paig Eval Service Application",
         version="1.0.0",
         docs_url="/docs",
         redoc_url=None,
-        middleware=make_middleware(),
-        lifespan=register_usage_events
+        middleware=make_middleware()
     )
 
     init_routers(app_=app_)

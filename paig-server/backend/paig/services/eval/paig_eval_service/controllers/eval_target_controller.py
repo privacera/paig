@@ -1,6 +1,5 @@
 from core.utils import SingletonDepends
 from ..services.eval_target_service import EvaluationTargetService
-from api.governance.api_schemas.ai_app import AIApplicationFilter
 from typing import List
 
 
@@ -16,8 +15,8 @@ class EvaluationTargetController:
                 List AI applications based on the provided filter, pagination, and sorting parameters.
 
                 Args:
-                    include_query (AIApplicationFilter): The filter parameters to include.
-                    exclude_query (AIApplicationFilter): The filter parameters to exclude.
+                    include_query (Filter): The filter parameters to include.
+                    exclude_query (Filter): The filter parameters to exclude.
                     page_number (int): The page number to retrieve.
                     size (int): The number of records to retrieve per page.
                     sort (List[str]): The sorting parameters to apply.
