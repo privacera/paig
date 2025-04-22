@@ -43,7 +43,6 @@ dependencies = [
     "boto3==1.34.20",
     "opentelemetry-distro==0.45b0",
     "opentelemetry-exporter-otlp==1.24.0",
-    "paig_common",
     "alt-profanity-check==1.5.0",
     "numpy==1.26.4",
     "scipy==1.14.1",
@@ -53,9 +52,10 @@ dependencies = [
     "APScheduler",
     "pydantic[email]",
     "posthog",
-    "paig-authorizer-core==0.0.2",
     "psutil",
-    "paig_evaluation"
+    "paig_common",
+    "paig-authorizer-core>=0.0.3",
+    "paig_evaluation>=0.0.2"
 ]
 
 [tool.hatch.metadata]
