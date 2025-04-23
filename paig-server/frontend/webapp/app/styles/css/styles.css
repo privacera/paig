@@ -1061,3 +1061,13 @@ span.diff-danger>span {
   background-color: white;
   z-index: 2; 
 }
+
+.allowed-color {
+  color: #2F940C;
+}
+.denied-color {
+  color: #FD8A5B;
+}
+.masked-color {
+  color: #41546F;
+}

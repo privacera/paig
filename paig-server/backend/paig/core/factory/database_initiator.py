@@ -3,13 +3,14 @@ from typing import Generic, Type, TypeVar, Tuple, List, Optional
 from pydantic import BaseModel, Field
 from sqlalchemy import Select, asc, literal, text
 from sqlalchemy.sql.expression import select
-from sqlalchemy.sql.expression import func, false
+from sqlalchemy.sql.expression import func
 from core.db_session.session import Base, session
 from typing import Union
 
 from datetime import datetime
 
 from core.db_models.utils import CommaSeparatedList
+from core.middlewares.request_session_context_middleware import get_tenant_id
 
 ModelType = TypeVar("ModelType", bound=Base)
 from sqlalchemy import desc
@@ -36,6 +37,8 @@ class BaseAPIFilter(BaseModel):
     exact_match: Optional[bool] = Field(False, description="The exact match of the resource", alias="exactMatch")
     exclude_match: Optional[bool] = Field(False, description="The exclude match of the resource", alias="excludeMatch")
     exclude_list: Optional[str] = Field(None, description="The exclude list of the resource", alias="excludeList")
+    value_with_comma: Optional[bool] = Field(False, description="Flag indicating whether value is provided with comma", alias="valueWithComma")
+    or_column_list: Optional[str] = Field(None, description="The or column list(comma separated string) of the resource", alias="orColumnList")
 
 
 class BaseOperations(Generic[ModelType]):
@@ -52,10 +55,23 @@ class BaseOperations(Generic[ModelType]):
 
     def _get_filter(self, filters, apply_in_list_filter=False):
         all_filters = []
+        or_conditions = []
+        or_column_list = filters.get('or_column_list')
+        if or_column_list:
+            or_column_list = [col.strip() for col in or_column_list.split(",")]
+        
+        # First process non-OR filters
         for field, value in filters.items():
             filter_data = self.process_filters(filters, field, value, apply_in_list_filter)
             if filter_data is not None:
-                all_filters.append(filter_data)
+                if or_column_list and field in or_column_list:
+                    or_conditions.append(filter_data)
+                else:
+                    all_filters.append(filter_data)
+                
+        # Then process OR filters
+        if or_conditions:
+            all_filters.append(or_(*or_conditions))
 
         # Handle datetime range filters separately
         self._add_datetime_filters('create_time', filters, all_filters)
@@ -72,7 +88,7 @@ class BaseOperations(Generic[ModelType]):
             if isinstance(column.type, CommaSeparatedList):
                 return self._process_comma_separated_list(column, value, filters)
             else:
-                if isinstance(value, str) and "," in value:
+                if isinstance(value, str) and "," in value and not filters.get('value_with_comma'):
                     return self._process_multi_value_filter(column, value, filters, field)
                 else:
                     return self._process_single_value_filter(column, value, filters, apply_in_list_filter, field)
@@ -203,6 +219,9 @@ class BaseOperations(Generic[ModelType]):
                       **kwargs
                       ) -> list[ModelType]:
         # Usage: select all query executor
+        if hasattr(self.model_class, 'tenant_id'):
+            filters["tenant_id"] = get_tenant_id()
+
         query = await self._query()
         query = self.create_filter(query, filters, apply_in_list_filter)
         query = self.select_columns(query, columns)
@@ -219,10 +238,6 @@ class BaseOperations(Generic[ModelType]):
             query = query.offset(skip)
         if limit is not None:
             query = query.limit(limit)
-
-        cardinality = kwargs.get('cardinality')
-        if cardinality:
-            query = query.distinct(text(cardinality)).group_by(text(cardinality))
 
         return await self._all(query)
 
@@ -255,6 +270,8 @@ class BaseOperations(Generic[ModelType]):
 
     async def _get_by(self, query: Select, filters) -> Select:
         # Usage: executes actual query conditional select
+        if hasattr(self.model_class, 'tenant_id'):
+            filters["tenant_id"] = get_tenant_id()
         return query.where(*self._get_filter(filters))
 
     # CRUD Operations
@@ -322,6 +339,8 @@ class BaseOperations(Generic[ModelType]):
         Returns:
             ModelType: The model instance that was added to the session.
         """
+        if hasattr(self.model_class, 'tenant_id'):
+            model.tenant_id = get_tenant_id()
         session.add(model)
         await session.flush()
         return await self.get_record_by_id(model.id)

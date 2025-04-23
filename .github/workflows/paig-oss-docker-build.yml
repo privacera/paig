@@ -1,0 +1,81 @@
+# This workflow is used to build the docker image for the paig-oss project
+name: paig-oss-docker-build
+
+on:
+  workflow_dispatch: # Allows manual trigger
+    inputs:
+      use-local-wheel:
+        description: 'Use local wheel for building docker image'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+    packages: write
+    contents: read
+
+jobs:
+  build_docker_image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set tag variables
+        id: tag_vars
+        run: |
+          echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+          echo "BRANCH=${GITHUB_REF_NAME:-main}" >> $GITHUB_OUTPUT
+
+      - name: Create artifacts directory
+        run: mkdir -p artifacts
+
+      - name: Set up Python 3.11
+        if: ${{ inputs.use-local-wheel == 'true' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prepare build environment
+        if: ${{ inputs.use-local-wheel == 'true' }}
+        run: |
+          python3 -m pip install virtualenv
+          virtualenv -p python3 venv
+          . venv/bin/activate
+          pip install build
+
+      - name: Build module wheel files
+        if: ${{ inputs.use-local-wheel == 'true' }}
+        run: |
+          . venv/bin/activate
+          for package in paig-common paig-authorizer-core paig-evaluation paig-server; do
+            cd $package
+            python3 -m build -w
+            cp dist/*.whl ../artifacts/
+            cd ..
+          done
+          ls -la artifacts
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3.4.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6.15.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          build-args: |
+            USE_LOCAL_WHEEL=${{ inputs.use-local-wheel }}
+          tags: |
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-latest
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
+          no-cache: true

@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, JSON, Text
 from api.evaluation.database.db_models.base_model import CommonBase
 
 
@@ -13,10 +12,9 @@ class EvaluationTargetModel(CommonBase):
     """
     __tablename__ = "eval_target"
     # application id can be none
-    application_id = Column(Integer, ForeignKey('ai_application.id') ,nullable=True)
+    application_id = Column(Integer, nullable=True)
     config = Column(JSON, nullable=False)
     name = Column(String(255), default='')
     url = Column(Text(), default='')
     target_user = Column(String(255), default='NA')
-
-    ai_app = relationship("AIApplicationModel", back_populates="host")
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")

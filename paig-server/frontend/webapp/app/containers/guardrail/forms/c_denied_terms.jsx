@@ -49,7 +49,7 @@ class CDeniedTerms extends Component {
 
         this.config = config;
 
-        let models = this.config.configData.configs.filter(c => c.term);
+        let models = this.config.configData.configs.filter(c => c.keywords);
         this.cDeniedTerms = f.initCollection({loading: false}, models);
 
         let profanity = this.config.configData.configs.find(c => c.type === 'PROFANITY');
@@ -89,7 +89,7 @@ class CDeniedTerms extends Component {
     }
     handleEdit = (model, i) => {
         this.form.clearForm();
-        this.form.refresh({...model, keywords: model.keywords.join('##|##')});
+        this.form.refresh({keywords: model.keywords.join('##|##')});
         this.form.model = model;
         this.form.index = i;
         this.Modal.show({
@@ -100,22 +100,22 @@ class CDeniedTerms extends Component {
     handleRemove = (model) => {
         f._confirm.show({
             title: `Confirm Remove`,
-            children: <Fragment>Are you sure want to remove <b>{model.term}</b> terms?</Fragment>,
+            children: <Fragment>Are you sure you want to remove the selected phrases and keywords?</Fragment>,
             btnOkVariant: "contained",
             btnOkColor: 'primary'
         })
         .then(confirm => {
             confirm.hide();
 
-            const models = f.models(this.cDeniedTerms).filter((m) => m.term !== model.term);
+            const models = f.models(this.cDeniedTerms).filter((m) => m !== model);
             f.resetCollection(this.cDeniedTerms, models);
 
-            this.handleTermsChange();
+            this.handleKeywordsChange();
         }, () => {});
     }
-    handleTermsChange = () => {
-        let nonTerms = this.config.configData.configs.filter(c => !c.term);
-        this.config.configData.configs = [...nonTerms, ...f.models(this.cDeniedTerms)];
+    handleKeywordsChange = () => {
+        let nonKeywords = this.config.configData.configs.filter(c => !c.keywords);
+        this.config.configData.configs = [...nonKeywords, ...f.models(this.cDeniedTerms)];
     }
     handleSave = async() => {
         let valid = await this.form.validate();
@@ -153,12 +153,12 @@ class CDeniedTerms extends Component {
 
         f.resetCollection(this.cDeniedTerms, models);
         this.Modal.hide();
-        this.handleTermsChange();
+        this.handleKeywordsChange();
     }
     handleProfanityChange = (e) => {
         this._vState.profanity = e.target.checked;
-        let terms = this.config.configData.configs.filter(c => c.term);
-        this.config.configData.configs = [...terms, {
+        let keywords = this.config.configData.configs.filter(c => c.keywords);
+        this.config.configData.configs = [...keywords, {
             "type": "PROFANITY",
             "value": e.target.checked
         }];

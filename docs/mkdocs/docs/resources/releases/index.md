@@ -4,15 +4,18 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 
 ## **PAIG Server**
 
-| Version | Date                | Release Notes                             |
-|---------|---------------------|-------------------------------------------|
-| v0.0.7  | April 2nd, 2025     | [View Notes](paig-server/release0.0.7.md) |
-| v0.0.6  | March 17th, 2025    | [View Notes](paig-server/release0.0.6.md) |
-| v0.0.5  | March 6th, 2025     | [View Notes](paig-server/release0.0.5.md) |
-| v0.0.4  | February 24th, 2025 | [View Notes](paig-server/release0.0.4.md) |
-| v0.0.3  | October 8th, 2024   | [View Notes](paig-server/release0.0.3.md) |
-| v0.0.2  | September 6th, 2024 | [View Notes](paig-server/release0.0.2.md) |
-| v0.0.1  | August 14th, 2025   | [View Notes](paig-server/release0.0.1.md) |
+| Version | Date                | Release Notes                              |
+|---------|---------------------|--------------------------------------------|
+| v0.0.10 | April 21st, 2025    | [View Notes](paig-server/release0.0.10.md) |
+| v0.0.9  | April 16th, 2025    | [View Notes](paig-server/release0.0.9.md)  |
+| v0.0.8  | April 9th, 2025     | [View Notes](paig-server/release0.0.8.md)  |
+| v0.0.7  | April 2nd, 2025     | [View Notes](paig-server/release0.0.7.md)  |
+| v0.0.6  | March 17th, 2025    | [View Notes](paig-server/release0.0.6.md)  |
+| v0.0.5  | March 6th, 2025     | [View Notes](paig-server/release0.0.5.md)  |
+| v0.0.4  | February 24th, 2025 | [View Notes](paig-server/release0.0.4.md)  |
+| v0.0.3  | October 8th, 2024   | [View Notes](paig-server/release0.0.3.md)  |
+| v0.0.2  | September 6th, 2024 | [View Notes](paig-server/release0.0.2.md)  |
+| v0.0.1  | August 14th, 2025   | [View Notes](paig-server/release0.0.1.md)  |
 
 
 

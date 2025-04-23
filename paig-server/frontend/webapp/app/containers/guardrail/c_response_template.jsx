@@ -25,6 +25,7 @@ class CResponseTemplate extends Component {
         this.cResponseTemplate = f.initCollection();
         this.cResponseTemplate.params = {
             size: DEFAULTS.DEFAULT_PAGE_SIZE,
+            sort: 'id,desc'
         }
 
         this.form = createFSForm(response_template_form_def);

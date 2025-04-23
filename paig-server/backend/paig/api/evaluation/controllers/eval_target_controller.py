@@ -82,3 +82,4 @@ class EvaluationTargetController:
             dict: The response message.
         """
         return await self.eval_target_service.get_app_target_by_id(app_id=app_id)
+

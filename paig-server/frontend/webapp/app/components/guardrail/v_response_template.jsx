@@ -1,13 +1,15 @@
 import React, {Component, Fragment} from 'react';
 import {observer} from 'mobx-react'
 
-import {Grid, Typography, TableCell} from '@material-ui/core';
+import {Grid, Typography, TableCell, Tooltip} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
 
 import f from 'common-ui/utils/f';
+import Table from 'common-ui/components/table';
 import { SearchField } from 'common-ui/components/filters';
-import {AddButtonWithPermission, ActionButtonsWithPermission} from 'common-ui/components/action_buttons';
-import { permissionCheckerUtil } from "common-ui/utils/permission_checker_util";
-import Table from "common-ui/components/table";
+import { permissionCheckerUtil } from 'common-ui/utils/permission_checker_util';
+import {AddButtonWithPermission, CustomAnchorBtn, CanDelete, CanUpdate} from 'common-ui/components/action_buttons';
 
 const Filters = observer(({data, _vState, permission, handleCreate, handleOnChange, handleSearch}) => {
     return (
@@ -70,11 +72,40 @@ class VResponseTemplate extends Component {
         if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {
             rows.push(
                 <TableCell key="actions" data-testid="actions">
-                    <ActionButtonsWithPermission
-                        permission={permission}
-                        onEditClick={() => handleEdit(model)}
-                        onDeleteClick={() => handleDelete(model)}
-                    />
+                    <div className="d-flex">
+                        <CanUpdate permission={permission}>
+                            <Tooltip 
+                                arrow 
+                                placement="top" 
+                                title={model.type === 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Edit"}
+                            >
+                                <span>
+                                <CustomAnchorBtn
+                                    data-testid="edit-response-template"
+                                    onClick={() => handleEdit(model)}
+                                    disabled={model.type === 'SYSTEM_DEFINED'}
+                                    icon={<EditIcon color={model.type === 'SYSTEM_DEFINED' ? "disabled" : "primary"} fontSize="inherit" />}
+                                />
+                                </span>
+                            </Tooltip>
+                        </CanUpdate>
+                        <CanDelete permission={permission}>
+                            <Tooltip 
+                                arrow 
+                                placement="top" 
+                                title={model.type === 'SYSTEM_DEFINED' ? "Predefined templates are read-only" : "Delete"}
+                            >
+                                <span>
+                                <CustomAnchorBtn
+                                    data-testid="delete-response-template"
+                                    onClick={() => handleDelete(model)}
+                                    disabled={model.type === 'SYSTEM_DEFINED'}
+                                    icon={<DeleteIcon color={model.type === 'SYSTEM_DEFINED' ? "disabled" : "primary"}  fontSize="inherit" />}
+                                />
+                                </span>
+                            </Tooltip>
+                        </CanDelete>
+                    </div>
                 </TableCell>
             )
         }

@@ -6,6 +6,7 @@ from core.controllers.paginated_response import Pageable
 from api.governance.api_schemas.ai_app_policy import AIApplicationPolicyView, AIApplicationPolicyFilter
 from api.governance.controllers.ai_app_policy_controller import AIAppPolicyController
 from core.utils import SingletonDepends
+from core.utils import alias_field_to_column_name
 
 ai_app_policy_router = APIRouter()
 
@@ -24,6 +25,7 @@ async def list_application_policies(
     """
     List all AI applications.
     """
+    sort = alias_field_to_column_name(sort, AIApplicationPolicyView)
     application_policy_filter.application_id = app_id
     return await ai_app_policy_controller.list_ai_application_policies(application_policy_filter, page, size, sort)
 

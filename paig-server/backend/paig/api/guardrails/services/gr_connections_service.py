@@ -263,10 +263,7 @@ class GRConnectionService(BaseController[GRConnectionModel, GRConnectionView]):
         Returns:
             List[str]: A list of Guardrail connection provider names.
         """
-        filter = GRConnectionFilter()
-        records, total_count = await self.repository.list_records(filter=filter, cardinality="guardrail_provider")
-        names = [record.guardrail_provider for record in records]
-        return names
+        return await self.get_repository().get_connection_providers()
 
     async def get_all(self, filter: GRConnectionFilter, decrypted=False) -> List[GRConnectionView]:
         """

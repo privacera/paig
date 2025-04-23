@@ -16,6 +16,18 @@ class GuardrailConfigType(Enum):
     PROMPT_SAFETY = 'PROMPT_SAFETY'
 
 
+class ResponseTemplateType(Enum):
+    """
+    Enum representing the type of response template.
+
+    Attributes:
+        USER_DEFINED (str): Custom response template.
+        SYSTEM_DEFINED (str): Pre-defined response template.
+    """
+    USER_DEFINED = "USER_DEFINED"
+    SYSTEM_DEFINED = "SYSTEM_DEFINED"
+
+
 def model_to_dict(model):
     """
     Quickly convert a SQLAlchemy model instance to a dictionary.

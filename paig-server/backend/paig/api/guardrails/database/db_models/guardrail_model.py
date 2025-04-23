@@ -4,7 +4,6 @@ from sqlalchemy.orm import relationship
 
 from api.guardrails import GuardrailProvider
 from core.db_models.BaseSQLModel import BaseSQLModel
-from core.db_models.utils import CommaSeparatedList
 
 
 class BaseGuardrailModel(BaseSQLModel):
@@ -29,6 +28,7 @@ class BaseGuardrailModel(BaseSQLModel):
     guardrail_connection_name = Column(String(255), nullable=True)
     guardrail_configs = Column(JSON, nullable=False)
     guardrail_provider_response = Column(JSON, nullable=True)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
 
 
 class GuardrailModel(BaseGuardrailModel):

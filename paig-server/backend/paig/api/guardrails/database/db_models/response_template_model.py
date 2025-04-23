@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Enum as SQLEnum
 
+from api.guardrails import ResponseTemplateType
 from core.db_models.BaseSQLModel import BaseSQLModel
 
 
@@ -21,3 +22,5 @@ class ResponseTemplateModel(BaseSQLModel):
 
     response = Column(String(4000), nullable=False)
     description = Column(String(4000), nullable=True)
+    type = Column(SQLEnum(ResponseTemplateType), nullable=False, default=ResponseTemplateType.USER_DEFINED)
+    tenant_id = Column(String(255), nullable=False, index=True, default="1")
