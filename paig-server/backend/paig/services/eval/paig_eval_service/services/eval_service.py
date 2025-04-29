@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
-
+from core.middlewares.request_session_context_middleware import get_tenant_id
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
@@ -48,7 +48,8 @@ def generate_common_fields(eval_run_id, eval_id):
     return {
         "eval_run_id": eval_run_id,
         "eval_id": eval_id.strip(),
-        "create_time": current_utc_time()
+        "create_time": current_utc_time(),
+        "tenant_id": get_tenant_id()
     }
 
 async def insert_eval_results(eval_id, eval_run_id, report):
@@ -87,8 +88,8 @@ async def insert_eval_results(eval_id, eval_run_id, report):
             **common_fields,
             "eval_result_prompt_uuid": prompt_id_map[test_idx],
             "application_name": res['provider']['label'],
-            "response": res['response']['output'] if 'response' in res else 'NA',
-            "failure_reason": res['error'] if res['failureReason'] else None,
+            "response": res['response']['output'] if 'response' in res and 'output' in res['response'] else 'NA',
+            "failure_reason": res['error'] if (res['failureReason'] or  not res['success']) and 'error' in res  else None,
             "category_score": json.dumps(res['namedScores']),
             "status": 'PASSED' if res['success'] else 'FAILED',
             "category_severity": None,
