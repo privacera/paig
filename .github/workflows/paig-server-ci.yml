@@ -123,6 +123,7 @@ jobs:
     - name: Build the PAIG Eval Service wheel
       run: |
         . venv/bin/activate
+        cp LICENSE paig-server/backend/paig/services/eval/
         cd paig-server/backend/paig/services/eval
         sh build_pypi.sh
 

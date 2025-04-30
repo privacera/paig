@@ -3,7 +3,7 @@ import sys, os
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(ROOT_DIR)
-host = "127.0.0.1"
+host = "0.0.0.0"
 port = 4547
 workers = 1
 

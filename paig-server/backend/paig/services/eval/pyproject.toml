@@ -1,8 +1,8 @@
 [project]
 name = 'paig-eval-service'
 version = '0.0.1'
-readme = "../../../README.md"
-license = {file = "../../../../../LICENSE"}
+readme = "README.md"
+license = {file = "LICENSE"}
 description = 'PAIG Eval Service'
 requires-python = ">= 3.10"
 keywords = [
