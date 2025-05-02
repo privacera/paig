@@ -1,0 +1,74 @@
+[project]
+name = 'paig-eval-service'
+version = '0.0.1'
+readme = "README.md"
+license = {file = "LICENSE"}
+description = 'PAIG Eval Service'
+requires-python = ">= 3.10"
+keywords = [
+    "Chatbot",
+    "Governance",
+    "Privacy",
+    "Security",
+    "PAIG",
+    "PAIG-Server",
+    "PAIG-Eval-Service"
+]
+authors = [
+  { name = "Privacera ", email = "support@privacera.com" },
+]
+
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "fastapi",
+    "sqlalchemy",
+    "alembic",
+    "aiosqlite",
+    "uvicorn",
+    "greenlet",
+    "paig_evaluation"
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[project.urls]
+"Homepage" = "https://github.com/privacera/paig"
+"Bug Tracker" = "https://github.com/privacera/paig/issues"
+
+[project.optional-dependencies]
+dev = [
+    'pytest',
+    'pytest-cov',
+    'pytest-asyncio',
+    'pytest-mock',
+    'uvicorn[standard]'
+]
+
+
+[project.scripts]
+paig_eval_service = "paig_eval_service.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["paig_eval_service"]
+exclude = ["paig_eval_service/tests/"]
+
+
+[tool.hatch.build]
+include = ["paig_eval_service/*"]
+
+[tool.hatch.build.targets.sdist]
+exclude = ["paig_eval_service/tests/"]
+
+
