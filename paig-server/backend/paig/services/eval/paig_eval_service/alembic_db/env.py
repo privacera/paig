@@ -1,11 +1,20 @@
 from logging.config import fileConfig
 from sqlalchemy.ext.asyncio import AsyncEngine
-
+import sys, os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from core.config import load_config_file
+try:
+    from core.config import load_config_file
+except ImportError:
+    PAIG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+    sys.path.append(PAIG_DIR)
+    config_path = os.path.join(PAIG_DIR, "conf")
+    if 'CONFIG_PATH' not in os.environ:
+        os.environ["CONFIG_PATH"] = str(config_path)
+    sys.path.append(os.path.join(PAIG_DIR, 'services', 'paig_eval_service'))
+    from core.config import load_config_file
 import asyncio
 
 # this is the Alembic Config object, which provides
@@ -25,18 +34,10 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from api.governance.database.db_models import ai_app_model, ai_app_policy_model
-from api.governance.database.db_models import vector_db_model, vector_db_policy_model
-from api.governance.database.db_models import ai_app_config_model
-from api.governance.database.db_models import metadata_key_model, metadata_value_model
-from api.governance.database.db_models import tag_model
-from api.user.database.db_models import user_model, groups_model
-from api.audit.RDS_service.db_models import access_audit_model, admin_audit_model
-from api.encryption.database.db_models import encryption_master_key_model, encryption_key_model
-from services.eval.paig_eval_service.database.db_models import eval_model, eval_targets, eval_config
-from api.guardrails.database.db_models import guardrail_model, gr_connection_model
-from api.guardrails.database.db_models import response_template_model
-from api.apikey.database.db_models import paig_api_key_model, paig_level1_encryption_key_model, paig_level2_encryption_key_model
+try:
+    from paig_eval_service.database.db_models import eval_model, eval_targets, eval_config
+except ImportError:
+    from database.db_models import eval_model, eval_targets, eval_config
 from core.db_session.session import Base
 target_metadata = Base.metadata
 

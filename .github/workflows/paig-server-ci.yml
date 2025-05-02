@@ -114,17 +114,26 @@ jobs:
         DEV_VERSION="${VERSION}+${SANITIZED_BRANCH_NAME}$(date +%Y%m%d%H%M%S)"
         echo "__version__ = '${DEV_VERSION}'" > $FILE
 
-    - name: Build the wheel
+    - name: Build the PAIG wheel
       run: |
         . venv/bin/activate
         cd paig-server
         python3 -m build -w
 
-    - name: Install created package
+    - name: Build the PAIG Eval Service wheel
+      run: |
+        . venv/bin/activate
+        cp LICENSE paig-server/backend/paig/services/eval/
+        cd paig-server/backend/paig/services/eval
+        sh build_pypi.sh
+
+    - name: Install created packages
       run: |
           rm -rf venv
           virtualenv -p python3 venv && . venv/bin/activate
           cd paig-server
+          pip install dist/*.whl
+          cd backend/paig/services/eval
           pip install dist/*.whl
 
     - name: Upload python package
@@ -132,4 +141,10 @@ jobs:
       with:
         name: paig-server-${{ env.SANITIZED_BRANCH_NAME }}-build
         path: paig-server/dist/*.whl
+
+    - name: Upload python eval service package
+      uses: actions/upload-artifact@v4
+      with:
+        name: paig-eval-service-${{ env.SANITIZED_BRANCH_NAME }}-build
+        path: paig-server/backend/paig/services/eval/dist/*.whl
 
