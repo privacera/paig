@@ -47,6 +47,12 @@ jobs:
           virtualenv -p python3 venv
           . venv/bin/activate
           pip install build
+      
+      - name: Install Node.js dependencies and build UI
+        if: ${{ inputs.use-local-wheel == 'true' }}
+        run: |
+          cd paig-server/scripts
+          sh build_ui.sh
 
       - name: Build module wheel files
         if: ${{ inputs.use-local-wheel == 'true' }}
