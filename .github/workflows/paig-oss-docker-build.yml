@@ -82,6 +82,6 @@ jobs:
           build-args: |
             USE_LOCAL_WHEEL=${{ inputs.use-local-wheel }}
           tags: |
-            ${{ vars.DOCKER_HUB }}/paig:${{ steps.tag_vars.outputs.BRANCH }}-latest
-            ${{ vars.DOCKER_HUB }}/paig:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-latest
+            privacera/paig:${{ steps.tag_vars.outputs.BRANCH }}-${{ steps.tag_vars.outputs.SHORT_SHA }}
           no-cache: true
