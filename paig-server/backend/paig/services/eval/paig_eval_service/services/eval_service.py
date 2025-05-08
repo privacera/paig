@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import traceback
 import uuid
 
@@ -22,6 +23,12 @@ logger = logging.getLogger(__name__)
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
 from core.middlewares.request_session_context_middleware import get_tenant_id
+from ..utility import decrypt_target_creds
+
+if config.get("disable_remote_eval_plugins", False):
+    # Disable remote eval plugins if the config is set
+    logger.info(f"setting remote eval plugins to {config.get('disable_remote_eval_plugins')}")
+    os.environ['PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION'] = str(config.get("disable_remote_eval_plugins"))
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
@@ -225,6 +232,8 @@ class EvaluationService:
                     target_user = auth_user[str(app.id)]['username']
                 elif target_host['config']['headers'] == {}:
                     del target_host['config']['headers']
+                else:
+                    target_host['config']['headers'] = await decrypt_target_creds(target_host['config']['headers'])
             target_host['label'] = app.name
             app_names.append(app.name)
             final_target.append(target_host)
