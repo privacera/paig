@@ -13,6 +13,11 @@ class CustomException(Exception):
         if details:
             self.details = details
 
+class TooManyRequestsException(CustomException):
+    code = HTTPStatus.TOO_MANY_REQUESTS
+    error_code = HTTPStatus.TOO_MANY_REQUESTS
+    message = HTTPStatus.TOO_MANY_REQUESTS.description
+
 
 class BadRequestException(CustomException):
     code = HTTPStatus.BAD_REQUEST

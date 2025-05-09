@@ -22,23 +22,17 @@ class EvaluationController:
         self.evaluation_result_service = evaluation_result_service
 
     async def create_and_run_evaluation(self, eval_params, user):
-        try:
-            eval_params['owner'] = user
-            report_name = eval_params['report_name']
-            del eval_params['report_name']
-            create_config = await self.evaluation_config_service.create_eval_config(eval_params)
-            resp = await self.run_evaluation(create_config.id, user, report_name)
-            return resp
-        except Exception as e:
-            raise BadRequestException(str(e))
+        eval_params['owner'] = user
+        report_name = eval_params['report_name']
+        del eval_params['report_name']
+        create_config = await self.evaluation_config_service.create_eval_config(eval_params)
+        resp = await self.run_evaluation(create_config.id, user, report_name)
+        return resp
 
     async def run_evaluation(self, eval_config_id, user, report_name, auth_user=None):
-        try:
-            resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
-            return resp
-        except Exception as e:
-            logger.error(f"Error while running evaluation: {str(e)}")
-            raise BadRequestException(str(e))
+        resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
+        return resp
+
 
     async def get_evaluation_results(self, include_filters, exclude_filters, page, size, sort, min_time, max_time):
         if include_filters.owner:

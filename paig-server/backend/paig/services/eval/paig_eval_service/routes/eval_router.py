@@ -23,11 +23,8 @@ async def evaluation_run(
     body_params: RunRequest,
     evaluation_controller: EvaluationController = evaluator_controller_instance,
 ):
-    try:
-        user: dict = get_user()
-        return await evaluation_controller.run_evaluation(config_id, user['username'], body_params.report_name, body_params.auth_user)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    user: dict = get_user()
+    return await evaluation_controller.run_evaluation(config_id, user['username'], body_params.report_name, body_params.auth_user)
 
 @evaluation_router.post("/{eval_id}/rerun")
 async def evaluation_rerun(

@@ -7,11 +7,15 @@ import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
 from core.controllers.paginated_response import create_pageable_response
 from core.db_session.transactional import Transactional, Propagation
+from ..factory.crypto_factory import get_crypto_service
+from ..utility import encrypt_target_creds, decrypt_target_creds
 
 logger = logging.getLogger(__name__)
 
+crypto_service = get_crypto_service()
 
-def transform_eval_target(eval_target):
+
+async def transform_eval_target(eval_target):
     eval_target_dict = dict()
     if not is_valid_url(eval_target['url']):
         raise BadRequestException("Invalid URL format")
@@ -35,15 +39,16 @@ def transform_eval_target(eval_target):
             raise BadRequestException("Invalid body format")
     eval_config['transformResponse'] = eval_target['transformResponse']
     eval_config['headers'] = {k: v for k, v in eval_config['headers'].items() if k and v}
+    eval_config['headers'] = await encrypt_target_creds(eval_config['headers'])
     eval_target_dict['config'] = eval_config
     return json.dumps(eval_target_dict)
 
-def transform_eval_target_to_dict(config):
+async def transform_eval_target_to_dict(config):
     target = json.loads(config)
     config = target.get('config', {})
     eval_taget_config = dict()
     eval_taget_config['method'] = config.get('method', '')
-    eval_taget_config['headers'] = config.get('headers', {})
+    eval_taget_config['headers'] = await decrypt_target_creds(config.get('headers', {}))
     eval_taget_config['body'] = config.get('body', {})
     eval_taget_config['transformResponse'] = config.get('transformResponse', '')
     eval_taget_config['url'] = target.get('id', '')
@@ -90,7 +95,7 @@ class EvaluationTargetService:
     async def create_app_target(self, body_params):
         new_params = dict()
 
-        transformed_eval = transform_eval_target(body_params)
+        transformed_eval = await transform_eval_target(body_params)
         new_params['config'] = transformed_eval
         new_params['name'] = body_params['name']
         new_params['url'] = body_params['url']
@@ -119,7 +124,7 @@ class EvaluationTargetService:
                 name_exists = await self.eval_target_repository.application_name_exists(body_params['name'])
                 if name_exists:
                     raise BadRequestException(f"Application with name {body_params['name']} already exists")
-        transformed_eval = transform_eval_target(body_params)
+        transformed_eval = await transform_eval_target(body_params)
         new_params['config'] = transformed_eval
         new_params['url'] = body_params['url']
         new_params['status'] = 'ACTIVE'
@@ -156,7 +161,7 @@ class EvaluationTargetService:
             raise NotFoundException(f"No application found with id {app_id}")
         try:
             resp = dict()
-            resp['config'] = transform_eval_target_to_dict(target_model.config)
+            resp['config'] = await transform_eval_target_to_dict(target_model.config)
             resp['name'] = target_model.name
             resp['url'] = target_model.url
             resp['id'] = target_model.id

@@ -33,3 +33,8 @@ authz:
 # audit_storage_datasource: "<RDS or OPENSEARCH>"
 
 # eval_category_file: "<Replace with Eval Category File Path>"
+
+# disable_remote_eval_plugins: true
+# max_eval_concurrent_limit: 2
+# eval_timeout_in_min: 60
+# disable_eval_concurrent_limit: "false"

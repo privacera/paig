@@ -304,3 +304,7 @@ def alias_field_to_column_name(sort, model_view):
         sort_column_name = ",".join(field_names)
         result.append(f"{sort_column_name},{sort_type}")
     return result
+
+
+def replace_timezone(dt, tzinfo=timezone.utc):
+    return dt.replace(tzinfo=tzinfo)

@@ -7,6 +7,7 @@ from .base import (
     UnprocessableEntity,
     InternalServerError,
     ConflictException,
+    TooManyRequestsException,
 )
 
 __all__ = [
@@ -18,4 +19,5 @@ __all__ = [
     "UnprocessableEntity",
     "InternalServerError",
     "ConflictException",
+    "TooManyRequestsException",
 ]
