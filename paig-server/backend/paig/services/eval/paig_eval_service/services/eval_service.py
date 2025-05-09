@@ -11,8 +11,8 @@ from ..database.db_operations.eval_repository import EvaluationRepository
 from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, init_config as eval_init_config
 from paig_evaluation.promptfoo_utils import get_security_plugin_map
 import logging
-from core.utils import current_utc_time
-from core.exceptions import BadRequestException
+from core.utils import current_utc_time, replace_timezone
+from core.exceptions import BadRequestException, TooManyRequestsException
 from core.config import load_config_file
 
 
@@ -32,8 +32,9 @@ if config.get("disable_remote_eval_plugins", False):
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
-MAX_CONCURRENT_EVALS = config.get("max_concurrent_evals", 0)
-EVAL_TIMEOUT = config.get("eval_timeout_in_min", 24*60) # 24 hours
+DISABLE_EVAL_CONCURRENT_LIMIT = config.get("disable_eval_concurrent_limit", "false")
+MAX_CONCURRENT_EVALS = config.get("max_eval_concurrent_limit", 2)
+EVAL_TIMEOUT = config.get("eval_timeout_in_min", 6*60) # 6 hours
 
 def prepare_report_format(result, update_eval_params):
     results = result["results"]
@@ -244,7 +245,7 @@ class EvaluationService:
     @Transactional(propagation=Propagation.REQUIRED)
     async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
         if not await self.validate_eval_availability():
-            raise BadRequestException('Concurrent evaluation limit reached. Please try again later')
+            raise TooManyRequestsException('Concurrent evaluation limit reached. Please try again later')
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
@@ -317,14 +318,15 @@ class EvaluationService:
         base_run_id = existing_evaluation.eval_id
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
-        return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+            return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+
 
 
     async def validate_eval_availability(self):
         """
         Validate if the evaluation is available.
         """
-        if not MAX_CONCURRENT_EVALS:
+        if DISABLE_EVAL_CONCURRENT_LIMIT.lower() == 'true':
             return True
         active_existing_evaluation = await self.evaluation_repository.get_active_evaluation()
         if not active_existing_evaluation:
@@ -332,7 +334,7 @@ class EvaluationService:
         active_evals = len(active_existing_evaluation)
         # Mark timeout evaluations as failed
         for evaluation in active_existing_evaluation:
-            if evaluation.create_time and (current_utc_time() - evaluation.create_time).total_seconds() > EVAL_TIMEOUT * 60:
+            if evaluation.create_time and (current_utc_time() - replace_timezone(evaluation.create_time)).total_seconds() > EVAL_TIMEOUT * 60:
                 logger.info(f"Evaluation timed out for eval_id: {evaluation.eval_id}")
                 # Update the evaluation status to FAILED
                 await self.evaluation_repository.update_evaluation({'status': 'FAILED'}, evaluation)

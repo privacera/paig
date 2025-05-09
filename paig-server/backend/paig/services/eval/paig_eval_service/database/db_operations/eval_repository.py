@@ -108,17 +108,16 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
     async def get_active_evaluation(self):
         try:
             query = select(EvaluationModel).filter(
-                        and_(
-                            EvaluationModel.tenant_id == get_tenant_id(),
-                            or_(
-                                EvaluationModel.status == 'GENERATING',
-                                EvaluationModel.status == 'EVALUATING'
-                            )
-                        )
+                and_(
+                    EvaluationModel.tenant_id == get_tenant_id(),
+                    or_(
+                        EvaluationModel.status == 'GENERATING',
+                        EvaluationModel.status == 'EVALUATING'
                     )
-            result = await session.execute(query)
-            rows = result.fetchall()
-            return rows
+                )
+            )
+            query = await session.scalars(query)
+            return query.all()
         except NoResultFound:
             return None
 
