@@ -32,7 +32,8 @@ if config.get("disable_remote_eval_plugins", False):
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
-
+MAX_CONCURRENT_EVALS = config.get("max_concurrent_evals", 0)
+EVAL_TIMEOUT = config.get("eval_timeout_in_min", 24*60) # 24 hours
 
 def prepare_report_format(result, update_eval_params):
     results = result["results"]
@@ -242,6 +243,8 @@ class EvaluationService:
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
+        if not await self.validate_eval_availability():
+            raise BadRequestException('Concurrent evaluation limit reached. Please try again later')
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
@@ -315,3 +318,23 @@ class EvaluationService:
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
         return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+
+
+    async def validate_eval_availability(self):
+        """
+        Validate if the evaluation is available.
+        """
+        if not MAX_CONCURRENT_EVALS:
+            return True
+        active_existing_evaluation = await self.evaluation_repository.get_active_evaluation()
+        if not active_existing_evaluation:
+            return True
+        active_evals = len(active_existing_evaluation)
+        # Mark timeout evaluations as failed
+        for evaluation in active_existing_evaluation:
+            if evaluation.create_time and (current_utc_time() - evaluation.create_time).total_seconds() > EVAL_TIMEOUT * 60:
+                logger.info(f"Evaluation timed out for eval_id: {evaluation.eval_id}")
+                # Update the evaluation status to FAILED
+                await self.evaluation_repository.update_evaluation({'status': 'FAILED'}, evaluation)
+                active_evals -= 1
+        return  active_evals < MAX_CONCURRENT_EVALS
