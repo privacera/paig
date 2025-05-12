@@ -32,9 +32,10 @@ if config.get("disable_remote_eval_plugins", False):
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
-DISABLE_EVAL_CONCURRENT_LIMIT = config.get("disable_eval_concurrent_limit", "false")
+DISABLE_EVAL_CONCURRENT_LIMIT = str(config.get("disable_eval_concurrent_limit", "false")).lower() == "true"
 MAX_CONCURRENT_EVALS = config.get("max_eval_concurrent_limit", 2)
 EVAL_TIMEOUT = config.get("eval_timeout_in_min", 6*60) # 6 hours
+ENABLE_EVAL_VERBOSE = str(config.get("enable_eval_verbose", "false")).lower() == "true"
 
 def prepare_report_format(result, update_eval_params):
     results = result["results"]
@@ -140,7 +141,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
         generated_prompts_config = dict()
         if not eval_config.generated_config:
             try:
-                generated_prompts_config_result = eval_obj.generate_prompts(application_config=application_config, plugins=categories, targets=target_hosts)
+                generated_prompts_config_result = eval_obj.generate_prompts(application_config=application_config, plugins=categories, targets=target_hosts, verbose=ENABLE_EVAL_VERBOSE)
                 if generated_prompts_config_result['status'] != 'success':
                     update_eval_params['status'] = 'FAILED'
                     logger.error('Prompts generation failed:- ' + str(generated_prompts_config_result['message']))
@@ -180,7 +181,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
             paig_eval_id=eval_id,
             generated_prompts=generated_prompts_config,
             custom_prompts=custom_prompts,
-            verbose=False
+            verbose= ENABLE_EVAL_VERBOSE
         )
         logger.info('Evaluation completed with status ' + str(report['status']))
         try:
@@ -318,7 +319,7 @@ class EvaluationService:
         base_run_id = existing_evaluation.eval_id
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
-            return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+        return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
 
 
 
@@ -326,7 +327,7 @@ class EvaluationService:
         """
         Validate if the evaluation is available.
         """
-        if DISABLE_EVAL_CONCURRENT_LIMIT.lower() == 'true':
+        if DISABLE_EVAL_CONCURRENT_LIMIT:
             return True
         active_existing_evaluation = await self.evaluation_repository.get_active_evaluation()
         if not active_existing_evaluation:

@@ -38,3 +38,4 @@ authz:
 # max_eval_concurrent_limit: 2
 # eval_timeout_in_min: 60
 # disable_eval_concurrent_limit: "false"
+# enable_eval_verbose: "false"
