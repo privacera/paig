@@ -3,7 +3,7 @@ from typing import List
 from core.controllers.base_controller import BaseController
 from core.controllers.paginated_response import Pageable
 from core.exceptions import BadRequestException
-from core.exceptions.error_messages_parser import (get_error_message, ERROR_RESOURCE_ALREADY_EXISTS)
+from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_ALREADY_EXISTS
 from core.utils import validate_id, validate_string_data, SingletonDepends
 from api.governance.api_schemas.metadata_value import MetadataValueView, MetadataValueFilter
 from api.governance.database.db_models.metadata_value_model import VectorDBMetaDataValueModel
@@ -89,6 +89,12 @@ class MetadataValueRequestValidator:
         Args:
             value (str): The value of the Metadata Value.
         """
+        if value is None:
+            raise BadRequestException("Attribute'metadataValue is required.")
+
+        if isinstance(value, str) and value.strip() == "":
+            raise BadRequestException("Attribute'metadataValue cannot be empty or whitespace.")
+
         validate_string_data(value, "Metadata attribute value", required=False, max_length=4000)
 
     async def get_metadata_attr_by_values(self, metadata_attr: MetadataValueView):
