@@ -249,13 +249,18 @@ def read_and_get_security_plugins() -> Union[str, Dict]:
             return "Error: Invalid custom security plugins data."
         security_plugins.update(custom_security_plugins)
 
+    PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION = os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION')
 
-    # Extract plugins
-    if os.getenv('PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION') in {'1', 'true', 'True'}:
-        security_plugins = {k: v for k, v in security_plugins.items() if not v.get("remote", False)}
+    filtered_security_plugins = dict()
+    for plugin in security_plugins:
+        if not security_plugins[plugin].get("enabled", True):
+            continue
+        if PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION in {'1', 'true', 'True'} and security_plugins[plugin].get("remote", False):
+            continue
+        filtered_security_plugins[plugin] = security_plugins[plugin]
 
 
-    return security_plugins
+    return filtered_security_plugins
 
 
 def validate_generate_prompts_request_params(application_config, plugins, targets):
