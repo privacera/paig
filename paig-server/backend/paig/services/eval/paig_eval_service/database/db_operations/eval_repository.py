@@ -1,4 +1,4 @@
-from sqlalchemy import and_, func, case
+from sqlalchemy import and_, func, case, or_
 
 from ...api_schemas.eval_schema import BaseEvaluationView
 from ..db_models import EvaluationModel
@@ -104,6 +104,22 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         count = (await self.get_count_with_filter(filters))
 
         return results, count
+
+    async def get_active_evaluation(self):
+        try:
+            query = select(EvaluationModel).filter(
+                and_(
+                    EvaluationModel.tenant_id == get_tenant_id(),
+                    or_(
+                        EvaluationModel.status == 'GENERATING',
+                        EvaluationModel.status == 'EVALUATING'
+                    )
+                )
+            )
+            query = await session.scalars(query)
+            return query.all()
+        except NoResultFound:
+            return None
 
 
 
