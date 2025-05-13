@@ -90,10 +90,10 @@ class MetadataValueRequestValidator:
             value (str): The value of the Metadata Value.
         """
         if value is None:
-            raise BadRequestException("Attribute'metadataValue is required.")
+            raise BadRequestException("Attribute 'metadataValue' is required.")
 
         if isinstance(value, str) and value.strip() == "":
-            raise BadRequestException("Attribute'metadataValue cannot be empty or whitespace.")
+            raise BadRequestException("Attribute 'metadataValue' cannot be empty or whitespace.")
 
         validate_string_data(value, "Metadata attribute value", required=False, max_length=4000)
 
