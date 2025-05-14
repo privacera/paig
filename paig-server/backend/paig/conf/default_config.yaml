@@ -27,11 +27,11 @@ authz:
       get_vector_db_policies: 3
 
 
-disable_remote_eval_plugins: "true"
-max_eval_concurrent_limit: 2
-eval_timeout_in_min: 3600
-disable_eval_concurrent_limit: "false"
-enable_eval_verbose: "false"
+# disable_remote_eval_plugins: "false"
+# max_eval_concurrent_limit: 2
+# eval_timeout_in_min: 3600
+# disable_eval_concurrent_limit: "false"
+# enable_eval_verbose: "false"
 
 # default_shield_server_url: "<Replace with Shield Server URL>"
 
