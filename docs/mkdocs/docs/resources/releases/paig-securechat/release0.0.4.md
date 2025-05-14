@@ -1,5 +1,5 @@
 ---
-title: PAIG SecureChat 0.0.3
+title: PAIG SecureChat 0.0.4
 ---
 - **Improvements & Updates**:
     - Added support for basic authentication in the web server.
