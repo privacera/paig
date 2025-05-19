@@ -3,7 +3,7 @@ import zipfile
 import tarfile
 import pytest
 from unittest.mock import MagicMock
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from vectordb.vector_utils import (
     is_directory_empty, get_all_files, get_loaders, create_documents, directory_clean_up, load_vectordb_configs,
