@@ -246,7 +246,7 @@ class EvaluationService:
     @Transactional(propagation=Propagation.REQUIRED)
     async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
         if not await self.validate_eval_availability():
-            raise TooManyRequestsException('Concurrent evaluation limit reached. Please try again later')
+            raise TooManyRequestsException('The maximum number of evaluations has already been reached. Please try again once one has completed.')
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')

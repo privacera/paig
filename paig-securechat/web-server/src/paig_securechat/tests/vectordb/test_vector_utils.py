@@ -3,7 +3,7 @@ import zipfile
 import tarfile
 import pytest
 from unittest.mock import MagicMock
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from vectordb.vector_utils import (
     is_directory_empty, get_all_files, get_loaders, create_documents, directory_clean_up, load_vectordb_configs,
@@ -148,13 +148,27 @@ def test_get_all_files(create_files):
     result = get_all_files(create_files)
     assert len(result) == 6
     assert os.path.isdir(create_files)
-
-
+    
 def test_get_loaders(data_files_directory):
     files = get_all_files(data_files_directory)
     loaders = get_loaders(files)
-    expected = TextLoader(files[0][1], encoding="utf-8")
-    assert type(expected) == type(loaders[0])
+    for (file_path, _), loader in zip(files, loaders):
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".txt":
+            from langchain_community.document_loaders.text import TextLoader
+            assert isinstance(loader, TextLoader)
+        elif ext == ".pdf":
+            from langchain_community.document_loaders.pdf import PyPDFLoader
+            assert isinstance(loader, PyPDFLoader)
+        elif ext == ".md":
+            from langchain_community.document_loaders.markdown import UnstructuredMarkdownLoader
+            assert isinstance(loader, UnstructuredMarkdownLoader)
+        elif ext == ".json" or ext == ".jsonl":
+            from langchain_community.document_loaders.text import TextLoader
+            assert isinstance(loader, TextLoader)
+        else:
+            # for unknown types, just check loader is not None
+            assert loader is not None
 
 
 def test_create_documents(non_empty_directory):

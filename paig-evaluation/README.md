@@ -19,7 +19,7 @@ Before using PAIG Evaluation, ensure the following dependencies are installed:
 
 Use npm to install the required dependencies:  
 ```bash
-npm install -g promptfoo@0.102.4
+npm install -g promptfoo
 ```
 
 ### 2. Install the PAIG Evaluation Library
