@@ -146,6 +146,15 @@ def cleanup():
 
 
 def start_server(host, port, background, workers):
+    # import ngrok python sdk
+    import ngrok
+
+    # Establish connectivity
+    listener = ngrok.forward(4545, authtoken_from_env=True)
+
+    # Output ngrok url to console
+    print(f"Ingress established at {listener.url()}")
+
     background = background.lower() == "true"
 
     if not background:
