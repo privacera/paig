@@ -55,7 +55,8 @@ dependencies = [
     "psutil",
     "paig_common",
     "paig-authorizer-core>=0.0.3",
-    "paig_evaluation>=0.0.2"
+    "paig_evaluation>=0.0.2",
+    "ngrok==1.4.0",
 ]
 
 [tool.hatch.metadata]
