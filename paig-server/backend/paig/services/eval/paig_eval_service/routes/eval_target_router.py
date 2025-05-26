@@ -2,8 +2,15 @@ from typing import List
 from fastapi import APIRouter, Request, Response, Depends, Query
 from core.utils import SingletonDepends
 from ..controllers.eval_target_controller import EvaluationTargetController
-from ..api_schemas.eval_target_schema import IncludeQueryParams, QueryParamsBase, include_query_params, exclude_query_params
-from ..api_schemas.eval_target_schema import TargetCreateRequest, TargetUpdateRequest
+from ..api_schemas.eval_target_schema import (
+    IncludeQueryParams,
+    QueryParamsBase,
+    include_query_params,
+    exclude_query_params,
+    TargetCreateRequest,
+    TargetUpdateRequest,
+    TargetTestRequest
+)
 
 evaluation_target_router = APIRouter()
 
@@ -31,6 +38,13 @@ async def save_target_application(
 ):
     return await eval_target_controller.create_app_target(body_params=body_params.model_dump())
 
+
+@evaluation_target_router.post("/application/test")
+async def test_target_application(
+    body_params: TargetTestRequest,
+    eval_target_controller: EvaluationTargetController = eval_target_controller_instance
+):
+    return await eval_target_controller.test_app_target(request_data=body_params.model_dump())
 
 @evaluation_target_router.put("/application/{id}")
 async def update_target_application(
