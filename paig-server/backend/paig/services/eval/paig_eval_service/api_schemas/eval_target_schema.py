@@ -17,7 +17,7 @@ class TargetCommonRequest(BaseModel):
     body: Union[Dict[str, Any], str] = Field(default="{}", description="body of target host")  # Accepts both dict & str
     headers: Union[Dict[str, Any], str] = Field(default="{}", description="headers of target host")  # Accepts both dict & str
     method: HttpMethod = Field(..., max_length=255, min_length=1, description="The method of the target")
-    transformResponse: str = Field(..., description="The transformResponse of the target")
+    transformResponse: Optional[str] = Field(None, description="JS-like transform expression for the response")
     name: str = Field(..., max_length=255, min_length=1, pattern=r"^[^,]+$", description="The name of the target")
     username: Optional[str] = Field(None, description="The username of the target", pattern=r"^[^,]+$")
 
