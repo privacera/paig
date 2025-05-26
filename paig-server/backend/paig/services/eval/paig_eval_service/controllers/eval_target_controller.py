@@ -92,10 +92,10 @@ class EvaluationTargetController:
             request_data (dict): Contains method, url, headers, and body (payload).
 
         Returns:
-            dict: The response status and message or error details.
+            dict: A test_response object containing status_code and a message or response body.
         """
         method = request_data.get("method", "GET").upper()
-        url = str(request_data.get("url")) 
+        url = str(request_data.get("url"))
         headers = request_data.get("headers", {})
         payload = request_data.get("body", None)
 
@@ -107,14 +107,16 @@ class EvaluationTargetController:
                     response = await client.request(method, url, headers=headers, content=payload)
 
             return {
-                "success": True,
-                "status_code": response.status_code,
-                "response_body": response.text
+                "test_response": {
+                    "status_code": response.status_code,
+                    "response": "Connection was successful" if response.status_code < 400 else response.text
+                }
             }
+
         except httpx.RequestError as e:
-            raise HTTPException(
-                status_code=502,
-                detail=f"Failed to connect to the target application: {str(e)}"
-            )
-
-
+            return {
+                "test_response": {
+                    "status_code": 502,
+                    "response": f"Failed to connect to the target application: {str(e)}"
+                }
+            }
