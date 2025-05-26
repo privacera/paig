@@ -1,7 +1,6 @@
 from enum import Enum
-
 from fastapi import Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, Any, Union, Dict
 from core.factory.database_initiator import BaseAPIFilter
 
@@ -26,18 +25,29 @@ class TargetCommonRequest(BaseModel):
 class TargetCreateRequest(TargetCommonRequest):
     ai_application_id: Optional[int] = Field(None, description="The AI application ID")
 
+
 class TargetUpdateRequest(TargetCommonRequest):
     pass
 
+
+class TargetTestRequest(BaseModel):
+    url: HttpUrl = Field(..., description="Target URL to test")
+    body: Optional[Union[Dict[str, Any], str]] = Field(default_factory=dict, description="Request body for the target")
+    headers: Optional[Union[Dict[str, str], str]] = Field(default_factory=dict, description="Headers for the request")
+    method: HttpMethod = Field(..., description="HTTP method to use")
+    transformResponse: Optional[str] = Field(None, description="JS-like transform expression for the response")
+    name: Optional[str] = Field(None, max_length=255, min_length=1, pattern=r"^[^,]+$", description="The name of the target")
+    username: Optional[str] = Field(None, pattern=r"^[^,]+$", description="The username to associate with the target")
+    ai_application_id: Optional[int] = Field(None, description="The AI application ID")
 
 
 class QueryParamsBase(BaseAPIFilter):
     name: Optional[str] = Field(None, description="Name of application")
 
 
-
 class IncludeQueryParams(QueryParamsBase):
     pass
+
 
 def include_query_params(
         include_query_name: Optional[str] = Query(None, alias="includeQuery.name"),
@@ -51,7 +61,7 @@ def exclude_query_params(
         exclude_query_name: Optional[str] = Query(None, alias="excludeQuery.name"),
 ) -> QueryParamsBase:
     return QueryParamsBase(
-      name=exclude_query_name,
+        name=exclude_query_name,
     )
 
 

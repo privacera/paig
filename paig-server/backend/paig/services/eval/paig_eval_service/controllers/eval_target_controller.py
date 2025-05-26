@@ -1,6 +1,8 @@
 from core.utils import SingletonDepends
 from ..services.eval_target_service import EvaluationTargetService
 from typing import List
+import httpx
+from fastapi import HTTPException
 
 
 class EvaluationTargetController:
@@ -81,4 +83,38 @@ class EvaluationTargetController:
             dict: The response message.
         """
         return await self.eval_target_service.get_app_target_by_id(app_id=app_id)
+    
+    async def test_app_target(self, request_data: dict):
+        """
+        Test the connection to a target AI application by making an HTTP request using the provided details.
+
+        Args:
+            request_data (dict): Contains method, url, headers, and body (payload).
+
+        Returns:
+            dict: The response status and message or error details.
+        """
+        method = request_data.get("method", "GET").upper()
+        url = str(request_data.get("url")) 
+        headers = request_data.get("headers", {})
+        payload = request_data.get("body", None)
+
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                if isinstance(payload, dict):
+                    response = await client.request(method, url, headers=headers, json=payload)
+                else:
+                    response = await client.request(method, url, headers=headers, content=payload)
+
+            return {
+                "success": True,
+                "status_code": response.status_code,
+                "response_body": response.text
+            }
+        except httpx.RequestError as e:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Failed to connect to the target application: {str(e)}"
+            )
+
 
