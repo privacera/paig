@@ -337,22 +337,24 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
         purpose (str): The purpose of the application.
 
     Returns:
-        List[Dict[str, str]] | str: The list of suggested plugins with descriptions or an error message.
+        Dict | str: The list of suggested plugins with descriptions or an error message.
     """
+    # Load model name from config
+    config = load_config()
+    model_name = config.get("gpt", {}).get("model", "gpt-4")
     security_plugins = read_and_get_security_plugins()
     if isinstance(security_plugins, str):
         return security_plugins
-
+    
     plugins_names_list = list(security_plugins.keys())
 
     plugins_json = json.dumps({"plugins": plugins_names_list}, indent=2)
 
     prompt = f"""
         You are an AI security expert specializing in identifying vulnerabilities in large language model applications. The user will provide the purpose of their application, and your task is to suggest plugins to test security vulnerabilities based on purpose.
-
-        Below is the list of supported plugins:
+       
+         Below is the list of supported plugins:
         {plugins_json}
-
         Provide the output in the below JSON format:
         {{
           "plugins": [
@@ -361,15 +363,15 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
             ....
           ]
         }}
-
+        
         Don't use code snippets or any programming language specific syntax. Just provide the output in plain text format.
 
         Application purpose is: {purpose}
         """
-
+    
     try:
         response = openai.chat.completions.create(
-            model="gpt-4",
+            model=model_name,
             messages=[
                 {"role": "system", "content": "You are an AI security expert."},
                 {"role": "user", "content": prompt}
@@ -393,7 +395,7 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
                     }
                 }
             ],
-            function_call = {"name": "suggest_plugins"}  # Explicitly call the function
+            function_call = {"name": "suggest_plugins"}
         )
         try:
             return json.loads(response.choices[0].message.function_call.arguments)

@@ -1,2 +1,5 @@
 npm_dependency:
   promptfoo: "0.112.5"
+  gpt:
+  model: "gpt-4.1"
+  

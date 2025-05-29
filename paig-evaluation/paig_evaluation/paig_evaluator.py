@@ -72,8 +72,9 @@ def get_all_plugins() -> Dict:
         return response
 
 
-def init_config(plugin_file_path: str = None, email: str = 'promptfoo@paig.ai') -> Dict:
+def init_config(plugin_file_path: str = None, email: str = 'promptfoo@paig.ai', model: str = None) -> None:
     constants.PLUGIN_FILE_PATH = plugin_file_path
+    constants.MODEL = model  # save the model in your constants or a config variable
     ensure_promptfoo_config(email)
 
 def init_setup() -> Dict:

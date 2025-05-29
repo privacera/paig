@@ -296,17 +296,17 @@ class EvaluationService:
         return await self.evaluation_repository.delete_evaluation(existing_evaluation)
 
     @staticmethod
-    async def get_categories(purpose):
+    async def get_categories(purpose, model=None):
         resp = dict()
-        suggested_categories = get_suggested_plugins(purpose)
+        suggested_categories = get_suggested_plugins(purpose, model=model)
         if not isinstance(suggested_categories, dict):
-            raise BadRequestException('Invalid response received for for suggested categories')
+            raise BadRequestException('Invalid response received for suggested categories')
         if suggested_categories['status'] != 'success':
             raise BadRequestException(suggested_categories['message'])
         resp['suggested_categories'] = suggested_categories['result']
-        all_categories = get_all_plugins()
+        all_categories = get_all_plugins(model=model)
         if not isinstance(all_categories, dict):
-            raise BadRequestException('Invalid response received for for all categories')
+            raise BadRequestException('Invalid response received for all categories')
         if all_categories['status'] != 'success':
             raise BadRequestException(all_categories['message'])
         resp['all_categories'] = all_categories['result']
