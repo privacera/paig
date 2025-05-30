@@ -329,12 +329,13 @@ def validate_evaluate_request_params(paig_eval_id, generated_prompts, base_promp
     return True, ""
 
 
-def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
+def suggest_promptfoo_redteam_plugins_with_openai(purpose: str, model: str = "gpt-4") -> Dict | str:
     """
     Suggests plugins to test security vulnerabilities based on the purpose of the application using OpenAI.
 
     Args:
         purpose (str): The purpose of the application.
+        model (str): The OpenAI model to use. Default is "gpt-4".
 
     Returns:
         List[Dict[str, str]] | str: The list of suggested plugins with descriptions or an error message.
@@ -369,7 +370,7 @@ def suggest_promptfoo_redteam_plugins_with_openai(purpose: str) -> Dict | str:
 
     try:
         response = openai.chat.completions.create(
-            model="gpt-4",
+            model=model,
             messages=[
                 {"role": "system", "content": "You are an AI security expert."},
                 {"role": "user", "content": prompt}

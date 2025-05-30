@@ -26,6 +26,10 @@ authz:
       get_vector_db_details: 60
       get_vector_db_policies: 3
 
+llm:
+  model: 
+
+
 
 # disable_remote_eval_plugins: "false"
 # max_eval_concurrent_limit: 2
