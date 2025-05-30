@@ -180,3 +180,6 @@ class PAIGEvaluator:
             response['message'] = str(e)
         finally:
             return response
+
+
+init_config = eval_init_config
