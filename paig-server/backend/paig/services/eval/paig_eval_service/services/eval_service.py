@@ -8,7 +8,7 @@ from ..database.db_operations.eval_config_repository import EvaluationConfigHist
 from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
 from ..database.db_operations.eval_repository import EvaluationRepository
-from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, init_config as eval_init_config
+from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, eval_init_config
 from paig_evaluation.promptfoo_utils import get_security_plugin_map
 import logging
 from core.utils import current_utc_time, replace_timezone
@@ -29,8 +29,13 @@ if config.get("disable_remote_eval_plugins", False):
     # Disable remote eval plugins if the config is set
     logger.info(f"setting remote eval plugins to {config.get('disable_remote_eval_plugins')}")
     os.environ['PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION'] = str(config.get("disable_remote_eval_plugins"))
+model = config.get("llm", {}).get("model") or "gpt-4"
 
-eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
+eval_init_config(
+    email='promptfoo@paig.ai',
+    plugin_file_path=config.get("eval_category_file", None),
+    model=model,
+)
 
 DISABLE_EVAL_CONCURRENT_LIMIT = str(config.get("disable_eval_concurrent_limit", "false")).lower() == "true"
 MAX_CONCURRENT_EVALS = config.get("max_eval_concurrent_limit", 2)
@@ -298,19 +303,25 @@ class EvaluationService:
     @staticmethod
     async def get_categories(purpose):
         resp = dict()
-        suggested_categories = get_suggested_plugins(purpose)
+
+        # Get model from config here
+        model = eval_config.get("llm", {}).get("model", "gpt-4")
+        suggested_categories = get_suggested_plugins(purpose, model=model)
         if not isinstance(suggested_categories, dict):
-            raise BadRequestException('Invalid response received for for suggested categories')
+            raise BadRequestException('Invalid response received for suggested categories')
         if suggested_categories['status'] != 'success':
             raise BadRequestException(suggested_categories['message'])
         resp['suggested_categories'] = suggested_categories['result']
+
         all_categories = get_all_plugins()
         if not isinstance(all_categories, dict):
-            raise BadRequestException('Invalid response received for for all categories')
+            raise BadRequestException('Invalid response received for all categories')
         if all_categories['status'] != 'success':
             raise BadRequestException(all_categories['message'])
         resp['all_categories'] = all_categories['result']
+
         return resp
+
 
     async def rerun_evaluation_by_id(self, eval_id, owner, report_name):
         existing_evaluation = await self.evaluation_repository.get_evaluations_by_field('id', eval_id)

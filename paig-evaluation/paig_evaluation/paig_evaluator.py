@@ -20,33 +20,37 @@ eval_config = load_config_file()
 
 
 def get_suggested_plugins(purpose: str) -> Dict:
-        """
-        Get suggested plugins for the application.
+    """
+    Get suggested plugins for the application.
 
-        Args:
-            purpose (str): Application purpose.
+    Args:
+        purpose (str): Application purpose.
 
-        Returns:
-            List[str]: List of suggested plugins.
-        """
-        response = get_response_object()
-        response['result'] = []
-        try:
-            suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose)
-            if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
-                if isinstance(suggested_plugins['plugins'], list):
-                    response['result'] = get_suggested_plugins_with_info(suggested_plugins['plugins'])
-                    response['status'] = 'success'
-                    response['message'] = 'Suggested plugins fetched successfully'
-                else:
-                    response['message'] = 'Invalid response received from the OpenAI API for suggested plugins'
+    Returns:
+        List[str]: List of suggested plugins.
+    """
+    response = get_response_object()
+    response['result'] = []
+    try:
+        # Fetch model from eval_config or use default
+        model = eval_config.get("llm", {}).get("model", "gpt-4")
+
+        # Pass the model to the function
+        suggested_plugins = suggest_promptfoo_redteam_plugins_with_openai(purpose, model=model)
+
+        if isinstance(suggested_plugins, dict) and "plugins" in suggested_plugins:
+            if isinstance(suggested_plugins['plugins'], list):
+                response['result'] = get_suggested_plugins_with_info(suggested_plugins['plugins'])
+                response['status'] = 'success'
+                response['message'] = 'Suggested plugins fetched successfully'
             else:
-                response['message'] = str(suggested_plugins)
-        except Exception as e:
-            response['message'] = str(e)
-        finally:
-            return response
-
+                response['message'] = 'Invalid response received from the OpenAI API for suggested plugins'
+        else:
+            response['message'] = str(suggested_plugins)
+    except Exception as e:
+        response['message'] = str(e)
+    finally:
+        return response
 
 
 def get_all_plugins() -> Dict:
@@ -71,10 +75,11 @@ def get_all_plugins() -> Dict:
     finally:
         return response
 
-
-def init_config(plugin_file_path: str = None, email: str = 'promptfoo@paig.ai') -> Dict:
+def eval_init_config(email: str = 'promptfoo@paig.ai', plugin_file_path: str = None, model: str = 'gpt-4') -> None:
     constants.PLUGIN_FILE_PATH = plugin_file_path
+    constants.LLM_MODEL = model  # Save the model in constants
     ensure_promptfoo_config(email)
+
 
 def init_setup() -> Dict:
     """
@@ -97,6 +102,7 @@ def init_setup() -> Dict:
     finally:
         return response
 
+
 class PAIGEvaluator:
 
     def init(self):
@@ -111,7 +117,6 @@ class PAIGEvaluator:
         }
 
         return initial_config
-
 
     def generate_prompts(self, application_config: dict, plugins: List[str], targets: List[Dict], verbose: bool = False) -> dict:
         """
