@@ -18,8 +18,9 @@ const VRunReportForm = observer(({form, mode, asUser = false}) => {
         const formattedTime = now.toLocaleTimeString('en-GB', {
           hour: '2-digit',
           minute: '2-digit',
+          second: '2-digit',
           hour12: false
-        }).replace(':', ''); // Format: HHmm
+        }).replace(/:/g, '') + now.getMilliseconds().toString().padStart(3, '0'); // Format: HHmmssSSS
         const reportType = mode === "rerun_report" ? "rerun_report" : "report";
         return `${name.value}_${reportType}_${formattedDate}${formattedTime}`;
       }
