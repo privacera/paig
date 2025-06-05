@@ -89,6 +89,26 @@ class EvaluationConfigRepository(BaseOperations[EvaluationConfigModel]):
     async def delete_eval_config(self, eval_config_model):
         return await self.delete(eval_config_model)
 
+    async def check_eval_config_exists_by_name(self, name: str) -> bool:
+        """
+        Check if an evaluation configuration exists by name.
+
+        Args:
+            name (str): The name of the evaluation configuration to check.
+
+        Returns:
+            bool: True if the evaluation configuration exists, False otherwise.
+        """
+        try:
+            filters = {'name': name}
+            await self.get_by(filters, unique=True)
+            return True
+        except NoResultFound:
+            return False
+        except Exception as e:
+            logger.error(f"Error checking evaluation config existence by name: {str(e)}")
+            raise e
+
 
 class EvaluationConfigHistoryRepository(BaseOperations[EvaluationConfigHistoryModel]):
 

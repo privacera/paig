@@ -67,7 +67,9 @@ class EvaluationResultService:
         result_dict = dict()
         # Update with actual values from the query result
         for severity, app_name, count in rows:
-            severity_level = severity_levels
+            if app_name not in result_dict:
+                result_dict[app_name] = severity_levels.copy()
+            severity_level = result_dict[app_name]
             if severity in severity_levels:
                 severity_level[severity] = count
             result_dict[app_name] = severity_level
