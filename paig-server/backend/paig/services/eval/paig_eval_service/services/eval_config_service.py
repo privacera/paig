@@ -8,7 +8,7 @@ from ..database.db_operations.eval_config_repository import EvaluationConfigRepo
 import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
 from core.controllers.paginated_response import Pageable
-
+from paig_evaluation.paig_evaluator import get_all_plugins
 
 logger = logging.getLogger(__name__)
 
@@ -97,4 +97,10 @@ class EvaluationConfigService:
         except Exception as e:
             logger.error(f"Error deleting evaluation configuration: {e}")
             raise InternalServerError("Error deleting evaluation configuration")
+    
+    async def get_categories_by_type(self):
+        all_categories = get_all_plugins()
+        plugin_list = all_categories.get("result", [])
+        category_name_to_type = {plugin["Name"]: plugin["Type"] for plugin in plugin_list}
+        return category_name_to_type
 

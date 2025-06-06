@@ -54,3 +54,12 @@ async def delete_eval_target(
         eval_config_controller: EvaluationConfigController = eval_config_controller_instance
 ):
     return await eval_config_controller.delete_eval_config(config_id=config_id)
+
+
+@evaluation_config_router.get("/categories_by_type")
+async def get_categories_by_type(
+        request: Request,
+        response: Response,
+        eval_config_controller: EvaluationConfigController = eval_config_controller_instance
+):
+    return await eval_config_controller.get_categories_by_type()

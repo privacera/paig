@@ -29,10 +29,11 @@ describe('Evaluation Config Main Tabs', () => {
          cy.get('[data-testid="thead"] th').eq(0).should('contain.text', 'Name');
          cy.get('[data-testid="thead"] th').eq(1).should('contain.text', 'Applications');
          cy.get('[data-testid="thead"] th').eq(2).should('contain.text', 'Evaluation Purpose');
-         cy.get('[data-testid="thead"] th').eq(3).should('contain.text', 'Created');
-         cy.get('[data-testid="thead"] th').eq(4).should('contain.text', 'Created By');
-         cy.get('[data-testid="thead"] th').eq(5).should('contain.text', 'Runs');
-         cy.get('[data-testid="thead"] th').eq(6).should('contain.text', 'Actions');
+         cy.get('[data-testid="thead"] th').eq(3).should('contain.text', 'Categories');
+         cy.get('[data-testid="thead"] th').eq(4).should('contain.text', 'Created');
+         cy.get('[data-testid="thead"] th').eq(5).should('contain.text', 'Created By');
+         cy.get('[data-testid="thead"] th').eq(6).should('contain.text', 'Runs');
+         cy.get('[data-testid="thead"] th').eq(7).should('contain.text', 'Actions');
     });
 
     it('should click on Endpoint tab and check if table exists', () => {

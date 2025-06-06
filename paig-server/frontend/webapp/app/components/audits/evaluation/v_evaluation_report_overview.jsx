@@ -32,6 +32,10 @@ const getCreateTime = (model) => {
   return model?.create_time ? moment(model.create_time).format(DATE_TIME_FORMATS.DATE_TIME_FORMAT_SHORT) : '--'
 }
 
+const getCompletionTime = (model) => {
+  return model?.update_time ? moment(model.update_time).format(DATE_TIME_FORMATS.DATE_TIME_FORMAT_SHORT) : '--'
+}
+
 const getRunAs = (model) => {
   return model?.target_users ? model.target_users.split(',').join(', ') : '--'
 }
@@ -50,58 +54,60 @@ const getScore = (model) => {
 const VEvalReportBasicInfo = ({model}) => {
   return (
     <PaperCard boxProps={{mb: 2}} paperProps={{'data-track-id': 'basic-report-info'}}>
-      <Grid container spacing={3}>
+      <Box display="flex" alignItems="center" justifyContent="space-between" style={{ width: '100%' }}>
+        {/* Application Score(s) */}
         {model?.result?.map((result, index) => (
-          <Grid 
-            item 
-            xs={3}
-            className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`} 
-            alignItems="center"
-          >
-            <Box justifyContent='center'>
-              <Typography variant="subtitle2" className="m-b-xs ellipsize" title={result.application_name || 'Application Score'}>
-                {result.application_name || 'Application Score'}
-              </Typography>
-              <Typography>
-                <AssignmentIcon color="action" className="m-r-xs"/>
-                {getScore(result) || '--'}
-              </Typography>
-            </Box>
-          </Grid>
-        ))}  
-
-        <Grid item xs={3} className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`}  alignItems="center">
-          <Box justifyContent='center'>
-            <Typography variant="subtitle2" className="m-b-xs">
-              Created
+          <Box key={index} display="flex" flexDirection="column" alignItems="flex-start" minWidth={180} mr={2}>
+            <Typography variant="subtitle2" className="m-b-xs ellipsize" title={result.application_name || 'Application Score'} style={{ maxWidth: 150 }}>
+              {result.application_name || 'Application Score'}
             </Typography>
             <Typography>
-              <EventIcon color="action" className="m-r-xs"/>
-              <span>{getCreateTime(model)}</span>
+              <AssignmentIcon color="action" className="m-r-xs"/>
+              {getScore(result) || '--'}
             </Typography>
           </Box>
-        </Grid>
-        <Grid item xs={3} className={`border-right ${model?.result?.length > 1 ? 'col-5-grid' : ''}`}  alignItems="center">
-          <div>
-            <Typography variant="subtitle2" className="m-b-xs">
-              Run By
-            </Typography>
-            <Typography>
-              <AccountCircleIcon color="action" className="m-r-xs"/>
-              <span>{model?.owner || '--'}</span>
-            </Typography>
-          </div>
-        </Grid>
-        <Grid item xs={3} className={` ${model?.result?.length > 1 ? 'col-5-grid' : ''}`} >
-          <Typography variant="subtitle2" className={`m-b-xs`} >
+        ))}
+        {/* Created */}
+        <Box display="flex" flexDirection="column" alignItems="flex-start" minWidth={120} mr={2}>
+          <Typography variant="subtitle2" className="m-b-xs">
+            Created
+          </Typography>
+          <Typography>
+            <EventIcon color="action" className="m-r-xs"/>
+            <span>{getCreateTime(model)}</span>
+          </Typography>
+        </Box>
+        {/* Completed */}
+        <Box display="flex" flexDirection="column" alignItems="flex-start" minWidth={120} mr={2}>
+          <Typography variant="subtitle2" className="m-b-xs">
+            Completed
+          </Typography>
+          <Typography>
+            <EventIcon color="action" className="m-r-xs"/>
+            <span>{getCompletionTime(model)}</span>
+          </Typography>
+        </Box>
+        {/* Run By */}
+        <Box display="flex" flexDirection="column" alignItems="flex-start" minWidth={120} mr={2}>
+          <Typography variant="subtitle2" className="m-b-xs">
+            Run By
+          </Typography>
+          <Typography>
+            <AccountCircleIcon color="action" className="m-r-xs"/>
+            <span className="ellipsize" title={model?.owner || '--'} style={{ maxWidth: 120, display: 'inline-block', verticalAlign: 'bottom', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{model?.owner || '--'}</span>
+          </Typography>
+        </Box>
+        {/* Run As */}
+        <Box display="flex" flexDirection="column" alignItems="flex-start" minWidth={160}>
+          <Typography variant="subtitle2" className="m-b-xs">
             Run As
           </Typography>
           <Typography>
             <ContactsIcon color="action" className="m-r-xs"/>
-            <span>{getRunAs(model)}</span>
+            <span className="ellipsize" title={getRunAs(model)} style={{ maxWidth: 140, display: 'inline-block', verticalAlign: 'bottom', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{getRunAs(model)}</span>
           </Typography>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </PaperCard>
   )
 }
@@ -214,7 +220,7 @@ class VEvaluationReportOverview extends Component {
                               onClick={() => handleTabSelect(1, [{category: 'Severity', operator: 'is', value: severityKey}])}
                             >
                               {array.length > 1 && (
-                                <Typography variant="subtitle1" color="textSecondary">
+                                <Typography variant="subtitle1" color="textSecondary" className="ellipsize" title={applicationName} style={{ maxWidth: 140, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', display: 'block' }}>
                                   {applicationName}
                                 </Typography>
                               )}
