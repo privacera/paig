@@ -31,6 +31,7 @@ class BaseEvaluationView(BaseModel):
     failed: str = Field(..., description="The number of failed evaluations")
     id: int = Field(..., description="The id of the evaluation")
     create_time: Optional[datetime] = Field(None, description="The create time of the evaluation")
+    update_time: Optional[datetime] = Field(None, description="The update time of the evaluation")
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True
