@@ -19,7 +19,7 @@ class EvaluationModel(CommonBase):
     base_run_id: The base run id in case of rerun
     """
     __tablename__ = "eval_run"
-    name = Column(String(255), nullable=False)
+    name = Column(String(255), unique=True, nullable=False)
     owner = Column(String(255), nullable=False)
     purpose = Column(Text(), default='')
     eval_id = Column(String(255), nullable=False)
