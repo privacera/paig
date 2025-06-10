@@ -98,9 +98,23 @@ class EvaluationConfigService:
             logger.error(f"Error deleting evaluation configuration: {e}")
             raise InternalServerError("Error deleting evaluation configuration")
     
-    async def get_categories_by_type(self):
+    async def get_categories_by_type(self, config_id: int):
+        eval_config_model = await self.eval_config_repository.get_eval_config_by_id(config_id)
+        if eval_config_model is None:
+            raise NotFoundException("Evaluation configuration not found")
+        categories = eval_config_model.categories
+        if categories is None:
+            raise NotFoundException("Categories not found")
+        categories = json.loads(categories)
         all_categories = get_all_plugins()
         plugin_list = all_categories.get("result", [])
         category_name_to_type = {plugin["Name"]: plugin["Type"] for plugin in plugin_list}
-        return category_name_to_type
-
+        result = {}
+        for category in categories:
+            category_type = category_name_to_type.get(category)
+            if category_type is None:
+                category_type = "Custom"
+            if category_type not in result:
+                result[category_type] = []
+            result[category_type].append(category)
+        return result

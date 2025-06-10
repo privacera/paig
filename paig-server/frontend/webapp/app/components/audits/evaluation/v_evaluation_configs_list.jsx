@@ -38,35 +38,12 @@ class VEvaluationConfigTable extends Component{
   handleCategoriesClick = async (model) => {
     this.setState({ isLoadingCategories: true });
     try {
-      let categories = [];
-      if (model.categories) {
-        try {
-          categories = typeof model.categories === 'string' ? JSON.parse(model.categories) : model.categories;
-          // If categories are objects, extract names
-          if (categories.length && typeof categories[0] === 'object' && categories[0].name) {
-            categories = categories.map(cat => cat.name);
-          }
-        } catch (e) {
-          categories = [];
-        }
-      }
-
-      // Fetch the category type mapping from the store
-      const categoryTypeMap = await this.props.evaluationStore.getCategoriesByType();
-
-      // Group categories by type
-      const categoriesByType = {};
-      if (Array.isArray(categories)) {
-        categories.forEach(cat => {
-          const type = categoryTypeMap[cat] || 'Custom';
-          if (!categoriesByType[type]) categoriesByType[type] = [];
-          categoriesByType[type].push(cat);
-        });
-      }
+      // Fetch the category type mapping from the store (already grouped by type)
+      const categoryTypeMap = await this.props.evaluationStore.getCategoriesByType(model.id);
 
       this.setState({
         showCategoriesModal: true,
-        selectedCategories: categoriesByType,
+        selectedCategories: categoryTypeMap,
         selectedCategoriesTitle: 'Categories',
         isLoadingCategories: false
       });

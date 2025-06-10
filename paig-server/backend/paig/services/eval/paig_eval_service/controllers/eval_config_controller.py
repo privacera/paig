@@ -79,5 +79,5 @@ class EvaluationConfigController:
         """
         return await self.eval_config_service.delete_eval_config(config_id=config_id)
     
-    async def get_categories_by_type(self):
-        return await self.eval_config_service.get_categories_by_type()
+    async def get_categories_by_type(self, config_id: int):
+        return await self.eval_config_service.get_categories_by_type(config_id=config_id)
