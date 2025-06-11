@@ -1,6 +1,12 @@
 # paig-evaluation Changelog
 All changes to paig-evaluation will be documented in this file.
 
+
+## [v0.0.3] - 2025-05-14
+### Added
+- Added support for flag based enablement of categories.
+
+
 ## [v0.0.2] - 2025-04-04
 ### Added
 - Added mapping for categories to its type and severity

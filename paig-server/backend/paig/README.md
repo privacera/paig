@@ -7,6 +7,7 @@
 - [How to Setup Database](#databsesetup)
 - [Logging](#logging)
 
+
 ## Technology Stack <a name="technology-stack"></a>
 PAIG provides a platform for AI governance. It allows users to governance and audits the data on one platform. 
 <br>PAIG uses the following technologies:
@@ -24,39 +25,82 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    git clone git@github.com:privacera/paig.git
    ```
+
 2. Change directory to the paig-server.
    ```bash
    cd paig/paig-server
    ```
+  
 3. Run the script to build the web UI.
    ```bash
    cd scripts
    source ./build_ui.sh
    ```
+
+> [!TIP]
+> <details>
+> <summary>🪟 Click here for a detailed, step-by-step guide for Windows users</summary>
+>
+> Windows doesn’t natively support running `.sh` files in PowerShell or Command Prompt. To bypass this limitation, use Git Bash to convert the script, and then execute it from PowerShell or Command Prompt. Follow these steps:
+>
+> ```bash
+> cd paig/paig-server/scripts
+> dos2unix build_ui.sh
+> cd ..
+> ```
+>
+> Once the script is converted, open PowerShell or Command Prompt, navigate to the script directory, and run the build with the following command:
+>
+> ```bash
+> cd scripts
+> bash ./build_ui.sh
+> cd ..
+> ```
+> </details>
+
 4. Go to the backend directory.
    ```bash
    cd backend
-   ```
+
+  
+
 5. Create a virtual environment.
     ```bash
-    python -m venv venv
+   python -m venv venv
     ```
    OR
    ```bash
-    python3 -m venv venv
+   python3 -m venv venv
     ```
+
+
 6. Activate the virtual environment.
-    ```bash
-    source venv/bin/activate
-    ```
+   ```bash
+   source venv/bin/activate
+   ```
+
+> [!TIP] 
+><details>
+><summary>🪟  Windows Activation Instructions</summary>
+> To activate the virtual environment in PowerShell on Windows, run the following command:
+> 
+>  ```bash
+>    .\venv\Scripts\Activate.ps1
+>  ```
+>  For Windows Command Prompt, run the following command to activate the virtual environment:
+>  ```bash
+>    venv\Scripts\activate
+>  ```   
+> </details>
 7. Install the dependencies.
-    ```bash
-    pip install -r requirements.txt
-    ```
+   ```bash
+   pip install -r requirements.txt
+   ```
+  
 8. Change directory to the paig.
-    ```bash
-    cd paig
-    ```
+   ```bash
+   cd paig
+   ```
 9. Run the web server.
    ```bash
    python __main__.py run --paig_deployment dev|prod --config_path <path to config folder> --host <host_ip> --port <port> --background <true|false>
@@ -65,7 +109,9 @@ PAIG provides a platform for AI governance. It allows users to governance and au
    ```bash
    python __main__.py run --paig_deployment dev --config_path conf --host "127.0.0.1" --port 4545 --background true
    ```
-   **Note:** *Admin user credentials.*
+> [!IMPORTANT]  
+>Admin user credentials.
+
    ```bash
    PAIG URL: http://127.0.0.1:4545
    username: admin
@@ -76,27 +122,29 @@ PAIG provides a platform for AI governance. It allows users to governance and au
 PAIG can be run in the background mode by setting the background flag to true.
 
 1. To Start the PAIG in the background mode:
-```bash
-python __main__.py run --background true
-```
-**Note:** Please use help command to see all available options you can pass on command line.
-```bash
-python __main__.py --help
-```
+   ```bash
+   python __main__.py run --background true
+   ```
+> [!IMPORTANT]  
+> Please use help command to see all available options you can pass on command line.
+
+   ```bash
+   python __main__.py --help
+   ```
 2. To Stop the PAIG Server:
-```bash
-python __main__.py stop
-```
+   ```bash
+   python __main__.py stop
+   ```
 3. To Check the status of the PAIG Server:
-```bash
-python __main__.py status
-```
+   ```bash
+   python __main__.py status
+   ```
 
 
 ## Optional Configuration <a name="configuration"></a>
-PAIG provides overlay configuration. PAIG will use the default configuration provided in the [default_config.yaml](conf/default_config.yaml) file.
-This default configuration can be overridden by the user-provided custom configuration.
-The user can provide the custom configuration in the following ways:
+   PAIG provides overlay configuration. PAIG will use the default configuration provided in the [default_config.yaml](conf/default_config.yaml) file.
+   This default configuration can be overridden by the user-provided custom configuration.
+   The user can provide the custom configuration in the following ways:
 1. Create a new custom configuration file in the custom folder that is provided to the application.
 2. The naming convention for the custom configuration file should be as follows:
    ```bash
@@ -106,14 +154,16 @@ The user can provide the custom configuration in the following ways:
    ```bash
    dev_config.yaml
    ```
-   _Note-_ ENVIRONMENT_NAME is also referred to as PAIG_DEPLOYMENT in the application.
-3. In a custom configuration file, the user should provide new configuration key values or override the existing configuration.
-<br>Example: [custom-conf/dev_config.yaml](conf/default_config.yaml)
+> [!NOTE]  
+> ENVIRONMENT_NAME is also referred to as PAIG_DEPLOYMENT in the application.
+
+3. In a custom configuration file, the user should provide new configuration key values or override the existing         configuration.
+   <br>Example: [custom-conf/dev_config.yaml](conf/default_config.yaml)
 
 ## How to Setup Database <a name="databsesetup"></a>
-PAIG supports automatic as well as manual database creation/updation. Please refer to Database for more details.
-[How to setup database](alembic_db/README.md)
+   PAIG supports automatic as well as manual database creation/updation. Please refer to Database for more details.
+   [How to setup database](alembic_db/README.md)
 
 ## Logging <a name="logging"></a>
-PAIG provides a way to configure logging configurations and level.
-You can edit [logging configuration](conf/logging.ini) to customize logging for PAIG.
+   PAIG provides a way to configure logging configurations and level.
+   You can edit [logging configuration](conf/logging.ini) to customize logging for PAIG.

@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 import traceback
 import uuid
 
@@ -10,8 +11,8 @@ from ..database.db_operations.eval_repository import EvaluationRepository
 from paig_evaluation.paig_evaluator import PAIGEvaluator, get_suggested_plugins, get_all_plugins, init_config as eval_init_config
 from paig_evaluation.promptfoo_utils import get_security_plugin_map
 import logging
-from core.utils import current_utc_time
-from core.exceptions import BadRequestException
+from core.utils import current_utc_time, replace_timezone
+from core.exceptions import BadRequestException, TooManyRequestsException
 from core.config import load_config_file
 
 
@@ -22,10 +23,19 @@ logger = logging.getLogger(__name__)
 from core.db_session.transactional import Transactional, Propagation
 from core.db_session.standalone_session import update_table_fields, bulk_insert_into_table
 from core.middlewares.request_session_context_middleware import get_tenant_id
+from ..utility import decrypt_target_creds
+
+if config.get("disable_remote_eval_plugins", False):
+    # Disable remote eval plugins if the config is set
+    logger.info(f"setting remote eval plugins to {config.get('disable_remote_eval_plugins')}")
+    os.environ['PROMPTFOO_DISABLE_REDTEAM_REMOTE_GENERATION'] = str(config.get("disable_remote_eval_plugins"))
 
 eval_init_config(email='promptfoo@paig.ai', plugin_file_path=config.get("eval_category_file", None))
 
-
+DISABLE_EVAL_CONCURRENT_LIMIT = str(config.get("disable_eval_concurrent_limit", "false")).lower() == "true"
+MAX_CONCURRENT_EVALS = config.get("max_eval_concurrent_limit", 2)
+EVAL_TIMEOUT = config.get("eval_timeout_in_min", 6*60) # 6 hours
+ENABLE_EVAL_VERBOSE = str(config.get("enable_eval_verbose", "false")).lower() == "true"
 
 def prepare_report_format(result, update_eval_params):
     results = result["results"]
@@ -131,7 +141,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
         generated_prompts_config = dict()
         if not eval_config.generated_config:
             try:
-                generated_prompts_config_result = eval_obj.generate_prompts(application_config=application_config, plugins=categories, targets=target_hosts)
+                generated_prompts_config_result = eval_obj.generate_prompts(application_config=application_config, plugins=categories, targets=target_hosts, verbose=ENABLE_EVAL_VERBOSE)
                 if generated_prompts_config_result['status'] != 'success':
                     update_eval_params['status'] = 'FAILED'
                     logger.error('Prompts generation failed:- ' + str(generated_prompts_config_result['message']))
@@ -171,7 +181,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
             paig_eval_id=eval_id,
             generated_prompts=generated_prompts_config,
             custom_prompts=custom_prompts,
-            verbose=False
+            verbose= ENABLE_EVAL_VERBOSE
         )
         logger.info('Evaluation completed with status ' + str(report['status']))
         try:
@@ -225,6 +235,8 @@ class EvaluationService:
                     target_user = auth_user[str(app.id)]['username']
                 elif target_host['config']['headers'] == {}:
                     del target_host['config']['headers']
+                else:
+                    target_host['config']['headers'] = await decrypt_target_creds(target_host['config']['headers'])
             target_host['label'] = app.name
             app_names.append(app.name)
             final_target.append(target_host)
@@ -233,9 +245,18 @@ class EvaluationService:
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
+        if not await self.validate_eval_availability():
+            raise TooManyRequestsException('The maximum number of evaluations has already been reached. Please try again once one has completed.')
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
+        
+        # Validate report name uniqueness
+        if report_name:
+            name_exists = await self.evaluation_repository.evaluation_name_exists(report_name)
+            if name_exists:
+                raise BadRequestException(f"Evaluation with name '{report_name}' already exists")
+
         app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if len(apps) != len(app_ids):
@@ -306,3 +327,24 @@ class EvaluationService:
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
         return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+
+
+
+    async def validate_eval_availability(self):
+        """
+        Validate if the evaluation is available.
+        """
+        if DISABLE_EVAL_CONCURRENT_LIMIT:
+            return True
+        active_existing_evaluation = await self.evaluation_repository.get_active_evaluation()
+        if not active_existing_evaluation:
+            return True
+        active_evals = len(active_existing_evaluation)
+        # Mark timeout evaluations as failed
+        for evaluation in active_existing_evaluation:
+            if evaluation.create_time and (current_utc_time() - replace_timezone(evaluation.create_time)).total_seconds() > EVAL_TIMEOUT * 60:
+                logger.info(f"Evaluation timed out for eval_id: {evaluation.eval_id}")
+                # Update the evaluation status to FAILED
+                await self.evaluation_repository.update_evaluation({'status': 'FAILED'}, evaluation)
+                active_evals -= 1
+        return  active_evals < MAX_CONCURRENT_EVALS

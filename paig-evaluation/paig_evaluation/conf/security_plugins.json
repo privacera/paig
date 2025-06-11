@@ -285,7 +285,8 @@
     "description": "Content related to the distribution of malicious code",
     "severity": "LOW",
     "type": "Compliance & Legal",
-    "remote": true
+    "remote": true,
+    "enabled": false
   },
   "harmful:illegal-drugs:meth": {
     "description": "Content related to methamphetamine use or trade",

@@ -34,9 +34,13 @@ class EvaluationConfigService:
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def create_eval_config(self, body_params: dict):
+        # Check if config with same name already exists
+        if await self.eval_config_repository.check_eval_config_exists_by_name(body_params.get('name')):
+            raise BadRequestException(f"Evaluation configuration with name '{body_params.get('name')}' already exists")
+
         app_ids = [int(app_id) for app_id in body_params.get('application_ids', '').split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
-        if len(apps) != len(app_ids):
+        if (len(apps) != len(app_ids)) or len(app_ids) == 0:
             raise BadRequestException("Application names not found")
         try:
             app_names = []
@@ -48,7 +52,8 @@ class EvaluationConfigService:
             body_params['application_names'] = ','.join(app_names)
             eval_config = await self.eval_config_repository.create_eval_config(body_params)
             body_params['eval_config_id'] = eval_config.id
-            return await self.eval_config_history_repository.create_eval_config_history(body_params)
+            config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
+            return eval_config
         except Exception as e:
             logger.error(f"Error creating evaluation configuration: {e}")
             logger.error(traceback.format_exc())
@@ -60,6 +65,16 @@ class EvaluationConfigService:
         if eval_config_model is None:
             raise NotFoundException("Evaluation configuration not found")
         try:
+            if 'application_ids' in body_params:
+                app_ids = [int(app_id) for app_id in body_params.get('application_ids', '').split(',') if
+                           app_id.strip()]
+                apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
+                if (len(apps) != len(app_ids)) or len(app_ids) == 0:
+                    raise BadRequestException("Application names not found")
+                app_names = []
+                for app in apps:
+                    app_names.append(app.name)
+                body_params['application_names'] = ','.join(app_names)
             if 'categories' in body_params:
                 body_params['categories'] = json.dumps(body_params['categories'])
             if 'custom_prompts' in body_params:
@@ -68,7 +83,8 @@ class EvaluationConfigService:
             body_params['update_time']: current_utc_time()
             eval_updated_model = await self.eval_config_repository.update_eval_config(body_params, eval_config_model)
             body_params['eval_config_id'] = eval_config_model.id
-            return await self.eval_config_history_repository.create_eval_config_history(body_params)
+            updated_config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
+            return eval_updated_model
         except Exception as e:
             logger.error(f"Error updating evaluation configuration: {e}")
             raise InternalServerError("Error updating evaluation configuration")

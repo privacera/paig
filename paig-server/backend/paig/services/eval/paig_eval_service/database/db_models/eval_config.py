@@ -16,7 +16,7 @@ class EvaluationConfigModel(CommonBase):
     owner: Owner of the evaluation configuration.
     """
     __tablename__ = "eval_config"
-    name = Column(String(255), default='')
+    name = Column(String(255), unique=True, nullable=False)
     purpose = Column(Text(), default='')
     application_ids = Column(String(255), default=None)
     application_names = Column(Text(), default=None)
@@ -46,7 +46,7 @@ class EvaluationConfigHistoryModel(CommonBase):
     version: Version of the evaluation configuration.
     """
     __tablename__ = "eval_config_history"
-    name = Column(String(255), default='')
+    name = Column(String(255), unique=True, nullable=False)
     purpose = Column(Text(), default='')
     application_ids = Column(String(255), default=None)
     application_names = Column(Text(), default=None)
