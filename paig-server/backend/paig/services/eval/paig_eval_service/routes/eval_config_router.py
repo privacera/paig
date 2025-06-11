@@ -11,7 +11,7 @@ evaluation_config_router = APIRouter()
 eval_config_controller_instance = Depends(SingletonDepends(EvaluationConfigController, called_inside_fastapi_depends=True))
 
 
-@evaluation_config_router.get("/list", response_model=Pageable)
+@evaluation_config_router.get("", response_model=Pageable)
 async def get_eval_config(
         includeQuery: IncludeQueryParams = Depends(include_query_params),
         excludeQuery: QueryParamsBase = Depends(exclude_query_params),
@@ -23,7 +23,7 @@ async def get_eval_config(
     return await eval_config_controller.get_all_eval_config(includeQuery, excludeQuery, page, size, sort)
 
 
-@evaluation_config_router.post("/save")
+@evaluation_config_router.post("")
 async def save_eval_config(
         request: Request,
         response: Response,
@@ -56,11 +56,11 @@ async def delete_eval_target(
     return await eval_config_controller.delete_eval_config(config_id=config_id)
 
 
-@evaluation_config_router.get("/categories_by_type/{config_id}")
-async def get_categories_by_type(
+@evaluation_config_router.get("/{config_id}/categories")
+async def get_categories(
         request: Request,
         response: Response,
         config_id: int,
         eval_config_controller: EvaluationConfigController = eval_config_controller_instance
 ):
-    return await eval_config_controller.get_categories_by_type(config_id=config_id)
+    return await eval_config_controller.get_categories(config_id=config_id)

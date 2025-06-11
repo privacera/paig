@@ -24,6 +24,10 @@ class EvaluationConfigService:
         self.eval_config_repository = eval_config_repository
         self.eval_config_history_repository = eval_config_history_repository
         self.eval_target_repository = eval_target_repository
+        # Initialize category name to type mapping from plugins
+        all_categories = get_all_plugins()
+        plugin_list = all_categories.get("result", [])
+        self.category_name_to_type_map = {plugin["Name"]: plugin["Type"] for plugin in plugin_list}
 
     async def get_all_eval_config(self, search_filters, page_number, size, sort) -> Pageable:
         try:
@@ -42,7 +46,17 @@ class EvaluationConfigService:
             app_names = []
             for app in apps:
                 app_names.append(app.name)
-            body_params['categories'] = json.dumps(body_params.get('categories', []))
+            categories = body_params.get('categories', [])
+            category_objects = []
+            for category in categories:
+                category_type = self.category_name_to_type_map.get(category)
+                if category_type is None:
+                    category_type = "Custom"
+                category_objects.append({
+                    "name": category,
+                    "type": category_type
+                })
+            body_params['categories'] = json.dumps(category_objects)
             body_params['custom_prompts'] = json.dumps(body_params.get('custom_prompts', []))
             body_params['version'] = 1
             body_params['application_names'] = ','.join(app_names)
@@ -72,14 +86,27 @@ class EvaluationConfigService:
                     app_names.append(app.name)
                 body_params['application_names'] = ','.join(app_names)
             if 'categories' in body_params:
-                body_params['categories'] = json.dumps(body_params['categories'])
+                categories = body_params['categories']
+                category_objects = []
+                for category in categories:
+                    category_type = self.category_name_to_type_map.get(category)
+                    if category_type is None:
+                        category_type = "Custom"
+                    category_objects.append({
+                        "name": category,
+                        "type": category_type
+                    })
+                body_params['categories'] = json.dumps(category_objects)
             if 'custom_prompts' in body_params:
                 body_params['custom_prompts'] = json.dumps(body_params['custom_prompts'])
             body_params['version'] = eval_config_model.version + 1
             body_params['update_time']: current_utc_time()
             eval_updated_model = await self.eval_config_repository.update_eval_config(body_params, eval_config_model)
             body_params['eval_config_id'] = eval_config_model.id
-            updated_config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
+            eval_config_history_model = await self.eval_config_history_repository.get_eval_config_by_config_id(config_id)
+            if eval_config_history_model is None:
+                raise NotFoundException("Evaluation configuration history not found")
+            await self.eval_config_history_repository.update_eval_config_history(body_params, eval_config_history_model)
             return eval_updated_model
         except Exception as e:
             logger.error(f"Error updating evaluation configuration: {e}")
@@ -98,23 +125,15 @@ class EvaluationConfigService:
             logger.error(f"Error deleting evaluation configuration: {e}")
             raise InternalServerError("Error deleting evaluation configuration")
     
-    async def get_categories_by_type(self, config_id: int):
+    async def get_categories(self, config_id: int):
         eval_config_model = await self.eval_config_repository.get_eval_config_by_id(config_id)
         if eval_config_model is None:
             raise NotFoundException("Evaluation configuration not found")
-        categories = eval_config_model.categories
-        if categories is None:
-            raise NotFoundException("Categories not found")
-        categories = json.loads(categories)
-        all_categories = get_all_plugins()
-        plugin_list = all_categories.get("result", [])
-        category_name_to_type = {plugin["Name"]: plugin["Type"] for plugin in plugin_list}
+        categories = json.loads(eval_config_model.categories)
         result = {}
         for category in categories:
-            category_type = category_name_to_type.get(category)
-            if category_type is None:
-                category_type = "Custom"
-            if category_type not in result:
-                result[category_type] = []
-            result[category_type].append(category)
+            if category["type"] not in result:
+                result[category["type"]] = []
+            result[category["type"]].append(category["name"])
         return result
+        

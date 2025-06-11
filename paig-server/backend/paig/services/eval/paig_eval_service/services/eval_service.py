@@ -131,6 +131,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
         categories = eval_config.categories
         if categories != '' and isinstance(categories, str):
             categories = json.loads(categories)
+        categories = [category['name'] for category in categories]
         # Create application configuration
         application_config = {
             "paig_eval_id": eval_id,

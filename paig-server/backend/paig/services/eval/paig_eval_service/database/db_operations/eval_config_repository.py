@@ -132,6 +132,13 @@ class EvaluationConfigHistoryRepository(BaseOperations[EvaluationConfigHistoryMo
         """
         param = EvaluationConfigHistoryModel(**body_params)
         return await self.create_record(param)
+    
+    async def update_eval_config_history(self, params, eval_config_history_model):
+        """
+        Update an evaluation configuration history.
+        """
+        eval_config_history_model.set_attribute(params)
+        return eval_config_history_model
 
     async def  get_eval_config_by_config_id(self, eval_config_id: int):
         try:
