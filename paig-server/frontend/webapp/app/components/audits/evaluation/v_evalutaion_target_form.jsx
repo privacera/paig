@@ -137,9 +137,11 @@ const VEvalTargetForm = (props) => {
         const now = new Date();
         const formattedDate = now.toLocaleDateString('en-GB').split('/').reverse().join(''); // Format: DDMMYYYY
         const formattedTime = now.toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        }).replace(':', ''); // Format: HHmm
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        }).replace(/:/g, '') + now.getMilliseconds().toString().padStart(3, '0'); // Format: HHmmssSSS
         return `eval-target-${formattedDate}${formattedTime}`;
     };
 

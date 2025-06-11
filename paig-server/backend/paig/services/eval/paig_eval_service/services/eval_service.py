@@ -250,6 +250,13 @@ class EvaluationService:
         eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
+        
+        # Validate report name uniqueness
+        if report_name:
+            name_exists = await self.evaluation_repository.evaluation_name_exists(report_name)
+            if name_exists:
+                raise BadRequestException(f"Evaluation with name '{report_name}' already exists")
+
         app_ids = [int(app_id) for app_id in (eval_config.application_ids).split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if len(apps) != len(app_ids):

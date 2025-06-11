@@ -121,6 +121,23 @@ class EvaluationRepository(BaseOperations[EvaluationModel]):
         except NoResultFound:
             return None
 
+    async def evaluation_name_exists(self, name: str) -> bool:
+        """
+        Check if an evaluation name already exists.
+
+        Args:
+            name (str): The name to check.
+
+        Returns:
+            bool: True if the name exists, False otherwise.
+        """
+        try:
+            filters = {'name': name}
+            await self.get_by(filters, unique=True)
+            return True
+        except NoResultFound:
+            return False
+
 
 
 class EvaluationPromptRepository(BaseOperations[EvaluationResultPromptsModel]):

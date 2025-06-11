@@ -34,6 +34,10 @@ class EvaluationConfigService:
 
     @Transactional(propagation=Propagation.REQUIRED)
     async def create_eval_config(self, body_params: dict):
+        # Check if config with same name already exists
+        if await self.eval_config_repository.check_eval_config_exists_by_name(body_params.get('name')):
+            raise BadRequestException(f"Evaluation configuration with name '{body_params.get('name')}' already exists")
+
         app_ids = [int(app_id) for app_id in body_params.get('application_ids', '').split(',') if app_id.strip()]
         apps = await self.eval_target_repository.get_applications_by_in_list('id', app_ids)
         if (len(apps) != len(app_ids)) or len(app_ids) == 0:
