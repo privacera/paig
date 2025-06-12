@@ -40,7 +40,7 @@ class TestConfigRouters:
             post_data = {
                 "purpose": "string",
                 "name": "string",
-                "categories": ["custom_category", "pii"],
+                "categories": ["other_category", "pii"],
                 "custom_prompts": ["string"],
                 "application_ids": "1"
             }
@@ -56,12 +56,7 @@ class TestConfigRouters:
             json_resp = get_list_response.json()
             assert "content" in json_resp
             assert isinstance(json_resp["content"], list)
-
-            # Get categories
-            get_categories_response = await client.get(f"/{evaluation_services_base_route}/config/{config_id}/categories")
-            assert get_categories_response.status_code == 200
-            json_resp = get_categories_response.json()
-            assert json_resp == {"Custom": ["custom_category"], "Security & Access Control": ["pii"]}
+            assert json.loads(json_resp["content"][0]["categories"]) == [{"name": "other_category", "type": "Other"}, {"name": "pii", "type": "Security & Access Control"}]
 
 
             # Update config

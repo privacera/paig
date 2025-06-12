@@ -252,10 +252,10 @@ class VEvaluationReportOverview extends Component {
             >
               <PaperCard boxProps={{ mb: 2 }} style={{ height: '100%' }}>
                 <Typography variant="h6" gutterBottom>
-                  {category === "null" || !category ? "Custom" : category}
+                  {category === "null" || !category ? "Other" : category}
                 </Typography>
                 <Typography variant="body2" color="textSecondary" gutterBottom className="min-height-50">
-                  {CATEGORY_DESCRIPTIONS[category] || CATEGORY_DESCRIPTIONS["Custom"]}
+                  {CATEGORY_DESCRIPTIONS[category] || CATEGORY_DESCRIPTIONS["Other"]}
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item lg={6} md={6} sm={12} xs={12} >     

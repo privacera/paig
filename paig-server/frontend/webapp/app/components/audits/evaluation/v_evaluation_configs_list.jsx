@@ -30,26 +30,32 @@ class VEvaluationConfigTable extends Component{
       expandedRows: [],
       showCategoriesModal: false,
       selectedCategories: {},
-      selectedCategoriesTitle: 'Categories',
-      isLoadingCategories: false
+      selectedCategoriesTitle: 'Categories'
     };
   }
 
-  handleCategoriesClick = async (model) => {
-    this.setState({ isLoadingCategories: true });
+  handleCategoriesClick = (model) => {
     try {
-      // Fetch the category type mapping from the store (already grouped by type)
-      const categoryTypeMap = await this.props.evaluationStore.getCategoriesByType(model.id);
+      // Parse categories if it's a string
+      const categories = typeof model.categories === 'string' ? JSON.parse(model.categories) : model.categories;
+      
+      // Group categories by type
+      const categoryTypeMap = categories.reduce((acc, category) => {
+        const type = category.type;
+        if (!acc[type]) {
+          acc[type] = [];
+        }
+        acc[type].push(category.name);
+        return acc;
+      }, {});
 
       this.setState({
         showCategoriesModal: true,
         selectedCategories: categoryTypeMap,
-        selectedCategoriesTitle: 'Categories',
-        isLoadingCategories: false
+        selectedCategoriesTitle: 'Categories'
       });
     } catch (error) {
-      console.error('Error loading categories:', error);
-      this.setState({ isLoadingCategories: false });
+      console.error('Error processing categories:', error);
     }
   }
 
@@ -155,7 +161,7 @@ class VEvaluationConfigTable extends Component{
   }
 
   renderCategoriesModal = () => {
-    const { showCategoriesModal, selectedCategories, selectedCategoriesTitle, isLoadingCategories } = this.state;
+    const { showCategoriesModal, selectedCategories, selectedCategoriesTitle } = this.state;
     const dotStyle = {
       display: 'inline-block',
       width: 10,
@@ -218,46 +224,40 @@ class VEvaluationConfigTable extends Component{
           </div>
         </DialogTitle>
         <DialogContent>
-          {isLoadingCategories ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-              <CircularProgress />
-            </div>
-          ) : (
-            <TableContainer style={{ border: '1px solid #e0e3e8', borderRadius: 4 }}>
-              <MuiTable style={{ borderCollapse: 'collapse', minWidth: 700 }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell style={headerStyle}>Type</TableCell>
-                    <TableCell style={{ ...headerStyle, borderRight: 'none' }}>Categories</TableCell>
+          <TableContainer style={{ border: '1px solid #e0e3e8', borderRadius: 4 }}>
+            <MuiTable style={{ borderCollapse: 'collapse', minWidth: 700 }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={headerStyle}>Type</TableCell>
+                  <TableCell style={{ ...headerStyle, borderRight: 'none' }}>Categories</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.entries(selectedCategories).map(([type, categories], idx, arr) => (
+                  <TableRow key={type}>
+                    <TableCell style={cellBorderStyle}>{type}</TableCell>
+                    <TableCell style={lastCellStyle}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                        {categories.map((cat) => (
+                          <span key={cat} style={categoryStyle}>
+                            <span style={dotStyle}></span>
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {Object.entries(selectedCategories).map(([type, categories], idx, arr) => (
-                    <TableRow key={type}>
-                      <TableCell style={cellBorderStyle}>{type}</TableCell>
-                      <TableCell style={lastCellStyle}>
-                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                          {categories.map((cat) => (
-                            <span key={cat} style={categoryStyle}>
-                              <span style={dotStyle}></span>
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {Object.keys(selectedCategories).length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={2} style={{ textAlign: 'center', padding: '20px' }}>
-                        No categories found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </MuiTable>
-            </TableContainer>
-          )}
+                ))}
+                {Object.keys(selectedCategories).length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={2} style={{ textAlign: 'center', padding: '20px' }}>
+                      No categories found
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </MuiTable>
+          </TableContainer>
         </DialogContent>
         <DialogActions>
           <Button onClick={this.handleCloseCategoriesModal} color="primary">CLOSE</Button>

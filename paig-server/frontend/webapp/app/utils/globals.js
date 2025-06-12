@@ -336,7 +336,7 @@ const CATEGORY_DESCRIPTIONS = {
     "Compliance & Legal": "Tests for LLM behavior that may encourage illegal activity, breach contractual commitments, or violate intellectual property rights.",
     "Security & Access Control": "Technical security risk tests mapped to OWASP Top 10 for LLMs, APIs, and web applications, covering SQL injection, SSRF, broken access control, and cross-session leaks.",
     "Trust & Safety": "Tests that attempt to produce illicit, graphic, or inappropriate responses from the LLM.",
-    "Custom": "Configurable tests for specific policies or generating custom probes for your use case."
+    "Other": "Configurable tests for specific policies or generating custom probes for your use case."
 };
 
 export {

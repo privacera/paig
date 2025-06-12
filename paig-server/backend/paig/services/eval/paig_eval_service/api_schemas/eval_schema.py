@@ -25,6 +25,7 @@ class BaseEvaluationView(BaseModel):
     purpose: str = Field(..., description="The purpose of the config")
     eval_id: str = Field(..., max_length=1024, description="The eval id")
     config_id: int = Field(..., description="The config id")
+    config_history_id: Optional[int] = Field(None, description="The config history id")
     status: str = Field(..., max_length=1024, description="The status of the config")
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
     passed: str = Field(..., description="The number of passed evaluations")

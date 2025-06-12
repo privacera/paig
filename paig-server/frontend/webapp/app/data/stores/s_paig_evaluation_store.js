@@ -149,12 +149,6 @@ class EvaluationStore extends BaseStore {
         return this.fetch("", opts);
     }
 
-    getCategoriesByType(id, opts = {}) {
-        opts.path = `/config/${id}/categories`;
-        opts.recordMapper = (json) => new MEvaluation(json);
-        return this.fetch("", opts);
-    }
-
 }
 
 const evaluationStore = new EvaluationStore();

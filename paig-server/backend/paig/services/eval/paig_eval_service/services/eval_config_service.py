@@ -51,7 +51,7 @@ class EvaluationConfigService:
             for category in categories:
                 category_type = self.category_name_to_type_map.get(category)
                 if category_type is None:
-                    category_type = "Custom"
+                    category_type = "Other"
                 category_objects.append({
                     "name": category,
                     "type": category_type
@@ -63,7 +63,7 @@ class EvaluationConfigService:
             eval_config = await self.eval_config_repository.create_eval_config(body_params)
             body_params['eval_config_id'] = eval_config.id
             config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
-            return eval_config
+            return eval_config, config_history.id
         except Exception as e:
             logger.error(f"Error creating evaluation configuration: {e}")
             logger.error(traceback.format_exc())
@@ -91,7 +91,7 @@ class EvaluationConfigService:
                 for category in categories:
                     category_type = self.category_name_to_type_map.get(category)
                     if category_type is None:
-                        category_type = "Custom"
+                        category_type = "Other"
                     category_objects.append({
                         "name": category,
                         "type": category_type
@@ -103,10 +103,7 @@ class EvaluationConfigService:
             body_params['update_time']: current_utc_time()
             eval_updated_model = await self.eval_config_repository.update_eval_config(body_params, eval_config_model)
             body_params['eval_config_id'] = eval_config_model.id
-            eval_config_history_model = await self.eval_config_history_repository.get_eval_config_by_config_id(config_id)
-            if eval_config_history_model is None:
-                raise NotFoundException("Evaluation configuration history not found")
-            await self.eval_config_history_repository.update_eval_config_history(body_params, eval_config_history_model)
+            updated_config_history = await self.eval_config_history_repository.create_eval_config_history(body_params)
             return eval_updated_model
         except Exception as e:
             logger.error(f"Error updating evaluation configuration: {e}")
@@ -123,17 +120,4 @@ class EvaluationConfigService:
                 return {'message': 'Evaluation configuration deleted successfully'}
         except Exception as e:
             logger.error(f"Error deleting evaluation configuration: {e}")
-            raise InternalServerError("Error deleting evaluation configuration")
-    
-    async def get_categories(self, config_id: int):
-        eval_config_model = await self.eval_config_repository.get_eval_config_by_id(config_id)
-        if eval_config_model is None:
-            raise NotFoundException("Evaluation configuration not found")
-        categories = json.loads(eval_config_model.categories)
-        result = {}
-        for category in categories:
-            if category["type"] not in result:
-                result[category["type"]] = []
-            result[category["type"]].append(category["name"])
-        return result
-        
+            raise InternalServerError("Error deleting evaluation configuration")    
