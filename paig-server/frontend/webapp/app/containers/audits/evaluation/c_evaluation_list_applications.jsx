@@ -49,16 +49,11 @@ class CEvaluationAppsList extends Component {
         this.restoreState();
     }
     componentDidMount() {
-        console.log('Endpoints componentDidMount - props.parent_vState:', this.props.parent_vState);
         // Use the exact same pattern as eval report details
         if (this.props.parent_vState && this.props.parent_vState.searchFilterValue) {
-            console.log('Endpoints: Applying parent_vState.searchFilterValue:', this.props.parent_vState.searchFilterValue);
             this.handleSearchByField(this.props.parent_vState.searchFilterValue);
             // Clear the filter in parent after applying it (same as eval reports)
             this.props.parent_vState.searchFilterValue = [];
-            console.log('Endpoints: Cleared parent_vState.searchFilterValue');
-        } else {
-            console.log('Endpoints: No filter to apply');
         }
         this.handleRefresh();
     }
@@ -119,8 +114,6 @@ class CEvaluationAppsList extends Component {
 
     @action
     handleSearchByField = (filter, event) => {
-        console.log('Endpoints handleSearchByField called with filter:', filter);
-        console.log('Filter is array:', Array.isArray(filter), 'Filter length:', filter?.length);
         this._vState.prevNextValueList = [''];
         this._vState.pageNumber = 0;
         let params = {
@@ -131,24 +124,18 @@ class CEvaluationAppsList extends Component {
             params['includeQuery.' + obj.key] = undefined;
             params['excludeQuery.' + obj.key] = undefined;
         })
-        console.log('Cleared all filter params');
         
         // Apply new filter if any
         filter.forEach(({ category, operator, value }) => {
-            console.log('Processing filter item:', { category, operator, value });
             const obj = Object.values(CATEGORIES).find(item => item.category === category);
-            console.log('Found category object:', obj);
             if (obj) {
             const prefix = operator === 'is' ? 'includeQuery' : 'excludeQuery';
             params[`${prefix}.${obj.key}`] = value;
-            console.log(`Set ${prefix}.${obj.key} = ${value}`);
             }
         });
         Object.assign(this.cEvalAppsList.params, params);
-        console.log('Final API params:', this.cEvalAppsList.params);
 
         this._vState.searchFilterValue = filter;
-        console.log('Set _vState.searchFilterValue to:', this._vState.searchFilterValue);
         this.fetchEvaluationAppsList();
     }
 

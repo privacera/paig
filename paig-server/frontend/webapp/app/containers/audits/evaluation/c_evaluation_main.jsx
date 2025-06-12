@@ -72,27 +72,20 @@ class CEvaluationConfigMain extends Component {
 	}
 	
 	handleTabSelect = (key) => {
-		console.log('Main: handleTabSelect called with key:', key);
 		this.tabsState.defaultState = key;
 	}
 	
 	handleManualTabSelect = (key) => {
-		console.log('Main: handleManualTabSelect called with key:', key);
 		// Clear filter when manually switching tabs (this is the key difference from eval reports)
 		this._vState.searchFilterValue = [];
-		console.log('Main: Cleared searchFilterValue for manual tab switch');
 		this.handleTabSelect(key);
 	}
 	
 	handleApplicationClick = (applicationName, filter) => {
-		console.log('Main: handleApplicationClick called with applicationName:', applicationName, 'filter:', filter);
 		// Use the exact same pattern as eval report severity filtering
 		this._vState.searchFilterValue = filter;
-		console.log('Main: Set _vState.searchFilterValue to:', this._vState.searchFilterValue);
-		console.log('Main: Current tab before switch:', this.tabsState.defaultState);
 		// Switch to endpoints tab
 		this.handleTabSelect(1);
-		console.log('Main: Switched to tab 1, current tab:', this.tabsState.defaultState);
 	}
 	
 	handleRefresh = () => {

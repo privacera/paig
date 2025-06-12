@@ -55,13 +55,9 @@ class CEvaluationConfigList extends Component {
   componentDidMount() {
     // Use the exact same pattern as eval report details
     if (this.props.parent_vState && this.props.parent_vState.searchFilterValue) {
-      console.log('Config: Applying parent_vState.searchFilterValue:', this.props.parent_vState.searchFilterValue);
       this.handleSearchByField(this.props.parent_vState.searchFilterValue);
       // Clear the filter in parent after applying it (same as eval reports)
       this.props.parent_vState.searchFilterValue = [];
-      console.log('Config: Cleared parent_vState.searchFilterValue');
-    } else {
-      console.log('Config: No filter to apply');
     }
     this.handleRefresh();
   }
