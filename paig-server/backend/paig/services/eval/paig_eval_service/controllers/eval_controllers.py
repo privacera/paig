@@ -34,7 +34,7 @@ class EvaluationController:
 
     async def run_evaluation(self, eval_config_id, user, report_name, config_history_id=None, auth_user=None):
         if config_history_id is None:
-            config_history = await self.eval_config_history_service.get_eval_config_by_config_id(eval_config_id)
+            config_history = await self.eval_config_history_service.get_latest_config_history(eval_config_id)
             config_history_id = config_history.id
         resp = await self.evaluation_service.run_evaluation(config_history_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
         return resp

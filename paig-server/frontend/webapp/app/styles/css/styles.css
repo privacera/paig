@@ -1071,3 +1071,14 @@ span.diff-danger>span {
 .masked-color {
   color: #41546F;
 }
+
+.categories-count {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.categories-count:hover {
+  color: #1976d2;
+  text-decoration: underline;
+} 
