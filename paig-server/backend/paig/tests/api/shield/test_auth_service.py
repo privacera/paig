@@ -1030,3 +1030,247 @@ class TestAuthService:
             message, tag_set, scanner_result, bedrock_response
         )
         assert scanner_result.analyzer_result == []
+
+    def test_encrich_context_with_guardrail_info_basic(self, mocker):
+        """Test basic functionality of encrich_context_with_guardrail_info"""
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+        
+        auth_service = self.get_auth_service()
+        
+        # Mock the process_guardrail_response function
+        mock_process_guardrail_response = mocker.patch('api.shield.services.auth_service.process_guardrail_response')
+        mock_process_guardrail_response.return_value = {
+            "config_type": {
+                "SENSITIVE_DATA": {
+                    "configs": {
+                        "PERSON": "DENY",
+                        "EMAIL": "REDACT"
+                    }
+                },
+                "CONTENT_MODERATION": {
+                    "configs": {
+                        "TOXIC": "DENY"
+                    }
+                }
+            }
+        }
+        
+        # Create test data
+        guardrail_name = "test-guardrail"
+        guardrail_info = {"test": "data"}
+        guardrail_traits = ["PERSON", "TOXIC"]
+        auth_req = authorize_req_data()
+        auth_req.context = {}
+        
+        # Call the method
+        auth_service.encrich_context_with_guardrail_info(
+            guardrail_name, guardrail_info, guardrail_traits, auth_req
+        )
+        
+        # Verify the context was updated correctly
+        expected_context = {
+            "guardrail_details": {
+                "name": "test-guardrail",
+                "policies": ["CONTENT_MODERATION", "SENSITIVE_DATA"],  # sorted set
+                "traits": ["PERSON", "TOXIC"]
+            }
+        }
+        
+        assert auth_req.context == expected_context
+        mock_process_guardrail_response.assert_called_once_with(guardrail_info)
+
+    def test_encrich_context_with_guardrail_info_no_matching_traits(self, mocker):
+        """Test when no traits match the guardrail configs"""
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+        
+        auth_service = self.get_auth_service()
+        
+        # Mock the process_guardrail_response function
+        mock_process_guardrail_response = mocker.patch('api.shield.services.auth_service.process_guardrail_response')
+        mock_process_guardrail_response.return_value = {
+            "config_type": {
+                "SENSITIVE_DATA": {
+                    "configs": {
+                        "PERSON": "DENY",
+                        "EMAIL": "REDACT"
+                    }
+                }
+            }
+        }
+        
+        # Create test data with traits that don't match
+        guardrail_name = "test-guardrail"
+        guardrail_info = {"test": "data"}
+        guardrail_traits = ["PHONE", "CREDIT_CARD"]  # These don't match configs
+        auth_req = authorize_req_data()
+        auth_req.context = {}
+        
+        # Call the method
+        auth_service.encrich_context_with_guardrail_info(
+            guardrail_name, guardrail_info, guardrail_traits, auth_req
+        )
+        
+        # Verify the context was updated with empty policies
+        expected_context = {
+            "guardrail_details": {
+                "name": "test-guardrail",
+                "policies": [],  # No matching policies
+                "traits": ["PHONE", "CREDIT_CARD"]
+            }
+        }
+        
+        assert auth_req.context == expected_context
+
+    def test_encrich_context_with_guardrail_info_empty_config_types(self, mocker):
+        """Test when guardrail has no config_type"""
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+        
+        auth_service = self.get_auth_service()
+        
+        # Mock the process_guardrail_response function
+        mock_process_guardrail_response = mocker.patch('api.shield.services.auth_service.process_guardrail_response')
+        mock_process_guardrail_response.return_value = {
+            "config_type": {}  # Empty config types
+        }
+        
+        # Create test data
+        guardrail_name = "test-guardrail"
+        guardrail_info = {"test": "data"}
+        guardrail_traits = ["PERSON", "EMAIL"]
+        auth_req = authorize_req_data()
+        auth_req.context = {}
+        
+        # Call the method
+        auth_service.encrich_context_with_guardrail_info(
+            guardrail_name, guardrail_info, guardrail_traits, auth_req
+        )
+        
+        # Verify the context was updated with empty policies
+        expected_context = {
+            "guardrail_details": {
+                "name": "test-guardrail",
+                "policies": [],
+                "traits": ["PERSON", "EMAIL"]
+            }
+        }
+        
+        assert auth_req.context == expected_context
+
+    def test_encrich_context_with_guardrail_info_with_space_in_category(self, mocker):
+        """Test handling of categories with spaces that need to be converted to underscores"""
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+        
+        auth_service = self.get_auth_service()
+        
+        # Mock the process_guardrail_response function
+        mock_process_guardrail_response = mocker.patch('api.shield.services.auth_service.process_guardrail_response')
+        mock_process_guardrail_response.return_value = {
+            "config_type": {
+                "SENSITIVE_DATA": {
+                    "configs": {
+                        "Credit Card": "DENY",  # Has space
+                        "Social Security": "REDACT"  # Has space
+                    }
+                }
+            }
+        }
+        
+        # Create test data with traits that match after space->underscore conversion
+        guardrail_name = "test-guardrail"
+        guardrail_info = {"test": "data"}
+        guardrail_traits = ["CREDIT_CARD", "SOCIAL_SECURITY"]  # Underscore versions
+        auth_req = authorize_req_data()
+        auth_req.context = {}
+        
+        # Call the method
+        auth_service.encrich_context_with_guardrail_info(
+            guardrail_name, guardrail_info, guardrail_traits, auth_req
+        )
+        
+        # Verify the context was updated correctly
+        expected_context = {
+            "guardrail_details": {
+                "name": "test-guardrail",
+                "policies": ["SENSITIVE_DATA"],
+                "traits": ["CREDIT_CARD", "SOCIAL_SECURITY"]
+            }
+        }
+        
+        assert auth_req.context == expected_context
+
+    def test_encrich_context_with_guardrail_info_deduplicates_policies(self, mocker):
+        """Test that duplicate policies are removed and sorted"""
+        # Mock dependencies
+        mocker.patch('api.shield.services.auth_service.FluentdRestHttpClient')
+        mocker.patch('api.shield.services.auth_service.TenantDataEncryptorService')
+        mocker.patch('api.shield.services.auth_service.AuthzServiceClientFactory')
+        mocker.patch('api.shield.services.auth_service.AccountServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GovernanceServiceFactory')
+        mocker.patch('api.shield.services.auth_service.GuardrailServiceFactory')
+        
+        auth_service = self.get_auth_service()
+        
+        # Mock the process_guardrail_response function
+        mock_process_guardrail_response = mocker.patch('api.shield.services.auth_service.process_guardrail_response')
+        mock_process_guardrail_response.return_value = {
+            "config_type": {
+                "SENSITIVE_DATA": {
+                    "configs": {
+                        "PERSON": "DENY",
+                        "EMAIL": "REDACT"
+                    }
+                },
+                "CONTENT_MODERATION": {
+                    "configs": {
+                        "PERSON": "DENY"  # Same trait, different policy
+                    }
+                }
+            }
+        }
+        
+        # Create test data
+        guardrail_name = "test-guardrail"
+        guardrail_info = {"test": "data"}
+        guardrail_traits = ["PERSON", "EMAIL"]  # PERSON matches both policies
+        auth_req = authorize_req_data()
+        auth_req.context = {}
+        
+        # Call the method
+        auth_service.encrich_context_with_guardrail_info(
+            guardrail_name, guardrail_info, guardrail_traits, auth_req
+        )
+        
+        # Verify the context was updated correctly with deduped and sorted policies
+        expected_context = {
+            "guardrail_details": {
+                "name": "test-guardrail",
+                "policies": ["CONTENT_MODERATION", "SENSITIVE_DATA"],  # sorted and deduped
+                "traits": ["PERSON", "EMAIL"]
+            }
+        }
+        
+        assert auth_req.context == expected_context

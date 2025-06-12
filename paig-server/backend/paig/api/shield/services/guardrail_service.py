@@ -85,10 +85,26 @@ async def do_test_guardrail(tenant_id: str, transformed_response: dict, message:
         if test_aws_guardrail_result:
             final_result.append(test_aws_guardrail_result)
 
+    return [merge_final_result(final_result)]
+
+def merge_final_result(final_result: list) -> dict:
+    final_action = "ALLOW"
+    final_message = ""
+    final_tags = []
+    final_policies = []
+    
+    # Define action priority (DENY > REDACT > ALLOW)
+    action_priority = {"DENY": 3, "REDACT": 2, "ALLOW": 1}
+    
     for result in final_result:
-        if result.get("action") == "DENY":
-            return [result]
-    return final_result
+        current_action = result.get("action", "ALLOW")
+        if action_priority[current_action] > action_priority[final_action]:
+            final_action = current_action
+            final_message = result.get("message", "")
+        
+        final_tags.extend(result.get("tags", []))
+        final_policies.extend(result.get("policy", []))
+    return {"action": final_action, "tags": final_tags, "policies": final_policies, "message": final_message}
 
 def paig_pii_guardrail_evaluation(sensitive_data_config: dict, traits: list) -> (list, dict):
     deny_policies_list = []

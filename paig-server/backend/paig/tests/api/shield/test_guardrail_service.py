@@ -239,3 +239,117 @@ async def test_aws_guardrail_test_with_aws_guardrail():
 
         # Ensure the async function was awaited
         mock_decrypt.assert_awaited_once_with("tenant-123", {"region": "us-west-2"})
+
+class TestMergeFinalResult(unittest.TestCase):
+
+    def test_merge_final_result_with_deny_priority(self):
+        """Test that DENY action takes priority over ALLOW and REDACT"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = [
+            {"action": "ALLOW", "tags": ["TAG1"], "policy": ["POLICY1"], "message": "Allow message"},
+            {"action": "DENY", "tags": ["TAG2"], "policy": ["POLICY2"], "message": "Deny message"},
+            {"action": "REDACT", "tags": ["TAG3"], "policy": ["POLICY3"], "message": "Redact message"}
+        ]
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "DENY",
+            "tags": ["TAG1", "TAG2", "TAG3"],
+            "policies": ["POLICY1", "POLICY2", "POLICY3"],
+            "message": "Deny message"
+        }
+        self.assertEqual(result, expected)
+
+    def test_merge_final_result_with_redact_priority(self):
+        """Test that REDACT action takes priority over ALLOW"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = [
+            {"action": "ALLOW", "tags": ["TAG1"], "policy": ["POLICY1"], "message": "Allow message"},
+            {"action": "REDACT", "tags": ["TAG2"], "policy": ["POLICY2"], "message": "Redact message"}
+        ]
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "REDACT",
+            "tags": ["TAG1", "TAG2"],
+            "policies": ["POLICY1", "POLICY2"],
+            "message": "Redact message"
+        }
+        self.assertEqual(result, expected)
+
+    def test_merge_final_result_with_all_allow(self):
+        """Test merge when all actions are ALLOW"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = [
+            {"action": "ALLOW", "tags": ["TAG1"], "policy": ["POLICY1"], "message": "Allow message 1"},
+            {"action": "ALLOW", "tags": ["TAG2"], "policy": ["POLICY2"], "message": "Allow message 2"}
+        ]
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "ALLOW",
+            "tags": ["TAG1", "TAG2"],
+            "policies": ["POLICY1", "POLICY2"],
+            "message": "Allow message 1"  # First message is kept for same priority
+        }
+        self.assertEqual(result, expected)
+
+    def test_merge_final_result_with_empty_list(self):
+        """Test merge with empty result list"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = []
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "ALLOW",
+            "tags": [],
+            "policies": [],
+            "message": ""
+        }
+        self.assertEqual(result, expected)
+
+    def test_merge_final_result_with_missing_fields(self):
+        """Test merge when some fields are missing in results"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = [
+            {"action": "DENY", "message": "Deny message"},  # Missing tags and policy
+            {"tags": ["TAG1"], "policy": ["POLICY1"]},  # Missing action and message
+        ]
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "DENY",
+            "tags": ["TAG1"],
+            "policies": ["POLICY1"],
+            "message": "Deny message"
+        }
+        self.assertEqual(result, expected)
+
+    def test_merge_final_result_with_multiple_same_priority(self):
+        """Test that first message is kept when actions have same priority"""
+        from api.shield.services.guardrail_service import merge_final_result
+        
+        final_result = [
+            {"action": "DENY", "tags": ["TAG1"], "policy": ["POLICY1"], "message": "First deny"},
+            {"action": "DENY", "tags": ["TAG2"], "policy": ["POLICY2"], "message": "Second deny"}
+        ]
+        
+        result = merge_final_result(final_result)
+        
+        expected = {
+            "action": "DENY",
+            "tags": ["TAG1", "TAG2"],
+            "policies": ["POLICY1", "POLICY2"],
+            "message": "First deny"  # First message is kept
+        }
+        self.assertEqual(result, expected)
