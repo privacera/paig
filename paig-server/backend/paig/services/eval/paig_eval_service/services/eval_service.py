@@ -111,7 +111,7 @@ async def insert_eval_results(eval_id, eval_run_id, report):
         if 'testCase' in res and 'metadata' in res['testCase'] and 'pluginId' in res['testCase']['metadata']:
             category = res['testCase']['metadata']['pluginId']
             response['category'] = category
-            response['category_type'] = all_plugins_info.get(category, {}).get('type', 'Custom')
+            response['category_type'] = all_plugins_info.get(category, {}).get('type', 'Other')
             if response['status'] != 'PASSED':
                 response['category_severity'] = all_plugins_info.get(category, {}).get('severity', 'LOW')
         response_records.append(response)
@@ -248,13 +248,10 @@ class EvaluationService:
         return final_target, app_names, target_users
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, config_history_id=None, auth_user=None, rerun_eval=False):
+    async def run_evaluation(self, config_history_id, owner, base_run_id=None, report_name=None, auth_user=None):
         if not await self.validate_eval_availability():
             raise TooManyRequestsException('The maximum number of evaluations has already been reached. Please try again once one has completed.')
-        if rerun_eval and config_history_id is not None:
-            eval_config = await self.eval_config_history_repository.get_eval_config_history_by_id(config_history_id)
-        else:
-            eval_config = await self.eval_config_repository.get_eval_config_by_id(eval_config_id)
+        eval_config = await self.eval_config_history_repository.get_eval_config_history_by_id(config_history_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
         
@@ -273,7 +270,7 @@ class EvaluationService:
         eval_id = str(uuid.uuid4())
         eval_params = {
             "status": "GENERATING",
-            "config_id": eval_config_id,
+            "config_id": eval_config.eval_config_id,
             "config_history_id": config_history_id,
             "owner": owner,
             "eval_id": eval_id,
@@ -334,7 +331,7 @@ class EvaluationService:
         base_run_id = existing_evaluation.eval_id
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
-        return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name, config_history_id=existing_evaluation.config_history_id, rerun_eval=True)
+        return await self.run_evaluation(existing_evaluation.config_history_id, owner, base_run_id=base_run_id, report_name=report_name)
 
 
 

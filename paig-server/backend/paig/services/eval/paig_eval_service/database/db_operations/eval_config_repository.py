@@ -157,10 +157,8 @@ class EvaluationConfigHistoryRepository(BaseOperations[EvaluationConfigHistoryMo
         # Get the latest config history for a given config id
         try:
             filters = {'eval_config_id': eval_config_id}
-            eval_config_history = await self.get_all(filters, order_by_field=["id", "desc"])
-            if eval_config_history is None:
-                return None
-            return eval_config_history[0]
+            eval_config_history = await self.get_all(filters, order_by_field="create_time,desc", limit=1)
+            return eval_config_history[0] if eval_config_history else None
         except NoResultFound:
             return None
     

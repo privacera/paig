@@ -2,7 +2,7 @@ import json
 
 from ..services.eval_config_service import EvaluationConfigService
 from ..services.eval_result_service import EvaluationResultService
-from ..database.db_operations.eval_config_repository import EvaluationConfigHistoryRepository
+from ..services.eval_config_service import EvaluationConfigHistoryService
 from ..services.eval_service import EvaluationService
 from core.utils import SingletonDepends
 from core.exceptions import NotFoundException, BadRequestException
@@ -17,12 +17,12 @@ class EvaluationController:
                  evaluation_result_service: EvaluationResultService = SingletonDepends(EvaluationResultService),
                  evaluation_service: EvaluationService = SingletonDepends(EvaluationService),
                  evaluation_config_service: EvaluationConfigService = SingletonDepends(EvaluationConfigService),
-                 eval_config_history_repository: EvaluationConfigHistoryRepository = SingletonDepends(EvaluationConfigHistoryRepository),
+                 eval_config_history_service: EvaluationConfigHistoryService = SingletonDepends(EvaluationConfigHistoryService),
     ):
         self.evaluation_service = evaluation_service
         self.evaluation_config_service = evaluation_config_service
         self.evaluation_result_service = evaluation_result_service
-        self.eval_config_history_repository = eval_config_history_repository
+        self.eval_config_history_service = eval_config_history_service
 
     async def create_and_run_evaluation(self, eval_params, user):
         eval_params['owner'] = user
@@ -34,9 +34,9 @@ class EvaluationController:
 
     async def run_evaluation(self, eval_config_id, user, report_name, config_history_id=None, auth_user=None):
         if config_history_id is None:
-            config_history = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
+            config_history = await self.eval_config_history_service.get_eval_config_by_config_id(eval_config_id)
             config_history_id = config_history.id
-        resp = await self.evaluation_service.run_evaluation(eval_config_id, user, base_run_id=None, report_name=report_name, config_history_id=config_history_id, auth_user=auth_user)
+        resp = await self.evaluation_service.run_evaluation(config_history_id, user, base_run_id=None, report_name=report_name, auth_user=auth_user)
         return resp
 
 
