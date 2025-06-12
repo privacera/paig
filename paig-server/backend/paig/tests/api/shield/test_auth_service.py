@@ -868,7 +868,7 @@ class TestAuthService:
 
         auth_service = AuthService()
         mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
-                            new_callable=AsyncMock, return_value='test_guardrail')
+                            new_callable=AsyncMock, return_value=['test_guardrail'])
         guardrail_info = {"guardrail_connection_details": {}}
         mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name',
                             new_callable=AsyncMock, return_value=guardrail_info)
@@ -888,8 +888,8 @@ class TestAuthService:
         await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
                                              analyzer_result_map, auth_req, authz_res)
 
-        context_mock.update.assert_any_call({'guardrail_details': {'name': 'test_guardrail', 'policies': ['SENSITIVE_DATA'], 'traits': ['EMAIL']}})
-        assert auth_req.context.get("guardrail_details") == {'name': 'test_guardrail', 'policies': ['SENSITIVE_DATA'], 'traits': ['EMAIL']}
+        context_mock.update.assert_any_call({'guardrail_details': {'name': 'test_guardrail', 'policies': [], 'traits': ['EMAIL']}})
+        assert auth_req.context.get("guardrail_details") == {'name': 'test_guardrail', 'policies': [], 'traits': ['EMAIL']}
 
     @pytest.fixture
     def scanner(self):
