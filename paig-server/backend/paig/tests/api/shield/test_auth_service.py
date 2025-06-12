@@ -888,8 +888,8 @@ class TestAuthService:
         await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
                                              analyzer_result_map, auth_req, authz_res)
 
-        context_mock.update.assert_any_call({'guardrail_name': 'test_guardrail'})
-        assert auth_req.context.get("guardrail_name") == "test_guardrail"
+        context_mock.update.assert_any_call({'guardrail_details': {'name': 'test_guardrail', 'policies': ['SENSITIVE_DATA'], 'traits': ['EMAIL']}})
+        assert auth_req.context.get("guardrail_details") == {'name': 'test_guardrail', 'policies': ['SENSITIVE_DATA'], 'traits': ['EMAIL']}
 
     @pytest.fixture
     def scanner(self):

@@ -101,6 +101,9 @@ def merge_final_result(final_result: list) -> dict:
         if action_priority[current_action] > action_priority[final_action]:
             final_action = current_action
             final_message = result.get("message", "")
+        elif action_priority[current_action] == action_priority[final_action] and not final_message:
+            # Keep first message for same priority
+            final_message = result.get("message", "")
         
         final_tags.extend(result.get("tags", []))
         final_policies.extend(result.get("policy", []))

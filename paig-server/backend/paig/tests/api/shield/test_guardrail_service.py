@@ -171,7 +171,7 @@ async def test_test_guardrail():
         assert result == [{
             "action": "DENY",
             "tags": ["HARMFUL"],
-            "policy": ["policy1"],
+            "policies": ["policy1"],
             "message": "Policy violation detected!"
         }]
 
