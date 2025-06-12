@@ -124,4 +124,24 @@ class EvaluationConfigService:
                 return {'message': 'Evaluation configuration deleted successfully'}
         except Exception as e:
             logger.error(f"Error deleting evaluation configuration: {e}")
-            raise InternalServerError("Error deleting evaluation configuration")    
+            raise InternalServerError("Error deleting evaluation configuration")   
+
+
+class EvaluationConfigHistoryService:
+    def __init__(self,
+        eval_config_history_repository: EvaluationConfigHistoryRepository = SingletonDepends(EvaluationConfigHistoryRepository),
+    ):
+        self.eval_config_history_repository = eval_config_history_repository
+
+    async def get_all_eval_config_history(self, search_filters, page_number, size, sort) -> Pageable:
+        return await self.eval_config_history_repository.get_all_eval_config_history(search_filters, page_number, size, sort)
+    
+    async def get_eval_config_history_by_id(self, config_history_id: int):
+        return await self.eval_config_history_repository.get_eval_config_history_by_id(config_history_id)
+    
+    async def get_latest_config_history(self, config_id: int):
+        try:
+            return await self.eval_config_history_repository.get_latest_config_history(config_id)
+        except Exception as e:
+            logger.error(f"Error while getting latest config history: {e}")
+            raise InternalServerError("Error while getting latest config history")

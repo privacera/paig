@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {observer, inject} from 'mobx-react';
+import "styles/css/styles.css";
 
 import {TableCell, TableRow, TableHead, TableBody, TableContainer} from '@material-ui/core';
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline';
@@ -69,7 +70,7 @@ class VEvaluationConfigTable extends Component{
       const categories = typeof model.categories === 'string' ? JSON.parse(model.categories) : model.categories;
       return (
         <span
-          style={{ color: '#1976d2', cursor: 'pointer', textDecoration: 'underline' }}
+          className="clickable-link"
           onClick={() => this.handleCategoriesClick(model)}
         >
           {Array.isArray(categories) ? categories.length : 0}

@@ -1071,3 +1071,14 @@ span.diff-danger>span {
 .masked-color {
   color: #41546F;
 }
+
+.clickable-link {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+
+.clickable-link:hover {
+  color: #1976d2;
+  text-decoration: underline;
+} 
