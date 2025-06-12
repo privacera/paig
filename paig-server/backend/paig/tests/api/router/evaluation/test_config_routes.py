@@ -1,5 +1,5 @@
 from unittest.mock import patch
-
+import json
 import pytest
 from httpx import AsyncClient
 from fastapi import FastAPI
@@ -22,7 +22,6 @@ class TestConfigRouters:
     def auth_user(self):
         return self.auth_user_obj
 
-
     @pytest.mark.asyncio
     async def test_config_routes(self, client: AsyncClient, app: FastAPI):
         with patch("services.eval.paig_eval_service.routes.eval_config_router.get_user", return_value=self.auth_user()):
@@ -41,22 +40,24 @@ class TestConfigRouters:
             post_data = {
                 "purpose": "string",
                 "name": "string",
-                "categories": ["string"],
+                "categories": ["other_category", "pii"],
                 "custom_prompts": ["string"],
                 "application_ids": "1"
             }
             # Create config
-            post_response = await client.post(f"/{evaluation_services_base_route}/config/save", json=post_data)
+            post_response = await client.post(f"/{evaluation_services_base_route}/config", json=post_data)
             assert post_response.status_code == 200
             created_config = post_response.json()
             config_id = created_config["id"]
 
             # Get config list
-            get_list_response = await client.get(f"/{evaluation_services_base_route}/config/list")
+            get_list_response = await client.get(f"/{evaluation_services_base_route}/config")
             assert get_list_response.status_code == 200
             json_resp = get_list_response.json()
             assert "content" in json_resp
             assert isinstance(json_resp["content"], list)
+            assert json.loads(json_resp["content"][0]["categories"]) == [{"name": "other_category", "type": "Other"}, {"name": "pii", "type": "Security & Access Control"}]
+
 
             # Update config
             update_data = {

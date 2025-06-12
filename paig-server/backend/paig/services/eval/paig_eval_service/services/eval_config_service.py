@@ -8,7 +8,7 @@ from ..database.db_operations.eval_config_repository import EvaluationConfigRepo
 import logging
 from core.exceptions import NotFoundException, InternalServerError, BadRequestException
 from core.controllers.paginated_response import Pageable
-
+from paig_evaluation.paig_evaluator import get_all_plugins
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,10 @@ class EvaluationConfigService:
         self.eval_config_repository = eval_config_repository
         self.eval_config_history_repository = eval_config_history_repository
         self.eval_target_repository = eval_target_repository
+        # Initialize category name to type mapping from plugins
+        all_categories = get_all_plugins()
+        plugin_list = all_categories.get("result", [])
+        self.category_name_to_type_map = {plugin["Name"]: plugin["Type"] for plugin in plugin_list}
 
     async def get_all_eval_config(self, search_filters, page_number, size, sort) -> Pageable:
         try:
@@ -46,14 +50,24 @@ class EvaluationConfigService:
             app_names = []
             for app in apps:
                 app_names.append(app.name)
-            body_params['categories'] = json.dumps(body_params.get('categories', []))
+            categories = body_params.get('categories', [])
+            category_objects = []
+            for category in categories:
+                category_type = self.category_name_to_type_map.get(category)
+                if category_type is None:
+                    category_type = "Other"
+                category_objects.append({
+                    "name": category,
+                    "type": category_type
+                })
+            body_params['categories'] = json.dumps(category_objects)
             body_params['custom_prompts'] = json.dumps(body_params.get('custom_prompts', []))
             body_params['version'] = 1
             body_params['application_names'] = ','.join(app_names)
             eval_config = await self.eval_config_repository.create_eval_config(body_params)
             body_params['eval_config_id'] = eval_config.id
             config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
-            return eval_config
+            return eval_config, config_history.id
         except Exception as e:
             logger.error(f"Error creating evaluation configuration: {e}")
             logger.error(traceback.format_exc())
@@ -76,14 +90,24 @@ class EvaluationConfigService:
                     app_names.append(app.name)
                 body_params['application_names'] = ','.join(app_names)
             if 'categories' in body_params:
-                body_params['categories'] = json.dumps(body_params['categories'])
+                categories = body_params['categories']
+                category_objects = []
+                for category in categories:
+                    category_type = self.category_name_to_type_map.get(category)
+                    if category_type is None:
+                        category_type = "Other"
+                    category_objects.append({
+                        "name": category,
+                        "type": category_type
+                    })
+                body_params['categories'] = json.dumps(category_objects)
             if 'custom_prompts' in body_params:
                 body_params['custom_prompts'] = json.dumps(body_params['custom_prompts'])
             body_params['version'] = eval_config_model.version + 1
             body_params['update_time']: current_utc_time()
             eval_updated_model = await self.eval_config_repository.update_eval_config(body_params, eval_config_model)
             body_params['eval_config_id'] = eval_config_model.id
-            updated_config_history =  await self.eval_config_history_repository.create_eval_config_history(body_params)
+            updated_config_history = await self.eval_config_history_repository.create_eval_config_history(body_params)
             return eval_updated_model
         except Exception as e:
             logger.error(f"Error updating evaluation configuration: {e}")
@@ -100,5 +124,4 @@ class EvaluationConfigService:
                 return {'message': 'Evaluation configuration deleted successfully'}
         except Exception as e:
             logger.error(f"Error deleting evaluation configuration: {e}")
-            raise InternalServerError("Error deleting evaluation configuration")
-
+            raise InternalServerError("Error deleting evaluation configuration")    

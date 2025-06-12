@@ -51,7 +51,8 @@ class EvaluationConfigController:
         Returns:
             dict: The response message.
         """
-        return await self.eval_config_service.create_eval_config(body_params=body_params)
+        eval_config, config_history_id = await self.eval_config_service.create_eval_config(body_params=body_params)
+        return eval_config
 
 
     async def update_eval_config(self, config_id: int, body_params: dict):

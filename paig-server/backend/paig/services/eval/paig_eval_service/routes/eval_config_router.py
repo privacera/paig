@@ -11,7 +11,7 @@ evaluation_config_router = APIRouter()
 eval_config_controller_instance = Depends(SingletonDepends(EvaluationConfigController, called_inside_fastapi_depends=True))
 
 
-@evaluation_config_router.get("/list", response_model=Pageable)
+@evaluation_config_router.get("", response_model=Pageable)
 async def get_eval_config(
         includeQuery: IncludeQueryParams = Depends(include_query_params),
         excludeQuery: QueryParamsBase = Depends(exclude_query_params),
@@ -23,7 +23,7 @@ async def get_eval_config(
     return await eval_config_controller.get_all_eval_config(includeQuery, excludeQuery, page, size, sort)
 
 
-@evaluation_config_router.post("/save")
+@evaluation_config_router.post("")
 async def save_eval_config(
         request: Request,
         response: Response,

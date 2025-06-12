@@ -52,6 +52,7 @@ class EvaluationResultService:
         resp_dict['report_name'] = model.name
         resp_dict['owner'] = model.owner
         resp_dict['create_time'] = model.create_time
+        resp_dict['update_time'] = model.update_time
         resp_dict["target_users"] = model.target_users
         return resp_dict
 

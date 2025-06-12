@@ -25,12 +25,14 @@ class BaseEvaluationView(BaseModel):
     purpose: str = Field(..., description="The purpose of the config")
     eval_id: str = Field(..., max_length=1024, description="The eval id")
     config_id: int = Field(..., description="The config id")
+    config_history_id: Optional[int] = Field(None, description="The config history id")
     status: str = Field(..., max_length=1024, description="The status of the config")
     owner: Optional[str] = Field(None, description="The User ID", alias="owner")
     passed: str = Field(..., description="The number of passed evaluations")
     failed: str = Field(..., description="The number of failed evaluations")
     id: int = Field(..., description="The id of the evaluation")
     create_time: Optional[datetime] = Field(None, description="The create time of the evaluation")
+    update_time: Optional[datetime] = Field(None, description="The update time of the evaluation")
     model_config = ConfigDict(
         from_attributes=True,
         populate_by_name=True

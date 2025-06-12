@@ -5,6 +5,7 @@ import traceback
 import uuid
 
 from ..database.db_operations.eval_config_repository import EvaluationConfigHistoryRepository
+from ..database.db_operations.eval_config_repository import EvaluationConfigRepository
 from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 from core.utils import SingletonDepends
 from ..database.db_operations.eval_repository import EvaluationRepository
@@ -131,6 +132,7 @@ def threaded_run_evaluation(eval_id, eval_run_id, eval_config, target_hosts, app
         categories = eval_config.categories
         if categories != '' and isinstance(categories, str):
             categories = json.loads(categories)
+        categories = [category['name'] for category in categories]
         # Create application configuration
         application_config = {
             "paig_eval_id": eval_id,
@@ -207,12 +209,14 @@ class EvaluationService:
     def __init__(
         self,
         evaluation_repository: EvaluationRepository = SingletonDepends(EvaluationRepository),
+        eval_config_repository: EvaluationConfigRepository = SingletonDepends(EvaluationConfigRepository),
         eval_config_history_repository: EvaluationConfigHistoryRepository = SingletonDepends(EvaluationConfigHistoryRepository),
         eval_target_repository: EvaluationTargetRepository = SingletonDepends(EvaluationTargetRepository)
     ):
         self.evaluation_repository = evaluation_repository
         self.eval_config_history_repository = eval_config_history_repository
         self.eval_target_repository = eval_target_repository
+        self.eval_config_repository = eval_config_repository
 
     def get_paig_evaluator(self):
         return PAIGEvaluator()
@@ -244,10 +248,13 @@ class EvaluationService:
         return final_target, app_names, target_users
 
     @Transactional(propagation=Propagation.REQUIRED)
-    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, auth_user=None):
+    async def run_evaluation(self, eval_config_id, owner, base_run_id=None, report_name=None, config_history_id=None, auth_user=None, rerun_eval=False):
         if not await self.validate_eval_availability():
             raise TooManyRequestsException('The maximum number of evaluations has already been reached. Please try again once one has completed.')
-        eval_config = await self.eval_config_history_repository.get_eval_config_by_config_id(eval_config_id)
+        if rerun_eval and config_history_id is not None:
+            eval_config = await self.eval_config_history_repository.get_eval_config_history_by_id(config_history_id)
+        else:
+            eval_config = await self.eval_config_repository.get_eval_config_by_id(eval_config_id)
         if eval_config is None:
             raise BadRequestException('Configuration does not exists')
         
@@ -267,6 +274,7 @@ class EvaluationService:
         eval_params = {
             "status": "GENERATING",
             "config_id": eval_config_id,
+            "config_history_id": config_history_id,
             "owner": owner,
             "eval_id": eval_id,
             "purpose": eval_config.purpose,
@@ -326,7 +334,7 @@ class EvaluationService:
         base_run_id = existing_evaluation.eval_id
         if existing_evaluation.base_run_id:
             base_run_id = existing_evaluation.base_run_id
-        return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name)
+        return await self.run_evaluation(existing_evaluation.config_id, owner, base_run_id=base_run_id, report_name=report_name, config_history_id=existing_evaluation.config_history_id, rerun_eval=True)
 
 
 

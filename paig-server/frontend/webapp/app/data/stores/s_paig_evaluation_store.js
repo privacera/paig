@@ -37,7 +37,7 @@ class EvaluationStore extends BaseStore {
     }
 
     saveEvaluationConfig(data, opts = {}) {
-        opts.path = '/config/save';
+        opts.path = '/config';
         opts.recordMapper = (json) => new MEvaluation(json);
         return this.create(data, opts);
     }
@@ -61,7 +61,7 @@ class EvaluationStore extends BaseStore {
     }
 
     fetchEvaluationConfigs(opts = {}) {
-        opts.path = '/config/list';
+        opts.path = '/config';
         opts.recordMapper = (json) => new MEvaluation(json);
         opts.deserialize = (resp) => {
             let {content, ...page} = resp

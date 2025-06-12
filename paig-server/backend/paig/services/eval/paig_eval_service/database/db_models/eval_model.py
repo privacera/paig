@@ -24,6 +24,7 @@ class EvaluationModel(CommonBase):
     purpose = Column(Text(), default='')
     eval_id = Column(String(255), nullable=False)
     config_id = Column(String(255), nullable=False)
+    config_history_id = Column(String(255), nullable=True)
     config_name = Column(String(255))
     application_names = Column(Text())
     cumulative_result = Column(Text())

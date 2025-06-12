@@ -153,9 +153,20 @@ class EvaluationConfigHistoryRepository(BaseOperations[EvaluationConfigHistoryMo
         param = EvaluationConfigHistoryModel(**body_params)
         return await self.create_record(param)
 
-    async def  get_eval_config_by_config_id(self, eval_config_id: int):
+    async def get_eval_config_by_config_id(self, eval_config_id: int):
+        # Get the latest config history for a given config id
         try:
             filters = {'eval_config_id': eval_config_id}
+            eval_config_history = await self.get_all(filters, order_by_field=["id", "desc"])
+            if eval_config_history is None:
+                return None
+            return eval_config_history[0]
+        except NoResultFound:
+            return None
+    
+    async def get_eval_config_history_by_id(self, config_history_id: int):
+        try:
+            filters = {'id': config_history_id}
             return await self.get_by(filters, unique=True)
         except NoResultFound:
             return None
