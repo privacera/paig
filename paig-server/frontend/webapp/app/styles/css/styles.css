@@ -1072,13 +1072,13 @@ span.diff-danger>span {
   color: #41546F;
 }
 
-.categories-count {
+.clickable-link {
   cursor: pointer;
   text-decoration: none;
   color: inherit;
 }
 
-.categories-count:hover {
+.clickable-link:hover {
   color: #1976d2;
   text-decoration: underline;
 } 

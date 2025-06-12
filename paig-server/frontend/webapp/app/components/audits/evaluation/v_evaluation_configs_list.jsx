@@ -70,7 +70,7 @@ class VEvaluationConfigTable extends Component{
       const categories = typeof model.categories === 'string' ? JSON.parse(model.categories) : model.categories;
       return (
         <span
-          className="categories-count"
+          className="clickable-link"
           onClick={() => this.handleCategoriesClick(model)}
         >
           {Array.isArray(categories) ? categories.length : 0}
