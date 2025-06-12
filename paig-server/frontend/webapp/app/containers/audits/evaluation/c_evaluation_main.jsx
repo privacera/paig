@@ -100,17 +100,20 @@ class CEvaluationConfigMain extends Component {
 	handleUrlFilter = () => {
 		// Handle both regular URL params and hash-based params
 		let filterParam = null;
+		let tabParam = null;
 		
 		// Try regular URL params first
 		const urlParams = new URLSearchParams(window.location.search);
 		filterParam = urlParams.get('filter');
+		tabParam = urlParams.get('tab');
 		
 		// If not found, try hash-based params
-		if (!filterParam && window.location.hash.includes('?')) {
+		if ((!filterParam || !tabParam) && window.location.hash.includes('?')) {
 			const hashParts = window.location.hash.split('?');
 			if (hashParts.length > 1) {
 				const hashParams = new URLSearchParams(hashParts[1]);
-				filterParam = hashParams.get('filter');
+				if (!filterParam) filterParam = hashParams.get('filter');
+				if (!tabParam) tabParam = hashParams.get('tab');
 			}
 		}
 		
@@ -119,12 +122,19 @@ class CEvaluationConfigMain extends Component {
 				// Parse the JSON filter (same pattern as eval reports)
 				const filter = JSON.parse(decodeURIComponent(filterParam));
 				this._vState.searchFilterValue = filter;
-				// Stay on config tab (index 0) to show the filtered results
-				this.handleTabSelect(0);
+				
+				// Check if we should switch to endpoints tab
+				if (tabParam === 'endpoints') {
+					// Switch to endpoints tab (index 1)
+					this.handleTabSelect(1);
+				} else {
+					// Stay on config tab (index 0) to show the filtered results
+					this.handleTabSelect(0);
+				}
 			} catch (e) {
 				console.error('Error parsing filter parameter:', e);
 			}
-			// Clear the URL parameter after processing
+			// Clear the URL parameters after processing
 			const newUrl = window.location.pathname + window.location.hash.split('?')[0];
 			window.history.replaceState({}, '', newUrl);
 		}

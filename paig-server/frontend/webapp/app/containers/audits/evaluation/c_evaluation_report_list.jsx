@@ -185,6 +185,18 @@ class CEvaluationReportsList extends Component {
     hashHistory.push(`/eval_configs?filter=${encodeURIComponent(JSON.stringify(filter))}`);
   }
 
+  handleApplicationClick = (applicationName) => {
+    // Use the same pattern as eval report severity filtering
+    const filter = [{
+      category: "Name",
+      operator: "is",
+      value: applicationName
+    }];
+    
+    // Navigate to eval configs page endpoints tab with filter applied
+    hashHistory.push(`/eval_configs?filter=${encodeURIComponent(JSON.stringify(filter))}&tab=endpoints`);
+  }
+
   handleBack = () => {
     this.setState({
       showIframe: false,
@@ -263,6 +275,7 @@ class CEvaluationReportsList extends Component {
             handleView={this.handleView}
             handleReRun={this.handleReRun}
             handleEvalClick={this.handleEvalClick}
+            handleApplicationClick={this.handleApplicationClick}
           />
         </Fragment>
         <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>

@@ -113,18 +113,31 @@ class VEvaluationReportTable extends Component{
   };
 
   getApplicationNameCell = (applicationName) => {
+    const { handleApplicationClick } = this.props;
     if (!applicationName) return "--";
-    const names = applicationName.split(",").map((name, index) => (
-      <Fragment key={index}>
-        <div>{name.trim()}</div>
-        {index !== applicationName.split(",").length - 1 && <hr />}
-      </Fragment>
-    ));
+    
+    const names = applicationName.split(",").map((name, index) => {
+      const trimmedName = name.trim();
+      return (
+        <Fragment key={index}>
+          <div>
+            <span 
+              className="clickable-table-cell"
+              onClick={() => handleApplicationClick && handleApplicationClick(trimmedName)}
+              title={`Click to filter endpoints by ${trimmedName}`}
+            >
+              {trimmedName}
+            </span>
+          </div>
+          {index !== applicationName.split(",").length - 1 && <hr />}
+        </Fragment>
+      );
+    });
     return names;
   };
 
   getRowData = (model) => {
-    const {handleReRun, handleView, permission, handleDelete, handleEvalClick} = this.props;
+    const {handleReRun, handleView, permission, handleDelete, handleEvalClick, handleApplicationClick} = this.props;
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
       <TableCell key="2">
