@@ -173,6 +173,18 @@ class CEvaluationReportsList extends Component {
     hashHistory.push(`/eval_report/${model.eval_id}`);
   }
 
+  handleEvalClick = (configName) => {
+    // Use the same pattern as eval report severity filtering
+    const filter = [{
+      category: "Name",
+      operator: "is",
+      value: configName
+    }];
+    
+    // Navigate to eval configs page with filter applied
+    hashHistory.push(`/eval_configs?filter=${encodeURIComponent(JSON.stringify(filter))}`);
+  }
+
   handleBack = () => {
     this.setState({
       showIframe: false,
@@ -250,6 +262,7 @@ class CEvaluationReportsList extends Component {
             handleDelete={this.handleDelete}
             handleView={this.handleView}
             handleReRun={this.handleReRun}
+            handleEvalClick={this.handleEvalClick}
           />
         </Fragment>
         <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>

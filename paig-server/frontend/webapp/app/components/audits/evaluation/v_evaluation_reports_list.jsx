@@ -124,10 +124,20 @@ class VEvaluationReportTable extends Component{
   };
 
   getRowData = (model) => {
-    const {handleReRun, handleView, permission, handleDelete} = this.props;
+    const {handleReRun, handleView, permission, handleDelete, handleEvalClick} = this.props;
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
-      <TableCell key="2">{model.config_name || "--"}</TableCell>,
+      <TableCell key="2">
+        {model.config_name ? (
+          <span 
+            className="clickable-table-cell" 
+            onClick={() => handleEvalClick && handleEvalClick(model.config_name)}
+            title={`Click to view ${model.config_name} configuration`}
+          >
+            {model.config_name}
+          </span>
+        ) : "--"}
+      </TableCell>,
       <TableCell key="3">{this.getApplicationNameCell(model.application_names) || "--"}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
       <TableCell key="5" className="text-center">{this.getStatus(model.status) || "--"}</TableCell>,

@@ -20,6 +20,10 @@ class CEvaluationConfigMain extends Component {
 		defaultState: 0,
 		clearStateOnUnmount: false
 	}
+	@observable _vState = {
+		searchFilterValue: []
+	}
+	
 	state = {
 		views: []
 	}
@@ -43,6 +47,11 @@ class CEvaluationConfigMain extends Component {
 	
 	componentDidMount() {
 		this.filterTabs();
+		// Expose this component to child components
+		window.parentEvaluationComponent = this;
+		
+		// Check for filter parameter in URL
+		this.handleUrlFilter();
 	}
 	
 	componentWillUnmount() {
@@ -50,6 +59,10 @@ class CEvaluationConfigMain extends Component {
 		tabsState.clearStateOnUnmount = true;
 		const data = JSON.stringify({ tabsState });
 		UiState.saveState(this.props._vName, data);
+		// Clean up the global reference
+		if (window.parentEvaluationComponent === this) {
+			delete window.parentEvaluationComponent;
+		}
 	}
 	
 	filterTabs() {
@@ -59,7 +72,27 @@ class CEvaluationConfigMain extends Component {
 	}
 	
 	handleTabSelect = (key) => {
+		console.log('Main: handleTabSelect called with key:', key);
 		this.tabsState.defaultState = key;
+	}
+	
+	handleManualTabSelect = (key) => {
+		console.log('Main: handleManualTabSelect called with key:', key);
+		// Clear filter when manually switching tabs (this is the key difference from eval reports)
+		this._vState.searchFilterValue = [];
+		console.log('Main: Cleared searchFilterValue for manual tab switch');
+		this.handleTabSelect(key);
+	}
+	
+	handleApplicationClick = (applicationName, filter) => {
+		console.log('Main: handleApplicationClick called with applicationName:', applicationName, 'filter:', filter);
+		// Use the exact same pattern as eval report severity filtering
+		this._vState.searchFilterValue = filter;
+		console.log('Main: Set _vState.searchFilterValue to:', this._vState.searchFilterValue);
+		console.log('Main: Current tab before switch:', this.tabsState.defaultState);
+		// Switch to endpoints tab
+		this.handleTabSelect(1);
+		console.log('Main: Switched to tab 1, current tab:', this.tabsState.defaultState);
 	}
 	
 	handleRefresh = () => {
@@ -71,8 +104,41 @@ class CEvaluationConfigMain extends Component {
 		}
 	}
 	
+	handleUrlFilter = () => {
+		// Handle both regular URL params and hash-based params
+		let filterParam = null;
+		
+		// Try regular URL params first
+		const urlParams = new URLSearchParams(window.location.search);
+		filterParam = urlParams.get('filter');
+		
+		// If not found, try hash-based params
+		if (!filterParam && window.location.hash.includes('?')) {
+			const hashParts = window.location.hash.split('?');
+			if (hashParts.length > 1) {
+				const hashParams = new URLSearchParams(hashParts[1]);
+				filterParam = hashParams.get('filter');
+			}
+		}
+		
+		if (filterParam) {
+			try {
+				// Parse the JSON filter (same pattern as eval reports)
+				const filter = JSON.parse(decodeURIComponent(filterParam));
+				this._vState.searchFilterValue = filter;
+				// Stay on config tab (index 0) to show the filtered results
+				this.handleTabSelect(0);
+			} catch (e) {
+				console.error('Error parsing filter parameter:', e);
+			}
+			// Clear the URL parameter after processing
+			const newUrl = window.location.pathname + window.location.hash.split('?')[0];
+			window.history.replaceState({}, '', newUrl);
+		}
+	}
+	
 	render() {
-		const {state, tabsState, handleTabSelect, handleRefresh} = this;
+		const {state, tabsState, handleRefresh, handleTabSelect, _vState} = this;
 		const tabs = [];
 		const tabsPanel = [];
 		
@@ -83,13 +149,20 @@ class CEvaluationConfigMain extends Component {
 				  label={viewObj.title}
 				  key={viewObj.index}
 				  data-track-id={viewObj.trackId}
-				  onClick={(e) => handleTabSelect(viewObj.index)}
+				  onClick={(e) => this.handleManualTabSelect(viewObj.index)}
 				  data-testid={viewObj.trackId}
 				/>
 			  )
+			  
 			  tabsPanel.push(
 				<TabPanel key={viewObj.index} value={tabsState.defaultState} index={viewObj.index} p={0} mt={"10px"} renderAll={false}>
-				  <viewObj.view ref={ ref => this[`${viewObj.title}Ref`] = ref}  tabsState={tabsState} history={this.props.history}/>
+				  <viewObj.view 
+				    ref={ ref => this[`${viewObj.title}Ref`] = ref}  
+				    tabsState={tabsState} 
+				    history={this.props.history} 
+				    parent={this}
+				    parent_vState={_vState}
+				  />
 				</TabPanel>
 			  )
 			})

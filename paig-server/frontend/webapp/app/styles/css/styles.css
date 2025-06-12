@@ -1072,13 +1072,12 @@ span.diff-danger>span {
   color: #41546F;
 }
 
-.clickable-link {
+.clickable-table-cell {
   cursor: pointer;
-  text-decoration: none;
-  color: inherit;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
-.clickable-link:hover {
+.clickable-table-cell:hover {
   color: #1976d2;
   text-decoration: underline;
-} 
+}

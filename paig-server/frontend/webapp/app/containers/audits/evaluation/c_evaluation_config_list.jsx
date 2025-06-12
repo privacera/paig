@@ -53,7 +53,20 @@ class CEvaluationConfigList extends Component {
     this.restoreState();
   }
   componentDidMount() {
+    // Use the exact same pattern as eval report details
+    if (this.props.parent_vState && this.props.parent_vState.searchFilterValue) {
+      console.log('Config: Applying parent_vState.searchFilterValue:', this.props.parent_vState.searchFilterValue);
+      this.handleSearchByField(this.props.parent_vState.searchFilterValue);
+      // Clear the filter in parent after applying it (same as eval reports)
+      this.props.parent_vState.searchFilterValue = [];
+      console.log('Config: Cleared parent_vState.searchFilterValue');
+    } else {
+      console.log('Config: No filter to apply');
+    }
     this.handleRefresh();
+  }
+  componentDidUpdate(prevProps) {
+    // Remove componentDidUpdate logic - not needed in eval reports pattern
   }
   componentWillUnmount() {
     let {dateRangeDetail, _vState} = this;
@@ -180,6 +193,21 @@ class CEvaluationConfigList extends Component {
     this.props.history.push('/eval/create');
   }
 
+  handleApplicationClick = (applicationName) => {
+    // Use the same pattern as severity filtering in eval reports
+    const filter = [{
+      category: "Name",
+      operator: "is", 
+      value: applicationName
+    }];
+    
+    // Use parent component's method to switch tabs and set filter
+    const parentComponent = this.props.parent;
+    if (parentComponent && parentComponent.handleApplicationClick) {
+      parentComponent.handleApplicationClick(applicationName, filter);
+    }
+  }
+
   handleRunSave = async () => {
     const form = this.evalForm;
     const formData = form.toJSON();
@@ -198,6 +226,18 @@ class CEvaluationConfigList extends Component {
       this._vState.saving = false;
       f.handleError()(e);
     }
+  }
+
+  clearSearchParams = () => {
+    // Clear all search-related API parameters
+    const params = {
+      page: undefined
+    };
+    Object.values(CATEGORIES).forEach(obj => {
+      params['includeQuery.' + obj.key] = undefined;
+      params['excludeQuery.' + obj.key] = undefined;
+    });
+    Object.assign(this.cEvalConfigs.params, params);
   }
 
   render() {
@@ -233,6 +273,8 @@ class CEvaluationConfigList extends Component {
             handleDelete={this.handleDelete}
             handleEdit={this.handleEdit}
             handleRun={this.handleRun}
+            handleApplicationClick={this.handleApplicationClick}
+            permission={this.permission}
           />
           <FSModal ref={this.runReportModalRef} dataResolve={this.handleRunSave}>
             <VRunReportForm form={this.evalForm} mode="run_report"  asUser={this._vState.asUser}/>
