@@ -1,6 +1,8 @@
 import copy
 import json
 import traceback
+import asyncio
+import httpx
 from core.utils import SingletonDepends, is_valid_url
 from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 import logging
@@ -208,3 +210,98 @@ class EvaluationTargetService:
             logger.error(f"Error in delete_app_target_on_ai_app: {e}")
             logger.error(traceback.format_exc())
             raise InternalServerError("Internal server error")
+
+    async def check_target_application_connection(self, body_params: dict):
+        """
+        Check the connection of the target application by making a test request.
+        
+        Args:
+            body_params (dict): Dictionary containing connection parameters
+                - url: Target application URL
+                - method: HTTP method (GET, POST, etc.)
+                - headers: Request headers
+                - body: Request body (for POST/PUT requests)
+        
+        Returns:
+            dict: Connection test result with status and message
+        
+        Raises:
+            BadRequestException: If URL is invalid or request parameters are malformed
+            InternalServerError: If connection test fails
+        """
+        try:
+            # Validate URL
+            if not is_valid_url(body_params.get('url')):
+                raise BadRequestException("Invalid URL format")
+
+            # Prepare request parameters
+            url = body_params['url']
+            method = body_params.get('method', 'POST').upper()
+            headers = body_params.get('headers', {})
+            body = body_params.get('body', {})
+
+            # Convert headers and body to proper format if they're strings
+            if isinstance(headers, str):
+                try:
+                    headers = json.loads(headers)
+                except json.JSONDecodeError:
+                    raise BadRequestException("Invalid headers format")
+            
+            if isinstance(body, str):
+                try:
+                    body = json.loads(body)
+                except json.JSONDecodeError:
+                    raise BadRequestException("Invalid body format")
+
+            # Clean headers (remove empty values)
+            headers = {k: v for k, v in headers.items() if k and v}
+
+            # Make the test request
+            async with httpx.AsyncClient(timeout=60) as client:
+                try:
+                    if method in ['POST', 'PUT', 'PATCH']:
+                        response = await client.request(method, url, headers=headers, json=body)
+                    else:
+                        response = await client.request(method, url, headers=headers)
+
+                    if 200 <= response.status_code < 300:
+                        return {
+                            "status": "success",
+                            "message": "Successfully connected to the target application",
+                            "status_code": response.status_code
+                        }
+                    else:
+                        error_text = response.text
+                        try:
+                            error_json = json.loads(error_text)
+                            error_message = error_json.get("message", error_text)
+                        except Exception:
+                            error_message = error_text
+                        return {
+                            "status": "error",
+                            "message": f"Connection failed: {error_message}",
+                            "status_code": response.status_code
+                        }
+                except httpx.RequestError as e:
+                    return {
+                        "status": "error",
+                        "message": f"Connection failed: {str(e)}",
+                        "status_code": 502
+                    }
+                except asyncio.TimeoutError:
+                    return {
+                        "status": "error",
+                        "message": "Connection timed out after 60 seconds",
+                        "status_code": 504
+                    }
+
+        except BadRequestException as e:
+            return {
+                "status": "error",
+                "message": f"Connection failed: {str(e)}",
+                "status_code": 400
+            }
+        except Exception as e:
+            logger.error(f"Error in check_target_application_connection: {e}")
+            raise InternalServerError(f"Failed to test connection: {str(e)}")
+        

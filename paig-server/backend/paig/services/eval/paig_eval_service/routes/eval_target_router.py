@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request, Response, Depends, Query
 from core.utils import SingletonDepends
 from ..controllers.eval_target_controller import EvaluationTargetController
 from ..api_schemas.eval_target_schema import IncludeQueryParams, QueryParamsBase, include_query_params, exclude_query_params
-from ..api_schemas.eval_target_schema import TargetCreateRequest, TargetUpdateRequest
+from ..api_schemas.eval_target_schema import TargetCreateRequest, TargetUpdateRequest, TargetApplicationConnectionRequest
 
 evaluation_target_router = APIRouter()
 
@@ -61,3 +61,13 @@ async def get_application_target_by_id(
         eval_target_controller: EvaluationTargetController = eval_target_controller_instance
 ):
     return await eval_target_controller.get_app_target_by_id(app_id=id)
+
+
+@evaluation_target_router.post("/application/connection")
+async def check_target_application_connection(
+        request: Request,
+        response: Response,
+        body_params: TargetApplicationConnectionRequest,
+        eval_target_controller: EvaluationTargetController = eval_target_controller_instance
+):
+    return await eval_target_controller.check_target_application_connection(body_params=body_params.model_dump())

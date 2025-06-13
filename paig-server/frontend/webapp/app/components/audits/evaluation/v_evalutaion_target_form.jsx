@@ -1,11 +1,12 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 
 import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
-import {Grid, Typography, Button} from '@material-ui/core';
+import {Grid, Typography, Button, CircularProgress, Box} from '@material-ui/core';
 import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {FormHorizontal, FormGroupInput, FormGroupSelect2, FormGroupRadioList} from 'common-ui/components/form_fields';
 import f from 'common-ui/utils/f';
+import Alert from '@material-ui/lab/Alert';
 
 const SUPPORTED_METHODS = [
     { name: 'POST', value: 'POST' },
@@ -14,7 +15,8 @@ const SUPPORTED_METHODS = [
 ];
 
 const VEvalTargetForm = (props) => {
-    const { form, cApplications } = props;
+    const { form, cApplications, evaluationStore } = props;
+
     const {
         id,
         ai_application_id,
@@ -27,6 +29,16 @@ const VEvalTargetForm = (props) => {
         method,
         username
     } = form.fields;
+
+    const [connectionState, setConnectionState] = useState({
+        inProgress: false,
+        showTestConnectionMsg: false,
+        testConnectionResponse: {
+            statusCode: 0,
+            msgDesc: ''
+        }
+    });
+    const connectionStatusRef = useRef(null);
 
     // Initialize headers list from form field or default to empty array
     const authHeader = headers.value?.find(h => h.key?.toLowerCase() === 'authorization');
@@ -170,7 +182,92 @@ const VEvalTargetForm = (props) => {
         }
     }, [cApplications]);
 
-    
+    const handleTestConnection = async () => {
+        // Validate required fields
+        if (!url.value || !url.value.trim()) {
+            f.notifyError("Endpoint URL is required");
+            return;
+        }
+        if (!method.value) {
+            f.notifyError("HTTP Method is required");
+            return;
+        }
+        if (!username.value || !username.value.trim()) {
+            f.notifyError("Username is required");
+            return;
+        }
+        if (!body.value || !body.value.trim()) {
+            f.notifyError("Request Body is required");
+            return;
+        }
+        setConnectionState({
+            inProgress: true,
+            showTestConnectionMsg: false,
+            testConnectionResponse: { statusCode: 0, msgDesc: '' }
+        });
+        try {
+            // Prepare headers
+            let headersObj = {};
+            if (headers.value && Array.isArray(headers.value)) {
+                headersObj = headers.value.reduce((acc, header) => {
+                    if (header.key && header.value) {
+                        acc[header.key] = header.value;
+                    }
+                    return acc;
+                }, {});
+            }
+            // Prepare body
+            let bodyObj = {};
+            if (body.value) {
+                try {
+                    bodyObj = typeof body.value === 'string' ? JSON.parse(body.value) : body.value;
+                } catch (e) {
+                    console.error("Error parsing body:", e);
+                    f.notifyError("Invalid JSON in request body");
+                    setConnectionState({
+                        inProgress: false,
+                        showTestConnectionMsg: true,
+                        testConnectionResponse: { statusCode: 0, msgDesc: 'Invalid JSON in request body' }
+                    });
+                    return;
+                }
+            }
+            const testData = {
+                url: url.value.trim(),
+                method: method.value,
+                headers: headersObj,
+                body: bodyObj
+            };
+            const response = await evaluationStore.testTargetConnection(testData);
+            const resp = Array.isArray(response) ? response[0] : response;
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: {
+                    statusCode: resp && resp.status === 'success' ? 1 : 0,
+                    msgDesc: resp?.message || (resp?.status === 'success' ? 'Connection successful' : 'Connection failed')
+                }
+            });
+        } catch (e) {
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: {
+                    statusCode: 0,
+                    msgDesc: "Failed to test connection"
+                }
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (connectionState.inProgress || connectionState.showTestConnectionMsg) {
+            setTimeout(() => {
+                connectionStatusRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }, [connectionState.inProgress, connectionState.showTestConnectionMsg]);
+
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
@@ -350,6 +447,37 @@ const VEvalTargetForm = (props) => {
                         rows: 4
                     }}
                 />
+
+                {/* Test Connection button and message */}
+                <Grid item xs={12} style={{ marginTop: '16px' }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleTestConnection}
+                        disabled={connectionState.inProgress || !url.value || !method.value}
+                        data-testid="test-connection-btn"
+                    >
+                        Test Connection
+                    </Button>
+                    {(connectionState.inProgress || connectionState.showTestConnectionMsg) && (
+                        <Box mt={"10px"} data-testid="connection-status" ref={connectionStatusRef}>
+                            <Alert
+                                severity={
+                                    connectionState.inProgress
+                                        ? 'warning'
+                                        : connectionState.testConnectionResponse.statusCode === 1
+                                        ? 'success'
+                                        : 'error'
+                                }
+                                icon={connectionState.inProgress ? <CircularProgress size="20px" /> : null}
+                            >
+                                {connectionState.inProgress && 'Connecting'}
+                                {connectionState.showTestConnectionMsg &&
+                                    (connectionState.testConnectionResponse.msgDesc || 'No Response')}
+                            </Alert>
+                        </Box>
+                    )}
+                </Grid>
             </Grid>
         </FormHorizontal>
     );
