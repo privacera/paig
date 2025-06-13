@@ -2,7 +2,8 @@ import React, {useState, useEffect} from 'react';
 
 import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
-import {Grid, Typography, IconButton, Button} from '@material-ui/core';
+import {Grid, Typography, Button} from '@material-ui/core';
+import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {FormHorizontal, FormGroupInput, FormGroupSelect2, FormGroupRadioList} from 'common-ui/components/form_fields';
 import f from 'common-ui/utils/f';
 
@@ -302,9 +303,12 @@ const VEvalTargetForm = (props) => {
                             />
                             {header.key.toLowerCase() !== 'authorization' && (
                             <Grid item xs={2}>
-                                <IconButton onClick={() => handleRemoveHeader(index)} color="primary">
-                                    <Delete />
-                                </IconButton>
+                                <CustomAnchorBtn
+                                    tooltipLabel="Delete"
+                                    color="primary"
+                                    onClick={() => handleRemoveHeader(index)}
+                                    icon={<Delete />}
+                                />
                             </Grid>
                             )}
                         </Grid>
@@ -318,6 +322,7 @@ const VEvalTargetForm = (props) => {
                             startIcon={<Add className='m-l-sm'/>}
                             onClick={handleAddHeader}
                             size="small"
+                            className='m-t-sm'
                         >
                         </Button>
                     </Grid>

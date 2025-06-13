@@ -14,6 +14,7 @@ import {TabPanel} from 'common-ui/components/generic_components';
 import PaperTabsContainer from 'common-ui/components/paper_tabs_container';
 
 
+
 @observer
 class CEvaluationConfigMain extends Component {
 	@observable tabsState = {

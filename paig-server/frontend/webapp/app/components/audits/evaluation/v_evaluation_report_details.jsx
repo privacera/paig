@@ -33,27 +33,25 @@ class VEvaluationReportDetails extends Component {
   }
 
   getHeaders = () => {
-    const { data } = this.props;
-    const dataModels = f.models(data) || [];
-    const responseHeaders = dataModels[0]?.responses?.map((response, index) => (
+    const { _vState } = this.props;
+    const dataModels = _vState.reportData;
+    const responseHeaders = dataModels?.result?.map((response, index) => (
       <TableCell key={`response-${index}`}>{`Response (${response.application_name})`}</TableCell>
     )) || [];
-
-    return (
-      <Fragment>
-        <TableCell key="category" className='min-width-100'>Category</TableCell>
-        <TableCell key="type" className='min-width-100'>Type</TableCell>
-        <TableCell key="prompt" className='min-width-200'>Prompt</TableCell>
-        {responseHeaders}
-      </Fragment>
-    );
+    const headers = [
+      <TableCell key="category" className='min-width-100'>Category</TableCell>,
+      <TableCell key="type" className='min-width-100'>Type</TableCell>,
+      <TableCell key="prompt" className='min-width-200'>Prompt</TableCell>,
+      ...responseHeaders
+    ];
+    return headers;
   }
 
   // Align responses with the respective application_name columns
   getRows = (model) => {
-    const { data } = this.props;
-    const dataModels = f.models(data) || [];
-    const appNames = dataModels[0]?.responses?.map(response => response.application_name) || [];
+    const { _vState } = this.props;
+    const dataModels = _vState.reportData;
+    const appNames = dataModels?.result?.map(response => response.application_name) || [];
 
     const responseCells = appNames.map((appName, index) => {
       const appResponse = model.responses?.find(response => response.application_name === appName);
@@ -143,7 +141,6 @@ class VEvaluationReportDetails extends Component {
     const { _vState, data, handlePageChange, handleSearchByField, handleToggleChange, handleCategoryChange, reportCategories } = this.props;
     const { selectedCategory } = this.state;
     return (
-      <Fragment>
         <PaperCard boxProps={{ mb: 2 }}>
           <Grid container spacing={3}>
             <Grid item xs={6} sm={6} md={6} lg={6}>
@@ -186,7 +183,6 @@ class VEvaluationReportDetails extends Component {
             pageChange={handlePageChange}
           />
         </PaperCard>
-      </Fragment>
     );
   };
 }

@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import {observer, inject} from 'mobx-react';
+import {inject} from 'mobx-react';
 import {observable} from 'mobx';
 
 import Box from '@material-ui/core/Box';
@@ -9,7 +9,6 @@ import {DEFAULTS} from 'common-ui/utils/globals';
 import VEvaluationReportOverview from 'components/audits/evaluation/v_evaluation_report_overview';
 
 @inject('evaluationStore')
-@observer
 export class CEvaluationReportOverview extends Component {
   @observable _vState = {
     reportData: null,
@@ -49,20 +48,16 @@ export class CEvaluationReportOverview extends Component {
   };
 
   getReportOverview = (id) => {
-    this._vState.loading = true;
     this.props.evaluationStore.fetchReportCumulative(id)
       .then((response) => {
         this._vState.reportData = response;
         this.formatReportData(response);
-        this._vState.loading = false;
       }, f.handleError(null, () => {
-        this._vState.loading = false;
         this._vState.reportData = null;
       }));
   }
 
   getReportSeverity = (id) => {
-    this._vState.loading = true;
     this.props.evaluationStore.fetchReportSeverity(id)
       .then((response) => {
         this._vState.reportSeverity = response;
@@ -74,13 +69,10 @@ export class CEvaluationReportOverview extends Component {
   }
 
   getReportCategoryStats = (id) => {
-    this._vState.loading = true;
     this.props.evaluationStore.fetchReportCategoryStats(id)
       .then((response) => {
         this._vState.reportStats = response;
-        this._vState.loading = false;
       }, f.handleError(null, () => {
-        this._vState.loading = false;
         this._vState.reportStats = null;
       }));
   }

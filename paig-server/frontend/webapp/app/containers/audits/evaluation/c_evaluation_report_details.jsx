@@ -44,11 +44,21 @@ export class CEvaluationReportDetails extends Component {
       // Get table data
       this.getReportDetails(this.props.parent_vState.eval_id);
       this.getAllCategory(this.props.parent_vState.eval_id);
+      this.getReportOverview(this.props.parent_vState.eval_id);
     } else {
       this._vState.reportData = null;
       this._vState.loading = false;
     }
   };
+
+  getReportOverview = (id) => {
+    this.props.evaluationStore.fetchReportCumulative(id)
+      .then((response) => {
+        this._vState.reportData = response;
+      }, f.handleError(null, () => {
+        this._vState.reportData = null;
+      }));
+  }
 
   getAllCategory = (id) => {
     this.props.evaluationStore
@@ -102,14 +112,14 @@ export class CEvaluationReportDetails extends Component {
   }
 
   handleToggleChange = (value) => {
-    const updated_params = this.updateStatusParams(this.cEvaluationDetailed.params, value);
-    this.cEvaluationDetailed.params = updated_params;
+    const updatedParam = this.updateStatusParams(this.cEvaluationDetailed.params, value);
+    this.cEvaluationDetailed.params = updatedParam;
     this.getReportDetails(this.props.parent_vState.eval_id);
   }
 
   handleCategoryChange = (value) => {
-    const updated_params = this.updateCategoryParams(this.cEvaluationDetailed.params, value);
-    this.cEvaluationDetailed.params = updated_params;
+    const updatedParam = this.updateCategoryParams(this.cEvaluationDetailed.params, value);
+    this.cEvaluationDetailed.params = updatedParam;
     this.getReportDetails(this.props.parent_vState.eval_id);
 
   }
