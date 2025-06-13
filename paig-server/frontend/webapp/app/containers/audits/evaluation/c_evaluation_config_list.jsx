@@ -14,6 +14,7 @@ import FSModal from 'common-ui/lib/fs_modal';
 import {createFSForm} from 'common-ui/lib/form/fs_form';
 import VRunReportForm, {evaluation_run_form_def} from 'components/audits/evaluation/v_run_report_form';
 import {permissionCheckerUtil} from "common-ui/utils/permission_checker_util";
+import { DEFAULTS } from "common-ui/utils/globals";
 
 const CATEGORIES = {
   NAME: { multi: false, category: "Name", type: "text", key: 'name' },
@@ -44,7 +45,7 @@ class CEvaluationConfigList extends Component {
 
     this.cEvalConfigs = f.initCollection();
     this.cEvalConfigs.params = {
-      size: 120,
+      size: DEFAULTS.DEFAULT_PAGE_SIZE,
       sort: 'create_time,desc'
     }
 

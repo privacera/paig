@@ -5,6 +5,7 @@ import Alert from '@material-ui/lab/Alert';
 
 import { ActionButtonsWithPermission } from 'common-ui/components/action_buttons';
 import Table from 'common-ui/components/table';
+import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 
 @inject('evaluationStore')
 @observer
@@ -43,13 +44,15 @@ class VEvaluationAppsTable extends Component{
   };
   
   getHeaders = () => {
+    const {permission} = this.props;
     let headers = ([
       !this.props.tabsState && <TableCell key="1">Select</TableCell>,
       <TableCell key="2">Name</TableCell>,
       <TableCell key="3">Details</TableCell>,
-      <TableCell width="100px" key="9">Actions</TableCell>
     ])
-
+    if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {
+      headers.push(<TableCell width="100px" key="9">Actions</TableCell>);
+    }
     return headers;
   }
 
@@ -71,7 +74,9 @@ class VEvaluationAppsTable extends Component{
       </TableCell>),
       <TableCell key="2">{model.name || "--"}</TableCell>,
       <TableCell key="3">{model.url || "--"}</TableCell>,
-      <TableCell key="9" column="actions">
+    ]
+    if (permissionCheckerUtil.hasUpdateOrDeletePermission(permission)) {
+      rows.push(<TableCell key="9" column="actions">
         <div className="d-flex">
           <ActionButtonsWithPermission
             permission={permission}
@@ -81,8 +86,8 @@ class VEvaluationAppsTable extends Component{
             onEditClick={() => handleEdit(model)}
           />
         </div>
-      </TableCell>
-    ]
+      </TableCell>);
+    }
     return rows;
   }
 

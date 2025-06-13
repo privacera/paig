@@ -16,6 +16,9 @@ import VRunReportForm from 'components/audits/evaluation/v_run_report_form';
 import {IncludeExcludeComponent} from 'common-ui/components/v_search_component';
 import {evaluation_form_def} from 'components/audits/evaluation/v_evaluation_details_form';
 import VEvaluationReportTable from 'components/audits/evaluation/v_evaluation_reports_list';
+import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
+import {FEATURE_PERMISSIONS} from 'utils/globals';
+import { DEFAULTS } from "common-ui/utils/globals";
 
 const CATEGORIES = {
   "Report Name": { multi: false, category: "Report Name", type: "text", key: 'name' },
@@ -45,10 +48,12 @@ class CEvaluationReportsList extends Component {
       daterange: Utils.dateUtil.getLast7DaysRange(),
       chosenLabel: 'Last 7 Days'
     }
+    this.permission = permissionCheckerUtil.getPermissions(FEATURE_PERMISSIONS.GOVERNANCE.EVALUATION_CONFIG.PROPERTY);
+
 
     this.cEvalReports = f.initCollection();
     this.cEvalReports.params = {
-      size: 15,
+      size: DEFAULTS.DEFAULT_PAGE_SIZE,
       sort: 'create_time,desc',
       fromTime: this.dateRangeDetail.daterange[0].valueOf(),
       toTime: this.dateRangeDetail.daterange[1].valueOf()
@@ -61,9 +66,6 @@ class CEvaluationReportsList extends Component {
   componentDidMount() {
     this.handleRefresh();
     // Auto-refresh every 30 secs
-    this.refreshInterval = setInterval(() => {
-      this.handleRefresh();
-    }, 30000);
   }
   componentWillUnmount() {
     let {dateRangeDetail, _vState} = this;
@@ -72,7 +74,7 @@ class CEvaluationReportsList extends Component {
     let data = JSON.stringify({params, dateRangeDetail, _vState});
     UiState.saveState(vName, data);
     // Clear the interval when the component is unmounted
-    clearInterval(this.refreshInterval);
+    clearTimeout(this.refreshTimeout);
   }
   @action
   restoreState() {
@@ -91,13 +93,31 @@ class CEvaluationReportsList extends Component {
     this.cEvalReports.params = data.params;
   }
   handleRefresh = () => {
-    this.fetchEvaluationReports();
+    // Clear any existing timeout before making a new API call
+    if (this.refreshTimeout) {
+      clearTimeout(this.refreshTimeout);
+      this.refreshTimeout = null;
+    }
+    this.fetchEvaluationReports()
   }
   fetchEvaluationReports = () => {
     f.beforeCollectionFetch(this.cEvalReports);
     this.props.evaluationStore.fetchEvaluationReports({
       params: this.cEvalReports.params
-    }).then(f.handleSuccess(this.cEvalReports), f.handleError(this.cEvalReports));
+    }).then(
+      (response) => {
+        f.handleSuccess(this.cEvalReports)(response);
+      },
+      (error) => {
+        f.handleError(this.cEvalReports)(error);
+      }
+    ).finally(() => {
+      // Set the refresh timeout only after the API call completes
+      if (this.refreshTimeout) {
+        clearTimeout(this.refreshTimeout);
+      }
+      this.refreshTimeout = setTimeout(this.handleRefresh, 30000);
+    });
   }
 
   handlePageChange = () => {
@@ -164,6 +184,7 @@ class CEvaluationReportsList extends Component {
       .then(() => {
         confirm.hide();
         f.notifySuccess('Report Deleted');
+        f.handlePagination(this.cEvalReports, this.cEvalReports.params)
         this.fetchEvaluationReports();
       }, f.handleError(null, null, {confirm}));
     }, () => {});
@@ -227,7 +248,6 @@ class CEvaluationReportsList extends Component {
     try {
       this._vState.saving = true;
       let response = await this.props.evaluationStore.reRunReport(formData);
-      this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Report evaluation submitted');
       this.fetchEvaluationReports();
@@ -267,6 +287,7 @@ class CEvaluationReportsList extends Component {
             />
           </Grid>
           <VEvaluationReportTable
+            permission={this.permission}
             data={this.cEvalReports}
             pageChange={this.handlePageChange}
             _vState={_vState}

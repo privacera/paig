@@ -4,13 +4,11 @@ import {observer} from 'mobx-react';
 import Grid from '@material-ui/core/Grid';
 import FormLabel from '@material-ui/core/FormLabel';
 import Paper from '@material-ui/core/Paper';
-import { Box } from '@material-ui/core';
-
+import { Box, Typography } from '@material-ui/core';
 import {FormGroupInput} from 'common-ui/components/form_fields';
 import CEvaluationAppsList from  'containers/audits/evaluation/c_evaluation_list_applications'
-import { Typography } from '@material-ui/core';
 
-const VEvaluationDetailsForm = observer(({form, _vState, permission}) => {
+const VEvaluationDetailsForm = (({form, _vState, permission}) => {
   const { name } = form.fields;
 
   return (
@@ -38,6 +36,8 @@ const VEvaluationDetailsForm = observer(({form, _vState, permission}) => {
         form={form} 
         _vState={_vState}
         permission={permission}
+        appPageSize={5}
+        vName="evaluation_apps_list_form"
       />
     </Box>
   );

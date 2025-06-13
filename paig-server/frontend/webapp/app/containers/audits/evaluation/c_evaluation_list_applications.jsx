@@ -3,6 +3,7 @@ import {inject, observer} from 'mobx-react';
 import {action, observable} from 'mobx';
 
 import {Grid} from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 
 import f from 'common-ui/utils/f';
 import UiState from 'data/ui_state';
@@ -14,13 +15,14 @@ import VEvaluationAppsTable from 'components/audits/evaluation/v_evaluation_tabl
 import {VEvalTargetForm, eval_target_form_def} from "components/audits/evaluation/v_evalutaion_target_form";
 import {permissionCheckerUtil} from 'common-ui/utils/permission_checker_util';
 import {FEATURE_PERMISSIONS} from 'utils/globals';
-import Alert from '@material-ui/lab/Alert';
+import { DEFAULTS } from "common-ui/utils/globals";
+
+
 const CATEGORIES = {
     NAME: { multi: false, category: "Name", type: "text", key: 'name' }
 }
 
 @inject('evaluationStore', 'aiApplicationStore')
-@observer
 class CEvaluationAppsList extends Component {    
     modalRef = createRef();
     @observable _vState = {
@@ -37,7 +39,7 @@ class CEvaluationAppsList extends Component {
         this.form = createFSForm(eval_target_form_def);
         this.cEvalAppsList = f.initCollection();
         this.cEvalAppsList.params = {
-            size: 5,
+            size: this.props.appPageSize || DEFAULTS.DEFAULT_PAGE_SIZE,
             sort: 'create_time,desc'
         }
         this.cApplications = f.initCollection();
@@ -151,6 +153,7 @@ class CEvaluationAppsList extends Component {
             .then(() => {
                 confirm.hide();
                 f.notifySuccess('Application Config Deleted');
+                f.handlePagination(this.cEvalAppsList, this.cEvalAppsList.params);
                 // Update the form fields to remove the deleted ID
                 if (this.props.form && this.props.form.fields) {
                     const updatedApplicationIds = Array.isArray(this.props.form.fields.application_ids.value)
@@ -283,6 +286,7 @@ class CEvaluationAppsList extends Component {
                     />
                 </Grid>
                 <VEvaluationAppsTable
+                    permission={this.permission}
                     form={this.props.form}
                     data={this.cEvalAppsList}
                     pageChange={this.handlePageChange}

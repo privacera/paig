@@ -71,7 +71,7 @@ const VEvaluationCategories = observer(({ form, selectedCategories, showSuggeste
         Evaluation categories 
       </Typography>
       <p>Evaluation categories help you focus on specific aspects of model performance that align with your goals. These categories enable you to assess key areas like accuracy, fairness, safety, and relevance, ensuring the evaluation process is comprehensive and tailored to your needs. By selecting the relevant categories, you can ensure a well-rounded analysis that addresses your most important criteria.</p>
-      <Alert severity="info" className="alert-on-modal">
+      <Alert severity="info">
         Categories and types are displayed based on the evaluation purpose in the previous step. To explore all available options, disable Suggested filters to override the filter.
       </Alert>
       <FormControlLabel

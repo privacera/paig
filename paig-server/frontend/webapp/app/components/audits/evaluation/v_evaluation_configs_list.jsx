@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {observer, inject} from 'mobx-react';
+import {inject} from 'mobx-react';
 import "styles/css/styles.css";
 
 import {TableCell, TableRow, TableHead, TableBody, TableContainer} from '@material-ui/core';
@@ -23,12 +23,10 @@ import MuiTable from '@material-ui/core/Table';
 const moment = Utils.dateUtil.momentInstance();
 
 @inject('evaluationStore')
-@observer
 class VEvaluationConfigTable extends Component{
   constructor(props) {
     super(props);
     this.state = {
-      expandedRows: [],
       showCategoriesModal: false,
       selectedCategories: {},
       selectedCategoriesTitle: 'Categories'

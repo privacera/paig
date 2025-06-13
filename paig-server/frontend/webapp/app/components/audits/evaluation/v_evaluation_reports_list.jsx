@@ -20,9 +20,6 @@ const moment = Utils.dateUtil.momentInstance();
 class VEvaluationReportTable extends Component{
   constructor(props) {
     super(props);
-    this.state = {
-      expandedRows: []
-    };
   }
 
   getStatus = (status) => {
@@ -161,6 +158,7 @@ class VEvaluationReportTable extends Component{
           permission={permission}
           showPreview={model.status == 'COMPLETED'}
           hideDelete={true}
+          hideEdit={true}
           onPreviewClick={() => handleView(model)}
         />
         <CustomAnchorBtn
@@ -172,15 +170,14 @@ class VEvaluationReportTable extends Component{
         />
         <ActionButtonsWithPermission
           permission={permission}
-          showPreview={false}
-          hideDelete={false}
+          hideEdit={true}
+          hideDelete={model.status === 'EVALUATING' || model.status === 'GENERATING'}
           onDeleteClick={() => handleDelete(model)}
         />
       </TableCell>
     ]
     return rows;
   }
-  handleContextMenuSelection = () => {}
 
   render() {
     const { data, pageChange } = this.props;
