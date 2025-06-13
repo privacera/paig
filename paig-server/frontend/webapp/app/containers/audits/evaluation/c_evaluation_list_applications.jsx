@@ -1,6 +1,6 @@
 import React, {Component, createRef, Fragment} from 'react';
-import {inject} from 'mobx-react';
-import {action} from 'mobx';
+import {inject, observer} from 'mobx-react';
+import {action, observable} from 'mobx';
 
 import {Grid} from '@material-ui/core';
 import Alert from '@material-ui/lab/Alert';
@@ -25,7 +25,7 @@ const CATEGORIES = {
 @inject('evaluationStore', 'aiApplicationStore')
 class CEvaluationAppsList extends Component {    
     modalRef = createRef();
-    _vState = {
+    @observable _vState = {
         searchFilterValue: [],
         showNextPage: null,
         prevNextValueList:[''],
@@ -51,8 +51,15 @@ class CEvaluationAppsList extends Component {
         this.restoreState();
     }
     componentDidMount() {
+        // Use the exact same pattern as eval report details
+        if (this.props.parent_vState && this.props.parent_vState.searchFilterValue) {
+            this.handleSearchByField(this.props.parent_vState.searchFilterValue);
+            // Clear the filter in parent after applying it (same as eval reports)
+            this.props.parent_vState.searchFilterValue = [];
+        }
         this.handleRefresh();
     }
+    
     componentWillUnmount() {
         let {_vState} = this;
         let {params} = this.cEvalAppsList;
@@ -103,16 +110,20 @@ class CEvaluationAppsList extends Component {
         this.fetchEvaluationAppsList();
     };
 
+    @action
     handleSearchByField = (filter, event) => {
         this._vState.prevNextValueList = [''];
         this._vState.pageNumber = 0;
         let params = {
             page: undefined
         };
+        // Always clear all filter parameters first (same as eval reports)
         Object.values(CATEGORIES).forEach(obj => {
             params['includeQuery.' + obj.key] = undefined;
             params['excludeQuery.' + obj.key] = undefined;
         })
+        
+        // Apply new filter if any
         filter.forEach(({ category, operator, value }) => {
             const obj = Object.values(CATEGORIES).find(item => item.category === category);
             if (obj) {

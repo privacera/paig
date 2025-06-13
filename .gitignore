@@ -30,6 +30,7 @@ storage
 /cypress/videos/
 **/custom-configs
 **/.coverage
-backend/paig/temp
 **/.cache
 paig-server/backend/paig/paig_server.pid
+paig-server/backend/paig/temp
+paig-server/backend/paig/templates/*

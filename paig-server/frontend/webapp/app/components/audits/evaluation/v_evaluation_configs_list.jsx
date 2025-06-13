@@ -68,7 +68,7 @@ class VEvaluationConfigTable extends Component{
       const categories = typeof model.categories === 'string' ? JSON.parse(model.categories) : model.categories;
       return (
         <span
-          className="clickable-link"
+          className="clickable-table-cell"
           onClick={() => this.handleCategoriesClick(model)}
         >
           {Array.isArray(categories) ? categories.length : 0}
@@ -100,10 +100,33 @@ class VEvaluationConfigTable extends Component{
   }
 
   getRowData = (model) => {
-    const {handleDelete, handleEdit, permission} = this.props;
+    const {handleDelete, handleEdit, permission, handleApplicationClick} = this.props;
+    
+    // Process application names to make them clickable
+    const renderApplicationNames = (applicationNames) => {
+      if (!applicationNames || applicationNames === "--") {
+        return "--";
+      }
+      
+      // Split by comma and make each application name clickable
+      const appNames = applicationNames.split(',').map(name => name.trim());
+      return appNames.map((appName, index) => (
+        <span key={index}>
+          <span 
+            className="clickable-table-cell"
+            onClick={() => handleApplicationClick && handleApplicationClick(appName)}
+            title={`Click to filter endpoints by ${appName}`}
+          >
+            {appName}
+          </span>
+          {index < appNames.length - 1 && ', '}
+        </span>
+      ));
+    };
+    
     let rows = [
       <TableCell key="1">{model.name}</TableCell>,
-      <TableCell key="2">{model.application_names || "--"}</TableCell>,
+      <TableCell key="2">{renderApplicationNames(model.application_names)}</TableCell>,
       <TableCell key="3">{model.purpose || "--"}</TableCell>,
       <TableCell key="4">{this.getCategoriesCount(model)}</TableCell>,
       //- <TableCell key="4">{model.application_client || "--"}</TableCell>,
