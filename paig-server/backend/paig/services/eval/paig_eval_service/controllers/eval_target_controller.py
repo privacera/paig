@@ -82,3 +82,15 @@ class EvaluationTargetController:
         """
         return await self.eval_target_service.get_app_target_by_id(app_id=app_id)
 
+    async def check_target_application_connection(self, body_params: dict):
+        """
+        Check the connection of the target application.
+
+        Args:
+            body_params (dict): The connection parameters.
+
+        Returns:
+            dict: The response message.
+        """
+        return await self.eval_target_service.check_target_application_connection(body_params=body_params)
+

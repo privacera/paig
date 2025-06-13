@@ -63,3 +63,10 @@ def extract_include_query_params(params):
                        value is not None}
 
     return filtered_params
+
+
+class TargetApplicationConnectionRequest(BaseModel):
+    url: str = Field(..., min_length=1, description="The URL of the target")
+    body: Union[Dict[str, Any], str] = Field(default="{}", description="body of target host")
+    headers: Union[Dict[str, Any], str] = Field(default="{}", description="headers of target host")
+    method: HttpMethod = Field(..., max_length=255, min_length=1, description="The method of the target")
