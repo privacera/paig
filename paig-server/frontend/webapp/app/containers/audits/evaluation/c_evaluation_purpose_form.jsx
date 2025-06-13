@@ -56,7 +56,6 @@ class CEvaluationPurposeForm extends Component {
       this.cEvalTemplateList.models = combinedTemplates;
 
       f.resetCollection(this.cEvalTemplateList, combinedTemplates, res.pageState);
-      console.log(this.cEvalTemplateList.models, 'this.cEvalTemplateList.models');
     }, f.handleError(this.cEvalTemplateList));
   }
 

@@ -62,7 +62,6 @@ class CEvaluationForm extends Component {
     try {
       this._vState.saving = true;
       let response = await this.props.evaluationStore.saveAndRunEvaluationConfig(formData);
-      this._vState.saving = false;
       this.runReportModalRef.current.hide();
       f.notifySuccess('Your evaluation is triggered successfully');
       this.handlePostCreate(response);
@@ -163,7 +162,6 @@ class CEvaluationForm extends Component {
     try {
       this._vState.saving = true;
       let response = await this.props.evaluationStore.saveEvaluationConfig(formData);
-      this._vState.saving = false;
       f.notifySuccess('Your evaluation is saved successfully');
       this.handlePostSave(response);
       this._vState.saving = false;
