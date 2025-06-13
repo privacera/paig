@@ -195,3 +195,33 @@ class TestAWSBedrockGuardrailScanner:
         assert analyzer_result.start == 6
         assert analyzer_result.end == 10
         assert analyzer_result.entity_type == 'NAME_DETECTION'
+
+    def test_scan_with_analyzer_result(self, mocker):
+        mock_bedrock_client = mocker.patch('boto3.client')
+        mock_bedrock_client.return_value.apply_guardrail.return_value = {
+            'action': 'GUARDRAIL_INTERVENED',
+            'outputs': [{'text': 'Intervened text'}],
+            'assessments': [{'policy1': {'data1': [{'type': 'type1', 'action': 'action1'}]}}]
+        }
+        scanner = AWSBedrockGuardrailScanner(name='TestScanner', guardrail_id='guardrail_id', guardrail_version='guardrail_version', region='us-west-2')
+        result = scanner.scan('trigger message')
+        assert result.traits == ['TYPE1']
+        assert result.actions == ['action1']
+        assert result.output_text == 'Intervened text'
+        assert result.analyzer_result is not None
+        assert result.analyzer_result[0].entity_type == 'TYPE1'
+
+    def test_scan_with_analyzer_result_multiple_traits(self, mocker):
+        mock_bedrock_client = mocker.patch('boto3.client')
+        mock_bedrock_client.return_value.apply_guardrail.return_value = {
+            'action': 'GUARDRAIL_INTERVENED',
+            'outputs': [{'text': 'Intervened text'}],
+            'assessments': [{'policy1': {'data1': [{'type': 'type1', 'action': 'action1'}], 'data2': [{'type': 'type2', 'action': 'action2'}]}}],
+        }
+        scanner = AWSBedrockGuardrailScanner(name='TestScanner', guardrail_id='guardrail_id',
+                                             guardrail_version='guardrail_version', region='us-west-2')
+        result = scanner.scan('trigger message')
+
+        assert result.output_text == 'Intervened text'
+        assert result.analyzer_result is not None
+        assert result.analyzer_result[0].entity_type == 'TYPE1, TYPE2'

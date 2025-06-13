@@ -71,9 +71,9 @@ class AWSBedrockGuardrailScanner(Scanner):
             output_text = outputs[0].get('text') if outputs else None
             tag_set, action_set = self._extract_and_populate_assessment_info(response.get('assessments', []))
 
-            analyzer_result = AnalyzerResult(start=0, end=len(message), entity_type='AWSBEDROCKGUARDRAIL', score=1.0,
+            analyzer_result = AnalyzerResult(start=0, end=len(message), entity_type=', '.join(sorted(tag_set)), score=1.0,
                                          model_name='', scanner_name=self.get_property('name'), analysis_explanation=None,
-                                         recognition_metadata=response)
+                                         recognition_metadata=None)
 
             logger.info(f"AWSBedrockGuardrailScanner: Action required. Tags: {tag_set}, Actions: {action_set}")
             logger.debug(f"AWSBedrockGuardrailScanner: Action required. Output: {output_text}")
