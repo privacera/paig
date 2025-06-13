@@ -2,14 +2,14 @@ import React, {Component, Fragment} from "react";
 import {observer} from "mobx-react";
 
 import {Box, Grid, Paper, Typography, Divider, Chip} from "@material-ui/core";
-
-import f from 'common-ui/utils/f';
-import RadialBarChart from "components/audits/evaluation/radial_bar_chart";
-import {Loader, getSkeleton} from "common-ui/components/generic_components";
 import EventIcon from '@material-ui/icons/Event';
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import ContactsIcon from '@material-ui/icons/Contacts';
+
+import f from 'common-ui/utils/f';
+import RadialBarChart from "components/audits/evaluation/radial_bar_chart";
+import {Loader, getSkeleton} from "common-ui/components/generic_components";
 import {Utils} from 'common-ui/utils/utils';
 import {SEVERITY_MAP, CATEGORY_DESCRIPTIONS} from 'utils/globals';
 import {DATE_TIME_FORMATS} from 'common-ui/utils/globals';
@@ -146,7 +146,7 @@ class VEvaluationReportOverview extends Component {
 
   render() {
     const { _vState, parent_vState, cEvaluationOverview, data, handlePageChange, handleSearchByField, handleTabSelect } = this.props;
-    const evaluationDataList = f.models(cEvaluationOverview) || [];
+    const evaluationDataList = f.models(cEvaluationOverview);
     return (
       <Fragment>
         <VEvalReportBasicInfo model={_vState.reportData}/>
