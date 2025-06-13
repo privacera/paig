@@ -85,10 +85,29 @@ async def do_test_guardrail(tenant_id: str, transformed_response: dict, message:
         if test_aws_guardrail_result:
             final_result.append(test_aws_guardrail_result)
 
+    return [merge_final_result(final_result)]
+
+def merge_final_result(final_result: list) -> dict:
+    final_action = "ALLOW"
+    final_message = ""
+    final_tags = []
+    final_policies = []
+    
+    # Define action priority (DENY > REDACT > ALLOW)
+    action_priority = {"DENY": 3, "REDACT": 2, "ALLOW": 1}
+    
     for result in final_result:
-        if result.get("action") == "DENY":
-            return [result]
-    return final_result
+        current_action = result.get("action", "ALLOW")
+        if action_priority[current_action] > action_priority[final_action]:
+            final_action = current_action
+            final_message = result.get("message", "")
+        elif action_priority[current_action] == action_priority[final_action] and not final_message:
+            # Keep first message for same priority
+            final_message = result.get("message", "")
+        
+        final_tags.extend(result.get("tags", []))
+        final_policies.extend(result.get("policy", []))
+    return {"action": final_action, "tags": final_tags, "policies": final_policies, "message": final_message}
 
 def paig_pii_guardrail_evaluation(sensitive_data_config: dict, traits: list) -> (list, dict):
     deny_policies_list = []
@@ -130,16 +149,20 @@ def paig_guardrail_test(transformed_response: dict, message: str) -> dict:
     scanner_result = merge_scanner_results([pii_scanner_result, toxic_scanner_result])
 
     sensitive_data_config = transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {})
-    deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
+    
+    if sensitive_data_config:
+        deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
+        
+        if len(deny_policies_list) > 0:
+            return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": f'{sensitive_data_config.get("response_message")}'}
 
-    if len(deny_policies_list) > 0:
-        return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": f'{sensitive_data_config.get("response_message")}'}
+        if len(redact_policies_dict) > 0:
+            masked_message = mask_message(message, redact_policies_dict, scanner_result.get("analyzer_result", []))
+            return {"action": "REDACT", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": masked_message}
 
-    if len(redact_policies_dict) > 0:
-        masked_message = mask_message(message, redact_policies_dict, scanner_result.get("analyzer_result", []))
-        return {"action": "REDACT", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": masked_message}
-
-    return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
+        return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
+    
+    return {}
 
 async def aws_guardrail_test(tenant_id: str, transformed_response: dict, message: str) -> None|dict:
 

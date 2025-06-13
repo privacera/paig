@@ -28,6 +28,7 @@ from api.shield.logfile.log_message_in_local import LogMessageInLocal
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 from api.shield.factory.governance_service_factory import GovernanceServiceFactory
 from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
+from api.shield.services.guardrail_service import process_guardrail_response
 from opentelemetry import metrics
 
 from core.utils import SingletonDepends
@@ -500,7 +501,6 @@ class AuthService:
         Returns:
             str: The access denied message indicating the reason for the denial.
         """
-        from api.shield.services.guardrail_service import process_guardrail_response
         response_text_message = "Access is denied"
         transformed_response = process_guardrail_response(guardrail_info)
 
@@ -535,7 +535,6 @@ class AuthService:
             await self.tenant_data_encryptor_service.decrypt_guardrail_connection_details(auth_req.tenant_id, guardrail_info.get("guardrail_connection_details", {}))
             auth_req.context.update({"guardrail_info": guardrail_info})
             auth_req.context.update({"pii_traits": all_result_traits})
-            auth_req.context.update({"guardrail_name": guardrail_name})
             masked_traits = {}
             non_authz_scan_timings_per_message = self.analyze_scan_messages(access_control_traits, all_result_traits,
                                                                             analyzer_result_map, auth_req, False,
@@ -551,10 +550,44 @@ class AuthService:
                 authz_service_res.authorized = is_allowed = False
                 authz_service_res.masked_traits = {}
                 authz_service_res.status_message = self.generate_access_denied_message(all_result_traits, guardrail_info)
-
                 logger.debug(
                     f"Non Authz scanners blocked the request with all tags: {all_result_traits} and actions: {access_control_traits}")
 
             auth_req.context.pop("guardrail_info")
             auth_req.context.pop("pii_traits")
+            self.encrich_context_with_guardrail_info(guardrail_name[0], guardrail_info, all_result_traits, auth_req)
+
         return is_allowed, non_authz_scan_timings_per_message
+    
+    def encrich_context_with_guardrail_info(self, _guardrail_name: str, _guardrail_info: dict, _guardrail_traits: list, auth_req: AuthorizeRequest):
+        """
+        Enriches the authorization request context with guardrail information.
+
+        This method processes the guardrail information to extract relevant policies and traits,
+        and updates the authorization request context with this information.
+
+        Args:
+            _guardrail_name (str): The name of the guardrail.
+            _guardrail_info (dict): The guardrail information.
+            _guardrail_traits (list): The traits detected in the request.
+            auth_req (AuthorizeRequest): The authorization request object.
+        """
+        _guardrail_context_info = {}
+        _policies = []
+
+        _transformed_guardrail_info = process_guardrail_response(_guardrail_info)
+        _config_types = _transformed_guardrail_info.get("config_type", {})
+        
+        for policy, value in _config_types.items():
+            for category, _ in value.get("configs", {}).items():
+                if category.replace(' ', '_').upper() in _guardrail_traits:
+                    _policies.append(policy)
+
+        _guardrail_context_info["guardrail_details"] = {
+            "name": _guardrail_name,
+            "policies": sorted(set(_policies)),
+            "traits": _guardrail_traits
+        }
+
+        logger.debug(f"Guardrail details added to context: {_guardrail_context_info}")
+        auth_req.context.update(_guardrail_context_info)
