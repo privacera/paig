@@ -58,10 +58,6 @@ class CEvaluationAppsList extends Component {
         this.handleRefresh();
     }
     
-    componentDidUpdate(prevProps) {
-        // Remove componentDidUpdate logic - not needed in eval reports pattern
-    }
-    
     componentWillUnmount() {
         let {_vState} = this;
         let {params} = this.cEvalAppsList;
@@ -252,18 +248,6 @@ class CEvaluationAppsList extends Component {
             console.error("Error creating configuration:", e);
           }
         }
-    }
-
-    clearSearchParams = () => {
-        // Clear all search-related API parameters
-        const params = {
-            page: undefined
-        };
-        Object.values(CATEGORIES).forEach(obj => {
-            params['includeQuery.' + obj.key] = undefined;
-            params['excludeQuery.' + obj.key] = undefined;
-        });
-        Object.assign(this.cEvalAppsList.params, params);
     }
 
     render() {
