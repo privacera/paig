@@ -48,11 +48,6 @@ class CEvaluationConfigMain extends Component {
 	
 	componentDidMount() {
 		this.filterTabs();
-		// Expose this component to child components
-		window.parentEvaluationComponent = this;
-		
-		// Check for filter parameter in URL
-		this.handleUrlFilter();
 	}
 	
 	componentWillUnmount() {
@@ -60,10 +55,6 @@ class CEvaluationConfigMain extends Component {
 		tabsState.clearStateOnUnmount = true;
 		const data = JSON.stringify({ tabsState });
 		UiState.saveState(this.props._vName, data);
-		// Clean up the global reference
-		if (window.parentEvaluationComponent === this) {
-			delete window.parentEvaluationComponent;
-		}
 	}
 	
 	filterTabs() {
@@ -97,50 +88,7 @@ class CEvaluationConfigMain extends Component {
 			viewRef.handleRefresh();
 		}
 	}
-	
-	handleUrlFilter = () => {
-		// Handle both regular URL params and hash-based params
-		let filterParam = null;
-		let tabParam = null;
 		
-		// Try regular URL params first
-		const urlParams = new URLSearchParams(window.location.search);
-		filterParam = urlParams.get('filter');
-		tabParam = urlParams.get('tab');
-		
-		// If not found, try hash-based params
-		if ((!filterParam || !tabParam) && window.location.hash.includes('?')) {
-			const hashParts = window.location.hash.split('?');
-			if (hashParts.length > 1) {
-				const hashParams = new URLSearchParams(hashParts[1]);
-				if (!filterParam) filterParam = hashParams.get('filter');
-				if (!tabParam) tabParam = hashParams.get('tab');
-			}
-		}
-		
-		if (filterParam) {
-			try {
-				// Parse the JSON filter (same pattern as eval reports)
-				const filter = JSON.parse(decodeURIComponent(filterParam));
-				this._vState.searchFilterValue = filter;
-				
-				// Check if we should switch to endpoints tab
-				if (tabParam === 'endpoints') {
-					// Switch to endpoints tab (index 1)
-					this.handleTabSelect(1);
-				} else {
-					// Stay on config tab (index 0) to show the filtered results
-					this.handleTabSelect(0);
-				}
-			} catch (e) {
-				console.error('Error parsing filter parameter:', e);
-			}
-			// Clear the URL parameters after processing
-			const newUrl = window.location.pathname + window.location.hash.split('?')[0];
-			window.history.replaceState({}, '', newUrl);
-		}
-	}
-	
 	render() {
 		const {state, tabsState, handleRefresh, handleTabSelect, _vState} = this;
 		const tabs = [];
