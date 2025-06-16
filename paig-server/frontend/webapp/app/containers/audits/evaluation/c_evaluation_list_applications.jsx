@@ -291,7 +291,6 @@ class CEvaluationAppsList extends Component {
                         form={this.form} 
                         _vState={this.props._vState} 
                         cApplications={this.cApplications}
-                        evaluationStore={this.props.evaluationStore}
                     />
                 </FSModal>
             </>

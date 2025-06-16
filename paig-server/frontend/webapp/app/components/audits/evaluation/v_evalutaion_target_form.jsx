@@ -1,4 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
+import {inject, observer} from 'mobx-react';
 
 import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
@@ -14,8 +15,9 @@ const SUPPORTED_METHODS = [
     { name: 'GET', value: 'GET' }
 ];
 
-const VEvalTargetForm = (props) => {
-    const { form, cApplications, evaluationStore } = props;
+const VEvalTargetForm = inject('evaluationStore')(observer((props) => {
+    const { form, cApplications } = props;
+    const { evaluationStore } = props;
 
     const {
         id,
@@ -481,7 +483,7 @@ const VEvalTargetForm = (props) => {
             </Grid>
         </FormHorizontal>
     );
-};
+}));
 
 const eval_target_form_def = {
     id: {},
