@@ -184,6 +184,46 @@ const VEvalTargetForm = inject('evaluationStore')(observer((props) => {
         }
     }, [cApplications]);
 
+    const isValidJSON = (value) => {
+        if (typeof value === 'object' && value !== null) {
+            return true;
+        }
+        if (typeof value !== 'string') {
+            return false;
+        }
+        try {
+            const trimmed = value.trim();
+            if (!trimmed) return false;
+            // Check if it starts with { or [ to ensure it's a JSON object or array
+            if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
+                return false;
+            }
+            JSON.parse(trimmed);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const validateRequestBody = (value) => {
+        if (!value || !value.trim()) {
+            return {
+                isValid: false,
+                error: "Request body is required"
+            };
+        }
+        if (!isValidJSON(value)) {
+            return {
+                isValid: false,
+                error: "Request body must be a valid JSON object or array"
+            };
+        }
+        return {
+            isValid: true,
+            value: typeof value === 'string' ? JSON.parse(value.trim()) : value
+        };
+    };
+
     const handleTestConnection = async () => {
         // Validate required fields
         if (!url.value || !url.value.trim()) {
@@ -198,15 +238,25 @@ const VEvalTargetForm = inject('evaluationStore')(observer((props) => {
             f.notifyError("Username is required");
             return;
         }
-        if (!body.value || !body.value.trim()) {
-            f.notifyError("Request Body is required");
+
+        // Validate request body
+        const bodyValidation = validateRequestBody(body.value);
+        if (!bodyValidation.isValid) {
+            f.notifyError(bodyValidation.error);
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: { statusCode: 0, msgDesc: bodyValidation.error }
+            });
             return;
         }
+
         setConnectionState({
             inProgress: true,
             showTestConnectionMsg: false,
             testConnectionResponse: { statusCode: 0, msgDesc: '' }
         });
+
         try {
             // Prepare headers
             let headersObj = {};
@@ -218,28 +268,14 @@ const VEvalTargetForm = inject('evaluationStore')(observer((props) => {
                     return acc;
                 }, {});
             }
-            // Prepare body
-            let bodyObj = {};
-            if (body.value) {
-                try {
-                    bodyObj = typeof body.value === 'string' ? JSON.parse(body.value) : body.value;
-                } catch (e) {
-                    console.error("Error parsing body:", e);
-                    f.notifyError("Invalid JSON in request body");
-                    setConnectionState({
-                        inProgress: false,
-                        showTestConnectionMsg: true,
-                        testConnectionResponse: { statusCode: 0, msgDesc: 'Invalid JSON in request body' }
-                    });
-                    return;
-                }
-            }
+
             const testData = {
                 url: url.value.trim(),
                 method: method.value,
                 headers: headersObj,
-                body: bodyObj
+                body: bodyValidation.value
             };
+
             const response = await evaluationStore.testTargetConnection(testData);
             const resp = Array.isArray(response) ? response[0] : response;
             setConnectionState({
