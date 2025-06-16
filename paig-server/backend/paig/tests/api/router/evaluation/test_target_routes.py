@@ -84,3 +84,84 @@ class TestTargetRouters:
         # Verify deletion
         get_deleted_response = await client.get(f"/{evaluation_services_base_route}/target/application/{app_id}")
         assert get_deleted_response.status_code == 404
+
+
+    @pytest.mark.asyncio
+    async def test_check_target_application_connection_success(self, client: AsyncClient, app: FastAPI):
+        """Test successful connection to target application"""
+        app.dependency_overrides[get_user] = self.auth_user
+        test_data = {
+            "url": "http://localhost:8080",
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": {"test": "data"}
+        }
+        response = await client.post(
+            f"/{evaluation_services_base_route}/target/application/connection",
+            json=test_data
+        )
+        assert response.status_code == 200
+        result = response.json()
+        assert "status" in result
+        assert "message" in result
+        assert "status_code" in result
+
+    @pytest.mark.asyncio
+    async def test_check_target_application_connection_invalid_url(self, client: AsyncClient, app: FastAPI):
+        """Test connection with invalid URL"""
+        app.dependency_overrides[get_user] = self.auth_user
+        test_data = {
+            "url": "invalid-url",
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": {"test": "data"}
+        }
+        response = await client.post(
+            f"/{evaluation_services_base_route}/target/application/connection",
+            json=test_data
+        )
+        assert response.status_code == 200  # Note: Returns 200 with error in body
+        result = response.json()
+        assert result["status"] == "error"
+        assert "Invalid URL format" in result["message"]
+        assert result["status_code"] == 400
+
+    @pytest.mark.asyncio
+    async def test_check_target_application_connection_invalid_headers(self, client: AsyncClient, app: FastAPI):
+        """Test connection with invalid headers format"""
+        app.dependency_overrides[get_user] = self.auth_user
+        test_data = {
+            "url": "http://localhost:8080",
+            "method": "POST",
+            "headers": "invalid-headers",  # Should be a dict
+            "body": {"test": "data"}
+        }
+        response = await client.post(
+            f"/{evaluation_services_base_route}/target/application/connection",
+            json=test_data
+        )
+        assert response.status_code == 200  # Note: Returns 200 with error in body
+        result = response.json()
+        assert result["status"] == "error"
+        assert "Invalid headers format" in result["message"]
+        assert result["status_code"] == 400
+
+    @pytest.mark.asyncio
+    async def test_check_target_application_connection_invalid_body(self, client: AsyncClient, app: FastAPI):
+        """Test connection with invalid body format"""
+        app.dependency_overrides[get_user] = self.auth_user
+        test_data = {
+            "url": "http://localhost:8080",
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": "invalid-body"  # Should be a dict
+        }
+        response = await client.post(
+            f"/{evaluation_services_base_route}/target/application/connection",
+            json=test_data
+        )
+        assert response.status_code == 200  # Note: Returns 200 with error in body
+        result = response.json()
+        assert result["status"] == "error"
+        assert "Invalid body format" in result["message"]
+        assert result["status_code"] == 400

@@ -271,6 +271,8 @@ class EvaluationTargetService:
             headers = {k: v for k, v in headers.items() if k and v}
 
             try:
+                if method == 'GET':
+                    body = None
                 response = await client.request(method, url, headers=headers, json=body)
 
                 if 200 <= response.status_code < 300:
