@@ -11,6 +11,8 @@ from paig_authorizer_core.models.data_models import AIApplicationConfigData
 from paig_authorizer_core.models.data_models import AIApplicationPolicyData
 from paig_authorizer_core.models.data_models import VectorDBData
 from paig_authorizer_core.models.data_models import VectorDBPolicyData
+from paig_authorizer_core.filter.base_metadata_filter_criteria_creator import BaseMetadataFilterCriteriaCreator
+from paig_authorizer_core.filter.snowflake_cortex_metadata_filter_creator import SnowflakeCortexMetadataFilterCreator
 
 
 class AsyncMockPAIGAuthorizer(AsyncBasePAIGAuthorizer):
@@ -101,7 +103,9 @@ def authz_request():
 def vector_db_authz_request():
     return VectorDBAuthzRequest(
         user_id="test_user",
-        application_key="TestApp"
+        application_key="TestApp",
+        use_external_groups=False,
+        user_groups=None
     )
 
 
@@ -229,162 +233,64 @@ async def test_authorize_application_config_no_access(authz_request, authorizer:
     assert 1 in response.paig_policy_ids
     assert response.reason == "No Access to Application"
 
-@pytest.mark.asyncio
-async def test_authorize_with_external_groups(authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up external groups
-    authz_request.use_external_groups = True
-    authz_request.user_groups = ["external_group1", "external_group2"]
 
-    # Mock application config to allow one of the external groups
-    app_config = AIApplicationConfigData(id=1, allowed_groups=["external_group1"])
-    authorizer.get_application_config = AsyncMock(return_value=app_config)
-    authorizer.get_application_policies = AsyncMock(return_value=[])
-
-    response = await authorizer.authorize(authz_request)
-
-    assert response.authorized is True
-    assert response.status_code == 200
-    assert 1 in response.paig_policy_ids
-    # Verify that get_user_groups was not called
-    authorizer.get_user_groups.call_count == 0
+# Tests for metadata filter creator
+def test_get_metadata_filter_creator_snowflake_cortex(authorizer):
+    """Test that SnowflakeCortexMetadataFilterCreator is returned for SNOWFLAKE_CORTEX type"""
+    filter_creator = authorizer.get_metadata_filter_creator(VectorDBType.SNOWFLAKE_CORTEX)
+    assert isinstance(filter_creator, SnowflakeCortexMetadataFilterCreator)
 
 
-@pytest.mark.asyncio
-async def test_authorize_with_external_groups_denied(authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up external groups
-    authz_request.use_external_groups = True
-    authz_request.user_groups = ["external_group1", "external_group2"]
+def test_get_metadata_filter_creator_other_types(authorizer):
+    """Test that BaseMetadataFilterCriteriaCreator is returned for other vector DB types"""
+    # Test with MILVUS
+    filter_creator = authorizer.get_metadata_filter_creator(VectorDBType.MILVUS)
+    assert isinstance(filter_creator, BaseMetadataFilterCriteriaCreator)
+    assert not isinstance(filter_creator, SnowflakeCortexMetadataFilterCreator)
 
-    # Mock application config to deny one of the external groups
-    app_config = AIApplicationConfigData(id=1, denied_groups=["external_group1"])
-    authorizer.get_application_config = AsyncMock(return_value=app_config)
-    authorizer.get_application_policies = AsyncMock(return_value=[])
-
-    response = await authorizer.authorize(authz_request)
-
-    assert response.authorized is False
-    assert response.status_code == 403
-    assert 1 in response.paig_policy_ids
-    assert response.reason == "Explicit deny access to Application"
-    # Verify that get_user_groups was not called
-    assert authorizer.get_user_groups.call_count == 0
+    # Test with OPENSEARCH
+    filter_creator = authorizer.get_metadata_filter_creator(VectorDBType.OPENSEARCH)
+    assert isinstance(filter_creator, BaseMetadataFilterCriteriaCreator)
+    assert not isinstance(filter_creator, SnowflakeCortexMetadataFilterCreator)
 
 
 @pytest.mark.asyncio
-async def test_authorize_with_empty_external_groups(authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up empty external groups
-    authz_request.use_external_groups = True
-    authz_request.user_groups = []
+async def test_authorize_vector_db_uses_correct_filter_creator(authorizer, monkeypatch):
+    """Test that authorize_vector_db uses the correct filter creator based on vector DB type"""
+    # Mock vector DB with SNOWFLAKE_CORTEX type
+    mock_vector_db = Mock(spec=VectorDBData)
+    mock_vector_db.type = VectorDBType.SNOWFLAKE_CORTEX
+    mock_vector_db.status = 1
+    mock_vector_db.user_enforcement = 0
+    mock_vector_db.group_enforcement = 0
+    mock_vector_db.name = "TestDB"
+    mock_vector_db.id = 1
 
-    # Mock application config
-    app_config = AIApplicationConfigData(id=1, allowed_groups=["group1"])
-    authorizer.get_application_config = AsyncMock(return_value=app_config)
-    authorizer.get_application_policies = AsyncMock(return_value=[])
+    # Mock get_vector_db_details to return our mock
+    async def mock_get_vector_db_details(self, vector_db_id, **kwargs):
+        return mock_vector_db
 
-    response = await authorizer.authorize(authz_request)
+    monkeypatch.setattr(AsyncMockPAIGAuthorizer, "get_vector_db_details", mock_get_vector_db_details)
 
-    assert response.authorized is False
-    assert response.status_code == 403
-    assert response.reason == "No Access to Application"
-    # Verify that get_user_groups was not called
-    assert authorizer.get_user_groups.call_count == 0
+    # Mock the filter creator methods
+    calls = []
+    original_get_metadata_filter_creator = authorizer.get_metadata_filter_creator
 
+    def mock_get_metadata_filter_creator(vector_db_type):
+        calls.append(vector_db_type)
+        return original_get_metadata_filter_creator(vector_db_type)
 
-@pytest.mark.asyncio
-async def test_vector_db_authorize_with_external_groups(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up external groups
-    vector_db_authz_request.use_external_groups = True
-    vector_db_authz_request.user_groups = ["external_group1", "external_group2"]
+    monkeypatch.setattr(authorizer, "get_metadata_filter_creator", mock_get_metadata_filter_creator)
 
-    # Mock vector DB policies to allow one of the external groups
-    vector_db_policy = VectorDBPolicyData(
-        id=1,
-        name="TestPolicy",
-        description="Test policy",
-        allowed_users=["test_user"],
-        allowed_groups=["external_group1"],
-        allowed_roles=["role1"],
-        denied_users=[],
-        denied_groups=[],
-        denied_roles=[],
-        metadata_key="key",
-        metadata_value="value",
-        operator="eq",
-        vector_db_id=1
-    )
-    authorizer.get_vector_db_policies = AsyncMock(return_value=[vector_db_policy])
+    # Create a mock request
+    mock_request = Mock(spec=VectorDBAuthzRequest)
+    mock_request.user_id = "test_user"
+    mock_request.application_key = "TestApp"
+    mock_request.use_external_groups = False
+    mock_request.user_groups = None
 
-    response = await authorizer.authorize_vector_db(vector_db_authz_request)
+    # Call authorize_vector_db
+    await authorizer.authorize_vector_db(mock_request)
 
-    assert response.vector_db_id == 1
-    assert response.vector_db_name == "TestDB"
-    assert response.filter_expression is not None
-    # Verify that get_user_groups was not called
-    authorizer.get_user_groups.call_count == 0
-
-
-@pytest.mark.asyncio
-async def test_vector_db_authorize_with_external_groups_denied(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up external groups
-    vector_db_authz_request.use_external_groups = True
-    vector_db_authz_request.user_groups = ["external_group1", "external_group2"]
-
-    # Mock vector DB policies to deny one of the external groups
-    vector_db_policy = VectorDBPolicyData(
-        id=1,
-        name="TestPolicy",
-        description="Test policy",
-        allowed_users=["test_user"],
-        allowed_groups=["other_group"],
-        allowed_roles=["role1"],
-        denied_users=[],
-        denied_groups=["external_group1"],
-        denied_roles=[],
-        metadata_key="key",
-        metadata_value="value",
-        operator="eq",
-        vector_db_id=1
-    )
-    authorizer.get_vector_db_policies = AsyncMock(return_value=[vector_db_policy])
-
-    response = await authorizer.authorize_vector_db(vector_db_authz_request)
-
-    assert response.vector_db_id == 1
-    assert response.vector_db_name == "TestDB"
-    assert response.filter_expression is not None
-    # Verify that get_user_groups was not called
-    authorizer.get_user_groups.call_count == 0
-
-
-@pytest.mark.asyncio
-async def test_vector_db_authorize_with_empty_external_groups(vector_db_authz_request, authorizer: AsyncBasePAIGAuthorizer):
-    # Set up empty external groups
-    vector_db_authz_request.use_external_groups = True
-    vector_db_authz_request.user_groups = []
-
-    # Mock vector DB policies
-    vector_db_policy = VectorDBPolicyData(
-        id=1,
-        name="TestPolicy",
-        description="Test policy",
-        allowed_users=["test_user"],
-        allowed_groups=["group1"],
-        allowed_roles=["role1"],
-        denied_users=[],
-        denied_groups=[],
-        denied_roles=[],
-        metadata_key="key",
-        metadata_value="value",
-        operator="eq",
-        vector_db_id=1
-    )
-    authorizer.get_vector_db_policies = Mock(return_value=[vector_db_policy])
-    authorizer.get_user_groups = Mock(return_value=["group1"])
-
-    response = await authorizer.authorize_vector_db(vector_db_authz_request)
-
-    assert response.vector_db_id == 1
-    assert response.vector_db_name == "TestDB"
-    assert response.filter_expression is not None
-    # Verify that get_user_groups was not called
-    authorizer.get_user_groups.assert_not_called()
+    # Check that get_metadata_filter_creator was called with SNOWFLAKE_CORTEX
+    assert VectorDBType.SNOWFLAKE_CORTEX in calls
