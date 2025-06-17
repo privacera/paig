@@ -1,6 +1,8 @@
 import threading
 import uuid
+import json
 from urllib.parse import urlparse
+from typing import Union, Dict, Any
 
 from sqlalchemy import func
 
@@ -273,7 +275,10 @@ def is_docker():
 
 
 def is_valid_url(url):
-    parsed_url = urlparse(url)
+    """Check if URL is valid (basic validation)"""
+    if not url or not url.strip():
+        return False
+    parsed_url = urlparse(url.strip())
     # Check if the URL has a valid scheme (http or https) and netloc (domain)
     return parsed_url.scheme in ['http', 'https'] and bool(parsed_url.netloc)
 
@@ -308,3 +313,74 @@ def alias_field_to_column_name(sort, model_view):
 
 def replace_timezone(dt, tzinfo=timezone.utc):
     return dt.replace(tzinfo=tzinfo)
+
+
+def validate_url_format(url: str) -> str:
+    """
+    Validate URL format with comprehensive checks.
+    
+    Args:
+        url: The URL string to validate
+        
+    Returns:
+        str: The cleaned URL string
+        
+    Raises:
+        ValueError: If URL is invalid
+    """
+    if not url or not url.strip():
+        raise ValueError("URL cannot be empty")
+    
+    parsed = urlparse(url.strip())
+    if not parsed.scheme or not parsed.netloc:
+        raise ValueError("Invalid URL format. Must include scheme (http/https) and host")
+    
+    if parsed.scheme not in ['http', 'https']:
+        raise ValueError("URL scheme must be http or https")
+    
+    return url.strip()
+
+
+def validate_json_field(value: Union[Dict[str, Any], str], field_name: str) -> Dict[str, Any]:
+    """
+    Validate and parse JSON field (headers or body).
+    
+    Args:
+        value: The value to validate (can be dict or string)
+        field_name: Name of the field being validated (for error messages)
+        
+    Returns:
+        Dict[str, Any]: Parsed JSON object
+        
+    Raises:
+        ValueError: If value is not valid JSON object
+    """
+    if isinstance(value, dict):
+        return value
+    
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string or dictionary")
+    
+    if not value.strip():
+        return {}
+    
+    try:
+        parsed = json.loads(value.strip())
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{field_name} must be a valid JSON object")
+        return parsed
+    except json.JSONDecodeError:
+        raise ValueError(f"{field_name} must be a valid JSON object")
+
+
+def clean_headers(headers: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Clean headers by removing empty keys and values.
+    
+    Args:
+        headers: Dictionary of headers
+        
+    Returns:
+        Dict[str, Any]: Cleaned headers dictionary
+    """
+    return {k: v for k, v in headers.items() if k and v}

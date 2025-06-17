@@ -3,7 +3,7 @@ import json
 import traceback
 import asyncio
 import httpx
-from core.utils import SingletonDepends, is_valid_url
+from core.utils import SingletonDepends, is_valid_url, clean_headers
 from core import config
 from ..database.db_operations.eval_target_repository import EvaluationTargetRepository
 import logging
@@ -63,31 +63,6 @@ class EvaluationTargetService:
         eval_target_repository: EvaluationTargetRepository = SingletonDepends(EvaluationTargetRepository)
     ):
         self.eval_target_repository = eval_target_repository
-
-    @staticmethod
-    def validate_json_string(value: str, field_name: str) -> dict:
-        """Validate and parse a JSON string.
-        
-        Args:
-            value: The string to validate and parse
-            field_name: Name of the field being validated (for error messages)
-            
-        Returns:
-            dict: Parsed JSON object
-            
-        Raises:
-            BadRequestException: If the string is not valid JSON
-        """
-        if not isinstance(value, str):
-            return value
-            
-        try:
-            parsed = json.loads(value)
-            if not isinstance(parsed, dict):
-                raise BadRequestException(f"{field_name} must be a valid JSON object")
-            return parsed
-        except json.JSONDecodeError as e:
-            raise BadRequestException(f"Invalid {field_name} format: {str(e)}")
 
     async def get_all_ai_app_with_host(self, include_filters, exclude_filters, page_number, size, sort):
         if include_filters.name:
@@ -242,79 +217,78 @@ class EvaluationTargetService:
         
         Args:
             body_params (dict): Dictionary containing connection parameters
-                - url: Target application URL
+                - url: Target application URL (validated by Pydantic)
                 - method: HTTP method (GET, POST, etc.)
-                - headers: Request headers
-                - body: Request body (for POST/PUT requests)
+                - headers: Request headers (validated by Pydantic)
+                - body: Request body (validated by Pydantic)
         
         Returns:
             dict: Connection test result with status and message
         
         Raises:
-            BadRequestException: If URL is invalid or request parameters are malformed
             InternalServerError: If connection test fails
         """
         timeout = config.Config.get('target_application_connection_timeout', 60)
         client = httpx.AsyncClient(timeout=timeout)
+        
         try:
-            # Validate URL
-            if not is_valid_url(body_params.get('url')):
-                raise BadRequestException("Invalid URL format")
-
-            # Prepare request parameters
+            # Request parameters are already validated by Pydantic schema
             url = body_params['url']
             method = body_params.get('method', 'POST').upper()
-            headers = self.validate_json_string(body_params.get('headers', {}), "headers")
-            body = self.validate_json_string(body_params.get('body', {}), "body")
+            headers = clean_headers(body_params.get('headers', {}))
+            body = body_params.get('body', {})
 
-            # Clean headers (remove empty values)
-            headers = {k: v for k, v in headers.items() if k and v}
+            response = await client.request(method, url, headers=headers, json=body)
 
-            try:
-                if method == 'GET':
-                    body = None
-                response = await client.request(method, url, headers=headers, json=body)
-
-                if 200 <= response.status_code < 300:
-                    return {
-                        "status": "success",
-                        "message": "Successfully connected to the target application",
-                        "status_code": response.status_code
-                    }
-                else:
-                    error_text = response.text
-                    try:
-                        error_json = json.loads(error_text)
-                        error_message = error_json.get("message", error_text)
-                    except Exception:
-                        error_message = error_text
-                    return {
-                        "status": "error",
-                        "message": f"Connection failed: {error_message}",
-                        "status_code": response.status_code
-                    }
-            except httpx.RequestError as e:
+            if 200 <= response.status_code < 300:
                 return {
-                    "status": "error",
-                    "message": f"Connection failed: {str(e)}",
-                    "status_code": 502
+                    "status": "success",
+                    "message": "Successfully connected to the target application",
+                    "status_code": response.status_code
                 }
-            except asyncio.TimeoutError:
-                return {
-                    "status": "error",
-                    "message": "Connection timed out after 60 seconds",
-                    "status_code": 504
-                }
+            
+            # Handle non-success status codes
+            error_message = self._extract_error_message(response.text)
+            return {
+                "status": "error",
+                "message": f"Connection failed: {error_message}",
+                "status_code": response.status_code
+            }
 
-        except BadRequestException as e:
+        except httpx.RequestError as e:
             return {
                 "status": "error",
                 "message": f"Connection failed: {str(e)}",
-                "status_code": 400
+                "status_code": 502
+            }
+        except asyncio.TimeoutError:
+            return {
+                "status": "error",
+                "message": "Connection timed out after 60 seconds",
+                "status_code": 504
             }
         except Exception as e:
             logger.error(f"Error in check_target_application_connection: {e}")
             raise InternalServerError(f"Failed to test connection: {str(e)}")
         finally:
             await client.aclose()
+
+    def _extract_error_message(self, response_text: str) -> str:
+        """
+        Extract error message from response text.
+        
+        Args:
+            response_text: The response text from the target application
+            
+        Returns:
+            str: Extracted error message or original text if parsing fails
+        """
+        if not response_text:
+            return "No response from server"
+        
+        try:
+            error_json = json.loads(response_text)
+            return error_json.get("message", response_text)
+        except json.JSONDecodeError:
+            return response_text
         
