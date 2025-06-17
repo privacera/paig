@@ -99,23 +99,4 @@ class TargetApplicationConnectionRequest(BaseModel):
     @field_validator('body')
     @classmethod
     def validate_body_field(cls, v):
-        # First validate JSON structure
-        validated_body = validate_json_field(v, "body")
-        
-        # Convert to string to check for prompt placeholder
-        if isinstance(validated_body, dict):
-            body_str = json.dumps(validated_body)
-        else:
-            body_str = str(validated_body)
-        
-        # Only replace {{prompt}} if it's present
-        if "{{prompt}}" in body_str:
-            test_body_str = body_str.replace("{{prompt}}", "Hello agent, this is a test input. No action required.")
-            
-            # Parse back to dict
-            try:
-                return json.loads(test_body_str)
-            except json.JSONDecodeError:
-                raise ValueError("body must be a valid JSON object after prompt replacement")
-        
-        return validated_body
+        return validate_json_field(v, "body")

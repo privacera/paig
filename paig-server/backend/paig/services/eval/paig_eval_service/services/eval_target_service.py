@@ -12,6 +12,7 @@ from core.controllers.paginated_response import create_pageable_response
 from core.db_session.transactional import Transactional, Propagation
 from ..factory.crypto_factory import get_crypto_service
 from ..utility import encrypt_target_creds, decrypt_target_creds
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -211,6 +212,34 @@ class EvaluationTargetService:
             logger.error(traceback.format_exc())
             raise InternalServerError("Internal server error")
 
+    def _replace_prompt_placeholder(self, body: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Replace {{prompt}} placeholder with test message if present.
+        
+        Args:
+            body: The request body dictionary
+            
+        Returns:
+            Dict[str, Any]: Body with prompt placeholder replaced if present
+        """
+        if not body:
+            return body
+            
+        # Convert dict to string to check for prompt placeholder
+        body_str = json.dumps(body)
+        
+        # Only replace {{prompt}} if it's present
+        if "{{prompt}}" in body_str:
+            test_body_str = body_str.replace("{{prompt}}", "Hello agent, this is a test input. No action required.")
+            
+            # Parse back to dict
+            try:
+                return json.loads(test_body_str)
+            except json.JSONDecodeError:
+                raise ValueError("body must be a valid JSON object after prompt replacement")
+        
+        return body
+
     async def check_target_application_connection(self, body_params: dict):
         """
         Check the connection of the target application by making a test request.
@@ -237,6 +266,9 @@ class EvaluationTargetService:
             method = body_params.get('method', 'POST').upper()
             headers = clean_headers(body_params.get('headers', {}))
             body = body_params.get('body', {})
+
+            # Replace prompt placeholder if present
+            body = self._replace_prompt_placeholder(body)
 
             response = await client.request(method, url, headers=headers, json=body)
 
