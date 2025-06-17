@@ -149,6 +149,14 @@ class EvaluationStore extends BaseStore {
         return this.fetch("", opts);
     }
 
+    testTargetConnection(data, opts = {}) {
+        opts.path = `/target/application/connection`;
+        opts.headers = {
+            'Content-Type': 'application/json'
+        };
+        return this.create(data, opts)
+    }
+
 }
 
 const evaluationStore = new EvaluationStore();

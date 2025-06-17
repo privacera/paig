@@ -287,7 +287,11 @@ class CEvaluationAppsList extends Component {
                     tabsState={this.props.tabsState}
                 />
                 <FSModal ref={this.modalRef} dataResolve={this.resolveForm}>
-                    <VEvalTargetForm form={this.form} _vState={this.props._vState} cApplications={this.cApplications}/>
+                    <VEvalTargetForm 
+                        form={this.form} 
+                        _vState={this.props._vState} 
+                        cApplications={this.cApplications}
+                    />
                 </FSModal>
             </>
         );

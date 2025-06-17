@@ -28,6 +28,7 @@ authz:
 
 
 # disable_remote_eval_plugins: "false"
+# target_application_connection_timeout: 60
 # max_eval_concurrent_limit: 2
 # eval_timeout_in_min: 3600
 # disable_eval_concurrent_limit: "false"

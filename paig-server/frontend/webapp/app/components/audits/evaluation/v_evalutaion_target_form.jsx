@@ -1,11 +1,13 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
+import {inject, observer} from 'mobx-react';
 
 import {Delete, Add} from '@material-ui/icons';
 import FormLabel from '@material-ui/core/FormLabel';
-import {Grid, Typography, Button} from '@material-ui/core';
+import {Grid, Typography, Button, CircularProgress, Box} from '@material-ui/core';
 import {CustomAnchorBtn} from 'common-ui/components/action_buttons';
 import {FormHorizontal, FormGroupInput, FormGroupSelect2, FormGroupRadioList} from 'common-ui/components/form_fields';
 import f from 'common-ui/utils/f';
+import Alert from '@material-ui/lab/Alert';
 
 const SUPPORTED_METHODS = [
     { name: 'POST', value: 'POST' },
@@ -13,8 +15,10 @@ const SUPPORTED_METHODS = [
     { name: 'GET', value: 'GET' }
 ];
 
-const VEvalTargetForm = (props) => {
+const VEvalTargetForm = inject('evaluationStore')(observer((props) => {
     const { form, cApplications } = props;
+    const { evaluationStore } = props;
+
     const {
         id,
         ai_application_id,
@@ -27,6 +31,16 @@ const VEvalTargetForm = (props) => {
         method,
         username
     } = form.fields;
+
+    const [connectionState, setConnectionState] = useState({
+        inProgress: false,
+        showTestConnectionMsg: false,
+        testConnectionResponse: {
+            statusCode: 0,
+            msgDesc: ''
+        }
+    });
+    const connectionStatusRef = useRef(null);
 
     // Initialize headers list from form field or default to empty array
     const authHeader = headers.value?.find(h => h.key?.toLowerCase() === 'authorization');
@@ -170,7 +184,128 @@ const VEvalTargetForm = (props) => {
         }
     }, [cApplications]);
 
-    
+    const isValidJSON = (value) => {
+        if (typeof value === 'object' && value !== null) {
+            return true;
+        }
+        if (typeof value !== 'string') {
+            return false;
+        }
+        try {
+            const trimmed = value.trim();
+            if (!trimmed) return false;
+            // Check if it starts with { or [ to ensure it's a JSON object or array
+            if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) {
+                return false;
+            }
+            JSON.parse(trimmed);
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const validateRequestBody = (value) => {
+        if (!value || !value.trim()) {
+            return {
+                isValid: false,
+                error: "Request body is required"
+            };
+        }
+        if (!isValidJSON(value)) {
+            return {
+                isValid: false,
+                error: "Request body must be a valid JSON object or array"
+            };
+        }
+        return {
+            isValid: true,
+            value: typeof value === 'string' ? JSON.parse(value.trim()) : value
+        };
+    };
+
+    const handleTestConnection = async () => {
+        // Validate required fields
+        if (!url.value || !url.value.trim()) {
+            f.notifyError("Endpoint URL is required");
+            return;
+        }
+        if (!method.value) {
+            f.notifyError("HTTP Method is required");
+            return;
+        }
+        if (!username.value || !username.value.trim()) {
+            f.notifyError("Username is required");
+            return;
+        }
+
+        // Validate request body
+        const bodyValidation = validateRequestBody(body.value);
+        if (!bodyValidation.isValid) {
+            f.notifyError(bodyValidation.error);
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: { statusCode: 0, msgDesc: bodyValidation.error }
+            });
+            return;
+        }
+
+        setConnectionState({
+            inProgress: true,
+            showTestConnectionMsg: false,
+            testConnectionResponse: { statusCode: 0, msgDesc: '' }
+        });
+
+        try {
+            // Prepare headers
+            let headersObj = {};
+            if (headers.value && Array.isArray(headers.value)) {
+                headersObj = headers.value.reduce((acc, header) => {
+                    if (header.key && header.value) {
+                        acc[header.key] = header.value;
+                    }
+                    return acc;
+                }, {});
+            }
+
+            const testData = {
+                url: url.value.trim(),
+                method: method.value,
+                headers: headersObj,
+                body: bodyValidation.value
+            };
+
+            const response = await evaluationStore.testTargetConnection(testData);
+            const resp = Array.isArray(response) ? response[0] : response;
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: {
+                    statusCode: resp && resp.status === 'success' ? 1 : 0,
+                    msgDesc: resp?.message || (resp?.status === 'success' ? 'Connection successful' : 'Connection failed')
+                }
+            });
+        } catch (e) {
+            setConnectionState({
+                inProgress: false,
+                showTestConnectionMsg: true,
+                testConnectionResponse: {
+                    statusCode: 0,
+                    msgDesc: "Failed to test connection"
+                }
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (connectionState.inProgress || connectionState.showTestConnectionMsg) {
+            setTimeout(() => {
+                connectionStatusRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }, [connectionState.inProgress, connectionState.showTestConnectionMsg]);
+
     return (
         <FormHorizontal>
             <Grid container spacing={3}>
@@ -350,10 +485,41 @@ const VEvalTargetForm = (props) => {
                         rows: 4
                     }}
                 />
+
+                {/* Test Connection button and message */}
+                <Grid item xs={12} style={{ marginTop: '16px' }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={handleTestConnection}
+                        disabled={connectionState.inProgress || !url.value || !method.value}
+                        data-testid="test-connection-btn"
+                    >
+                        Test Connection
+                    </Button>
+                    {(connectionState.inProgress || connectionState.showTestConnectionMsg) && (
+                        <Box mt={"10px"} data-testid="connection-status" ref={connectionStatusRef}>
+                            <Alert
+                                severity={
+                                    connectionState.inProgress
+                                        ? 'warning'
+                                        : connectionState.testConnectionResponse.statusCode === 1
+                                        ? 'success'
+                                        : 'error'
+                                }
+                                icon={connectionState.inProgress ? <CircularProgress size="20px" /> : null}
+                            >
+                                {connectionState.inProgress && 'Connecting'}
+                                {connectionState.showTestConnectionMsg &&
+                                    (connectionState.testConnectionResponse.msgDesc || 'No Response')}
+                            </Alert>
+                        </Box>
+                    )}
+                </Grid>
             </Grid>
         </FormHorizontal>
     );
-};
+}));
 
 const eval_target_form_def = {
     id: {},
