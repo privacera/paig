@@ -107,11 +107,12 @@ def merge_final_result(final_result: list) -> dict:
         
         final_tags.extend(result.get("tags", []))
         final_policies.extend(result.get("policy", []))
-    return {"action": final_action, "tags": final_tags, "policies": final_policies, "message": final_message}
+    return {"action": final_action, "tags": sorted(set(final_tags)), "policies": sorted(set(final_policies)), "message": final_message}
 
 def paig_pii_guardrail_evaluation(sensitive_data_config: dict, traits: list) -> (list, dict):
     deny_policies_list = []
     redact_policies_dict = {}
+    allow_policies_list = []
     # evaluate the guardrail PII policies
     sensitive_data_policies = sensitive_data_config.get("configs", {})
     for key, value in sensitive_data_policies.items():
@@ -119,8 +120,10 @@ def paig_pii_guardrail_evaluation(sensitive_data_config: dict, traits: list) -> 
             deny_policies_list.append(key)
         elif value == "REDACT" and key in traits:
             redact_policies_dict.update({key: "<<"+key+">>"})
+        elif value == "ALLOW" and key in traits:
+            allow_policies_list.append(key)
 
-    return deny_policies_list, redact_policies_dict
+    return deny_policies_list, redact_policies_dict, allow_policies_list
 
 def mask_message(message: str, redact_policies_dict: dict, analyzer_results: list) -> str:
     # check the scanner_result for analyzer results
@@ -151,7 +154,7 @@ def paig_guardrail_test(transformed_response: dict, message: str) -> dict:
     sensitive_data_config = transformed_response.get("config_type", {}).get("SENSITIVE_DATA", {})
     
     if sensitive_data_config:
-        deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
+        deny_policies_list, redact_policies_dict, allow_policies_list = paig_pii_guardrail_evaluation(sensitive_data_config, scanner_result.get_traits())
         
         if len(deny_policies_list) > 0:
             return {"action": "DENY", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": f'{sensitive_data_config.get("response_message")}'}
@@ -160,7 +163,8 @@ def paig_guardrail_test(transformed_response: dict, message: str) -> dict:
             masked_message = mask_message(message, redact_policies_dict, scanner_result.get("analyzer_result", []))
             return {"action": "REDACT", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": masked_message}
 
-        return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
+        if len(allow_policies_list) > 0:
+            return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
     
     return {}
 

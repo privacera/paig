@@ -869,7 +869,19 @@ class TestAuthService:
         auth_service = AuthService()
         mocker.patch.object(auth_service.governance_service_client, 'get_application_guardrail_name',
                             new_callable=AsyncMock, return_value=['test_guardrail'])
-        guardrail_info = {"guardrail_connection_details": {}}
+        guardrail_info = {
+            "guardrail_connection_details": {},
+            "guardrail_configs": [{
+                "config_type": "SENSITIVE_DATA",
+                "config_data": {
+                    "configs": [{
+                        "category": "EMAIL",
+                        "action": "REDACT"
+                    }]
+                },
+                "response_message": "Message is redacted"
+            }]
+        }
         mocker.patch.object(auth_service.guardrail_service_client, 'get_guardrail_info_by_name',
                             new_callable=AsyncMock, return_value=guardrail_info)
         mocker.patch.object(auth_service.tenant_data_encryptor_service, 'decrypt_guardrail_connection_details',
@@ -878,9 +890,7 @@ class TestAuthService:
 
         auth_req = authorize_req_data()
         authz_res = authz_res_data()
-        original_context = {}
-        context_mock = MagicMock(wraps=original_context)
-        auth_req.context = context_mock
+        auth_req.context = {}  # Use actual dict instead of MagicMock
 
         access_control_traits = {Guardrail.ANONYMIZED.value}
         all_result_traits = ['EMAIL']
@@ -888,8 +898,15 @@ class TestAuthService:
         await auth_service.do_guardrail_scan(access_control_traits, all_result_traits,
                                              analyzer_result_map, auth_req, authz_res)
 
-        context_mock.update.assert_any_call({'guardrail_details': {'name': 'test_guardrail', 'policies': [], 'traits': ['EMAIL']}})
-        assert auth_req.context.get("guardrail_details") == {'name': 'test_guardrail', 'policies': [], 'traits': ['EMAIL']}
+        # Verify the context was updated correctly
+        expected_context = {
+            "guardrail_details": {
+                "name": "test_guardrail",
+                "policies": ["SENSITIVE_DATA"],  # Should include the policy from config_type
+                "tags": ["EMAIL"]
+            }
+        }
+        assert auth_req.context == expected_context
 
     @pytest.fixture
     def scanner(self):
@@ -1078,7 +1095,7 @@ class TestAuthService:
             "guardrail_details": {
                 "name": "test-guardrail",
                 "policies": ["CONTENT_MODERATION", "SENSITIVE_DATA"],  # sorted set
-                "traits": ["PERSON", "TOXIC"]
+                "tags": ["PERSON", "TOXIC"]
             }
         }
         
@@ -1127,7 +1144,7 @@ class TestAuthService:
             "guardrail_details": {
                 "name": "test-guardrail",
                 "policies": [],  # No matching policies
-                "traits": ["PHONE", "CREDIT_CARD"]
+                "tags": []
             }
         }
         
@@ -1168,7 +1185,7 @@ class TestAuthService:
             "guardrail_details": {
                 "name": "test-guardrail",
                 "policies": [],
-                "traits": ["PERSON", "EMAIL"]
+                "tags": []
             }
         }
         
@@ -1216,7 +1233,7 @@ class TestAuthService:
             "guardrail_details": {
                 "name": "test-guardrail",
                 "policies": ["SENSITIVE_DATA"],
-                "traits": ["CREDIT_CARD", "SOCIAL_SECURITY"]
+                "tags": ["CREDIT_CARD", "SOCIAL_SECURITY"]
             }
         }
         
@@ -1269,7 +1286,7 @@ class TestAuthService:
             "guardrail_details": {
                 "name": "test-guardrail",
                 "policies": ["CONTENT_MODERATION", "SENSITIVE_DATA"],  # sorted and deduped
-                "traits": ["PERSON", "EMAIL"]
+                "tags": ["EMAIL", "PERSON"]
             }
         }
         

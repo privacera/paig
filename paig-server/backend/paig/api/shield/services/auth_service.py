@@ -559,7 +559,7 @@ class AuthService:
 
         return is_allowed, non_authz_scan_timings_per_message
     
-    def encrich_context_with_guardrail_info(self, _guardrail_name: str, _guardrail_info: dict, _guardrail_traits: list, auth_req: AuthorizeRequest):
+    def encrich_context_with_guardrail_info(self, _guardrail_name: str, _guardrail_info: dict, _all_result_traits: list, auth_req: AuthorizeRequest):
         """
         Enriches the authorization request context with guardrail information.
 
@@ -569,24 +569,27 @@ class AuthService:
         Args:
             _guardrail_name (str): The name of the guardrail.
             _guardrail_info (dict): The guardrail information.
-            _guardrail_traits (list): The traits detected in the request.
+            _all_result_traits (list): The traits detected in the request.
             auth_req (AuthorizeRequest): The authorization request object.
         """
         _guardrail_context_info = {}
         _policies = []
+        _guardrail_traits = []
 
         _transformed_guardrail_info = process_guardrail_response(_guardrail_info)
         _config_types = _transformed_guardrail_info.get("config_type", {})
         
         for policy, value in _config_types.items():
             for category, _ in value.get("configs", {}).items():
-                if category.replace(' ', '_').upper() in _guardrail_traits:
+                _trait = category.replace(' ', '_').upper()
+                if _trait in _all_result_traits:
                     _policies.append(policy)
+                    _guardrail_traits.append(_trait)
 
         _guardrail_context_info["guardrail_details"] = {
             "name": _guardrail_name,
-            "policies": sorted(set(_policies)),
-            "traits": _guardrail_traits
+            "tags": sorted(set(_guardrail_traits)),
+            "policies": sorted(set(_policies))
         }
 
         logger.debug(f"Guardrail details added to context: {_guardrail_context_info}")

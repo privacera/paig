@@ -96,7 +96,7 @@ class TestGuardrailService(unittest.TestCase):
     def test_paig_pii_guardrail_evaluation_with_sensitive_data(self):
         sensitive_data_config = {"configs": {"PII": "DENY", "EMAIL": "REDACT"}}
         traits = ["PII", "EMAIL"]
-        deny_policies_list, redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, traits)
+        deny_policies_list, redact_policies_dict, []= paig_pii_guardrail_evaluation(sensitive_data_config, traits)
         self.assertEqual(deny_policies_list, ["PII"])
         self.assertEqual(redact_policies_dict, {"EMAIL": "<<EMAIL>>"})
 
@@ -353,3 +353,44 @@ class TestMergeFinalResult(unittest.TestCase):
             "message": "First deny"  # First message is kept
         }
         self.assertEqual(result, expected)
+
+    async def test_do_test_guardrail_with_multiple_results(self):
+        # Mock PAIG guardrail test
+        mocker.patch(
+            'api.shield.services.guardrail_service.paig_guardrail_test',
+            return_value={
+                "action": "REDACT",
+                "tags": ["SSN"],
+                "policy": ["SENSITIVE_DATA"],
+                "message": "Masked message"
+            }
+        )
+
+        # Mock AWS guardrail test
+        mocker.patch(
+            'api.shield.services.guardrail_service.aws_guardrail_test',
+            return_value={
+                "action": "DENY",
+                "tags": ["TOXIC"],
+                "policy": ["TOXIC_CONTENT"],
+                "message": "Toxic content detected"
+            }
+        )
+
+        transformed_response = {
+            "config_type": {
+                "SENSITIVE_DATA": {
+                    "configs": {"SSN": "REDACT"}
+                },
+                "TOXIC_CONTENT": {
+                    "configs": {"TOXIC": "DENY"}
+                }
+            }
+        }
+
+        result = await do_test_guardrail("test-tenant", transformed_response, "Test message")
+        assert len(result) == 1
+        assert result[0]["action"] == "DENY"  # DENY takes precedence over REDACT
+        assert sorted(result[0]["tags"]) == ["SSN", "TOXIC"]
+        assert sorted(result[0]["policies"]) == ["SENSITIVE_DATA", "TOXIC_CONTENT"]
+        assert result[0]["message"] == "Toxic content detected"
