@@ -166,7 +166,7 @@ def paig_guardrail_test(transformed_response: dict, message: str) -> dict:
         if len(allow_policies_list) > 0:
             return {"action": "ALLOW", "tags": scanner_result.get_traits(), "policy": ["SENSITIVE_DATA"], "message": message}
     
-    return {}
+    return {"action": "ALLOW", "tags": [], "policy": [], "message": message}
 
 async def aws_guardrail_test(tenant_id: str, transformed_response: dict, message: str) -> None|dict:
 
