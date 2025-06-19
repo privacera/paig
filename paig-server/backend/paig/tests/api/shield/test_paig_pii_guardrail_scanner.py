@@ -7,7 +7,7 @@ class TestPAIGPIIGuardrailScanner:
     def test_scanner_returns_empty_traits_when_no_policies_triggered(self, mocker):
         # Arrange
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=([], {}))
+                     return_value=([], {}, []))
         scanner = PAIGPIIGuardrailScanner(
             name="TestScanner",
             pii_traits=["EMAIL_ADDRESS"],
@@ -26,7 +26,7 @@ class TestPAIGPIIGuardrailScanner:
     def test_scanner_returns_blocked_action_when_deny_policies_found(self, mocker):
         # Arrange
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=(["EMAIL_ADDRESS"], {}))
+                     return_value=(["EMAIL_ADDRESS"], {}, []))
         scanner = PAIGPIIGuardrailScanner(
             name="TestScanner",
             pii_traits=["EMAIL_ADDRESS"],
@@ -47,7 +47,7 @@ class TestPAIGPIIGuardrailScanner:
         # Arrange
         redact_policies = {"EMAIL_ADDRESS": "<<EMAIL_ADDRESS>>"}
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=([], redact_policies))
+                     return_value=([], redact_policies, []))
         scanner = PAIGPIIGuardrailScanner(
             name="TestScanner",
             pii_traits=["EMAIL_ADDRESS"],
@@ -67,7 +67,7 @@ class TestPAIGPIIGuardrailScanner:
     def test_scanner_handles_none_or_empty_pii_traits(self, mocker):
         # Arrange
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=([], {}))
+                     return_value=([], {}, []))
 
         # Test with None pii_traits
         scanner_none = PAIGPIIGuardrailScanner(
@@ -98,7 +98,7 @@ class TestPAIGPIIGuardrailScanner:
     def test_scanner_handles_none_or_empty_sensitive_data_config(self, mocker):
         # Arrange
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=([], {}))
+                     return_value=([], {}, []))
 
         # Test with None sensitive_data_config
         scanner_none = PAIGPIIGuardrailScanner(
@@ -129,7 +129,7 @@ class TestPAIGPIIGuardrailScanner:
     def test_scanner_handles_missing_response_message(self, mocker):
         # Arrange
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=(["EMAIL_ADDRESS"], {}))
+                     return_value=(["EMAIL_ADDRESS"], {}, []))
         scanner = PAIGPIIGuardrailScanner(
             name="TestScanner",
             pii_traits=["EMAIL_ADDRESS"],
@@ -151,7 +151,7 @@ class TestPAIGPIIGuardrailScanner:
         deny_policies = ["EMAIL_ADDRESS"]
         redact_policies = {"PHONE_NUMBER": "<<PHONE_NUMBER>>"}
         mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
-                     return_value=(deny_policies, redact_policies))
+                     return_value=(deny_policies, redact_policies, []))
         scanner = PAIGPIIGuardrailScanner(
             name="TestScanner",
             pii_traits=["EMAIL_ADDRESS", "PHONE_NUMBER"],
@@ -174,3 +174,24 @@ class TestPAIGPIIGuardrailScanner:
         assert result.get("output_text") == "PII detected"
         # Should not have masked_traits since DENY takes precedence
         assert result.get("masked_traits", None) is None
+
+    # Scanner returns ScannerResult with ALLOWED action when allow policies are found
+    def test_scanner_returns_allowed_action_when_allow_policies_found(self, mocker):
+        # Arrange
+        mocker.patch('api.shield.services.guardrail_service.paig_pii_guardrail_evaluation',
+                     return_value=([], {}, ["EMAIL_ADDRESS"]))
+        scanner = PAIGPIIGuardrailScanner(
+            name="TestScanner",
+            pii_traits=["EMAIL_ADDRESS"],
+            sensitive_data_config={"configs": {"EMAIL_ADDRESS": "ALLOW"}}
+        )
+
+        # Act
+        result = scanner.scan("Test message with email@example.com")
+
+        # Assert
+        assert isinstance(result, ScannerResult)
+        assert result.get_traits() == []
+        assert result.get("actions") == ["ALLOWED"]
+        assert result.get("masked_traits", None) is None
+        assert result.get("output_text", None) == "Test message with email@example.com"

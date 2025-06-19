@@ -43,11 +43,12 @@ class PAIGPIIGuardrailScanner(Scanner):
         sensitive_data_config = self.get_property("sensitive_data_config")
 
         from api.shield.services.guardrail_service import paig_pii_guardrail_evaluation
-        deny_policies_list , redact_policies_dict = paig_pii_guardrail_evaluation(sensitive_data_config, pii_traits)
+        deny_policies_list , redact_policies_dict, allow_policies_list = paig_pii_guardrail_evaluation(sensitive_data_config, pii_traits)
 
         if len(deny_policies_list) > 0:
             return ScannerResult(traits=[], actions=["BLOCKED"], output_text=sensitive_data_config.get("response_message"))
         if len(redact_policies_dict) > 0:
             return ScannerResult(traits=[], actions=["ANONYMIZED"], masked_traits=redact_policies_dict)
-
+        if len(allow_policies_list) > 0:
+            return ScannerResult(traits=[], actions=["ALLOWED"], output_text=message)
         return ScannerResult(traits=[])
