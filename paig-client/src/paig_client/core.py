@@ -504,8 +504,9 @@ class PAIGApplication:
             is_self_hosted_shield_server = True
         else:
             self.shield_base_url = plugin_app_config_dict.get("apiServerUrl")
-            # Allow override from environment variable
-            self.shield_base_url = os.getenv("PAIG_API_SERVER_URL", self.shield_base_url)
+
+        # Allow api server url override from kwargs, environment variable, or default configs
+        self.shield_base_url = kwargs.get("endpoint", os.getenv("PAIG_API_SERVER_URL", self.shield_base_url))
 
         self.api_key = plugin_app_config_dict.get("apiKey")
         self.shield_server_key_id = plugin_app_config_dict.get("shieldServerKeyId")
@@ -589,8 +590,8 @@ class PAIGApplication:
                 )
 
             server_url = parts[1]
-            # Allow override from environment variable
-            server_url = os.getenv("PAIG_API_SERVER_URL", server_url)
+            # Allow api server url override from kwargs, environment variable, or api key
+            server_url = kwargs.get("endpoint", os.getenv("PAIG_API_SERVER_URL", server_url))
             if server_url.startswith("https://") or server_url.startswith("http://"):
                 request_url = f"{server_url.rstrip('/')}/api/ai/application/config"
             else:
