@@ -1,5 +1,5 @@
 from typing import Dict
-from api.shield.utils.custom_exceptions import BadRequestException
+from fastapi.exceptions import RequestValidationError
 
 
 class AuthorizeRequest:
@@ -56,5 +56,12 @@ class AuthorizeRequest:
         """
         data = req_data.get(key)
         if not data:
-            raise BadRequestException(f"Missing {key} in request")
+            errors = [
+                {
+                    "loc": (key,),
+                    "msg": "field required",
+                    "type": "value_error.missing"
+                }
+            ]
+            raise RequestValidationError(errors=errors)
         return data
