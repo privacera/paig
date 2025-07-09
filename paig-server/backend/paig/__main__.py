@@ -155,12 +155,13 @@ def start_server(host, port, background, workers):
             host=host,
             port=port,
             workers=workers,
+            timeout_keep_alive=60
         )
     else:
         print('Starting PAIG Server in background mode')
         process = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "server:app", "--host", str(host), "--port", str(port),
-             "--workers", str(workers),
+             "--workers", str(workers), "--timeout-keep-alive", "60",
              "--app-dir", ROOT_DIR],
             start_new_session=True,
             stdout=subprocess.DEVNULL,
