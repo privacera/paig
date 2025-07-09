@@ -59,7 +59,7 @@ def create_pageable_response(content: list, total_elements: int, page_number: in
     """
     return Pageable(
         content=content,
-        totalPages=(total_elements + size - 1) // size,
+        totalPages=((total_elements + size - 1) // size) if size else 0,
         totalElements=total_elements,
         last=(page_number + 1) * size >= total_elements,
         size=size,
