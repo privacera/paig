@@ -32,8 +32,9 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 
 ## **PAIG SecureChat**
 
-| Version | Date                | Release Notes                             |
-|---------|---------------------|-------------------------------------------|
+| Version | Date                | Release Notes                                 |
+|---------|---------------------|-----------------------------------------------|
+| v0.0.4  | July 14th, 2025     | [View Notes](paig-securechat/release0.0.4.md) |
 | v0.0.3  | March 19th, 2025    | [View Notes](paig-securechat/release0.0.3.md) |
 | v0.0.2  | February 20th, 2025 | [View Notes](paig-securechat/release0.0.2.md) |
 | v0.0.1  | October 22nd, 2024  | [View Notes](paig-securechat/release0.0.1.md) |
