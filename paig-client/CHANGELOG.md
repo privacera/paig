@@ -1,6 +1,10 @@
 # paig-client Changelog
 All notable changes to paig-client will be documented in this file.
 
+## [v0.0.6] - 2025-07-14
+### Changed 
+- Added support for multi-app configuration of API server URLs.
+
 ## [v0.0.5] - 2025-04-08
 ### Changed 
 - Added HTTP support for paig-server configuration endpoints.
