@@ -39,17 +39,6 @@ documented under the new version.
 Before sending your pull requests, make sure you do the following:
 - [Read the Code of Conduct](CODE_OF_CONDUCT.md)
 
-### 1. Create a fork of PAIG
-  You will need your own copy of paig to work on the code. Go to the paig project page and hit the Fork button. 
-  <br>You will want to clone your fork to your machine
-  
-  ```bash
-  git clone git@github.com:<username>/paig.git
-  cd paig
-  git remote add upstream git@github.com:privacera/paig.git
-  git fetch upstream
-  ```
-
 ### 1. Create a Fork of PAIG
 
 You will need your own copy of PAIG to work on the code. Go to the PAIG project page and hit the Fork button. Clone your
