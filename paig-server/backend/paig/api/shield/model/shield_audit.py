@@ -1,6 +1,6 @@
 import uuid
 from typing import Dict
-from api.shield.utils.custom_exceptions import BadRequestException
+from core.exceptions import BadRequestException
 
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
