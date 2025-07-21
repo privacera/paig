@@ -15,7 +15,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from core.middlewares.sqlalchemy_middleware import SQLAlchemyMiddleware
 from core.middlewares.request_count_middleware import RequestCounterMiddleware
 from core.exceptions import CustomException
-from core.exceptions import BadRequestException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -83,19 +82,6 @@ def init_listeners(app_: FastAPI) -> None:
             status_code=exc.code,
             content=content
         )
-    
-    @app_.exception_handler(BadRequestException)
-    async def bad_request_exception_handler(request: Request, exc: BadRequestException):
-        return JSONResponse(
-            status_code=exc.code,
-            content={
-                "error": "Bad Request",
-                "message": exc.message,
-                "error_code": exc.error_code,
-                "details": exc.details
-            }
-        )
-
 
     @app_.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
