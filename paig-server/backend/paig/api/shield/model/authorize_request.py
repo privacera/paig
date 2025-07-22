@@ -1,5 +1,5 @@
 from typing import Dict
-from api.shield.utils.custom_exceptions import BadRequestException
+from core.exceptions import BadRequestException
 
 
 class AuthorizeRequest:

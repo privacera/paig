@@ -15,7 +15,8 @@ from api.shield.model.scanner_result import ScannerResult
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
 from api.shield.scanners.AWSBedrockGuardrailScanner import AWSBedrockGuardrailScanner
 from api.shield.services.auth_service import AuthService
-from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
+from api.shield.utils.custom_exceptions import ShieldException
+from core.exceptions import BadRequestException
 from paig_common.paig_exception import DiskFullException, AuditEventQueueFullException
 
 
