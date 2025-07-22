@@ -1,5 +1,5 @@
 import logging
-from api.shield.utils.custom_exceptions import BadRequestException
+from core.exceptions import BadRequestException
 from api.shield.factory.guardrail_service_factory import GuardrailServiceFactory
 from api.shield.services.tenant_data_encryptor_service import TenantDataEncryptorService
 from api.shield.presidio.presidio_anonymizer_engine import PresidioAnonymizerEngine

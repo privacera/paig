@@ -7,7 +7,8 @@ from api.shield.model.vectordb_authz_request import AuthorizeVectorDBRequest
 from api.shield.model.authz_service_request import AuthzServiceRequest
 from api.shield.model.authz_service_response import AuthzServiceResponse
 from api.shield.utils import config_utils
-from api.shield.utils.custom_exceptions import BadRequestException, ShieldException
+from api.shield.utils.custom_exceptions import ShieldException
+from core.exceptions import BadRequestException
 from requests.models import Response
 
 

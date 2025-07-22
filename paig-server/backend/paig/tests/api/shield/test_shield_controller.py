@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, MagicMock
 from fastapi import Request
 from api.shield.model.authorize_response import AuthorizeResponse
 from api.shield.model.vectordb_authz_response import AuthorizeVectorDBResponse
-from api.shield.utils.custom_exceptions import BadRequestException
+from core.exceptions import BadRequestException
 
 
 def authorize_req_data():
