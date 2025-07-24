@@ -1,6 +1,6 @@
 from api.shield.services.shield_service import ShieldService
 from fastapi import Request, Response
-from api.shield.utils.custom_exceptions import BadRequestException
+from core.exceptions import BadRequestException
 from api.shield.model.authorize_request import AuthorizeRequest
 from api.shield.utils import json_utils
 import json
