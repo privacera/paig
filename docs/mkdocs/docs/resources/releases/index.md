@@ -6,7 +6,7 @@ PAIG maintains a structured release schedule to deliver continuous improvements,
 
 | Version | Date                | Release Notes                              |
 |---------|---------------------|--------------------------------------------|
-| v0.0.11 | July 14th, 2025     | [View Notes](paig-server/release0.0.11.md) |
+| v0.0.11 | July 24th, 2025     | [View Notes](paig-server/release0.0.11.md) |
 | v0.0.10 | April 21st, 2025    | [View Notes](paig-server/release0.0.10.md) |
 | v0.0.9  | April 16th, 2025    | [View Notes](paig-server/release0.0.9.md)  |
 | v0.0.8  | April 9th, 2025     | [View Notes](paig-server/release0.0.8.md)  |

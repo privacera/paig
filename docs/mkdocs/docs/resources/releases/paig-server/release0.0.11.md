@@ -19,12 +19,14 @@ title: PAIG Server 0.0.11
     - Refactored evaluation service to support tenant ID.
     - Improved validation for evaluation target API schema.
     - Synchronized guardrail details between test input screen API and audit context.
+    - Handle custom exceptions in shield.
 
 - **Fixes**:
     - Resolved duplication issue in evaluation reports.
     - Corrected evaluation category severity count when running across multiple target applications.
     - Fixed paginated response error when request size is zero.
     - Added keep-alive timeout for Uvicorn to prevent "connection reset by peer" errors.
+    - Removed repeated instructions from CONTRIBUTING.md to improve clarity.
 
 <div class="grid cards" markdown>
 -  :material-page-previous: Prev topic: [Releases](../index.md#paig-server)
