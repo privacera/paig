@@ -105,6 +105,10 @@ class ShieldController:
         """
         masked_req_obj = json_utils.mask_json_fields(json.dumps(request), ['messages'])
         logger.debug(f"Incoming request {masked_req_obj}")
+
+        if not x_tenant_id:
+            raise BadRequestException("Missing x-tenant-id in request")
+
         vectordb_auth_res = await self.shield_service.authorize_vectordb(x_tenant_id, x_user_role, request)
         response = json.dumps(vectordb_auth_res.__dict__)
         return Response(content=response, media_type="application/json")
