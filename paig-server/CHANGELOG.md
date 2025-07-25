@@ -1,6 +1,35 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
+## [v0.0.11] - 2025-07-25
+### Added
+  - Configurable concurrent run limit for evaluations.
+  - Validation checks to prevent creation of duplicate evaluation configs and reports.
+  - Completion time display on the evaluation report detail page.
+  - Categories count on the evaluation config page with clickable popup showing category type details.
+  - Get Categories API with type support integrated into evaluation config.
+  - Added evaluation target application connection check.
+  - Unique constraints added on eval-config, eval-config-history, and eval-report name columns.
+  - Enhanced audit context with detailed guardrail information, including name, tags, and associated policies.
+
+### Changed
+  - Updated README.md with PowerShell and Git Bash setup instructions.
+  - Made the evaluation verbose flag configurable.
+  - Updated base versions of paig-authorizer-core and paig-evaluation dependencies.
+  - Refactored evaluation service to support tenant ID.
+  - Improved validation for evaluation target API schema.
+  - Synchronized guardrail details between test input screen API and audit context.
+  - Handle custom exceptions in shield
+
+### Fixed
+  - Resolved duplication issue in evaluation reports.
+  - Corrected evaluation category severity count when running across multiple target applications.
+  - Fixed paginated response error when request size is zero.
+  - Added keep-alive timeout for Uvicorn to prevent "connection reset by peer" errors.
+  - Removed repeated instructions from CONTRIBUTING.md to improve clarity.
+
+
+
 ## [v0.0.10] - 2025-04-21
 ### Added
 - PAIG now provides a dynamic way to fetch application configurations using API keys, removing the need for manual file downloads and making the process faster and more efficient. 
