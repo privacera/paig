@@ -37,6 +37,7 @@ dependencies = [
         'okta_jwt_verifier',
         'urllib3',
         'langchain==0.3.4',
+        'langchain-core==0.3.45',
         'langchain-community==0.3.3',
         'langchain_openai==0.2.3',
         'langchain-aws==0.2.7',

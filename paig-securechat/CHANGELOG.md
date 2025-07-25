@@ -1,7 +1,7 @@
 # paig-securechat Changelog
 All changes to `paig-securechat` will be documented in this file.
 
-## [v0.0.4] - 2025-07-14
+## [v0.0.4] - 2025-07-25
 ### Added
 - Support for basic authentication in the web server.
 
