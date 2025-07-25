@@ -1,7 +1,7 @@
 # paig-server Changelog
 All changes to paig-server will be documented in this file.
 
-## [v0.0.11] - 2025-07-14
+## [v0.0.11] - 2025-07-25
 ### Added
   - Configurable concurrent run limit for evaluations.
   - Validation checks to prevent creation of duplicate evaluation configs and reports.
