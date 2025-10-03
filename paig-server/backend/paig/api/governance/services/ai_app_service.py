@@ -238,6 +238,12 @@ class AIAppService(BaseController[AIApplicationModel, AIApplicationView]):
             size=size,
             sort=sort
         )
+    async def get_ai_application_count(self) -> int:
+        """
+        Fetch total number of AI applications in the system via repository.count_all()
+        """
+        repository = self.get_repository()
+        return await repository.count_all()
 
     async def list_ai_applications_by_vector_db(self, vector_db_name: str) -> List[AIApplicationView]:
         """

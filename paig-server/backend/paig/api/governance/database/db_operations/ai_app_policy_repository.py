@@ -2,6 +2,8 @@ from typing import List
 from sqlalchemy import or_, and_
 from core.factory.database_initiator import BaseOperations
 from api.governance.database.db_models.ai_app_policy_model import AIApplicationPolicyModel
+from core.db_session import session
+from sqlalchemy import select, func
 
 
 class AIAppPolicyRepository(BaseOperations[AIApplicationPolicyModel]):
@@ -50,3 +52,11 @@ class AIAppPolicyRepository(BaseOperations[AIApplicationPolicyModel]):
         query = query.filter(and_(*query_filters))
 
         return await self._all(query)
+    
+    async def count_all(self) -> int:
+        """
+        Count total AI application policies efficiently using SQL COUNT().
+        """
+        query = select(func.count()).select_from(self.model_class)  # SELECT COUNT(*) FROM ai_app_policy_model
+        result = await session.execute(query)  # use global session
+        return result.scalar_one()  # return the count directly

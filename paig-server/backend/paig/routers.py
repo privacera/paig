@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import PlainTextResponse
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from api.guardrails.routers import paig_guardrails_router
 from api.user.routers import user_router
@@ -14,6 +16,11 @@ from api.eval.routers import evaluation_router_paths
 from api.apikey.routers import api_key_router
 from core.security.authentication import get_auth_user
 from api.governance.routes.ai_app_config_download_router import ai_app_config_download_with_key_router
+from utils1.custom_metrics import ai_apps_total_gauge
+from api.governance.services.ai_app_service import AIAppService
+from utils1.custom_metrics import ai_app_policies_total_gauge
+from api.governance.services.ai_app_policy_service import AIAppPolicyService
+from core.utils import SingletonDepends
 
 router = APIRouter()
 
@@ -31,4 +38,26 @@ router.include_router(paig_guardrails_router, prefix="/guardrail-service/api", d
 router.include_router(api_key_router, prefix="/account-service/api/apikey", tags=["API Key"])
 router.include_router(ai_app_config_download_with_key_router, prefix="/api/ai/application/config", tags=["Governance with API Key"])
 
+@router.get("/metrics")
+async def metrics(
+    ai_app_service: AIAppService = Depends(SingletonDepends(AIAppService, called_inside_fastapi_depends=True)),
+    ai_app_policy_service: AIAppPolicyService = Depends(SingletonDepends(AIAppPolicyService, called_inside_fastapi_depends=True)),   
+):
+    """ Prometheus metrics endpoint """
+    try:
+        # get the latest AI application count and set the gauge
+        count = await ai_app_service.get_ai_application_count()
+        ai_apps_total_gauge.set(count)
+        try:
+            #get the latest AI application policy count and set the guage
+            policy_count = await ai_app_policy_service.get_ai_application_policy_count()
+            ai_app_policies_total_gauge.set(policy_count)
+        except Exception:
+            # don't break the whole endpoint if policy counting fails
+            pass
+        # return all metrics
+        return PlainTextResponse(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+    except Exception as e:
+        # helpful error message for debugging
+        return PlainTextResponse(f"Metrics endpoint failed: {e}", status_code=500)
 __all__ = ["router"]

@@ -252,6 +252,7 @@ class AIAppPolicyService(BaseController[AIApplicationPolicyModel, AIApplicationP
             AIAppPolicyRepository: The AI application repository.
         """
         return self.repository
+    
 
     async def list_ai_application_policies(self, app_policy_filter: AIApplicationPolicyFilter, page_number: int, size: int, sort: List[str]) -> Pageable:
         """
@@ -272,7 +273,14 @@ class AIAppPolicyService(BaseController[AIApplicationPolicyModel, AIApplicationP
             size=size,
             sort=sort
         )
-
+    async def get_ai_application_policy_count(self) -> int:
+        """
+        Fetch total number of AI application policies in the system via repository.count_all()
+        """
+        repository = self.get_repository()
+        return await repository.count_all()
+    
+    
     async def get_ai_application_policy_by_id(self, app_id: int, id: int) -> AIApplicationPolicyView:
         """
         Retrieve an AI application policy by its ID.

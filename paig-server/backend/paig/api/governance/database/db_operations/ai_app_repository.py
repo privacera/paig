@@ -5,6 +5,8 @@ from core.exceptions import NotFoundException
 from core.exceptions.error_messages_parser import get_error_message, ERROR_RESOURCE_NOT_FOUND
 from core.factory.database_initiator import BaseOperations
 from api.governance.database.db_models.ai_app_model import AIApplicationModel
+from core.db_session import session
+from sqlalchemy import select, func
 
 
 class AIAppRepository(BaseOperations[AIApplicationModel]):
@@ -53,3 +55,10 @@ class AIAppRepository(BaseOperations[AIApplicationModel]):
             return await self.get_all({field: values}, apply_in_list_filter=True)
         except NoResultFound:
             return None
+    async def count_all(self) -> int:
+        """
+        Count total AI applications efficiently using SQL COUNT().
+        """
+        query = select(func.count()).select_from(self.model_class)  # SELECT COUNT(*)
+        result = await session.execute(query)  # use imported global session
+        return result.scalar_one()  # returns the count directly
