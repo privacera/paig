@@ -73,6 +73,11 @@ class UserService:
             group_model = await self.group_repository.get_groups_by_in_list('name', groups)
         user = await self.user_repository.create_user(user_model_params, group_model)
         return user.to_ui_dict()
+    async def get_user_count(self) -> int:
+        """
+        Fetch total number of users in the system via repository.count_all()
+        """
+        return await self.user_repository.count_all()
 
     async def get_user_tenants(self, user: dict):
         user_info = await self.get_user_info(username=user['username'], id=user['id'])

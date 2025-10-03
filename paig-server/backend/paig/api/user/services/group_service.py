@@ -46,6 +46,11 @@ class GroupService:
 
         await self.group_repository.delete_group(group)
         return group.to_ui_dict()
+    async def get_group_count(self) -> int:
+        """
+        Fetch total number of groups in the system via repository.count_all()
+        """
+        return await self.group_repository.count_all()
 
     async def update_group(self, group_id, group_params):
         group = await self.group_repository.get_group(id=group_id)

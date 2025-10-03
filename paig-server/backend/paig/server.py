@@ -26,6 +26,7 @@ import logging
 from fastapi.exceptions import RequestValidationError
 from fastapi.encoders import jsonable_encoder
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from utils.prometheus_http_middleware import PrometheusHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,8 @@ def make_middleware() -> List[Middleware]:
         ),
         Middleware(SQLAlchemyMiddleware),
         Middleware(RequestCounterMiddleware),
-        Middleware(RequestSessionContextMiddleware)
+        Middleware(RequestSessionContextMiddleware),
+        Middleware(PrometheusHTTPMiddleware)
     ]
     return middleware
 
